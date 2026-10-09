@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>中国宏观月报</title>
+<style>
+  :root{
+    --bg:#f5f5f7; --card:#ffffff; --ink:#1d1d1f; --sub:#6e6e73;
+    --accent:#0071e3; --line:#d2d2d7; --up:#ff3b30; --down:#34c759; --flat:#86868b;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","PingFang SC","Microsoft YaHei",sans-serif;
+    line-height:1.6;padding:32px 16px;max-width:980px;margin:0 auto}
+  .hero{background:#000;color:#fff;border-radius:28px;padding:48px 40px;margin-bottom:28px}
+  .hero h1{font-size:32px;font-weight:600;letter-spacing:.1px}
+  .hero p{font-size:17px;color:rgba(255,255,255,.72);margin-top:8px}
+  .chips{display:flex;gap:8px;margin-top:18px;flex-wrap:wrap}
+  .chip{font-size:12px;padding:5px 12px;border-radius:980px;background:rgba(255,255,255,.14)}
+  .hero-quote{font-size:21px;font-weight:600;margin-top:24px;color:#2997ff}
+  .hero-verdict{display:flex;align-items:center;gap:10px 16px;flex-wrap:wrap;margin-top:24px;
+    padding:14px 20px;border-radius:16px;background:rgba(255,255,255,.1)}
+  .v-label{font-size:12px;color:rgba(255,255,255,.5);letter-spacing:2px;white-space:nowrap}
+  .v-word{font-size:28px;font-weight:700;line-height:1.2}
+  .v-plain{font-size:13px;color:rgba(255,255,255,.78)}
+  .v-offense{color:#ff453a}.v-neutral{color:#f5f5f7}.v-defense{color:#30d158}
+  section{background:var(--card);border-radius:18px;padding:26px 28px;margin-bottom:20px;
+    box-shadow:0 1px 3px rgba(0,0,0,.05)}
+  h2{font-size:21px;font-weight:600;margin-bottom:16px}
+  h2 .tag{font-size:12px;font-weight:400;color:var(--sub);margin-left:8px}
+  table{width:100%;border-collapse:collapse;font-size:14px}
+  th{text-align:left;color:var(--sub);font-weight:600;padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+  td{padding:9px 10px;border-bottom:1px solid #f0f0f3}
+  tr:last-child td{border-bottom:none}
+  .tbl-ind tr.extra{display:none}
+  .tbl-ind.expanded tr.extra{display:table-row}
+  .tbl-toggle{display:block;margin:16px auto 0;background:#fff;border:1px solid var(--line);color:var(--accent);
+    border-radius:980px;padding:7px 20px;font-size:13px;font-weight:600;cursor:pointer;transition:border-color .15s}
+  .tbl-toggle:hover{border-color:var(--accent)}
+  .num{font-variant-numeric:tabular-nums;font-weight:600}
+  .up{color:var(--up)} .down{color:var(--down)} .flat{color:var(--flat)}
+  .pill{display:inline-block;font-size:12px;font-weight:600;padding:3px 10px;border-radius:980px}
+  .pill.lead{background:#e8f1fd;color:var(--accent)}
+  .pill.coin{background:#f2f2f4;color:var(--sub)}
+  .pill.lag{background:#fdf0e8;color:#b25000}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+  @media (max-width:760px){.grid3{grid-template-columns:1fr}}
+  .mini{background:#fafafc;border:1px solid var(--line);border-radius:14px;padding:18px}
+  .mini h3{font-size:15px;font-weight:600;margin-bottom:8px}
+  .mini p{font-size:13px;color:var(--sub)}
+  .dots{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+  .dot{font-size:12px;padding:4px 12px;border-radius:980px;border:1px solid var(--line)}
+  .dot.ok{background:#e8f8ee;color:#1d8a4e;border-color:#bfe8cf}
+  .dot.no{background:#fdecea;color:#c0392b;border-color:#f5c6c0}
+  .dot.wait{background:#f2f2f4;color:var(--sub)}
+  .callout{border-left:4px solid var(--accent);background:#f0f6ff;border-radius:0 12px 12px 0;
+    padding:14px 18px;font-size:14px}
+  .gauge{margin-bottom:18px}
+  .gauge .row{display:flex;justify-content:space-between;font-size:14px;margin-bottom:6px}
+  .gauge .name{font-weight:600;white-space:nowrap}
+  .gauge .meta{color:var(--sub);font-size:12px}
+  .extreme{color:#c0392b;font-weight:700}
+  .sec-plain{font-size:13px;color:var(--sub);margin:-10px 0 16px;line-height:1.5}
+  .term{border-bottom:1px dashed #2997ff;cursor:help;position:relative;-webkit-tap-highlight-color:transparent}
+  .term:hover::after,.term:focus::after,.term.term-open::after{content:attr(data-tip);position:absolute;bottom:calc(100% + 8px);left:0;
+    background:#1d1d1f;color:#fff;font-size:12px;font-weight:400;padding:9px 12px;border-radius:10px;
+    width:max-content;max-width:300px;line-height:1.55;white-space:normal;z-index:99;
+    border:1px solid rgba(255,255,255,.14);box-shadow:0 6px 20px rgba(0,0,0,.35);pointer-events:none}
+  @media (hover:none){.term{cursor:pointer}}
+  .track{height:8px;background:#ececef;border-radius:980px;overflow:hidden}
+  .fill{height:100%;border-radius:980px;background:linear-gradient(90deg,#0071e3,#2997ff);
+    transition:width .6s ease}
+  .fill.hot{background:linear-gradient(90deg,#ff6b3d,#ff3b30)}
+  .verdict{margin-top:18px;font-size:15px;font-weight:600}
+  .verdict .pill{font-size:13px;padding:6px 16px;margin-left:10px}
+  ul.clean{list-style:none;font-size:14px}
+  ul.clean li{padding:7px 0;border-bottom:1px solid #f0f0f3}
+  ul.clean li:last-child{border-bottom:none}
+  footer{color:var(--sub);font-size:12px;padding:8px 4px 24px;line-height:1.8}
+
+  /* ── 导入 JSON 控件 ── */
+  .import-btn{position:fixed;top:20px;right:20px;z-index:999;
+    background:var(--accent);color:#fff;border:none;border-radius:980px;
+    padding:10px 20px;font-size:14px;font-weight:600;cursor:pointer;
+    box-shadow:0 4px 14px rgba(0,113,227,.35);transition:transform .15s,box-shadow .15s}
+  .import-btn:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(0,113,227,.45)}
+  .import-btn:active{transform:translateY(0)}
+  .export-btn{position:fixed;top:20px;right:140px;z-index:999;
+    background:#fff;color:var(--accent);border:1px solid var(--accent);border-radius:980px;
+    padding:9px 18px;font-size:14px;font-weight:600;cursor:pointer;
+    box-shadow:0 4px 14px rgba(0,0,0,.08);transition:transform .15s,box-shadow .15s}
+  .export-btn:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(0,0,0,.12)}
+  .export-btn:active{transform:translateY(0)}
+  #json-file-input{display:none}
+  .toast{position:fixed;top:70px;right:20px;z-index:1000;
+    padding:12px 18px;border-radius:12px;font-size:13px;font-weight:500;
+    box-shadow:0 4px 16px rgba(0,0,0,.15);max-width:340px;
+    opacity:0;transform:translateY(-8px);transition:opacity .25s,transform .25s;pointer-events:none}
+  .toast.show{opacity:1;transform:translateY(0)}
+  .toast.success{background:#e8f8ee;color:#1d8a4e;border:1px solid #bfe8cf}
+  .toast.error{background:#fdecea;color:#c0392b;border:1px solid #f5c6c0}
+  .toast.info{background:#e8f1fd;color:var(--accent);border:1px solid #cfe0f8}
+</style>
+</head>
+<body>
+
+<!--
+  ╔══════════════════════════════════════════════════════════════════╗
+  ║  数据加载方式（三选一）：                                          ║
+  ║  1. 点击右上角「导入 JSON」按钮，选择本地 JSON 文件（推荐）。      ║
+  ║  2. 将 JSON 内容替换下方 { }，保存后双击打开。                    ║
+  ║  3. 通过 URL ?data=xxx.json 加载（需 http 服务）。                 ║
+  ╚══════════════════════════════════════════════════════════════════╝
+-->
+<script type="application/json" id="report-data">{ }</script>
+
+<button class="import-btn" id="import-btn" title="导入 JSON 报告数据">导入 JSON</button>
+<button class="export-btn" id="export-btn" title="导出当前报告数据为 JSON 文件">导出 JSON</button>
+<input type="file" id="json-file-input" accept=".json,application/json">
+<div class="toast" id="toast"></div>
+
+<div id="app"></div>
+
+<script>
+/* ============================================================
+   宏观月报 · 数据驱动渲染器
+   读取 #report-data 或 ?data= 参数的 JSON，渲染为完整报告。
+   ============================================================ */
+(function () {
+  'use strict';
+
+  const LABEL_TEXT = { lead: '领先', coin: '同步', lag: '滞后' };
+
+  function esc(s) {
+    // 文本转义（防止 XSS），null/undefined 渲染为 —
+    if (s === null || s === undefined || s === '') return '—';
+    return String(s)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  function raw(s) {
+    // 允许少量 HTML 的字段（如 cycle_gauge meta 中的 <span class='extreme'>）
+    if (s === null || s === undefined || s === '') return '—';
+    return String(s);
+  }
+
+  function fmtVal(v) {
+    if (v === null || v === undefined) return '—';
+    if (v === '缺失') return '<span class="flat">缺失</span>';
+    return esc(v);
+  }
+
+  function renderHero(d) {
+    const m = d.meta;
+    const miss = (m.missing && m.missing.length) ? m.missing.join(' · ') : '无';
+    const VERDICT_PLAIN = {
+      '进攻': {cls: 'v-offense', plain: '多个周期信号共振向上 · 可考虑逐步提升风险资产敞口'},
+      '中性': {cls: 'v-neutral', plain: '信号不足或方向分歧 · 维持现状，不追涨、不杀跌'},
+      '防御': {cls: 'v-defense', plain: '多个周期信号共振转弱 · 宜收缩风险敞口、多留现金'}
+    };
+    const cc = d.cycle_gauge && d.cycle_gauge.conclusion;
+    const v = cc ? VERDICT_PLAIN[cc] : null;
+    const verdictHtml = v ? `
+  <div class="hero-verdict">
+    <span class="v-label">本期结论</span>
+    <span class="v-word ${v.cls}">${esc(cc)}</span>
+    <span class="v-plain">${esc(v.plain)}</span>
+  </div>` : '';
+    return `
+<div class="hero">
+  <h1>${esc(m.title)}</h1>
+  <p>数据截至 ${esc(m.data_cutoff)} · 生成于 ${esc(m.generated_at)} · 本期共执行 ${m.search_count} 次联网搜索</p>
+  ${verdictHtml}
+  <div class="chips">
+    <span class="chip">数据完整度：${m.completeness.present}/${m.completeness.total} 项</span>
+    <span class="chip">缺失：${esc(miss)}</span>
+    <span class="chip">红涨 · 绿跌 · 灰平</span>
+  </div>
+  <div class="hero-quote">${esc(m.hero_quote)}</div>
+</div>`;
+  }
+
+  function renderIndicators(d) {
+    const PREVIEW = 8; // 收起时预览行数
+    const total = d.indicators.length;
+    const rows = d.indicators.map((it, i) => {
+      const pub = fmtVal(it.published);
+      const exp = fmtVal(it.expected);
+      const prev = fmtVal(it.previous);
+      const dirCls = it.direction || 'flat';
+      const dirText = esc(it.direction_text || '');
+      const label = it.label || 'coin';
+      const extraCls = i >= PREVIEW ? ' class="extra"' : '';
+      return `<tr${extraCls}>
+        <td>${esc(it.name)}（${esc(it.period)}）</td>
+        <td class="num">${pub}</td>
+        <td>${exp}</td>
+        <td>${prev}</td>
+        <td class="${dirCls}">${dirText}</td>
+        <td><span class="pill ${label}">${LABEL_TEXT[label]}</span></td>
+      </tr>`;
+    }).join('');
+    const toggle = total > PREVIEW ? `
+  <button class="tbl-toggle" data-total="${total}" aria-expanded="false">展开全部（共 ${total} 项）</button>` : '';
+    return `
+<section>
+  <h2>数据总览<span class="tag">公布值 / 预期 / 前值</span></h2>
+  <div class="sec-plain">本月关键数据一览：红=涨或超预期，绿=跌或不及预期，灰=持平。正文中带<span class="term" data-tip="鼠标移到带蓝色虚线下划线的词上，即可查看通俗解释；手机上点一下即可">虚线</span>的词，悬停（手机上点按）可看通俗解释。</div>
+  <table class="tbl-ind">
+    <tr><th>指标</th><th>公布值</th><th>预期</th><th>前值</th><th>方向</th><th>标签</th></tr>
+    ${rows}
+  </table>
+  ${toggle}
+</section>`;
+  }
+
+  function renderSignals(d) {
+    const s = d.signals;
+    return `
+<section>
+  <h2>三组信号<span class="tag">领先定位 · 同步确认 · 滞后排雷</span></h2>
+  <div class="sec-plain">领先组预示未来两三个季度，同步组确认当下，滞后组提示风险——三组同向，判断才可信。</div>
+  <div class="grid3">
+    <div class="mini"><h3>领先组在说什么</h3><p>${esc(s.leading)}</p></div>
+    <div class="mini"><h3>同步组在说什么</h3><p>${esc(s.coincident)}</p></div>
+    <div class="mini"><h3>滞后组在说什么</h3><p>${esc(s.lagging)}</p></div>
+  </div>
+  <div class="callout" style="margin-top:16px">
+    <strong>信号一致性：</strong>${esc(s.consistency)}
+  </div>
+</section>`;
+  }
+
+  function renderRateCascade(d) {
+    const r = d.rate_cascade;
+    const spread = r.dr007_policy_spread;
+    const spreadTxt = spread === null || spread === undefined ? '—'
+      : (spread > 0 ? '+' : '') + spread + ' bp（' + (spread > 5 ? '资金偏紧' : spread < -5 ? '资金偏松' : '资金中性') + '）';
+    const spreadCls = spread === null || spread === undefined ? 'flat' : (spread > 5 ? 'up' : spread < -5 ? 'down' : 'flat');
+    const ncd = r.ncd_rate;
+    const ncdTxt = ncd === null || ncd === undefined ? '—' : ncd + '%';
+    return `
+<section>
+  <h2>利率传导 · 三层瀑布</h2>
+  <div class="sec-plain">钱从央行流向企业要过三道闸门：政策利率（源头）→ 银行间批发价 → 企业贷款实体价。本模块检查三道门是否都通畅，任何一道堵塞，降息都到不了实体经济。</div>
+  <div class="dots">
+    <span class="dot ${r.source.status}">${esc(r.source.text)}</span>
+    <span class="dot ${r.wholesale.status}">${esc(r.wholesale.text)}</span>
+    <span class="dot ${r.retail.status}">${esc(r.retail.text)}</span>
+  </div>
+  <div class="grid3" style="margin-top:16px">
+    <div class="mini"><h3>DR007 − 政策利率利差</h3><p class="${spreadCls}" style="font-size:18px;font-weight:600">${spreadTxt}</p><p style="font-size:12px;color:var(--sub)">资金面松紧水银柱</p></div>
+    <div class="mini"><h3>同业存单 NCD（1Y）</h3><p style="font-size:18px;font-weight:600">${ncdTxt}</p><p style="font-size:12px;color:var(--sub)">银行负债成本，领先 LPR 1-2 个月</p></div>
+    <div class="mini"><h3>断流诊断</h3><p style="font-size:13px;color:var(--sub)">${esc(r.diagnosis)}</p></div>
+  </div>
+</section>`;
+  }
+
+  function renderFx(d) {
+    const f = d.fx;
+    const spread = f.us_cn_10y_spread;
+    const spreadTxt = spread === null || spread === undefined ? '—'
+      : (spread > 0 ? '+' : '') + spread + ' bp（' + (spread < 0 ? '中美利率倒挂' : '中美利差为正') + '）';
+    const spreadCls = spread === null || spread === undefined ? 'flat' : (spread < 0 ? 'down' : 'up');
+    const dxy = f.dxy;
+    const dxyTxt = dxy === null || dxy === undefined ? '—' : dxy.toFixed(2);
+    return `
+<section>
+  <h2>汇率三问<span class="tag">人民币</span></h2>
+  <div class="sec-plain">先分清是人民币在动还是美元在动，再看原因是什么，最后看对你的钱包有何影响。</div>
+  <div class="grid3">
+    <div class="mini"><h3>一问 · 什么在动</h3><p>${esc(f.what_moves)}</p></div>
+    <div class="mini"><h3>二问 · 为什么动</h3><p>${esc(f.why_moves)}</p></div>
+    <div class="mini"><h3>三问 · 怎么传导</h3><p>${esc(f.transmission)}</p></div>
+  </div>
+  <div class="grid3" style="margin-top:16px">
+    <div class="mini"><h3>中美 10Y 国债利差</h3><p class="${spreadCls}" style="font-size:18px;font-weight:600">${spreadTxt}</p><p style="font-size:12px;color:var(--sub)">汇率核心解释变量</p></div>
+    <div class="mini"><h3>美元指数 DXY</h3><p style="font-size:18px;font-weight:600">${dxyTxt}</p><p style="font-size:12px;color:var(--sub)">判断"动的是美元还是人民币"</p></div>
+    <div class="mini"><h3>校准</h3><p style="font-size:13px;color:var(--sub)">${esc(f.calibration)}</p></div>
+  </div>
+</section>`;
+  }
+
+  function renderCrossValidation(d) {
+    const cv = d.cross_validation;
+    const rows = cv.rows.map(r => `
+      <tr>
+        <td>${esc(r.original)}</td>
+        <td>${esc(r.evidence1)}</td>
+        <td>${esc(r.evidence2)}</td>
+        <td class="${r.fit_class}">${esc(r.fit)}</td>
+      </tr>`).join('');
+    return `
+<section>
+  <h2>交叉验证<span class="tag">旁证矩阵</span></h2>
+  <div class="sec-plain">用用电量、税收等独立数据核对官方增长数字——多个来源方向咬合，数字才可信；持续背离必有故事。</div>
+  <table>
+    <tr><th>原数据</th><th>旁证一（实物量）</th><th>旁证二（金融类）</th><th>咬合？</th></tr>
+    ${rows}
+  </table>
+  <p style="font-size:13px;color:var(--sub);margin-top:12px">${esc(cv.conclusion)}</p>
+</section>`;
+  }
+
+  function renderCycleGauge(d) {
+    const g = d.cycle_gauge;
+    const dims = g.dimensions.map(dim => {
+      const pct = dim.percentile === null || dim.percentile === undefined ? null : dim.percentile;
+      const pctTxt = pct === null ? '—' : pct + '%';
+      const baseTxt = dim.baseline || '基准未注明';
+      return `
+      <div class="gauge">
+        <div class="row"><span class="name">${esc(dim.name)}</span>
+          <span class="meta">${raw(dim.meta)}</span></div>
+        <div class="track"><div class="fill ${dim.hot ? 'hot' : ''}" style="width:${dim.fill}%"></div></div>
+        <div style="font-size:11px;color:var(--sub);margin-top:4px">分位：<strong>${pctTxt}</strong> · 基准：${esc(baseTxt)}</div>
+      </div>`;
+    }).join('');
+    return `
+<section>
+  <h2>周期定位仪表盘<span class="tag">四维 · 历史分位</span></h2>
+  <div class="sec-plain">从估值、信贷、情绪、周期时长四个维度给当前经济定位：进度条越靠右越热；分位数字越小，说明比历史上越多时间都冷。四项中至少三项极端且同向，才会给出行动建议。</div>
+  ${dims}
+  <div class="verdict">${esc(g.verdict)}
+    <span class="pill" style="background:#e8f1fd;color:var(--accent)">结论：${esc(g.conclusion)}</span>
+  </div>
+  <p style="font-size:13px;color:var(--sub);margin-top:10px">${esc(g.note)}</p>
+</section>`;
+  }
+
+  function renderInventoryCycle(d) {
+    const ic = d.inventory_cycle;
+    const stageCls = { '主动补库': 'up', '被动补库': 'flat', '主动去库': 'down', '被动去库': 'flat' }[ic.stage] || 'flat';
+    const rawInv = ic.pmi_raw_inventory === null || ic.pmi_raw_inventory === undefined ? '—' : ic.pmi_raw_inventory;
+    const finInv = ic.pmi_finished_inventory === null || ic.pmi_finished_inventory === undefined ? '—' : ic.pmi_finished_inventory;
+    const indInv = ic.industrial_inventory_yoy === null || ic.industrial_inventory_yoy === undefined ? '—' : ic.industrial_inventory_yoy + '%';
+    const pct = ic.percentile === null || ic.percentile === undefined ? '—' : ic.percentile + '%';
+    const STAGE_PLAIN = {
+      '主动补库': '企业因订单回暖而主动囤货备产——经济向好的阶段',
+      '被动补库': '需求走弱但企业尚未减产，货被动积压——通常是经济放缓的信号',
+      '主动去库': '需求走弱，企业主动砍生产、清库存——下行压力最大的阶段',
+      '被动去库': '需求回暖、库存被动下降——常是经济见底回升的前夜'
+    };
+    const stagePlain = STAGE_PLAIN[ic.stage] || '';
+    return `
+<section>
+  <h2>库存周期定位<span class="tag">软硬交叉验证</span></h2>
+  <div class="sec-plain">${esc(stagePlain)}</div>
+  <div class="grid3">
+    <div class="mini"><h3>当前阶段</h3><p class="${stageCls}" style="font-size:20px;font-weight:700">${esc(ic.stage)}</p><p style="font-size:12px;color:var(--sub)">历史分位：${pct}</p></div>
+    <div class="mini"><h3>PMI 库存分项（软调查）</h3><p>原材料库存：<strong>${rawInv}</strong></p><p>产成品库存：<strong>${finInv}</strong></p></div>
+    <div class="mini"><h3>工业产成品存货同比（硬统计）</h3><p style="font-size:18px;font-weight:600">${indInv}</p><p style="font-size:12px;color:var(--sub)">与 PMI 软硬对照</p></div>
+  </div>
+</section>`;
+  }
+
+  function renderCpiPpi(d) {
+    const c = d.cpi_ppi;
+    const lag = c.transmission_lag_quarters === null || c.transmission_lag_quarters === undefined ? '—' : c.transmission_lag_quarters + ' 个季度';
+    const exp = c.expected_cpi_in_quarters === null || c.expected_cpi_in_quarters === undefined ? '—' : c.expected_cpi_in_quarters;
+    const confCls = { '高': 'up', '中': 'flat', '低': 'down' }[c.confidence] || 'flat';
+    const scissorsCls = c.scissors > 0 ? 'up' : 'down';
+    return `
+<section>
+  <h2>CPI / PPI · 量化传导估算<span class="tag">前瞻</span></h2>
+  <div class="sec-plain">工厂卖货价格（PPI）的涨跌，会延迟几个季度传导到你的生活费（CPI）——本模块估算传导需要多久、未来 CPI 大概到哪。</div>
+  <div class="grid3">
+    <div class="mini"><h3>当前剪刀差</h3><p class="${scissorsCls}" style="font-size:20px;font-weight:700">${c.scissors > 0 ? '+' : ''}${c.scissors} pct</p><p style="font-size:12px;color:var(--sub)">PPI ${c.ppi_yoy}% / CPI ${c.cpi_yoy}% / 核心 CPI ${c.core_cpi_yoy}%</p></div>
+    <div class="mini"><h3>传导时滞</h3><p style="font-size:18px;font-weight:600">${lag}</p><p style="font-size:12px;color:var(--sub)">PPI → CPI 历史平均</p></div>
+    <div class="mini"><h3>未来 CPI 推算</h3><p style="font-size:13px">${esc(exp)}</p><p style="font-size:12px;color:var(--sub)">可信度：<span class="${confCls}">${esc(c.confidence)}</span></p></div>
+  </div>
+</section>`;
+  }
+
+  function renderFalsificationAndWatchlist(d) {
+    const fals = d.falsification.map(x => `<li>${esc(x)}</li>`).join('');
+    const watch = d.watchlist.map(w =>
+      `<li>${esc(w.item)} · ${esc(w.date)} · ${esc(w.focus)}</li>`).join('');
+    return `
+<section class="grid3">
+  <div class="mini" style="grid-column:span 1">
+    <h3>证伪条件</h3>
+    <p style="margin-bottom:6px">出现以下任一情况，说明本报告判断错了——先想清楚什么能证明自己错，再下结论。</p>
+    <ul class="clean">${fals}</ul>
+  </div>
+  <div class="mini" style="grid-column:span 2">
+    <h3>下月观察清单</h3>
+    <p style="margin-bottom:6px">下月重点盯这几件事，答案将揭晓方向。</p>
+    <ul class="clean">${watch}</ul>
+  </div>
+</section>`;
+  }
+
+  function renderFooter(d) {
+    const src = d.sources.map(s => {
+      const text = typeof s === 'string' ? s : s.text;
+      const url = typeof s === 'string' ? null : s.url;
+      if (url) {
+        return `· <a href="${esc(url)}" target="_blank" rel="noopener" style="color:var(--accent);text-decoration:none">${esc(text)}</a>`;
+      }
+      return `· ${esc(text)}`;
+    }).join('<br>');
+    return `
+<footer>
+  <strong>数据来源清单</strong><br>
+  ${src}<br><br>
+  本报告为数据框架演示与研究参考，不构成投资建议；所有数字以官方发布原文为准。方向标遵循国内惯例：红涨 · 绿跌 · 灰平。
+</footer>`;
+  }
+
+  /* ── 术语通俗解释词典：悬停显示，模板自动包装，数据端无需配合 ── */
+  const TERM_GLOSSARY = {
+    '社融': '社会融资规模：实体经济从金融体系拿到钱的总量，相当于经济的"输血量"',
+    'M2': '广义货币：全社会钱的总量。增速快不等于"放水"，还要看结构',
+    'M1': '狭义货币：现金+企业活期存款，反映资金活跃度，回暖常是经济回升的先兆',
+    'LPR': '贷款市场报价利率：银行给最优质客户的贷款利率，房贷、企业贷大多以它为锚',
+    'DR007': '银行间7天期拆借利率：银行之间借钱的成本，观察资金面松紧的水银柱',
+    '同业存单': '银行发行的借款凭证，其利率反映银行获取资金的成本',
+    'NCD': '同业存单（NCD）：银行发行的借款凭证，其利率反映银行资金成本',
+    '逆回购': '央行借钱给商业银行的操作，其利率是政策利率、整个利率体系的源头',
+    '国债收益率': '市场交易出来的国家借债利率，是所有资产定价的锚',
+    '中美利差': '中美两国10年期国债收益率之差：为负（倒挂）时资金倾向流向美国，人民币承压',
+    '美元指数': '美元对一篮子货币的强弱指数：美元走强时多数货币被动承压',
+    'DXY': '美元指数（DXY）：美元对一篮子货币的强弱，走强时人民币多被动承压',
+    'CFETS': '人民币汇率指数：人民币对一篮子货币的加权汇率，比对美元更能反映真实强弱',
+    '荣枯线': 'PMI的50分界线：高于50=扩张，低于50=收缩；49.9与50.1并无本质区别',
+    'PMI': '采购经理指数：每月最早发布的景气调查，问企业"这个月比上个月好还是差"',
+    '核心CPI': '剔除波动大的食品和能源后的CPI，更能看出真实通胀趋势',
+    'PPI': '工业生产者出厂价格：工厂卖货的价格，直接影响企业利润',
+    'CPI': '居民消费价格指数：老百姓日常开销的价格水平，衡量通胀',
+    '剪刀差': 'PPI与CPI涨幅之差：为正说明工厂涨价快于消费端，中下游利润被挤压',
+    '收益率曲线': '不同期限国债利率连成的线：短端看央行态度，长端看增长预期，倒挂常预警衰退',
+    '主动补库': '企业因订单回暖而主动囤货备产——经济向好的阶段',
+    '被动补库': '需求走弱但企业尚未减产，货被动积压——通常是经济放缓信号',
+    '主动去库': '需求走弱，企业主动砍生产清库存——下行压力最大的阶段',
+    '被动去库': '需求回暖库存被动下降——常是经济见底回升的前夜',
+    '两融余额': '融资融券余额：投资者借钱买股票的总量，反映市场情绪冷热',
+    'PE': '市盈率：股价÷每股盈利，分位越低说明比历史上越多时间便宜',
+    'TTM': '过去12个月滚动计算',
+    '历史分位': '当前数值在过去所有时期中的位置：30%分位=比历史上70%的时间都低',
+    '社零': '社会消费品零售总额：老百姓买东西的总量，消费冷暖最直接的指标',
+    '工业增加值': '工业企业新创造的价值，衡量工厂开工冷热'
+  };
+  const TERM_RE = new RegExp('(' + Object.keys(TERM_GLOSSARY)
+    .sort((a, b) => b.length - a.length)
+    .map(t => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
+    .join('|') + ')', 'g');
+
+  /* 渲染后扫描文本节点，为词典命中的术语包一层悬停提示（tooltip 样式纯 CSS） */
+  function linkTerms(root) {
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+    const nodes = [];
+    while (walker.nextNode()) nodes.push(walker.currentNode);
+    for (const node of nodes) {
+      // 跳过指标总览表首列（指标名）：避免整列虚线噪音，术语解释已在正文各处提供
+      if (node.parentElement && node.parentElement.closest &&
+          node.parentElement.closest('.tbl-ind td:first-child')) continue;
+      const text = node.nodeValue;
+      TERM_RE.lastIndex = 0;
+      if (!TERM_RE.test(text)) continue;
+      const frag = document.createDocumentFragment();
+      let last = 0, m;
+      TERM_RE.lastIndex = 0;
+      while ((m = TERM_RE.exec(text))) {
+        if (m.index > last) frag.appendChild(document.createTextNode(text.slice(last, m.index)));
+        const span = document.createElement('span');
+        span.className = 'term';
+        span.dataset.tip = TERM_GLOSSARY[m[1]];
+        span.textContent = m[1];
+        frag.appendChild(span);
+        last = m.index + m[1].length;
+      }
+      if (last < text.length) frag.appendChild(document.createTextNode(text.slice(last)));
+      node.parentNode.replaceChild(frag, node);
+    }
+  }
+
+  function render(d) {
+    return [
+      renderHero(d),
+      renderIndicators(d),
+      renderSignals(d),
+      renderCpiPpi(d),
+      renderRateCascade(d),
+      renderFx(d),
+      renderCrossValidation(d),
+      renderCycleGauge(d),
+      renderInventoryCycle(d),
+      renderFalsificationAndWatchlist(d),
+      renderFooter(d)
+    ].join('');
+  }
+
+  function loadEmbedded() {
+    const el = document.getElementById('report-data');
+    if (!el) return null;
+    const txt = el.textContent.trim();
+    if (!txt || txt === '{}' || txt === '{ }') return null;
+    try { return JSON.parse(txt); } catch (e) { return null; }
+  }
+
+  function loadFromQuery() {
+    const p = new URLSearchParams(location.search);
+    const url = p.get('data');
+    if (!url) return Promise.resolve(null);
+    return fetch(url).then(r => r.json()).catch(() => null);
+  }
+
+  function boot(data) {
+    const app = document.getElementById('app');
+    if (!data) {
+      app.innerHTML = '<section><h2>暂无数据</h2><p style="color:var(--sub)">请点击右上角「导入 JSON」按钮加载报告数据，或将 JSON 填入 <code>&lt;script id="report-data"&gt;</code> 标签，或通过 <code>?data=xxx.json</code> 加载。</p></section>';
+      return;
+    }
+    document.title = `${data.meta.title} · ${data.meta.period}`;
+    app.innerHTML = render(data);
+    linkTerms(app);
+    currentData = data;
+  }
+
+  /* ── 导入 JSON 功能 ── */
+  let currentData = null;
+  let toastTimer = null;
+
+  function showToast(msg, type) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'toast ' + (type || 'info');
+    // 触发重排以启动动画
+    void t.offsetWidth;
+    t.classList.add('show');
+    if (toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove('show'), 3200);
+  }
+
+  // 数据契约校验：检查顶层必填字段与枚举值
+  const REQUIRED_TOP = ['meta','indicators','signals','rate_cascade','fx','cross_validation','cycle_gauge','inventory_cycle','cpi_ppi','falsification','watchlist','sources'];
+  const VALID_DIRECTION = ['up','down','flat'];
+  const VALID_LABEL = ['lead','coin','lag'];
+  const VALID_STATUS = ['ok','no','wait'];
+  const VALID_CONCLUSION = ['进攻','中性','防御'];
+  const VALID_INV_STAGE = ['主动补库','被动补库','主动去库','被动去库'];
+  const VALID_CONF = ['高','中','低'];
+
+  function validateReportData(d) {
+    if (!d || typeof d !== 'object') return '数据不是合法对象';
+    for (const k of REQUIRED_TOP) {
+      if (!(k in d)) return '缺少必填顶层字段：' + k;
+    }
+    // meta
+    if (!d.meta || typeof d.meta !== 'object') return 'meta 字段无效';
+    for (const k of ['title','period','data_cutoff','generated_at','search_count','completeness','missing','hero_quote']) {
+      if (!(k in d.meta)) return 'meta 缺少字段：' + k;
+    }
+    // indicators
+    if (!Array.isArray(d.indicators) || d.indicators.length === 0) return 'indicators 不能为空数组';
+    for (const it of d.indicators) {
+      for (const k of ['name','period','published','label']) {
+        if (!(k in it)) return 'indicators 条目缺少字段：' + k;
+      }
+      if (!VALID_LABEL.includes(it.label)) return 'indicators label 非法：' + it.label;
+      if (it.direction && !VALID_DIRECTION.includes(it.direction)) return 'indicators direction 非法：' + it.direction;
+    }
+    // rate_cascade
+    for (const k of ['source','wholesale','retail','diagnosis','dr007_policy_spread','ncd_rate']) {
+      if (!(k in d.rate_cascade)) return 'rate_cascade 缺少字段：' + k;
+    }
+    for (const k of ['source','wholesale','retail']) {
+      if (!VALID_STATUS.includes(d.rate_cascade[k].status)) return 'rate_cascade.' + k + '.status 非法';
+    }
+    // fx
+    for (const k of ['what_moves','why_moves','transmission','calibration','us_cn_10y_spread','dxy']) {
+      if (!(k in d.fx)) return 'fx 缺少字段：' + k;
+    }
+    // cycle_gauge
+    if (!Array.isArray(d.cycle_gauge.dimensions) || d.cycle_gauge.dimensions.length !== 4) return 'cycle_gauge.dimensions 必须为 4 项';
+    if (!VALID_CONCLUSION.includes(d.cycle_gauge.conclusion)) return 'cycle_gauge.conclusion 非法：' + d.cycle_gauge.conclusion;
+    for (let i = 0; i < d.cycle_gauge.dimensions.length; i++) {
+      const dim = d.cycle_gauge.dimensions[i];
+      for (const k of ['name','meta','fill','hot','percentile','baseline']) {
+        if (!(k in dim)) return 'cycle_gauge.dimensions[' + i + '] 缺少字段：' + k;
+      }
+    }
+    // inventory_cycle
+    for (const k of ['stage','pmi_raw_inventory','pmi_finished_inventory','industrial_inventory_yoy','percentile']) {
+      if (!(k in d.inventory_cycle)) return 'inventory_cycle 缺少字段：' + k;
+    }
+    if (!VALID_INV_STAGE.includes(d.inventory_cycle.stage)) return 'inventory_cycle.stage 非法：' + d.inventory_cycle.stage;
+    // cpi_ppi
+    for (const k of ['ppi_yoy','cpi_yoy','core_cpi_yoy','scissors','transmission_lag_quarters','expected_cpi_in_quarters','confidence']) {
+      if (!(k in d.cpi_ppi)) return 'cpi_ppi 缺少字段：' + k;
+    }
+    if (!VALID_CONF.includes(d.cpi_ppi.confidence)) return 'cpi_ppi.confidence 非法：' + d.cpi_ppi.confidence;
+    return null; // 校验通过
+  }
+
+  function handleFile(file) {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function (e) {
+      let data;
+      try {
+        data = JSON.parse(e.target.result);
+      } catch (err) {
+        showToast('JSON 解析失败：' + err.message, 'error');
+        return;
+      }
+      const err = validateReportData(data);
+      if (err) {
+        showToast('数据校验未通过：' + err, 'error');
+        return;
+      }
+      // 已有数据时二次确认
+      if (currentData) {
+        if (!confirm('导入将覆盖当前报告数据，确定继续？')) {
+          document.getElementById('json-file-input').value = '';
+          return;
+        }
+      }
+      boot(data);
+      showToast('导入成功：' + data.meta.title + ' · ' + data.meta.period, 'success');
+    };
+    reader.onerror = function () {
+      showToast('文件读取失败', 'error');
+    };
+    reader.readAsText(file, 'utf-8');
+  }
+
+  // 绑定导入控件
+  // 触屏设备无 hover：点按术语切换解释，再次点按或点页面任意空白处关闭
+  document.addEventListener('click', function (e) {
+    const t = e.target.closest ? e.target.closest('.term') : null;
+    const open = document.querySelectorAll('.term-open');
+    if (!t) {
+      open.forEach(function (x) { x.classList.remove('term-open'); });
+      return;
+    }
+    const wasOpen = t.classList.contains('term-open');
+    open.forEach(function (x) { x.classList.remove('term-open'); });
+    if (!wasOpen) t.classList.add('term-open');
+  });
+
+  // 数据总览表：展开/收起（超过预览行数时显示切换按钮）
+  document.addEventListener('click', function (e) {
+    const btn = e.target.closest('.tbl-toggle');
+    if (!btn) return;
+    const table = btn.parentElement.querySelector('.tbl-ind');
+    if (!table) return;
+    const expanded = table.classList.toggle('expanded');
+    btn.textContent = expanded ? '收起' : '展开全部（共 ' + btn.dataset.total + ' 项）';
+    btn.setAttribute('aria-expanded', String(expanded));
+  });
+
+  const importBtn = document.getElementById('import-btn');
+  const fileInput = document.getElementById('json-file-input');
+  importBtn.addEventListener('click', function () { fileInput.click(); });
+  fileInput.addEventListener('change', function () {
+    const f = fileInput.files[0];
+    handleFile(f);
+    // 复位 value，允许重复导入同一文件
+    fileInput.value = '';
+  });
+
+  // 绑定导出控件
+  const exportBtn = document.getElementById('export-btn');
+  exportBtn.addEventListener('click', function () {
+    if (!currentData) {
+      showToast('当前无报告数据可导出', 'error');
+      return;
+    }
+    try {
+      const jsonStr = JSON.stringify(currentData, null, 2);
+      const blob = new Blob([jsonStr], { type: 'application/json;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      const fname = (currentData.meta && currentData.meta.period ? currentData.meta.period : 'report')
+        .replace(/[年月]/g, '-').replace(/\s/g, '') + '.json';
+      a.href = url;
+      a.download = fname;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast('已导出：' + fname, 'success');
+    } catch (e) {
+      showToast('导出失败：' + e.message, 'error');
+    }
+  });
+
+  // 优先读取嵌入式 JSON；无则尝试 ?data= 参数
+  const embedded = loadEmbedded();
+  if (embedded) {
+    boot(embedded);
+  } else {
+    loadFromQuery().then(boot);
+  }
+})();
+</script>
+
+</body>
+</html>

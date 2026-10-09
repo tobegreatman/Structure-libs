@@ -1,0 +1,1016 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>趋势交易 · 深度研究 | 不预测，只跟随的完整方法论</title>
+<style>
+  :root{
+    --black:#000000; --gray-bg:#f5f5f7; --white:#ffffff;
+    --ink:#1d1d1f; --sub:#6e6e73; --border:#d2d2d7; --border-strong:#86868b;
+    --blue:#0071e3; --link:#0066cc; --blue-hi:#2997ff;
+    --up:#e03131; --down:#0ca678;
+    --graphite-a:#272729; --graphite-b:#262629;
+    --radius-card:18px; --radius-lg:28px;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display","Inter","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+    color:var(--ink); background:var(--white);
+    font-size:17px; line-height:1.47; letter-spacing:-0.374px;
+    -webkit-font-smoothing:antialiased;
+  }
+  /* ---------- nav ---------- */
+  .nav{
+    position:fixed; top:0; left:0; right:0; z-index:100;
+    backdrop-filter:saturate(180%) blur(20px); -webkit-backdrop-filter:saturate(180%) blur(20px);
+    background:rgba(0,0,0,.72);
+    display:flex; align-items:center; justify-content:center; justify-content:safe center; gap:6px;
+    overflow-x:auto; scroll-behavior:smooth; scrollbar-width:none; -ms-overflow-style:none;
+    height:48px; padding:0 20px;
+  }
+  .nav::-webkit-scrollbar{display:none;}
+  .nav .brand{color:#f5f5f7; font-size:14px; font-weight:600; margin-right:18px; white-space:nowrap;}
+  .nav a{color:#d2d2d7; text-decoration:none; font-size:12px; letter-spacing:-0.12px; padding:6px 10px; border-radius:980px; transition:color .2s,background .2s; white-space:nowrap; position:relative;}
+  .nav a:hover{color:#fff; background:rgba(255,255,255,.12);}
+  .nav a.active{color:#fff; background:rgba(255,255,255,.16); box-shadow:inset 0 0 0 1px rgba(255,255,255,.12);}
+  .nav a.active::after{
+    content:""; position:absolute; left:10px; right:10px; bottom:-1px; height:2px; border-radius:2px;
+    background:var(--blue-hi);
+  }
+  .progress{position:fixed; top:48px; left:0; height:2px; background:var(--blue); width:0; z-index:101;}
+  /* ---------- hero ---------- */
+  .hero{
+    background:var(--black); color:#f5f5f7;
+    text-align:center; padding:168px 24px 120px;
+  }
+  .hero .eyebrow{color:var(--blue-hi); font-size:19px; font-weight:600; letter-spacing:0.228px; margin-bottom:14px;}
+  .hero h1{font-size:80px; font-weight:600; line-height:1.03; letter-spacing:-1.6px; margin-bottom:20px;}
+  .hero .sub{font-size:24px; font-weight:600; color:#a1a1a6; line-height:1.25; letter-spacing:-0.2px; max-width:820px; margin:0 auto 34px;}
+  .hero .chips{display:flex; gap:10px; justify-content:center; flex-wrap:wrap;}
+  .hero .chip{font-size:12px; color:#d2d2d7; border:1px solid #424245; border-radius:980px; padding:6px 14px; letter-spacing:-0.12px;}
+  /* ---------- chapters ---------- */
+  section.chapter{padding:110px 24px; scroll-margin-top:58px;}
+  .wrap{max-width:1080px; margin:0 auto;}
+  .narrow{max-width:820px; margin:0 auto;}
+  .num{font-size:15px; font-weight:600; color:var(--blue); letter-spacing:0.35em; margin-bottom:12px;}
+  .dark .num{color:var(--blue-hi);}
+  h2{font-size:48px; font-weight:600; line-height:1.08; letter-spacing:-0.5px; margin-bottom:18px;}
+  .lead{font-size:21px; font-weight:600; color:var(--sub); line-height:1.38; letter-spacing:0.231px; max-width:780px; margin-bottom:48px;}
+  .dark .lead{color:#a1a1a6;}
+  h3{font-size:24px; font-weight:600; letter-spacing:0.216px; margin:40px 0 16px;}
+  h4{font-size:19px; font-weight:600; letter-spacing:0.228px; margin:0 0 8px;}
+  p{margin-bottom:12px;}
+  .bg-gray{background:var(--gray-bg);}
+  .bg-white{background:var(--white);}
+  .dark{background:var(--black); color:#f5f5f7;}
+  .dark p{color:#d2d2d7;}
+  .dark h3,.dark h4{color:#f5f5f7;}
+  /* ---------- cards ---------- */
+  .grid{display:grid; gap:16px;}
+  .g2{grid-template-columns:repeat(2,1fr);}
+  .g3{grid-template-columns:repeat(3,1fr);}
+  .g4{grid-template-columns:repeat(4,1fr);}
+  .card{
+    background:var(--white); border-radius:var(--radius-card);
+    padding:28px; border:1px solid var(--border);
+  }
+  .bg-white .card{background:var(--gray-bg); border:none;}
+  .dark .card{background:var(--graphite-a); border:none;}
+  .card .k{font-size:12px; font-weight:600; color:var(--blue); letter-spacing:0.35em; margin-bottom:10px;}
+  .dark .card .k{color:var(--blue-hi);}
+  .card p, .card li{font-size:15px; color:var(--sub); line-height:1.5; letter-spacing:-0.224px;}
+  .dark .card p,.dark .card li{color:#a1a1a6;}
+  .card strong{color:var(--ink); font-weight:600;}
+  .dark .card strong{color:#f5f5f7;}
+  ul.tight{list-style:none; margin:0;}
+  ul.tight li{padding:7px 0 7px 20px; position:relative; border-bottom:1px solid rgba(0,0,0,.06); font-size:15px; color:var(--sub); letter-spacing:-0.224px;}
+  .dark ul.tight li{border-bottom:1px solid rgba(255,255,255,.08);}
+  ul.tight li:last-child{border-bottom:none;}
+  ul.tight li::before{content:""; position:absolute; left:0; top:15px; width:7px; height:7px; border-radius:50%; background:var(--blue);}
+  .formula{
+    display:inline-block; font-family:"SF Mono",ui-monospace,Menlo,Consolas,monospace;
+    font-size:14px; background:rgba(0,113,227,.08); color:var(--link);
+    border-radius:8px; padding:3px 10px; margin:2px 0; letter-spacing:0;
+  }
+  .dark .formula{background:rgba(41,151,255,.14); color:var(--blue-hi);}
+  .tag{display:inline-block; font-size:12px; font-weight:600; padding:4px 12px; border-radius:980px; margin:0 6px 6px 0; letter-spacing:-0.12px;}
+  .tag.up{background:rgba(224,49,49,.10); color:var(--up);}
+  .tag.down{background:rgba(12,166,120,.10); color:var(--down);}
+  .tag.blue{background:rgba(0,113,227,.10); color:var(--blue);}
+  /* ---------- figure ---------- */
+  figure{
+    background:var(--white); border:1px solid var(--border);
+    border-radius:var(--radius-lg); padding:34px 28px 26px; margin:0 0 16px;
+  }
+  .bg-white figure{background:var(--gray-bg); border:none;}
+  .dark figure{background:var(--graphite-a); border:none;}
+  figure svg{display:block; width:100%; height:auto;}
+  figcaption{font-size:12px; color:var(--sub); text-align:center; margin-top:14px; letter-spacing:-0.12px;}
+  .dark figcaption{color:#86868b;}
+  .fig-title{font-size:17px; font-weight:600; margin-bottom:18px; letter-spacing:-0.374px;}
+  .dark .fig-title{color:#f5f5f7;}
+  /* ---------- table ---------- */
+  table{width:100%; border-collapse:collapse; font-size:15px; letter-spacing:-0.224px;}
+  th{font-weight:600; text-align:left; color:var(--ink); padding:12px 14px; border-bottom:1px solid var(--border-strong); font-size:13px;}
+  td{padding:12px 14px; border-bottom:1px solid var(--border); color:var(--sub); vertical-align:top;}
+  tr:last-child td{border-bottom:none;}
+  td:first-child{color:var(--ink); font-weight:600; white-space:nowrap;}
+  /* ---------- callout ---------- */
+  .callout{
+    border-radius:var(--radius-card); padding:26px 28px; margin-top:16px;
+    background:rgba(0,113,227,.07); border:1px solid rgba(0,113,227,.22);
+  }
+  .callout .k{font-size:12px; font-weight:600; color:var(--blue); letter-spacing:0.35em; margin-bottom:8px;}
+  .callout p{font-size:15px; color:var(--ink); letter-spacing:-0.224px;}
+  .callout.warn{background:rgba(224,49,49,.06); border-color:rgba(224,49,49,.22);}
+  .callout.warn .k{color:var(--up);}
+  /* ---------- reveal ---------- */
+  .reveal{opacity:0; transform:translateY(24px); transition:opacity .7s ease,transform .7s ease;}
+  .reveal.in{opacity:1; transform:none;}
+  /* ---------- footer ---------- */
+  footer{background:var(--black); color:#86868b; padding:80px 24px 60px; font-size:12px; letter-spacing:-0.12px;}
+  footer .wrap{max-width:820px;}
+  footer h4{color:#f5f5f7; font-size:17px; margin-bottom:14px;}
+  footer p{margin-bottom:12px; line-height:1.6;}
+  footer .disc{border-top:1px solid #424245; padding-top:22px; margin-top:26px;}
+  @media(max-width:860px){
+    .hero h1{font-size:52px;}
+    h2{font-size:34px;}
+    .g2,.g3,.g4{grid-template-columns:1fr;}
+    .nav{overflow-x:auto; justify-content:flex-start;}
+    section.chapter{padding:80px 18px;}
+  }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <span class="brand">趋势交易 · 深度研究</span>
+  <a href="#origin">源流</a><a href="#axiom">公理</a><a href="#dow">道氏地基</a><a href="#structure">趋势结构</a><a href="#entry">入场</a><a href="#exit">出场</a><a href="#sizing">仓位风控</a><a href="#turtle">海龟法则</a><a href="#reality">现实检验</a><a href="#mind">心理纪律</a><a href="#practice">落地</a><a href="#path">学习路径</a>
+</nav>
+<div class="progress" id="progress"></div>
+
+<!-- ============ HERO ============ -->
+<header class="hero">
+  <div class="eyebrow">深度研究 · 交易方法论</div>
+  <h1>趋势交易</h1>
+  <div class="sub">不预测，只跟随。截断亏损，让利润奔跑。<br>一套从道氏理论到海龟法则、被百年市场反复验证的完整方法论。</div>
+  <div class="chips">
+    <span class="chip">奠基：道氏理论 · 1900s</span>
+    <span class="chip">实证：海龟实验 · 1983</span>
+    <span class="chip">载体：CTA / 管理期货行业</span>
+    <span class="chip">关键词：右侧交易 · 正期望 · 跟踪止损</span>
+  </div>
+</header>
+
+<!-- ============ TL;DR ============ -->
+<section class="chapter bg-gray">
+  <div class="wrap">
+    <div class="num">TL;DR</div>
+    <h2>四句话读懂趋势交易</h2>
+    <div class="lead">先给结论，再逐层展开证据、规则与细节。</div>
+    <div class="grid g4">
+      <div class="card"><div class="k">01 · 世界观</div><h4>趋势是惯性</h4><p>价格一旦形成趋势，<strong>更可能延续而非反转</strong>（道氏第六原则）。趋势交易者不猜顶底，只在趋势<strong>确认之后上车</strong>、在趋势<strong>被证伪之后下车</strong>——右侧交易。</p></div>
+      <div class="card"><div class="k">02 · 方法论</div><h4>信号驱动，不是预测驱动</h4><p>入场、加仓、止损、出场全部写成<strong>可执行的客观规则</strong>（突破、均线、波动单位 N）。规则之内没有「我觉得」，只有「信号到了没有」。</p></div>
+      <div class="card"><div class="k">03 · 盈利结构</div><h4>低胜率 × 高盈亏比</h4><p>大部分交易是小亏或打平（胜率经验上约 35%–45%），靠少数大趋势行情一次赚回全部亏损还有富余。<strong>亏的时候亏得少，赚的时候赚得多</strong>，期望值为正。</p></div>
+      <div class="card"><div class="k">04 · 生存前提</div><h4>仓位与纪律</h4><p>单笔风险锁定在本金的 <strong>1%–2%</strong>，用波动率（ATR/N）定仓位；震荡市连续磨损时<strong>靠纪律活下来</strong>，等下一次大趋势。活得久，才轮得到你赚。</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 01 源流 ============ -->
+<section class="chapter bg-white" id="origin">
+  <div class="wrap">
+    <div class="num reveal">CHAPTER 01</div>
+    <h2 class="reveal">源流与定位</h2>
+    <div class="lead reveal">它不是某个人的发明，而是一百多年里被一代代交易者用真金白银打磨出来的方法论主干。</div>
+
+    <div class="grid g2" style="margin-bottom:48px;">
+      <div class="card reveal">
+        <div class="k">什么是趋势交易</div>
+        <h4>定义：只做「已经走起来」的行情</h4>
+        <p>趋势交易（Trend Following / Trend Trading）是一类交易方法的总称：<strong>放弃预测顶底</strong>，用客观信号确认趋势已经启动后入场，用跟踪止损守住头寸，直到趋势信号被破坏才离场。它的利润来源只有一个——<strong>价格运动的惯性</strong>。左侧抄底摸顶、基本面估值、消息博弈，都不属于趋势交易。</p>
+      </div>
+      <div class="card reveal">
+        <div class="k">为什么是「跟随」而不是「预测」</div>
+        <h4>一个残酷的概率事实</h4>
+        <p>没有任何方法能稳定预测转折点——这是趋势派的基本共识。但趋势一旦形成，受资金惯性、信息扩散、羊群行为驱动，<strong>延续的概率显著高于 50%</strong>。趋势交易把「预测拐点」这个无解问题，换成了「识别惯性 + 控制错误代价」这个可解问题：看错时小亏离场，看对时一路持有。</p>
+      </div>
+    </div>
+
+    <h3 class="reveal">一条百年的传承线</h3>
+    <div class="card reveal" style="padding:0; overflow:hidden; margin-bottom:48px;">
+      <table>
+        <thead><tr><th>时期</th><th>人物 / 事件</th><th>贡献</th></tr></thead>
+        <tbody>
+          <tr><td>1900s</td><td>查尔斯·道（Charles Dow）</td><td>《华尔街日报》社论中奠定道氏理论：趋势分级、惯性假设、指数互验。后经汉密尔顿（1922《股市晴雨表》）、雷亚（1932《道氏理论》）系统化。</td></tr>
+          <tr><td>1920s</td><td>杰西·利弗莫尔（Jesse Livermore）</td><td>「大作手」实盘范本：关键点入场、金字塔加码、让利润奔跑。1923 年勒菲弗《股票大作手回忆录》以他为原型。</td></tr>
+          <tr><td>1949 起</td><td>理查德·唐奇安（Richard Donchian）</td><td>创立早期公开商品基金，提出「四周规则」（价格突破前四周高点做多），被公认为趋势跟踪系统化之父。</td></tr>
+          <tr><td>1970s</td><td>艾德·斯科塔（Ed Seykota）</td><td>最早把趋势规则写成计算机程序的人之一，名言：「骑住赢家，砍掉输家，管好风险。」收录于施瓦格《金融怪杰》（1989）。</td></tr>
+          <tr><td>1983</td><td>理查德·丹尼斯 vs 威廉·埃克哈特</td><td>「海龟实验」：登广告招一批无经验学员，两周传授完整趋势系统后实盘，多人此后成为知名基金经理——证明趋势交易<strong>可以被教会</strong>。</td></tr>
+          <tr><td>1990s 至今</td><td>CTA / 管理期货行业</td><td>趋势跟踪成为全球 CTA 策略的主力流派之一；迈克尔·卡沃尔《趋势跟踪》系统梳理其业绩与哲学；柯蒂斯·费思《海龟交易法则》（2007）公开了海龟系统的完整规则。</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 class="reveal">与其他流派的对照</h3>
+    <div class="card reveal" style="padding:0; overflow:hidden;">
+      <table>
+        <thead><tr><th>流派</th><th>核心信念</th><th>入场位置</th><th>与趋势交易的分歧</th></tr></thead>
+        <tbody>
+          <tr><td>价值投资</td><td>价格围绕价值波动</td><td>低估时左侧买入</td><td>趋势派不问价值，只问方向与惯性</td></tr>
+          <tr><td>均值回归 / 震荡策略</td><td>价格涨多必跌、跌多必涨</td><td>超买卖、超买卖</td><td>与趋势派恰好互为镜像：一个赚震荡的钱，一个赚趋势的钱</td></tr>
+          <tr><td>事件 / 消息驱动</td><td>信息差创造利润</td><td>消息前后博弈</td><td>趋势派假设「价格已反映一切」，不看消息本身，只看价格怎么反应</td></tr>
+          <tr><td>预测型技术分析（波浪/江恩）</td><td>未来走势可数、可测</td><td>按浪形与周期预判</td><td>趋势派只做应对不做预测：信号没出就不动</td></tr>
+          <tr><td><strong>趋势交易</strong></td><td><strong>趋势有惯性，拐点不可知</strong></td><td><strong>趋势确认后右侧入场</strong></td><td>用规则把「看错」的代价锁死，把「看对」的利润放开</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 02 公理 ============ -->
+<section class="chapter bg-gray" id="axiom">
+  <div class="wrap">
+    <div class="num reveal">CHAPTER 02</div>
+    <h2 class="reveal">核心公理</h2>
+    <div class="lead reveal">整套方法论建立在四条不可再分的基石上——后文每一条规则，都是这四条公理的展开。</div>
+
+    <div class="grid g2">
+      <div class="card reveal">
+        <div class="k">公理一</div>
+        <h4>价格反映一切</h4>
+        <p>市场价格已经消化了所有可知信息——基本面、消息、情绪、内幕。所以趋势交易者<strong>只研究价格本身</strong>（以及成交量），不预测消息，只观察价格如何反应。这是从道氏理论继承的第一假设。</p>
+      </div>
+      <div class="card reveal">
+        <div class="k">公理二</div>
+        <h4>趋势有惯性</h4>
+        <p>「一个已经形成的趋势，<strong>更可能延续，直到出现明确的反转信号</strong>。」这是道氏理论第六原则，也是趋势交易全部利润的来源。推论：不做逆势单，不猜顶底——猜对一次顶底的收益，远小于猜错多次的代价。</p>
+      </div>
+      <div class="card reveal">
+        <div class="k">公理三</div>
+        <h4>亏损必须被截断，利润必须被放开</h4>
+        <p>因为拐点不可知，所以任何一笔交易都可能错。错误的代价必须<strong>事先锁定</strong>（止损），正确的收益必须<strong>不做限制</strong>（跟踪止盈而非固定止盈）。反着做——亏着死扛、赚一点就跑——是散户亏损的最大结构性原因。</p>
+      </div>
+      <div class="card reveal">
+        <div class="k">公理四</div>
+        <h4>系统必须有正期望，且先保证活着</h4>
+        <p>交易是概率游戏。评价一个系统只看期望值：<span class="formula">E = 胜率 × 平均盈利 − 败率 × 平均亏损</span>。趋势系统用「低胜率 × 高盈亏比」实现正期望；再用仓位控制保证连续亏损时<strong>不会出局</strong>，撑到期望兑现的那一天。</p>
+      </div>
+    </div>
+
+    <figure class="reveal" style="margin-top:40px;">
+      <div class="fig-title">盈亏不对称：趋势交易的利润引擎</div>
+      <svg viewBox="0 0 1000 360" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'PingFang SC','Microsoft YaHei',sans-serif">
+        <!-- 左：截断亏损 -->
+        <text x="250" y="34" text-anchor="middle" font-size="17" font-weight="600" fill="#1d1d1f">截断亏损（错五次，每次 −1R）</text>
+        <line x1="60" y1="200" x2="440" y2="200" stroke="#d2d2d7" stroke-width="1.5"/>
+        <text x="250" y="222" text-anchor="middle" font-size="12" fill="#86868b">入场成本线</text>
+        <path d="M70,180 L130,168 L170,214 L230,206 L270,238 L330,230 L370,252 L430,244" fill="none" stroke="#e03131" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <g fill="#0ca678">
+          <circle cx="170" cy="214" r="4.5"/><circle cx="270" cy="238" r="4.5"/><circle cx="370" cy="252" r="4.5"/>
+        </g>
+        <text x="176" y="240" font-size="11" fill="#0ca678" font-weight="600">止损 −1R</text>
+        <text x="276" y="264" font-size="11" fill="#0ca678" font-weight="600">止损 −1R</text>
+        <text x="376" y="278" font-size="11" fill="#0ca678" font-weight="600">止损 −1R</text>
+        <text x="250" y="320" text-anchor="middle" font-size="13" fill="#6e6e73">每次错误代价固定且很小 → 错得起</text>
+        <!-- 右：让利润奔跑 -->
+        <text x="730" y="34" text-anchor="middle" font-size="17" font-weight="600" fill="#1d1d1f">让利润奔跑（对一次，赚 +8R）</text>
+        <line x1="540" y1="200" x2="920" y2="200" stroke="#d2d2d7" stroke-width="1.5"/>
+        <text x="730" y="222" text-anchor="middle" font-size="12" fill="#86868b">入场成本线</text>
+        <path d="M550,190 L610,178 L650,196 L710,150 L760,168 L810,110 L860,128 L905,72" fill="none" stroke="#e03131" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M550,230 L610,226 L650,234 L710,216 L760,222 L810,196 L860,202 L905,172" fill="none" stroke="#86868b" stroke-width="1.6" stroke-dasharray="5,4"/>
+        <text x="906" y="60" font-size="11" fill="#e03131" font-weight="600">趋势延续 → 持有</text>
+        <text x="906" y="190" font-size="11" fill="#86868b" font-weight="600">跟踪止损线上移</text>
+        <text x="730" y="320" text-anchor="middle" font-size="13" fill="#6e6e73">单笔利润不设上限 → 一笔覆盖多次小亏</text>
+        <!-- 中间公式 -->
+        <rect x="425" y="120" width="150" height="76" rx="14" fill="rgba(0,113,227,.08)" stroke="rgba(0,113,227,.35)"/>
+        <text x="500" y="150" text-anchor="middle" font-size="13" font-weight="600" fill="#0066cc">净结果</text>
+        <text x="500" y="176" text-anchor="middle" font-size="15" font-weight="700" fill="#0066cc">−5R + 8R = +3R</text>
+      </svg>
+      <figcaption>图 1 · 六笔交易只对了 1 笔，仍然盈利——胜率不重要，不对称性才重要（R = 单笔计划风险额）</figcaption>
+    </figure>
+
+    <div class="callout reveal">
+      <div class="k">期望值速算</div>
+      <p>胜率 40%、平均盈利 +3R、平均亏损 −1R：<span class="formula">E = 0.4 × 3 − 0.6 × 1 = +0.6R / 笔</span>。每做一笔，数学上赚 0.6 倍风险额——这就是趋势交易者敢在「大部分时候都在止损」中坚持的原因：<strong>他们亏的是计划内的钱，赚的是计划外的趋势</strong>。</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 03 道氏地基 ============ -->
+<section class="chapter bg-white" id="dow">
+  <div class="wrap">
+    <div class="num reveal">CHAPTER 03</div>
+    <h2 class="reveal">道氏理论：趋势交易的地基</h2>
+    <div class="lead reveal">一切趋势方法的源头。六条原则回答三个问题：什么是趋势、趋势怎么确认、趋势什么时候算结束。</div>
+
+    <div class="grid g3" style="margin-bottom:48px;">
+      <div class="card reveal"><div class="k">原则 1</div><h4>价格反映一切信息</h4><p>指数（价格）的波动已消化所有可知与已发生之事，包括对未来的预期。分析对象是价格本身。</p></div>
+      <div class="card reveal"><div class="k">原则 2</div><h4>市场有三种趋势</h4><p><strong>主要趋势</strong>（数月至数年，潮汐）、<strong>次要折返</strong>（数周至数月，回撤主要趋势的 1/3–2/3，波浪）、<strong>短暂波动</strong>（数日以内，涟漪，噪音为主）。</p></div>
+      <div class="card reveal"><div class="k">原则 3</div><h4>主要趋势有三阶段</h4><p>牛市：<strong>吸筹</strong>（聪明钱逆情绪买入）→ <strong>公众参与</strong>（主升，技术派跟进）→ <strong>狂热/派发</strong>（散户涌入，聪明钱离场）。熊市镜像。</p></div>
+      <div class="card reveal"><div class="k">原则 4</div><h4>指数必须相互验证</h4><p>道氏时代指工业指数与铁路指数互相确认；今天可引申为：<strong>多指数、多板块共振</strong>的趋势才可靠，单一标的独行需警惕。</p></div>
+      <div class="card reveal"><div class="k">原则 5</div><h4>成交量确认趋势</h4><p>价格沿主要趋势方向运动时量能应放大。价升量增为健康趋势；价升量缩则趋势可疑。<strong>量是价格的验证器。</strong></p></div>
+      <div class="card reveal"><div class="k">原则 6</div><h4>趋势持续到反转信号出现</h4><p>这是趋势交易的<strong>第一公理</strong>：惯性假设。不预测转折，只在「明确的反转信号」出现后承认趋势终结——代价是永远买不到最低、卖不到最高。</p></div>
+    </div>
+
+    <figure class="reveal">
+      <div class="fig-title">三种趋势的嵌套：潮汐 · 波浪 · 涟漪</div>
+      <svg viewBox="0 0 1000 400" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'PingFang SC','Microsoft YaHei',sans-serif">
+        <!-- 主要趋势（潮汐） -->
+        <path d="M60,320 C240,290 420,180 620,140 C740,116 860,96 940,84" fill="none" stroke="#0071e3" stroke-width="3.5" stroke-linecap="round"/>
+        <text x="880" y="66" font-size="14" font-weight="700" fill="#0071e3">主要趋势（潮汐）· 数月至数年</text>
+        <!-- 次要折返（波浪） -->
+        <path d="M60,318 C110,300 150,268 200,282 C250,296 280,258 330,240 C380,222 400,248 450,214 C500,180 540,196 590,162 C640,128 690,150 740,124 C790,98 850,110 940,86" fill="none" stroke="#1d1d1f" stroke-width="2" stroke-linecap="round"/>
+        <text x="120" y="252" font-size="13" font-weight="600" fill="#1d1d1f">次要折返（波浪）· 数周至数月</text>
+        <!-- 涟漪（在局部放大显示） -->
+        <path d="M560,336 L575,330 L585,338 L598,326 L612,334 L625,324 L640,332 L655,322 L670,330 L685,320 L700,328 L715,318 L730,326 L745,316 L760,324 L775,314 L790,322 L805,312 L820,320 L835,310 L850,318 L865,308 L880,316 L895,306 L910,314 L925,304 L940,312" fill="none" stroke="#86868b" stroke-width="1.4"/>
+        <text x="750" y="362" text-anchor="middle" font-size="12.5" font-weight="600" fill="#86868b">短暂波动（涟漪）· 数日以内，趋势交易者视为噪音</text>
+        <!-- 回撤标注 -->
+        <line x1="450" y1="214" x2="450" y2="276" stroke="#e03131" stroke-width="1.2" stroke-dasharray="4,3"/>
+        <text x="458" y="250" font-size="11.5" fill="#e03131" font-weight="600">次要折返常回撤主要趋势的 1/3 – 2/3</text>
+        <!-- 操作提示 -->
+        <rect x="60" y="30" width="400" height="58" rx="12" fill="rgba(0,113,227,.07)" stroke="rgba(0,113,227,.25)"/>
+        <text x="76" y="54" font-size="13" font-weight="600" fill="#0066cc">操作含义：顺主要趋势建仓，</text>
+        <text x="76" y="74" font-size="13" font-weight="600" fill="#0066cc">把次要折返当作加仓点，忽略涟漪。</text>
+      </svg>
+      <figcaption>图 2 · 道氏三层结构：先判断你在哪一层，再决定这一层的波动对你是机会还是噪音</figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- ============ 04 趋势结构 ============ -->
+<section class="chapter bg-gray" id="structure">
+  <div class="wrap">
+    <div class="num reveal">CHAPTER 04</div>
+    <h2 class="reveal">趋势的结构化定义</h2>
+    <div class="lead reveal">「感觉在涨」不是趋势。趋势必须用高点与低点的相对位置严格定义——这决定了何时持有、何时离场。</div>
+
+    <figure class="reveal">
+      <div class="fig-title">上升趋势 = 高点与低点依次抬高（HH / HL）</div>
+      <svg viewBox="0 0 1000 380" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'PingFang SC','Microsoft YaHei',sans-serif">
+        <!-- 价格路径 -->
+        <path d="M60,310 L150,230 L230,282 L330,180 L420,232 L520,132 L620,184 L720,86 L820,138 L900,58" fill="none" stroke="#1d1d1f" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <!-- 趋势线（连接低点） -->
+        <line x1="150" y1="252" x2="860" y2="126" stroke="#0071e3" stroke-width="2" stroke-dasharray="8,5"/>
+        <!-- 通道上轨（平行过高点） -->
+        <line x1="150" y1="208" x2="860" y2="82" stroke="#0071e3" stroke-width="1.4" stroke-dasharray="3,4" opacity="0.6"/>
+        <!-- HH/HL 标注 -->
+        <g font-size="12.5" font-weight="700">
+          <circle cx="150" cy="230" r="4.5" fill="#e03131"/><text x="138" y="214" fill="#e03131">H1</text>
+          <circle cx="230" cy="282" r="4.5" fill="#0ca678"/><text x="218" y="304" fill="#0ca678">L1</text>
+          <circle cx="330" cy="180" r="4.5" fill="#e03131"/><text x="318" y="164" fill="#e03131">H2（更高 HH）</text>
+          <circle cx="420" cy="232" r="4.5" fill="#0ca678"/><text x="408" y="254" fill="#0ca678">L2（更高 HL）</text>
+          <circle cx="520" cy="132" r="4.5" fill="#e03131"/><text x="508" y="116" fill="#e03131">H3 HH</text>
+          <circle cx="620" cy="184" r="4.5" fill="#0ca678"/><text x="608" y="206" fill="#0ca678">L3 HL</text>
+          <circle cx="720" cy="86" r="4.5" fill="#e03131"/><text x="708" y="70" fill="#e03131">H4 HH</text>
+          <circle cx="820" cy="138" r="4.5" fill="#0ca678"/><text x="808" y="160" fill="#0ca678">L4 HL</text>
+        </g>
+        <text x="870" y="116" font-size="12" font-weight="600" fill="#0071e3">上升趋势线</text>
+        <text x="870" y="72" font-size="12" fill="#0071e3" opacity="0.8">通道上轨</text>
+        <!-- 说明框 -->
+        <rect x="60" y="30" width="392" height="58" rx="12" fill="rgba(224,49,49,.06)" stroke="rgba(224,49,49,.22)"/>
+        <text x="76" y="54" font-size="13" font-weight="600" fill="#e03131">成立条件：每个新高高于前高，每个回调低点高于前低。</text>
+        <text x="76" y="74" font-size="13" font-weight="600" fill="#1d1d1f">任一条件被破坏 → 趋势进入「观察名单」，而非立刻反转。</text>
+      </svg>
+      <figcaption>图 3 · 上升趋势的几何定义：HH + HL 序列；下降趋势线镜像（LH + LL）。趋势线连接两个以上低点，三点确认更有效</figcaption>
+    </figure>
+
+    <div class="grid g3" style="margin:40px 0;">
+      <div class="card reveal"><div class="k">趋势线</div><h4>连接低点（升势）/ 高点（降势）</h4><p>两点成线、<strong>第三点触及确认</strong>。触及次数越多、时间跨度越长，趋势线越有效。被<strong>收盘价有效跌破</strong>是警报，不是死刑——需结合结构判断。</p></div>
+      <div class="card reveal"><div class="k">通道</div><h4>趋势线的平行线</h4><p>过对侧极值画平行线构成通道。价格在下轨附近是顺势介入区，触及上轨常现折返；<strong>突破上轨加速</strong>反而警示趋势进入末段（斜率过陡不可持续）。</p></div>
+      <div class="card reveal"><div class="k">支撑阻力互换</div><h4>被突破的阻力变支撑</h4><p>前高被放量突破后，回踩该位置常获支撑——这是「突破后回踩」类入场的理论基础，也是趋势交易最常用的<strong>低风险加仓点</strong>。</p></div>
+    </div>
+
+    <figure class="reveal">
+      <div class="fig-title">趋势反转的客观判定：1-2-3 结构</div>
+      <svg viewBox="0 0 1000 380" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'PingFang SC','Microsoft YaHei',sans-serif">
+        <!-- 价格路径：升势 → 跌破趋势线 → 不再创新高 → 跌破前低 -->
+        <path d="M60,300 L150,220 L230,272 L330,170 L430,222 L540,178 L640,236 L760,300 L900,338" fill="none" stroke="#1d1d1f" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <!-- 趋势线被跌破 -->
+        <line x1="150" y1="240" x2="700" y2="118" stroke="#0071e3" stroke-width="2" stroke-dasharray="8,5"/>
+        <circle cx="576" cy="170" r="5" fill="none" stroke="#0071e3" stroke-width="2"/>
+        <text x="586" y="158" font-size="12.5" font-weight="700" fill="#0071e3">① 跌破上升趋势线</text>
+        <!-- 前高 -->
+        <circle cx="330" cy="170" r="4.5" fill="#e03131"/>
+        <text x="318" y="152" font-size="12.5" font-weight="700" fill="#e03131">前高 H</text>
+        <line x1="330" y1="170" x2="640" y2="170" stroke="#d2d2d7" stroke-width="1.2" stroke-dasharray="4,3"/>
+        <!-- 反弹不创新高 -->
+        <circle cx="540" cy="178" r="4.5" fill="#e03131"/>
+        <text x="530" y="158" font-size="12.5" font-weight="700" fill="#e03131">② 反弹不创新高（LH）</text>
+        <!-- 前低被跌破 -->
+        <circle cx="430" cy="222" r="4.5" fill="#0ca678"/>
+        <text x="418" y="246" font-size="12.5" font-weight="700" fill="#0ca678">前低 L</text>
+        <line x1="430" y1="222" x2="820" y2="222" stroke="#0ca678" stroke-width="1.6" stroke-dasharray="6,4"/>
+        <circle cx="720" cy="288" r="5" fill="none" stroke="#0ca678" stroke-width="2"/>
+        <text x="730" y="306" font-size="12.5" font-weight="700" fill="#0ca678">③ 跌破前低 → 反转确认，离场</text>
+        <!-- 底部提示 -->
+        <rect x="60" y="30" width="430" height="58" rx="12" fill="rgba(12,166,120,.07)" stroke="rgba(12,166,120,.25)"/>
+        <text x="76" y="54" font-size="13" font-weight="600" fill="#0ca678">三步齐备才算「明确的反转信号」（道氏原则 6）。</text>
+        <text x="76" y="74" font-size="13" font-weight="600" fill="#1d1d1f">只有①没有②③ → 多数只是回调，趋势线修正后趋势继续。</text>
+      </svg>
+      <figcaption>图 4 · 1-2-3 反转判定（上升趋势为例）：趋势线破位 + 不再创新高 + 跌破前低。下降趋势反转为镜像</figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- ============ 05 入场 ============ -->
+<section class="chapter bg-white" id="entry">
+  <div class="wrap">
+    <div class="num reveal">CHAPTER 05</div>
+    <h2 class="reveal">入场体系</h2>
+    <div class="lead reveal">三大入场流派，同一个思想：等趋势自己证明它存在，再上车。区别只在「用哪把尺子量」。</div>
+
+    <div class="grid g3" style="margin-bottom:48px;">
+      <div class="card reveal">
+        <div class="k">流派一 · 突破</div>
+        <h4>价格创 N 周期新高即入场</h4>
+        <p>代表：<strong>唐奇安通道</strong>（20 日 / 55 日突破）、四周规则。逻辑：新高本身就是趋势存在的最直接证据。优点是完全客观、绝不踏空大行情；代价是假突破多、胜率低。</p>
+      </div>
+      <div class="card reveal">
+        <div class="k">流派二 · 均线</div>
+        <h4>用均线排列与穿越定义趋势</h4>
+        <p>代表：金叉 / 死叉、<strong>多头排列</strong>（短 &gt; 中 &gt; 长期均线且全向上）、葛兰碧八大法则。优点是平滑、过滤噪音；代价是滞后——入场更晚，震荡市被反复打脸。</p>
+      </div>
+      <div class="card reveal">
+        <div class="k">流派三 · 回调</div>
+        <h4>趋势确认后，等折返上车</h4>
+        <p>代表：升势中回踩趋势线 / 均线 / 前高支撑（支撑阻力互换）、斐波那契 38.2%–61.8% 回撤位。优点是止损近、盈亏比高；代价是强趋势可能<strong>不给回调</strong>，直接踏空。</p>
+      </div>
+    </div>
+
+    <figure class="reveal">
+      <div class="fig-title">突破入场：唐奇安通道（20 日新高做多）</div>
+      <svg viewBox="0 0 1000 380" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'PingFang SC','Microsoft YaHei',sans-serif">
+        <!-- 通道 -->
+        <path d="M60,150 L940,150" stroke="#0071e3" stroke-width="1.8" stroke-dasharray="8,5" fill="none"/>
+        <path d="M60,300 L940,300" stroke="#0071e3" stroke-width="1.8" stroke-dasharray="8,5" fill="none"/>
+        <rect x="60" y="150" width="880" height="150" fill="rgba(0,113,227,.05)"/>
+        <text x="940" y="140" text-anchor="end" font-size="12.5" font-weight="600" fill="#0071e3">上轨 = 过去 20 周期最高价</text>
+        <text x="940" y="322" text-anchor="end" font-size="12.5" font-weight="600" fill="#0071e3">下轨 = 过去 20 周期最低价</text>
+        <!-- 价格路径 -->
+        <path d="M70,240 L130,220 L190,248 L250,216 L310,236 L370,206 L430,226 L490,198 L550,146 L610,166 L670,128 L730,142 L790,104 L850,120 L920,88" fill="none" stroke="#1d1d1f" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <!-- 突破点 -->
+        <circle cx="550" cy="146" r="6" fill="none" stroke="#e03131" stroke-width="2.5"/>
+        <circle cx="550" cy="146" r="2.5" fill="#e03131"/>
+        <text x="562" y="132" font-size="13" font-weight="700" fill="#e03131">收盘突破上轨 → 入场做多</text>
+        <!-- 注释 -->
+        <rect x="60" y="30" width="452" height="78" rx="12" fill="rgba(0,113,227,.07)" stroke="rgba(0,113,227,.25)"/>
+        <text x="76" y="54" font-size="13" font-weight="600" fill="#0066cc">规则要点：</text>
+        <text x="76" y="74" font-size="12.5" fill="#1d1d1f">· 以收盘价（或盘中价，须事先写死）突破为准，信号客观无歧义</text>
+        <text x="76" y="94" font-size="12.5" fill="#1d1d1f">· 周期越短信号越多、假突破越多；20 日与 55 日是海龟的两个档位</text>
+        <text x="700" y="352" text-anchor="middle" font-size="12" fill="#86868b">突破的哲学：不买「便宜」，只买「强」——新高本身就是基本面变化的先行指标</text>
+      </svg>
+      <figcaption>图 5 · 唐奇安突破：价格创出 N 周期新高 = 趋势存在的最直接证据</figcaption>
+    </figure>
+
+    <figure class="reveal" style="margin-top:24px;">
+      <div class="fig-title">均线入场：葛兰碧八大法则（买点①②③④ / 卖点⑤⑥⑦⑧）</div>
+      <svg viewBox="0 0 1000 420" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'PingFang SC','Microsoft YaHei',sans-serif">
+        <!-- 均线 -->
+        <path d="M60,300 C200,296 300,240 420,200 C540,160 640,130 760,120 C850,114 900,140 940,180" fill="none" stroke="#0071e3" stroke-width="2.5"/>
+        <text x="880" y="104" font-size="12.5" font-weight="600" fill="#0071e3">长期均线（如 60 日）</text>
+        <!-- 价格 -->
+        <path d="M60,330 L110,316 L150,334 L200,306 L260,284 L300,300 L360,252 L410,262 L470,214 L520,232 L580,180 L640,160 L700,140 L760,150 L820,110 L870,140 L900,168 L940,230 L960,300" fill="none" stroke="#1d1d1f" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+        <!-- 买点标记 -->
+        <g font-size="12" font-weight="700">
+          <circle cx="200" cy="306" r="5" fill="#e03131"/><text x="186" y="334" fill="#e03131">① 金叉</text>
+          <circle cx="300" cy="300" r="5" fill="#e03131"/><text x="288" y="328" fill="#e03131">② 回踩不破</text>
+          <circle cx="520" cy="232" r="5" fill="#e03131"/><text x="500" y="260" fill="#e03131">③ 跌破即收回</text>
+          <circle cx="110" cy="316" r="5" fill="#e03131"/><text x="92" y="344" fill="#e03131">④ 远离超跌</text>
+        </g>
+        <!-- 卖点标记 -->
+        <g font-size="12" font-weight="700">
+          <circle cx="820" cy="110" r="5" fill="#0ca678"/><text x="806" y="92" fill="#0ca678">⑧ 远离超买</text>
+          <circle cx="870" cy="140" r="5" fill="#0ca678"/><text x="856" y="126" fill="#0ca678">⑦ 反弹不过</text>
+          <circle cx="900" cy="168" r="5" fill="#0ca678"/><text x="888" y="156" fill="#0ca678">⑥ 死叉</text>
+          <circle cx="940" cy="230" r="5" fill="#0ca678"/><text x="926" y="256" fill="#0ca678">⑤ 均线走平下弯</text>
+        </g>
+        <!-- 分组注释 -->
+        <rect x="60" y="30" width="470" height="96" rx="12" fill="rgba(224,49,49,.06)" stroke="rgba(224,49,49,.2)"/>
+        <text x="76" y="52" font-size="12.5" font-weight="700" fill="#e03131">四大买点（均线上升段）</text>
+        <text x="76" y="72" font-size="12" fill="#1d1d1f">① 均线上拐，价格上穿（金叉）　② 升势回踩均线获支撑</text>
+        <text x="76" y="90" font-size="12" fill="#1d1d1f">③ 短暂跌破均线后迅速收回（均线仍升）　④ 价格暴跌远离均线（乖离过大，逆势慎用）</text>
+        <text x="76" y="110" font-size="12" fill="#6e6e73">卖点⑤⑥⑦⑧为镜像：均线走平下弯、死叉、反弹不过、远离超买。</text>
+      </svg>
+      <figcaption>图 6 · 葛兰碧八大法则：趋势交易者主要使用顺势买点①②③；④与⑧是逆势单，多数趋势系统直接放弃</figcaption>
+    </figure>
+
+    <h3 class="reveal">趋势过滤器：先问「现在有没有趋势」</h3>
+    <div class="grid g3">
+      <div class="card reveal"><div class="k">ADX（平均趋向指数）</div><h4>Wilder，1978</h4><p>只测强度、不测方向。经验阈值：<strong>ADX &gt; 25</strong> 视为趋势市可开仓；&lt; 20 视为震荡市，突破信号大打折损或直接停做。</p></div>
+      <div class="card reveal"><div class="k">均线斜率与排列</div><h4>方向 + 有序度</h4><p>多头趋势要求短中长均线<strong>自上而下排列且全部向上发散</strong>；均线缠绕走平 = 无趋势，信号停用。</p></div>
+      <div class="card reveal"><div class="k">大周期确认</div><h4>周期错配是硬错误</h4><p>日线信号与周线方向矛盾时<strong>服从周线</strong>。用高一级别定方向、低一级别找入场点，是趋势系统的通行做法。</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 06 出场 ============ -->
+<section class="chapter bg-gray" id="exit">
+  <div class="wrap">
+    <div class="num reveal">CHAPTER 06</div>
+    <h2 class="reveal">出场体系</h2>
+    <div class="lead reveal">入场决定你能不能参与，出场决定你能不能赚钱。趋势交易的出场只有两大类：被动跟踪，让市场替你决定。</div>
+
+    <div class="card reveal" style="padding:0; overflow:hidden; margin-bottom:40px;">
+      <table>
+        <thead><tr><th>出场方法</th><th>规则</th><th>特点</th></tr></thead>
+        <tbody>
+          <tr><td>固定止损</td><td>入场价 − k × ATR（海龟用 2N）</td><td>只负责「认错」，不负责「止盈」；是每笔交易的保险丝</td></tr>
+          <tr><td>吊灯止损</td><td>持仓期最高价 − 3 × ATR(22)（Chuck Le Beau）</td><td>随新高自动上移、只进不退；波动大时自动放宽，经典跟踪止损</td></tr>
+          <tr><td>均线跟踪</td><td>收盘跌破持有均线（如 20 日 / 60 日）离场</td><td>简单直观；均线周期决定「让利润奔跑」的耐心程度</td></tr>
+          <tr><td>反向通道突破</td><td>跌破 10 日 / 20 日低点离场（海龟出场）</td><td>与入场逻辑自洽：通道失效即趋势存疑</td></tr>
+          <tr><td>趋势线 / 结构破位</td><td>1-2-3 反转确认（见图 4）</td><td>最尊重价格结构，但判定带一定主观性</td></tr>
+          <tr><td>抛物线 SAR</td><td>止损点随时间加速逼近价格</td><td>越到后段收得越紧，适合趋势末段锁定利润</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <figure class="reveal">
+      <div class="fig-title">吊灯止损：从最高价向下吊 3 倍 ATR</div>
+      <svg viewBox="0 0 1000 400" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'PingFang SC','Microsoft YaHei',sans-serif">
+        <!-- 价格 -->
+        <path d="M60,320 L140,260 L220,286 L310,214 L400,240 L490,170 L580,196 L670,124 L760,150 L850,96 L920,130 L940,118" fill="none" stroke="#1d1d1f" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <!-- 吊灯止损线：只在下方，随新高上移，只进不退 -->
+        <path d="M60,340 L140,316 L220,330 L310,288 L400,300 L490,254 L580,264 L670,212 L760,224 L850,168 L920,182 L940,178" fill="none" stroke="#0ca678" stroke-width="2.2" stroke-dasharray="8,5"/>
+        <!-- 3ATR 间距标注 -->
+        <line x1="850" y1="96" x2="850" y2="168" stroke="#0071e3" stroke-width="1.6"/>
+        <line x1="844" y1="96" x2="856" y2="96" stroke="#0071e3" stroke-width="1.6"/>
+        <line x1="844" y1="168" x2="856" y2="168" stroke="#0071e3" stroke-width="1.6"/>
+        <text x="862" y="136" font-size="12.5" font-weight="700" fill="#0071e3">3 × ATR(22)</text>
+        <text x="850" y="82" text-anchor="middle" font-size="12" font-weight="600" fill="#1d1d1f">持仓最高价</text>
+        <text x="700" y="258" font-size="12.5" font-weight="600" fill="#0ca678">吊灯止损线：最高价 − 3ATR，只上移、不下移</text>
+        <!-- 离场点（示意，价格未来某日跌破） -->
+        <circle cx="940" cy="178" r="6" fill="none" stroke="#0ca678" stroke-width="2.5"/>
+        <text x="906" y="204" font-size="12" font-weight="700" fill="#0ca678">跌破 → 离场</text>
+        <!-- 注释 -->
+        <rect x="60" y="30" width="440" height="78" rx="12" fill="rgba(12,166,120,.07)" stroke="rgba(12,166,120,.25)"/>
+        <text x="76" y="54" font-size="13" font-weight="600" fill="#0ca678">为什么挂在「最高价」下面而不是「入场价」下面？</text>
+        <text x="76" y="74" font-size="12.5" fill="#1d1d1f">因为趋势交易要保护的是「浮盈」，不是「成本」。</text>
+        <text x="76" y="94" font-size="12.5" fill="#1d1d1f">止损线锚定最高价，利润奔跑得越远，锁定的利润就越多。</text>
+      </svg>
+      <figcaption>图 7 · 吊灯止损（Chandelier Exit）：ATR 决定吊多高——波动大的品种自动放宽，避免被正常回撤震下车</figcaption>
+    </figure>
+
+    <div class="callout reveal">
+      <div class="k">为什么趋势交易不设固定止盈</div>
+      <p>固定止盈（如 +20% 就走）本质是把「利润」截断——恰好违反公理三。大趋势的幅度无法预知（海龟学员靠个别年份一两波行情赚回全年利润），任何预设目标都可能在真正的主升浪前把你洗下车。趋势派的答案是：<strong>用跟踪止损代替止盈</strong>——不预测顶，让反转信号自己出现，甘愿把最后一段利润还给市场，换取不错过整段行情。这是「卖不到最高」的宿命，也是这套方法能赚钱的原因。</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 07 仓位风控 ============ -->
+<section class="chapter bg-white" id="sizing">
+  <div class="wrap">
+    <div class="num reveal">CHAPTER 07</div>
+    <h2 class="reveal">仓位与风控</h2>
+    <div class="lead reveal">方向判断只占交易的三成，剩下七成是仓位。趋势系统的所有仓位规则都围绕一个问题：连续错 10 次，你还在不在牌桌上。</div>
+
+    <div class="grid g3" style="margin-bottom:48px;">
+      <div class="card reveal">
+        <div class="k">单笔风险上限</div>
+        <h4>1% – 2% 法则</h4>
+        <p>每笔交易的最大允许亏损 = 账户权益 × <strong>1%–2%</strong>，由止损距离反推仓位：<span class="formula">仓位 = 风险预算 ÷ 每股止损距离</span>。先定「亏多少」，再算「买多少」——顺序不能反。</p>
+      </div>
+      <div class="card reveal">
+        <div class="k">波动率定仓</div>
+        <h4>N（20 日 ATR）</h4>
+        <p>海龟用 N（真实波幅 TR 的 20 日指数平均）统一度量风险：<span class="formula">1 个单位 = 账户 1% ÷ (N × 每点价值)</span>。波动大的品种自动买得少——<strong>每个头寸承担的风险相等</strong>。</p>
+      </div>
+      <div class="card reveal">
+        <div class="k">组合层限制</div>
+        <h4>海龟的四道闸门</h4>
+        <p>单一市场最多 <strong>4</strong> 个单位；高度相关市场合计 <strong>6</strong>；松散相关 <strong>10</strong>；同一方向总仓 <strong>12</strong>。防止「分散假象」——十个仓位其实押的是同一件事。</p>
+      </div>
+    </div>
+
+    <figure class="reveal">
+      <div class="fig-title">金字塔加仓：用浮盈为后续仓位买单</div>
+      <svg viewBox="0 0 1000 380" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'PingFang SC','Microsoft YaHei',sans-serif">
+        <!-- 价格线 -->
+        <path d="M60,310 L200,270 L340,226 L480,182 L620,138 L760,96 L900,64" fill="none" stroke="#1d1d1f" stroke-width="2" stroke-dasharray="2,4"/>
+        <!-- 四个加仓单位 -->
+        <g font-size="12.5">
+          <rect x="120" y="270" width="150" height="44" rx="10" fill="rgba(0,113,227,.12)" stroke="#0071e3" stroke-width="1.5"/>
+          <text x="195" y="289" text-anchor="middle" font-weight="700" fill="#0071e3">单位 1 · 突破入场</text>
+          <text x="195" y="306" text-anchor="middle" fill="#0066cc">止损 = 入场价 − 2N</text>
+
+          <rect x="270" y="226" width="150" height="44" rx="10" fill="rgba(0,113,227,.18)" stroke="#0071e3" stroke-width="1.5"/>
+          <text x="345" y="245" text-anchor="middle" font-weight="700" fill="#0071e3">单位 2 · +0.5N 加</text>
+          <text x="345" y="262" text-anchor="middle" fill="#0066cc">整体止损上移 0.5N</text>
+
+          <rect x="420" y="182" width="150" height="44" rx="10" fill="rgba(0,113,227,.24)" stroke="#0071e3" stroke-width="1.5"/>
+          <text x="495" y="201" text-anchor="middle" font-weight="700" fill="#0071e3">单位 3 · 再 +0.5N</text>
+          <text x="495" y="218" text-anchor="middle" fill="#0066cc">止损再上移 0.5N</text>
+
+          <rect x="570" y="138" width="150" height="44" rx="10" fill="rgba(0,113,227,.30)" stroke="#0071e3" stroke-width="1.5"/>
+          <text x="645" y="157" text-anchor="middle" font-weight="700" fill="#0071e3">单位 4 · 加满（上限）</text>
+          <text x="645" y="174" text-anchor="middle" fill="#0066cc">止损再上移 0.5N</text>
+        </g>
+        <!-- 右侧规则 -->
+        <rect x="770" y="120" width="200" height="160" rx="14" fill="rgba(224,49,49,.05)" stroke="rgba(224,49,49,.22)"/>
+        <text x="786" y="146" font-size="13" font-weight="700" fill="#e03131">加仓铁律</text>
+        <text x="786" y="170" font-size="12" fill="#1d1d1f">· 只在浮盈方向加，永不摊平亏损</text>
+        <text x="786" y="192" font-size="12" fill="#1d1d1f">· 每加一单位，全部头寸的</text>
+        <text x="786" y="210" font-size="12" fill="#1d1d1f">　止损同步上移，总风险恒定</text>
+        <text x="786" y="232" font-size="12" fill="#1d1d1f">· 任一时刻触发止损 →</text>
+        <text x="786" y="250" font-size="12" fill="#1d1d1f">　全部单位同时离场</text>
+        <text x="786" y="272" font-size="12" fill="#6e6e73">（海龟：最多 4 个单位）</text>
+        <text x="480" y="350" text-anchor="middle" font-size="13" fill="#6e6e73">加仓的本质：市场每证明你一次，你才多信它一点——且总风险始终锁死在预算内</text>
+      </svg>
+      <figcaption>图 8 · 海龟式金字塔：每上涨 0.5N 加一单位，上限 4 单位；止损同步上移使组合风险恒定</figcaption>
+    </figure>
+
+    <div class="callout warn reveal">
+      <div class="k">破产风险：仓位公式的隐藏前提</div>
+      <p>2% 单笔风险意味着理论可承受约 50 次连续止损——听起来很安全，但前提是<strong>相关性被管住</strong>。2020 年 3 月这类系统性行情里，多品种会同时击穿止损，实际风险是单品种的数倍。所以仓位管理有两层：单头寸层（1%–2% 法则 + N 定仓）和组合层（相关性与总方向上限）。<strong>只做第一层的人，会在真正的风暴里发现两层都没做。</strong></p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 08 海龟法则 ============ -->
+<section class="chapter bg-gray" id="turtle">
+  <div class="wrap">
+    <div class="num reveal">CHAPTER 08</div>
+    <h2 class="reveal">海龟交易法则全景</h2>
+    <div class="lead reveal">历史上唯一被完整公开、并被实盘验证过的机构级趋势系统。把它拆开看，前面七章的每个零件都在里面。</div>
+
+    <div class="card reveal" style="padding:0; overflow:hidden; margin-bottom:40px;">
+      <table>
+        <thead><tr><th>模块</th><th>规则（以做多为例）</th><th>对应原理</th></tr></thead>
+        <tbody>
+          <tr><td>市场</td><td>高流动性期货多品种分散（商品、外汇、股指、债券）</td><td>趋势不可预知 → 广撒网，靠分散捕捉</td></tr>
+          <tr><td>仓位单位</td><td>N = 20 日 ATR；1 单位 = 账户 1% ÷（N × 每点价值）</td><td>波动率定仓，风险均等化</td></tr>
+          <tr><td>系统一入场</td><td>突破 20 日最高价入场；若上一次 20 日突破<strong>盈利</strong>，则跳过本次信号，改由 55 日突破兜底（防止踏空）</td><td>突破流派 + 过滤规则</td></tr>
+          <tr><td>系统二入场</td><td>突破 55 日最高价入场，无过滤，所有信号都做</td><td>更慢但更稳，捕捉大趋势</td></tr>
+          <tr><td>加仓</td><td>每向有利方向移动 0.5N，加 1 单位，最多 4 单位</td><td>金字塔，用浮盈买单</td></tr>
+          <tr><td>止损</td><td>入场价 − 2N；每加一单位，整体止损上移 0.5N</td><td>单笔总风险恒定 ≈ 2% 以内</td></tr>
+          <tr><td>出场</td><td>系统一：跌破 10 日最低价离场；系统二：跌破 20 日最低价离场</td><td>反向通道跟踪，不设止盈</td></tr>
+          <tr><td>组合上限</td><td>单市场 4 / 高度相关 6 / 松相关 10 / 单方向 12 个单位</td><td>组合层风控四道闸门</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <figure class="reveal">
+      <div class="fig-title">一笔完整的海龟式交易（系统一 · 做多）</div>
+      <svg viewBox="0 0 1000 420" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'PingFang SC','Microsoft YaHei',sans-serif">
+        <!-- 20日高点线 -->
+        <line x1="60" y1="240" x2="330" y2="240" stroke="#0071e3" stroke-width="1.8" stroke-dasharray="8,5"/>
+        <text x="66" y="230" font-size="12" font-weight="600" fill="#0071e3">20 日最高价</text>
+        <!-- 10日低点线（出场线，动态上移示意） -->
+        <path d="M60,350 L300,350 L340,344 L420,330 L500,316 L580,300 L660,282 L740,262 L820,244 L880,238" fill="none" stroke="#0ca678" stroke-width="1.8" stroke-dasharray="6,4"/>
+        <text x="66" y="368" font-size="12" font-weight="600" fill="#0ca678">10 日最低价（出场线，随行情上移）</text>
+        <!-- 价格路径 -->
+        <path d="M60,300 L120,288 L180,306 L240,282 L300,296 L350,236 L420,252 L480,206 L540,222 L600,170 L660,188 L720,138 L780,156 L840,110 L880,124 L910,150 L935,240" fill="none" stroke="#1d1d1f" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <!-- 入场点 -->
+        <circle cx="350" cy="236" r="6" fill="none" stroke="#e03131" stroke-width="2.5"/>
+        <circle cx="350" cy="236" r="2.5" fill="#e03131"/>
+        <text x="362" y="224" font-size="12.5" font-weight="700" fill="#e03131">① 突破 20 日高点 → 买入单位 1</text>
+        <!-- 加仓点 -->
+        <circle cx="480" cy="206" r="5" fill="#0071e3"/>
+        <text x="470" y="192" font-size="11.5" font-weight="700" fill="#0071e3">② +0.5N 加单位 2</text>
+        <circle cx="600" cy="170" r="5" fill="#0071e3"/>
+        <text x="590" y="156" font-size="11.5" font-weight="700" fill="#0071e3">③ +0.5N 加单位 3</text>
+        <circle cx="720" cy="138" r="5" fill="#0071e3"/>
+        <text x="700" y="124" font-size="11.5" font-weight="700" fill="#0071e3">④ +0.5N 加单位 4（满）</text>
+        <!-- 初始止损 -->
+        <line x1="350" y1="300" x2="350" y2="330" stroke="#e03131" stroke-width="1.4" stroke-dasharray="4,3"/>
+        <text x="322" y="344" font-size="11" font-weight="600" fill="#e03131">初始止损 −2N</text>
+        <!-- 出场点 -->
+        <circle cx="935" cy="240" r="6" fill="none" stroke="#0ca678" stroke-width="2.5"/>
+        <text x="868" y="216" font-size="12.5" font-weight="700" fill="#0ca678">⑤ 跌破 10 日低点 → 全部离场</text>
+      </svg>
+      <figcaption>图 9 · 海龟系统一全流程：突破入 → 0.5N 步进加仓 → 止损随加仓上移 → 反向 10 日通道破位全出。全程无一处需要「判断」</figcaption>
+    </figure>
+
+    <div class="callout reveal">
+      <div class="k">丹尼斯的名言与它的真正含义</div>
+      <p>「你可以把我的交易规则登在报纸上，也没有人能靠它赚钱。」——理查德·丹尼斯。这句话常被误读为「规则有秘密」。真实含义恰恰相反：<strong>规则全部公开（见上表），秘密在执行</strong>。海龟学员柯蒂斯·费思在书中记录：同一套规则，学员间业绩差异巨大，差异几乎全部来自「震荡期能不能继续按信号下单」。系统的护城河不是参数，是使用者在连续 6 次止损后第 7 次信号出现时，手还在不在下单键上。</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 09 现实检验 ============ -->
+<section class="chapter bg-white" id="reality">
+  <div class="wrap">
+    <div class="num reveal">CHAPTER 09</div>
+    <h2 class="reveal">现实检验：这套方法的敌人</h2>
+    <div class="lead reveal">趋势交易在纸面上无懈可击，在实盘中处处是坑。诚实面对它的成本结构，是使用它的前提。</div>
+
+    <figure class="reveal">
+      <div class="fig-title">头号敌人：震荡市磨损（Whipsaw）</div>
+      <svg viewBox="0 0 1000 360" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'PingFang SC','Microsoft YaHei',sans-serif">
+        <!-- 通道 -->
+        <line x1="60" y1="150" x2="940" y2="150" stroke="#0071e3" stroke-width="1.6" stroke-dasharray="8,5"/>
+        <line x1="60" y1="280" x2="940" y2="280" stroke="#0071e3" stroke-width="1.6" stroke-dasharray="8,5"/>
+        <text x="940" y="140" text-anchor="end" font-size="12" font-weight="600" fill="#0071e3">20 日高点（入场线）</text>
+        <text x="940" y="300" text-anchor="end" font-size="12" font-weight="600" fill="#0071e3">10 日低点（出场线）</text>
+        <!-- 锯齿价格 -->
+        <path d="M60,220 L130,144 L180,196 L240,286 L300,224 L360,142 L420,200 L480,288 L540,226 L600,146 L660,204 L720,290 L780,228 L840,144 L900,208 L940,268" fill="none" stroke="#1d1d1f" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+        <!-- 假突破标记 -->
+        <g font-size="11" font-weight="700">
+          <circle cx="130" cy="144" r="5" fill="#e03131"/><text x="104" y="130" fill="#e03131">买</text>
+          <circle cx="240" cy="286" r="5" fill="#0ca678"/><text x="216" y="308" fill="#0ca678">割 −1R</text>
+          <circle cx="360" cy="142" r="5" fill="#e03131"/><text x="336" y="128" fill="#e03131">买</text>
+          <circle cx="480" cy="288" r="5" fill="#0ca678"/><text x="456" y="310" fill="#0ca678">割 −1R</text>
+          <circle cx="600" cy="146" r="5" fill="#e03131"/><text x="576" y="132" fill="#e03131">买</text>
+          <circle cx="720" cy="290" r="5" fill="#0ca678"/><text x="696" y="312" fill="#0ca678">割 −1R</text>
+          <circle cx="840" cy="144" r="5" fill="#e03131"/><text x="816" y="130" fill="#e03131">买</text>
+        </g>
+        <text x="500" y="346" text-anchor="middle" font-size="13" fill="#6e6e73">市场约七成时间处于震荡（经验估计）——每次假突破割一点，账户像被钝刀慢慢放血</text>
+      </svg>
+      <figcaption>图 10 · 趋势系统的「负现金流」阶段：磨损不可避免，只能用仓位控制 + 过滤器 + 纪律熬过去</figcaption>
+    </figure>
+
+    <h3 class="reveal">胜率 × 盈亏比：盈亏平衡矩阵</h3>
+    <div class="card reveal" style="padding:0; overflow:hidden; margin-bottom:40px;">
+      <table>
+        <thead><tr><th>盈亏比 \ 胜率</th><th>30%</th><th>35%</th><th>40%</th><th>50%</th><th>60%</th></tr></thead>
+        <tbody>
+          <tr><td>1 : 1</td><td style="color:var(--down); font-weight:600;">−0.40R</td><td style="color:var(--down); font-weight:600;">−0.30R</td><td style="color:var(--down); font-weight:600;">−0.20R</td><td>0.00R</td><td style="color:var(--up); font-weight:600;">+0.20R</td></tr>
+          <tr><td>1.5 : 1</td><td style="color:var(--down); font-weight:600;">−0.25R</td><td style="color:var(--down); font-weight:600;">−0.13R</td><td>0.00R</td><td style="color:var(--up); font-weight:600;">+0.25R</td><td style="color:var(--up); font-weight:600;">+0.50R</td></tr>
+          <tr><td>2 : 1</td><td style="color:var(--down); font-weight:600;">−0.10R</td><td style="color:var(--up); font-weight:600;">+0.05R</td><td style="color:var(--up); font-weight:600;">+0.20R</td><td style="color:var(--up); font-weight:600;">+0.50R</td><td style="color:var(--up); font-weight:600;">+0.80R</td></tr>
+          <tr><td>3 : 1</td><td style="color:var(--up); font-weight:600;">+0.20R</td><td style="color:var(--up); font-weight:600;">+0.40R</td><td style="color:var(--up); font-weight:600;">+0.60R</td><td style="color:var(--up); font-weight:600;">+1.00R</td><td style="color:var(--up); font-weight:600;">+1.40R</td></tr>
+          <tr><td>4 : 1</td><td style="color:var(--up); font-weight:600;">+0.50R</td><td style="color:var(--up); font-weight:600;">+0.75R</td><td style="color:var(--up); font-weight:600;">+1.00R</td><td style="color:var(--up); font-weight:600;">+1.50R</td><td style="color:var(--up); font-weight:600;">+2.00R</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="reveal" style="font-size:15px; color:var(--sub); margin-top:-24px; margin-bottom:40px;">每格为单笔期望收益（E = 胜率 × 盈亏比 − 败率 × 1）。<strong>趋势系统的典型工作区在左下角</strong>：胜率 35%–40% × 盈亏比 2–4 倍（经验范围）——只要盈亏比守住 2 倍以上，四成胜率就足以盈利；反过来，胜率再高、盈亏比不足 1 的系统（赚小亏大），长期必死。</p>
+
+    <div class="grid g3">
+      <div class="card reveal"><div class="k">敌人二</div><h4>滑点与成本</h4><p>突破信号的本质是「追逐价格」——成交总比信号价差一截。高换手 + 滑点 + 手续费，会持续侵蚀本就有限的期望值。回测必须计入真实成本，否则结论无效。</p></div>
+      <div class="card reveal"><div class="k">敌人三</div><h4>策略拥挤</h4><p>当大量 CTA 用相似的 20/55 日参数，突破日会成为「共识拥挤点」，加剧假突破与滑点。经典参数需要个性化改造（周期、过滤、市场组合），否则赚的是别人剩下的。</p></div>
+      <div class="card reveal"><div class="k">敌人四</div><h4>过拟合</h4><p>「回测完美」的参数往往只是拟合了过去的噪音。检验标准：参数轻微变动（20→18/22）绩效不应剧变；样本外与跨市场必须同样有效。<strong>鲁棒性 &gt; 最优值。</strong></p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 10 心理纪律 ============ -->
+<section class="chapter bg-gray" id="mind">
+  <div class="wrap">
+    <div class="num reveal">CHAPTER 10</div>
+    <h2 class="reveal">心理与纪律</h2>
+    <div class="lead reveal">趋势交易的所有规则都是反人性的——这正是它的利润来源：赚的是别人执行不下去的钱。</div>
+
+    <div class="grid g2" style="margin-bottom:40px;">
+      <div class="card reveal">
+        <div class="k">反人性清单</div>
+        <h4>规则 vs 本能</h4>
+        <ul class="tight">
+          <li><strong>买在新高</strong>——本能想「等回调便宜点」，规则要求「越强越买」</li>
+          <li><strong>认错要快</strong>——本能想「再拿拿会回来」，规则要求触线即割</li>
+          <li><strong>浮盈要忍</strong>——本能想「落袋为安」，规则要求让利润奔跑</li>
+          <li><strong>回吐要给</strong>——本能觉得「赚到的再亏回去」是失败，规则视之为买趋势的必要成本</li>
+          <li><strong>连亏要做</strong>——本能想「停一停再说」，规则要求下一个信号照做</li>
+        </ul>
+      </div>
+      <div class="card reveal">
+        <div class="k">纪律系统</div>
+        <h4>把执行从「意志力」变成「流程」</h4>
+        <ul class="tight">
+          <li><strong>盘前写单</strong>：信号、仓位、止损在开盘前算好，盘中只执行不思考</li>
+          <li><strong>交易日志</strong>：记录每笔交易是否严格按系统执行，区分「执行分」与「盈亏结果」</li>
+          <li><strong>结果脱敏</strong>：以 R（风险单位）记账，不以金额记账，降低情绪波动</li>
+          <li><strong>连亏预案</strong>：事先写好「连亏 N 次后降仓/停手复盘」的触发条款</li>
+          <li><strong>定期复盘</strong>：只检查两件事——信号是否被忠实执行、系统期望是否仍成立</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="callout reveal">
+      <div class="k">一个关键认知：亏损是运营成本，不是错误</div>
+      <p>趋势交易者对待止损的态度，应该像店主对待房租——它是开门做生意必须付的成本。真正摧毁账户的从来不是「按计划止损」，而是两类计划外行为：<strong>该割不割</strong>（小亏拖成大亏）与<strong>随意加戏</strong>（信号外交易）。评价一天的交易质量，只看执行是否忠实，不看当日盈亏——短期盈亏是噪音，长期执行才是信号。</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 11 落地 ============ -->
+<section class="chapter bg-white" id="practice">
+  <div class="wrap">
+    <div class="num reveal">CHAPTER 11</div>
+    <h2 class="reveal">落地：A 股适配与操作闭环</h2>
+    <div class="lead reveal">把百年方法论装进 A 股的交易制度里，需要先改造，再执行。</div>
+
+    <div class="card reveal" style="padding:0; overflow:hidden; margin-bottom:40px;">
+      <table>
+        <thead><tr><th>A 股制度约束</th><th>对趋势交易的影响</th><th>适配方案</th></tr></thead>
+        <tbody>
+          <tr><td>T+1</td><td>当日买入无法止损离场，假突破当天只能硬扛</td><td>放宽单笔止损容忍度、降低单笔风险至 1% 以下；或用已有底仓做「类 T+0」</td></tr>
+          <tr><td>涨跌停板</td><td>涨停买不进、跌停卖不出，突破与止损都可能失效</td><td>避免在临近板位追单；止损计划须考虑「无法成交」情形，仓位预留余量</td></tr>
+          <tr><td>个股做空受限</td><td>只能做上升趋势，浪费一半信号</td><td>下跌趋势以「空仓/离场」表达；有条件者用股指期货、期权对冲</td></tr>
+          <tr><td>个股黑天鹅</td><td>财报暴雷、停牌等跳空风险击穿止损</td><td>优先用宽基 / 行业 ETF 执行趋势策略——天然分散、无个股黑天鹅、流动性好</td></tr>
+          <tr><td>牛短熊长、政策驱动</td><td>趋势窗口短而猛烈，震荡期长</td><td>参数偏慢（如 55 日级突破）、ADX 过滤从严；震荡期主动降仓而非硬扛磨损</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <figure class="reveal">
+      <div class="fig-title">趋势交易操作闭环：七个步骤，循环执行</div>
+      <svg viewBox="0 0 1000 400" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'PingFang SC','Microsoft YaHei',sans-serif">
+        <defs>
+          <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="#0071e3"/>
+          </marker>
+        </defs>
+        <!-- 七个节点 -->
+        <g font-size="12.5" font-weight="600">
+          <rect x="60" y="40" width="180" height="56" rx="14" fill="rgba(0,113,227,.10)" stroke="#0071e3" stroke-width="1.5"/>
+          <text x="150" y="63" text-anchor="middle" fill="#0066cc">1 · 趋势判定</text>
+          <text x="150" y="82" text-anchor="middle" font-size="11" fill="#6e6e73" font-weight="400">大周期定方向 + ADX 过滤</text>
+
+          <rect x="300" y="40" width="180" height="56" rx="14" fill="rgba(0,113,227,.10)" stroke="#0071e3" stroke-width="1.5"/>
+          <text x="390" y="63" text-anchor="middle" fill="#0066cc">2 · 等待信号</text>
+          <text x="390" y="82" text-anchor="middle" font-size="11" fill="#6e6e73" font-weight="400">突破 / 均线 / 回调，三选一写死</text>
+
+          <rect x="540" y="40" width="180" height="56" rx="14" fill="rgba(0,113,227,.10)" stroke="#0071e3" stroke-width="1.5"/>
+          <text x="630" y="63" text-anchor="middle" fill="#0066cc">3 · 计算仓位</text>
+          <text x="630" y="82" text-anchor="middle" font-size="11" fill="#6e6e73" font-weight="400">风险预算 ÷ 止损距离（N）</text>
+
+          <rect x="780" y="40" width="160" height="56" rx="14" fill="rgba(0,113,227,.10)" stroke="#0071e3" stroke-width="1.5"/>
+          <text x="860" y="63" text-anchor="middle" fill="#0066cc">4 · 入场 + 设止损</text>
+          <text x="860" y="82" text-anchor="middle" font-size="11" fill="#6e6e73" font-weight="400">止损与订单同时提交</text>
+
+          <rect x="780" y="180" width="160" height="56" rx="14" fill="rgba(224,49,49,.07)" stroke="#e03131" stroke-width="1.5"/>
+          <text x="860" y="203" text-anchor="middle" fill="#e03131">5 · 浮盈加仓</text>
+          <text x="860" y="222" text-anchor="middle" font-size="11" fill="#6e6e73" font-weight="400">每 +0.5N 一单位，上限 4</text>
+
+          <rect x="540" y="180" width="180" height="56" rx="14" fill="rgba(224,49,49,.07)" stroke="#e03131" stroke-width="1.5"/>
+          <text x="630" y="203" text-anchor="middle" fill="#e03131">6 · 跟踪止损</text>
+          <text x="630" y="222" text-anchor="middle" font-size="11" fill="#6e6e73" font-weight="400">吊灯 / 反向通道，只进不退</text>
+
+          <rect x="300" y="180" width="180" height="56" rx="14" fill="rgba(12,166,120,.08)" stroke="#0ca678" stroke-width="1.5"/>
+          <text x="390" y="203" text-anchor="middle" fill="#0ca678">7 · 破位离场 + 复盘</text>
+          <text x="390" y="222" text-anchor="middle" font-size="11" fill="#6e6e73" font-weight="400">以 R 记账，回到第 1 步</text>
+
+          <rect x="60" y="180" width="180" height="56" rx="14" fill="none" stroke="#d2d2d7" stroke-width="1.5" stroke-dasharray="5,4"/>
+          <text x="150" y="203" text-anchor="middle" fill="#86868b">无信号 = 空仓等待</text>
+          <text x="150" y="222" text-anchor="middle" font-size="11" fill="#86868b" font-weight="400">空仓也是一种持仓</text>
+        </g>
+        <!-- 箭头 -->
+        <g stroke="#0071e3" stroke-width="1.8" fill="none">
+          <line x1="240" y1="68" x2="296" y2="68" marker-end="url(#arr)"/>
+          <line x1="480" y1="68" x2="536" y2="68" marker-end="url(#arr)"/>
+          <line x1="720" y1="68" x2="776" y2="68" marker-end="url(#arr)"/>
+          <line x1="860" y1="96" x2="860" y2="176" marker-end="url(#arr)"/>
+          <line x1="780" y1="208" x2="724" y2="208" marker-end="url(#arr)"/>
+          <line x1="540" y1="208" x2="484" y2="208" marker-end="url(#arr)"/>
+          <path d="M300,208 L244,208 Q236,208 236,200 L236,112 Q236,104 228,104 L150,104 Q142,104 142,100" marker-end="url(#arr)"/>
+        </g>
+        <text x="500" y="330" text-anchor="middle" font-size="13" fill="#6e6e73">闭环的铁律：每一步的规则都在入场前写死——盘中唯一被允许的动作是「执行」</text>
+        <text x="500" y="358" text-anchor="middle" font-size="12" fill="#86868b">下单前自检：趋势方向对吗？有信号吗？仓位按止损算的吗？止损挂单了吗？——四问缺一，单子不发</text>
+      </svg>
+      <figcaption>图 11 · 从判定到复盘的完整闭环；空仓等待是闭环的一部分，不是「没干活」</figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- ============ 12 学习路径 ============ -->
+<section class="chapter bg-gray" id="path">
+  <div class="wrap">
+    <div class="num reveal">CHAPTER 12</div>
+    <h2 class="reveal">学习路径与书单</h2>
+    <div class="lead reveal">按「地基 → 规则 → 实证 → 心法」的顺序读，每一本都对应本报告的一个章节。</div>
+
+    <div class="grid g2" style="margin-bottom:40px;">
+      <div class="card reveal">
+        <div class="k">第一阶 · 地基</div>
+        <h4>《股市晴雨表》与道氏理论原典</h4>
+        <p>汉密尔顿（1922）、雷亚（1932）。理解趋势三分法、惯性假设与验证原则——本报告第 3、4 章的出处。配合约翰·墨菲《期货市场技术分析》，这是技术分析的标准教科书，趋势、均线、形态、指标的完整框架都在其中。</p>
+      </div>
+      <div class="card reveal">
+        <div class="k">第二阶 · 规则</div>
+        <h4>《海龟交易法则》柯蒂斯·费思</h4>
+        <p>2007 年出版，海龟学员亲笔，完整公开了仓位公式、双系统、加仓与组合限制——本报告第 7、8 章的主要来源。读它不是为了照抄参数，而是学习「一个完整系统应该包含哪些模块」。</p>
+      </div>
+      <div class="card reveal">
+        <div class="k">第三阶 · 实证</div>
+        <h4>《趋势跟踪》迈克尔·卡沃尔</h4>
+        <p>用数十年 CTA 行业数据论证趋势跟踪的长期有效性，并收录大量顶级趋势交易者的访谈与业绩记录。它回答的问题是：「这套方法凭什么活了一百年还有效？」</p>
+      </div>
+      <div class="card reveal">
+        <div class="k">第四阶 · 心法</div>
+        <h4>《股票大作手回忆录》与《金融怪杰》</h4>
+        <p>勒菲弗笔下的利弗莫尔（1923）讲透「让利润奔跑」与「关键点」的心理体验；施瓦格《金融怪杰》（1989）中艾德·斯科塔一章是趋势交易心理的最经典文本：「每个人都得到了他真正想要的交易结果。」</p>
+      </div>
+    </div>
+
+    <h3 class="reveal">刻意练习路径</h3>
+    <div class="card reveal">
+      <ul class="tight">
+        <li><strong>第一步 · 读图</strong>：打开任意品种日线图，只用眼睛标出主要趋势、次要折返与 1-2-3 反转点，连续标 30 张图，直到不假思索。</li>
+        <li><strong>第二步 · 写系统</strong>：把入场、止损、加仓、出场、仓位五件事写成一页纸规则——写不出来的，就是还没想清楚。</li>
+        <li><strong>第三步 · 手工回测</strong>：用历史图逐根 K 线走一遍自己的规则（不许偷看后面），记录每笔 R 值，感受连续止损的真实体感。</li>
+        <li><strong>第四步 · 小仓实盘</strong>：用「亏光也不影响生活」的资金跑至少 20 笔，验证的不是系统，是自己的执行力。</li>
+        <li><strong>第五步 · 迭代</strong>：只在「执行忠实」的前提下优化参数；执行不忠实时，改的不是系统，是流程。</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FOOTER ============ -->
+<footer>
+  <div class="wrap">
+    <h4>关于本报告</h4>
+    <p>本报告为趋势交易（Trend Following）方法论的深度研究综述，内容整理自公开出版的经典文献：道氏理论（汉密尔顿 1922 / 雷亚 1932）、《股票大作手回忆录》（勒菲弗 1923）、《海龟交易法则》（柯蒂斯·费思 2007）、《趋势跟踪》（迈克尔·卡沃尔）、《金融怪杰》（施瓦格 1989）、《期货市场技术分析》（约翰·墨菲）等。文中涉及的胜率、盈亏比、震荡市占比等数值为行业通行经验估计，非精确统计结论，具体系统的真实表现请以严谨回测与实盘验证为准。</p>
+    <p>报告中的规则示例（20/55 日突破、0.5N 加仓、2N 止损、3 倍 ATR 吊灯等）为教学用经典参数，不构成对任何具体品种、具体参数的收益承诺。</p>
+    <div class="disc">
+      <p><strong>免责声明</strong>：以上内容基于公开数据和量化分析，仅供参考，不构成投资建议。市场有风险，投资需谨慎。任何投资决策应结合个人风险承受能力、资金状况和投资目标独立判断，必要时咨询持牌专业机构。过往表现不预示未来收益。</p>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var progress = document.getElementById('progress');
+  function onScroll(){
+    var h = document.documentElement;
+    var max = h.scrollHeight - h.clientHeight;
+    var pct = max > 0 ? (h.scrollTop / max) * 100 : 0;
+    progress.style.width = pct + '%';
+  }
+  window.addEventListener('scroll', onScroll, {passive:true});
+  onScroll();
+
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(e.isIntersecting){
+        e.target.classList.add('in');
+        io.unobserve(e.target);
+      }
+    });
+  }, {threshold:0.12});
+  document.querySelectorAll('.reveal').forEach(function(el){ io.observe(el); });
+})();
+
+/* ---- 导航滚动联动：高亮当前章节 + 自动定位 ---- */
+(function(){
+  var navBox = document.querySelector('.nav');
+  var links = Array.prototype.slice.call(document.querySelectorAll('.nav a[href^="#"]'));
+  if(!links.length) return;
+
+  var sections = links.map(function(a){
+    return document.getElementById((a.getAttribute('href') || '').slice(1));
+  });
+  var current = -1, lockUntil = 0;
+
+  function centerLink(a){
+    if(!navBox || !a) return;
+    var target = a.offsetLeft - (navBox.clientWidth - a.offsetWidth) / 2;
+    var max = navBox.scrollWidth - navBox.clientWidth;
+    target = Math.max(0, Math.min(target, max));
+    if(Math.abs(navBox.scrollLeft - target) > 1 && navBox.scrollTo){
+      navBox.scrollTo({left:target, behavior:'smooth'});
+    }else{
+      navBox.scrollLeft = target;
+    }
+  }
+
+  function mark(i){
+    if(i === current) return;
+    current = i;
+    links.forEach(function(a,k){
+      var on = (k === i);
+      a.classList.toggle('active', on);
+      if(on){ a.setAttribute('aria-current','true'); }else{ a.removeAttribute('aria-current'); }
+    });
+    centerLink(links[i]);
+  }
+
+  function update(){
+    if(Date.now() < lockUntil) return;
+    var line = 80; // 固定导航高度(48) + 进度条(2) + 余量
+    var idx = 0;
+    for(var i=0;i<sections.length;i++){
+      var s = sections[i];
+      if(s && s.getBoundingClientRect().top - line <= 0) idx = i;
+    }
+    if(window.innerHeight + window.pageYOffset >= document.documentElement.scrollHeight - 2){
+      idx = sections.length - 1;
+    }
+    mark(idx);
+  }
+
+  links.forEach(function(a,i){
+    a.addEventListener('click', function(){
+      lockUntil = Date.now() + 900; // 平滑滚动期间锁定，避免中途跳变
+      mark(i);
+    });
+  });
+
+  var ticking = false;
+  function onScroll(){
+    if(ticking) return;
+    ticking = true;
+    requestAnimationFrame(function(){ update(); ticking = false; });
+  }
+  window.addEventListener('scroll', onScroll, {passive:true});
+  window.addEventListener('resize', onScroll);
+  window.addEventListener('load', update);
+  update();
+})();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>认知知识库</title>
+<link rel="stylesheet" href="style.css?v=6" />
+</head>
+<body>
+
+<!-- 顶部导航 -->
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <div class="brand-mark">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 3a4 4 0 0 0-4 4c0 1.1.45 2.1 1.17 2.83L12 12.5l2.83-2.67A4 4 0 0 0 12 3Z"/>
+          <path d="M12 12.5v8"/>
+          <path d="M8.5 17h7"/>
+        </svg>
+      </div>
+      <div class="brand-text">
+        <h1>认知知识库</h1>
+        <p>精炼 · 易懂 · 可温习</p>
+      </div>
+    </div>
+
+    <div class="search-wrap">
+      <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input id="searchInput" type="text" placeholder="搜索概念、定义、要点…" autocomplete="off" />
+      <kbd id="searchHint">/</kbd>
+      <button id="clearSearch" class="icon-btn" hidden title="清除搜索">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>
+      </button>
+      <div class="search-dropdown" id="searchDropdown" hidden></div>
+    </div>
+
+    <div class="mode-switch" role="tablist">
+      <button class="mode-btn active" data-mode="browse" role="tab">浏览</button>
+      <button class="mode-btn" data-mode="review" role="tab">温习</button>
+    </div>
+  </div>
+</header>
+
+<div class="layout">
+
+  <!-- 侧边栏导航树 -->
+  <aside class="sidebar" id="sidebar">
+    <nav id="navTree"></nav>
+    <div class="sidebar-stats">
+      <div class="stat-row">
+        <span>概念总数</span><strong id="statTotal">0</strong>
+      </div>
+      <div class="stat-row">
+        <span>已掌握</span><strong id="statMastered">0</strong>
+      </div>
+      <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+    </div>
+  </aside>
+
+  <!-- 主内容区 -->
+  <main class="content" id="content">
+
+    <!-- 浏览模式 -->
+    <section id="browseView">
+      <div class="page-head">
+        <h2 id="pageTitle">全部概念</h2>
+        <p id="pageDesc">所有领域 · 按主题分组</p>
+      </div>
+      <div id="cardArea" class="card-area"></div>
+    </section>
+
+    <!-- 温习模式 -->
+    <section id="reviewView" hidden>
+      <div class="page-head">
+        <h2>温习模式</h2>
+        <p id="reviewDesc">随机抽取卡片自测 · 先回想再看答案</p>
+      </div>
+
+      <div id="reviewSetup" class="review-setup">
+        <div class="review-options">
+          <div class="option-group" id="scopeGroup">
+            <span class="option-label">范围</span>
+            <div class="chips" id="scopeChips"></div>
+          </div>
+          <div class="option-group">
+            <span class="option-label">数量</span>
+            <div class="chips" id="countChips">
+              <button class="chip active" data-count="10">10 张</button>
+              <button class="chip" data-count="20">20 张</button>
+              <button class="chip" data-count="0">全部</button>
+            </div>
+          </div>
+        </div>
+        <button class="cta-btn" id="startReview">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.14v13.72a1 1 0 0 0 1.5.86l11-6.86a1 1 0 0 0 0-1.72l-11-6.86A1 1 0 0 0 8 5.14Z"/></svg>
+          开始温习
+        </button>
+        <p class="review-note" id="reviewNote"></p>
+      </div>
+
+      <div id="reviewSession" hidden>
+        <div class="review-progress">
+          <div class="review-progress-text"><span id="reviewPos">1</span> / <span id="reviewTotal">10</span></div>
+          <div class="progress-track slim"><div class="progress-fill" id="reviewFill"></div></div>
+        </div>
+
+        <div class="review-card" id="reviewCard">
+          <div class="review-card-inner">
+          <div class="review-card-front">
+            <div class="review-meta">
+              <span class="topic-badge" id="reviewTopicBadge"></span>
+            </div>
+            <h3 class="review-question" id="reviewQuestion"></h3>
+            <p class="review-hint">先在心里用自己的话解释这个概念，再按空格揭晓答案</p>
+            <button class="cta-btn reveal-btn" id="revealBtn">揭晓答案 <kbd>Space</kbd></button>
+          </div>
+          <div class="review-card-back">
+            <div class="review-meta">
+              <span class="topic-badge" id="reviewAnswerBadge"></span>
+            </div>
+            <h3 class="review-answer-title" id="reviewAnswerTitle"></h3>
+            <p class="review-one" id="reviewOne"></p>
+            <ul class="review-points" id="reviewPoints"></ul>
+            <p class="review-trap" id="reviewTrap"></p>
+            <div class="review-actions">
+              <button class="mark-btn mark-fuzzy" id="markFuzzy">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg>
+                模糊 · 本轮重现 <kbd>1</kbd>
+              </button>
+              <button class="mark-btn mark-known" id="markKnown">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 13 4 4L19 7"/></svg>
+                记住了 · 下轮再见 <kbd>2</kbd>
+              </button>
+            </div>
+          </div>
+          </div>
+        </div>
+
+        <div class="review-summary" id="reviewSummary" hidden>
+          <h3>本轮完成</h3>
+          <div class="summary-nums">
+            <div class="summary-num"><strong id="sumKnown">0</strong><span>已记住</span></div>
+            <div class="summary-num"><strong id="sumFuzzy">0</strong><span>待巩固</span></div>
+          </div>
+          <div class="summary-actions">
+            <button class="cta-btn ghost" id="againBtn">再来一轮</button>
+            <button class="cta-btn ghost" id="exitReview">返回浏览</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<footer class="footer">
+  <p><span id="footerDate"></span> · 知识库结构：领域 → 主题 → 概念卡片 · 数据本地保存在浏览器中</p>
+</footer>
+
+<script src="data.js?v=5"></script>
+<script src="app.js?v=6"></script>
+</body>
+</html>

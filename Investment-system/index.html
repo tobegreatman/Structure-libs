@@ -1,0 +1,2079 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>投资知识体系 · Investment Knowledge System</title>
+<meta name="description" content="一套精炼、可执行的投资知识体系：从市场有效性出发，经资产配置、风险管理、估值决策，最终落地为执行纪律。">
+<style>
+/* ============================================================
+   设计令牌 — 遵循 DESIGN.md（Apple 风格设计系统）
+   ============================================================ */
+:root {
+  --black: #000000;
+  --ink: #1d1d1f;
+  --gray-light: #f5f5f7;
+  --white: #ffffff;
+  --blue: #0071e3;
+  --blue-link: #0066cc;
+  --blue-bright: #2997ff;
+  --text-secondary: #6e6e73;
+  --border-soft: #d2d2d7;
+  --border-mid: #86868b;
+  --graphite-a: #272729;
+  --graphite-b: #262629;
+  --graphite-c: #28282b;
+  --graphite-d: #2a2a2c;
+  --font: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
+          "Helvetica Neue", "PingFang SC", "Microsoft YaHei", "Noto Sans SC", sans-serif;
+  --radius-control: 8px;
+  --radius-card: 18px;
+  --radius-module: 28px;
+  --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.08);
+  --shadow-card-hover: 0 12px 40px rgba(0, 0, 0, 0.14);
+  --nav-height: 52px;
+}
+
+/* ============================================================
+   基础
+   ============================================================ */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  font-family: var(--font);
+  font-size: 15px;
+  line-height: 1.5;
+  letter-spacing: -0.224px;
+  color: var(--ink);
+  background: var(--black);
+  -webkit-font-smoothing: antialiased;
+}
+
+section { scroll-margin-top: calc(var(--nav-height) + 16px); }
+
+a { color: var(--blue-link); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+img { max-width: 100%; display: block; }
+
+::selection { background: rgba(0, 113, 227, 0.22); }
+
+/* 章节通用容器 */
+.container {
+  max-width: 1024px;
+  margin: 0 auto;
+  padding: 0 22px;
+}
+
+.section {
+  padding: 84px 0;
+}
+
+.section--light  { background: var(--white); color: var(--ink); }
+.section--gray   { background: var(--gray-light); color: var(--ink); }
+.section--dark   { background: var(--black); color: var(--gray-light); }
+
+/* ============================================================
+   顶部导航（毛玻璃）
+   ============================================================ */
+.nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 100;
+  height: var(--nav-height);
+  background: rgba(0, 0, 0, 0.72);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  backdrop-filter: saturate(180%) blur(20px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.nav__inner {
+  max-width: 1024px;
+  margin: 0 auto;
+  padding: 0 22px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.nav__brand {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--gray-light);
+  letter-spacing: 0.216px;
+  white-space: nowrap;
+}
+.nav__brand span { color: var(--blue-bright); }
+
+.nav__links {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.nav__links::-webkit-scrollbar { display: none; }
+
+.nav__links a {
+  font-size: 12px;
+  color: rgba(245, 245, 247, 0.82);
+  padding: 6px 10px;
+  border-radius: 980px;
+  white-space: nowrap;
+  transition: color 0.25s ease, background 0.25s ease;
+}
+.nav__links a:hover {
+  color: var(--white);
+  background: rgba(255, 255, 255, 0.1);
+  text-decoration: none;
+}
+
+/* 顶部滚动进度条 — 纯 CSS 滚动时间线 */
+.nav__progress {
+  position: absolute;
+  bottom: -1px; left: 0;
+  height: 2px;
+  width: 100%;
+  background: linear-gradient(90deg, var(--blue), var(--blue-bright));
+  transform-origin: 0 50%;
+  transform: scaleX(0);
+}
+
+@supports (animation-timeline: scroll()) {
+  .nav__progress {
+    animation: progress-grow linear both;
+    animation-timeline: scroll(root);
+  }
+  @keyframes progress-grow {
+    from { transform: scaleX(0); }
+    to   { transform: scaleX(1); }
+  }
+}
+
+/* ============================================================
+   Hero — 黑色开篇
+   ============================================================ */
+.hero {
+  min-height: 84vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: calc(var(--nav-height) + 56px) 22px 72px;
+  position: relative;
+  overflow: hidden;
+  color: var(--gray-light);
+}
+
+/* 背景：两枚缓慢漂浮的光晕 — 纯 CSS 灵性 */
+.hero::before,
+.hero::after {
+  content: "";
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(90px);
+  opacity: 0.5;
+  pointer-events: none;
+}
+.hero::before {
+  width: 480px; height: 480px;
+  background: radial-gradient(circle, rgba(0, 113, 227, 0.55), transparent 70%);
+  top: -140px; left: -120px;
+  animation: drift-a 16s ease-in-out infinite alternate;
+}
+.hero::after {
+  width: 420px; height: 420px;
+  background: radial-gradient(circle, rgba(41, 151, 255, 0.35), transparent 70%);
+  bottom: -160px; right: -100px;
+  animation: drift-b 20s ease-in-out infinite alternate;
+}
+@keyframes drift-a {
+  from { transform: translate(0, 0) scale(1); }
+  to   { transform: translate(80px, 60px) scale(1.15); }
+}
+@keyframes drift-b {
+  from { transform: translate(0, 0) scale(1.1); }
+  to   { transform: translate(-70px, -50px) scale(0.95); }
+}
+
+.hero__content { position: relative; z-index: 1; }
+
+.hero__kicker {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--blue-bright);
+  letter-spacing: 0.228px;
+  margin-bottom: 14px;
+}
+
+.hero__title {
+  font-size: clamp(30px, 4.5vw, 44px);
+  font-weight: 600;
+  line-height: 1.08;
+  letter-spacing: -0.6px;
+  color: var(--gray-light);
+  margin-bottom: 18px;
+}
+
+.hero__subtitle {
+  font-size: clamp(14px, 1.8vw, 16px);
+  font-weight: 400;
+  line-height: 1.4;
+  color: var(--text-secondary);
+  max-width: 580px;
+  margin: 0 auto 28px;
+}
+
+.hero__actions {
+  display: flex;
+  gap: 14px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+/* 胶囊按钮家族 */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font);
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: -0.224px;
+  padding: 10px 22px;
+  border-radius: 980px;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
+}
+.btn:active { transform: scale(0.97); }
+
+.btn--primary {
+  background: var(--blue);
+  color: var(--white);
+}
+.btn--primary:hover {
+  background: #0077ed;
+  box-shadow: 0 8px 24px rgba(0, 113, 227, 0.4);
+  text-decoration: none;
+}
+
+.btn--ghost {
+  background: transparent;
+  color: var(--gray-light);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.32);
+}
+.btn--ghost:hover {
+  background: rgba(255, 255, 255, 0.1);
+  text-decoration: none;
+}
+
+.hero__scroll-hint {
+  position: absolute;
+  bottom: 34px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 12px;
+  color: var(--text-secondary);
+  letter-spacing: 0.12px;
+  animation: hint-bob 2.4s ease-in-out infinite;
+}
+@keyframes hint-bob {
+  0%, 100% { transform: translate(-50%, 0); opacity: 0.6; }
+  50%      { transform: translate(-50%, 8px); opacity: 1; }
+}
+
+/* ============================================================
+   章节头
+   ============================================================ */
+.chapter-head { margin-bottom: 42px; }
+
+.chapter-head__eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.chapter-no {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.196px;
+  padding: 5px 14px;
+  border-radius: 980px;
+}
+.section--light .chapter-no,
+.section--gray  .chapter-no {
+  background: rgba(0, 113, 227, 0.1);
+  color: var(--blue);
+}
+.section--dark .chapter-no {
+  background: rgba(41, 151, 255, 0.14);
+  color: var(--blue-bright);
+}
+
+.chapter-head__eyebrow .layer-tag {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.12px;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+}
+
+.chapter-head__title {
+  font-size: clamp(24px, 3vw, 28px);
+  font-weight: 600;
+  line-height: 1.08;
+  letter-spacing: -0.144px;
+  margin-bottom: 12px;
+}
+
+.chapter-head__thesis {
+  font-size: clamp(14px, 1.8vw, 16px);
+  line-height: 1.5;
+  max-width: 640px;
+  color: var(--text-secondary);
+  font-weight: 400;
+}
+.section--dark .chapter-head__thesis { color: #a1a1a6; }
+
+/* 章节互引徽章：上标式小胶囊，呼应章节号视觉语言 */
+.ref {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+  padding: 3px 7px;
+  margin-left: 3px;
+  border-radius: 980px;
+  color: var(--blue);
+  background: rgba(0, 113, 227, 0.1);
+  vertical-align: 3px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.2px;
+  text-decoration: none;
+  transition: background 0.2s ease;
+}
+a.ref:hover { background: rgba(0, 113, 227, 0.2); text-decoration: none; }
+.section--dark .ref { color: var(--blue-bright); background: rgba(41, 151, 255, 0.14); }
+.section--dark a.ref:hover { background: rgba(41, 151, 255, 0.26); }
+
+/* ============================================================
+   体系地图
+   ============================================================ */
+.map__layer {
+  border-radius: var(--radius-module);
+  padding: 24px 26px;
+  margin-bottom: 0;
+  position: relative;
+}
+.map__layer + .map__layer { margin-top: 20px; }
+.map__layer::after {
+  content: "↓";
+  position: absolute;
+  left: 50%;
+  bottom: -21px;
+  transform: translateX(-50%);
+  font-size: 15px;
+  color: var(--border-mid);
+}
+.map__layer:last-child::after { display: none; }
+
+.map__layer--cognition { background: var(--ink); color: var(--gray-light); }
+.map__layer--principle { background: var(--white); border: 1px solid var(--border-soft); }
+.map__layer--execution { background: var(--blue); color: var(--white); }
+
+.map__layer-head {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+.map__layer-title { font-size: 16px; font-weight: 600; letter-spacing: 0.216px; }
+.map__layer-q { font-size: 13px; opacity: 0.72; }
+
+.map__chips { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.map__chip {
+  font-size: 13px;
+  font-weight: 500;
+  padding: 7px 15px;
+  border-radius: 980px;
+  white-space: nowrap;
+  transition: transform 0.25s ease;
+}
+.map__chip:hover { transform: translateY(-2px); }
+
+.map__layer--cognition .map__chip {
+  background: var(--graphite-a);
+  color: var(--gray-light);
+}
+.map__layer--principle .map__chip {
+  background: var(--gray-light);
+  color: var(--ink);
+}
+.map__layer--execution .map__chip {
+  background: rgba(255, 255, 255, 0.16);
+  color: var(--white);
+}
+
+.map__chip small { opacity: 0.62; font-weight: 400; margin-left: 6px; }
+
+/* ============================================================
+   卡片网格
+   ============================================================ */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+  margin-top: 36px;
+}
+
+.card {
+  background: var(--white);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-card);
+  padding: 22px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.section--gray .card { box-shadow: 0 1px 2px rgba(0,0,0,0.03); }
+.card--full { grid-column: 1 / -1; }
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-card-hover);
+}
+
+.section--dark .card {
+  background: var(--graphite-a);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+}
+.section--dark .card:hover {
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+}
+
+.card__icon {
+  font-size: 22px;
+  line-height: 1;
+  margin-bottom: 12px;
+}
+
+.card__title {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.231px;
+  margin-bottom: 8px;
+}
+
+.card__body {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+.section--dark .card__body { color: #a1a1a6; }
+
+.card__body strong { color: inherit; font-weight: 600; }
+
+/* ============================================================
+   表格
+   ============================================================ */
+.table-wrap {
+  overflow-x: auto;
+  border-radius: var(--radius-card);
+  border: 1px solid var(--border-soft);
+  background: var(--white);
+}
+.section--dark .table-wrap {
+  border-color: rgba(255, 255, 255, 0.09);
+  background: var(--graphite-a);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  min-width: 520px;
+}
+
+th, td {
+  text-align: left;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border-soft);
+  vertical-align: top;
+}
+.section--dark th, .section--dark td { border-bottom-color: rgba(255, 255, 255, 0.09); }
+
+tr:last-child td { border-bottom: none; }
+
+th {
+  font-weight: 600;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-secondary);
+  background: rgba(0, 0, 0, 0.02);
+}
+.section--dark th { background: rgba(255, 255, 255, 0.03); color: #a1a1a6; }
+
+/* 标签列：按内容收窄并保持单行，正文列自动分配剩余宽度 */
+.table-wrap th:first-child,
+.table-wrap td:first-child {
+  width: 1%;
+  white-space: nowrap;
+}
+
+td { color: var(--ink); line-height: 1.5; }
+.section--dark td { color: var(--gray-light); }
+td .sub { display: block; font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+.section--dark td .sub { color: #a1a1a6; }
+
+/* ============================================================
+   手风琴（纯 CSS：<details>）
+   ============================================================ */
+.accordion { display: grid; gap: 10px; margin-top: 36px; }
+
+.accordion__title {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.216px;
+  margin-top: 44px;
+  margin-bottom: 2px;
+}
+
+details.acc {
+  background: var(--white);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-card);
+  overflow: hidden;
+  transition: box-shadow 0.3s ease;
+}
+.section--dark details.acc {
+  background: var(--graphite-a);
+  border-color: rgba(255, 255, 255, 0.09);
+}
+details.acc[open] { box-shadow: var(--shadow-card); }
+.section--dark details.acc[open] { box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5); }
+
+details.acc summary {
+  list-style: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 15px 20px;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.224px;
+  user-select: none;
+  transition: background 0.25s ease;
+}
+details.acc summary::-webkit-details-marker { display: none; }
+details.acc summary:hover { background: rgba(0, 0, 0, 0.025); }
+.section--dark details.acc summary:hover { background: rgba(255, 255, 255, 0.04); }
+
+/* + / − 指示器，旋转过渡 */
+details.acc summary::after {
+  content: "+";
+  flex-shrink: 0;
+  width: 26px; height: 26px;
+  display: grid;
+  place-items: center;
+  font-size: 16px;
+  font-weight: 400;
+  border-radius: 50%;
+  color: var(--blue);
+  background: rgba(0, 113, 227, 0.08);
+  transition: transform 0.35s ease;
+}
+.section--dark details.acc summary::after {
+  color: var(--blue-bright);
+  background: rgba(41, 151, 255, 0.12);
+}
+details.acc[open] summary::after { transform: rotate(45deg); }
+
+.acc__content {
+  padding: 2px 20px 18px;
+  font-size: 14px;
+  line-height: 1.65;
+  color: var(--text-secondary);
+}
+.section--dark .acc__content { color: #a1a1a6; }
+
+.acc__content ul, .acc__content ol {
+  padding-left: 18px;
+  display: grid;
+  gap: 6px;
+}
+.acc__content li::marker { color: var(--blue); }
+.section--dark .acc__content li::marker { color: var(--blue-bright); }
+.acc__content strong { color: var(--ink); font-weight: 600; }
+.section--dark .acc__content strong { color: var(--gray-light); }
+
+/* ============================================================
+   引言块
+   ============================================================ */
+.quote {
+  margin: 36px 0 0;
+  padding: 22px 26px;
+  border-radius: var(--radius-card);
+  background: var(--gray-light);
+  border: 1px solid var(--border-soft);
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.55;
+  letter-spacing: 0.128px;
+  position: relative;
+}
+.section--dark .quote,
+.section--gray .quote {
+  background: var(--white);
+}
+.section--dark .quote { border-color: rgba(255,255,255,0.09); color: var(--ink); }
+.section--dark .quote small { color: var(--text-secondary); }
+.quote::before {
+  content: "“";
+  position: absolute;
+  top: 2px; left: 14px;
+  font-size: 42px;
+  font-weight: 700;
+  color: var(--blue);
+  opacity: 0.22;
+  line-height: 1;
+}
+.section--dark .quote::before { color: var(--blue-bright); }
+.quote small {
+  display: block;
+  margin-top: 8px;
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--text-secondary);
+}
+
+/* ============================================================
+   数字要点（大数字 + 文字）
+   ============================================================ */
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-top: 32px;
+}
+.stat {
+  padding: 20px 22px;
+  border-radius: var(--radius-card);
+  background: var(--white);
+  border: 1px solid var(--border-soft);
+  text-align: left;
+}
+.section--dark .stat {
+  background: var(--graphite-a);
+  border-color: rgba(255, 255, 255, 0.09);
+}
+.stat__value {
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: -0.4px;
+  line-height: 1.1;
+  margin-bottom: 6px;
+  color: var(--blue);
+  font-variant-numeric: tabular-nums;
+}
+.section--dark .stat__value { color: var(--blue-bright); }
+.stat__label {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+.section--dark .stat__label { color: #a1a1a6; }
+
+/* ============================================================
+   滚动显现动画（纯 CSS scroll-driven，含降级）
+   ============================================================ */
+@supports (animation-timeline: view()) {
+  .reveal {
+    animation: reveal-in both;
+    animation-timeline: view();
+    animation-range: entry 0% entry 55%;
+  }
+  @keyframes reveal-in {
+    from { opacity: 0; transform: translateY(28px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .hero::before, .hero::after, .hero__scroll-hint { animation: none; }
+  .reveal, .nav__progress { animation: none; }
+  .card, .map__chip, .btn { transition: none; }
+}
+
+/* ============================================================
+   页脚
+   ============================================================ */
+.footer {
+  background: var(--black);
+  color: var(--text-secondary);
+  padding: 44px 0 48px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+.footer__inner {
+  max-width: 1024px;
+  margin: 0 auto;
+  padding: 0 22px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+.footer__brand {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--gray-light);
+  margin-bottom: 6px;
+}
+.footer p { font-size: 12px; line-height: 1.6; max-width: 460px; }
+.footer__meta { font-size: 11px; text-align: right; }
+
+/* ============================================================
+   知识库布局 — 侧边栏 + 视图切换 + 全局搜索
+   （无 JS 时自动降级为整页滚动）
+   ============================================================ */
+
+/* 顶栏搜索 */
+.nav__menu-btn {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 34px; height: 34px;
+  border: none;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--gray-light);
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+.nav__menu-btn:hover { background: rgba(255, 255, 255, 0.12); }
+.nav__menu-btn svg { width: 18px; height: 18px; }
+
+.nav__search {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex: 1;
+  max-width: 360px;
+  margin-left: auto;
+}
+.nav__search-icon {
+  position: absolute; left: 12px;
+  width: 15px; height: 15px;
+  color: rgba(245, 245, 247, 0.55);
+  pointer-events: none;
+}
+#searchInput {
+  width: 100%;
+  height: 34px;
+  padding: 0 58px 0 34px;
+  border: 1px solid transparent;
+  border-radius: 980px;
+  background: rgba(255, 255, 255, 0.12);
+  color: var(--gray-light);
+  font-family: var(--font);
+  font-size: 13px;
+  outline: none;
+  transition: background 0.25s ease, border-color 0.25s ease;
+}
+#searchInput::placeholder { color: rgba(245, 245, 247, 0.45); }
+#searchInput:focus {
+  background: rgba(255, 255, 255, 0.18);
+  border-color: rgba(41, 151, 255, 0.6);
+}
+.nav__search-kbd {
+  position: absolute; right: 12px;
+  font-family: var(--font);
+  font-size: 11px;
+  line-height: 1;
+  padding: 4px 6px;
+  border-radius: 5px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  color: rgba(245, 245, 247, 0.6);
+  pointer-events: none;
+}
+.nav__search-clear {
+  position: absolute; right: 10px;
+  display: flex; align-items: center; justify-content: center;
+  width: 22px; height: 22px;
+  border: none; border-radius: 50%;
+  background: rgba(255, 255, 255, 0.16);
+  color: var(--gray-light);
+  cursor: pointer;
+}
+.nav__search-clear svg { width: 11px; height: 11px; }
+.nav__search-clear:hover { background: rgba(255, 255, 255, 0.28); }
+.nav__search.has-value .nav__search-kbd { display: none; }
+
+/* 搜索下拉 */
+.nav__search-dropdown {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  width: min(420px, 92vw);
+  max-height: min(420px, 62vh);
+  overflow-y: auto;
+  padding: 8px;
+  border-radius: 14px;
+  background: rgba(28, 28, 30, 0.92);
+  -webkit-backdrop-filter: saturate(180%) blur(24px);
+  backdrop-filter: saturate(180%) blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.45);
+}
+.sd-item {
+  display: block;
+  width: 100%;
+  padding: 10px 12px;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  color: var(--gray-light);
+  font-family: var(--font);
+}
+.sd-item:hover, .sd-item.selected { background: rgba(0, 113, 227, 0.85); }
+.sd-item:hover .sd-item__chapter, .sd-item.selected .sd-item__chapter { color: rgba(255, 255, 255, 0.75); }
+.sd-item:hover mark, .sd-item.selected mark { background: transparent; color: #fff; }
+.sd-item__title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #f5f5f7;
+  margin-bottom: 2px;
+}
+.sd-item__title mark { background: rgba(41, 151, 255, 0.35); color: #fff; border-radius: 3px; padding: 0 1px; }
+.sd-item__snippet {
+  font-size: 12px;
+  line-height: 1.45;
+  color: rgba(245, 245, 247, 0.62);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.sd-item__snippet mark { background: rgba(41, 151, 255, 0.3); color: #cde5ff; border-radius: 3px; padding: 0 1px; }
+.sd-item__chapter {
+  font-size: 11px;
+  color: var(--blue-bright);
+  margin-bottom: 3px;
+  letter-spacing: 0.3px;
+}
+.sd-empty {
+  padding: 22px 14px;
+  text-align: center;
+  font-size: 13px;
+  color: rgba(245, 245, 247, 0.5);
+}
+
+/* 布局骨架 */
+.layout {
+  display: flex;
+  min-height: 100vh;
+}
+html.js .layout { padding-top: var(--nav-height); }
+html.js body { background: var(--white); }
+html:not(.js) .sidebar,
+html:not(.js) .layout__scrim,
+html:not(.js) .nav__menu-btn,
+html:not(.js) .nav__search { display: none; }
+.sidebar {
+  position: sticky;
+  top: var(--nav-height);
+  flex-shrink: 0;
+  width: 248px;
+  height: calc(100vh - var(--nav-height));
+  overflow-y: auto;
+  background: var(--gray-light);
+  border-right: 1px solid var(--border-soft);
+  padding: 20px 14px 32px;
+}
+.sidebar__tree { display: flex; flex-direction: column; gap: 2px; }
+.sidebar__group {
+  margin: 20px 10px 6px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+.snav {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 7px 12px;
+  border: none;
+  border-radius: var(--radius-control);
+  background: transparent;
+  font-family: var(--font);
+  font-size: 13px;
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.18s ease, color 0.18s ease;
+}
+.snav:hover { background: rgba(0, 0, 0, 0.05); }
+.snav.active {
+  background: var(--white);
+  color: var(--blue);
+  font-weight: 600;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+}
+.snav__no {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+.snav.active .snav__no { color: var(--blue); }
+
+.layout__scrim {
+  position: fixed;
+  inset: var(--nav-height) 0 0 0;
+  z-index: 98;
+  background: rgba(0, 0, 0, 0.4);
+}
+
+/* 主内容区 */
+.content {
+  flex: 1;
+  min-width: 0;
+  background: var(--white);
+}
+
+/* 视图切换（仅 JS 启用时生效；无 JS 保持整页滚动） */
+html.js .view-section { display: none; }
+html.js .view-section.active { display: block; }
+html.js .section { padding: 56px 0; }
+html.js .hero {
+  min-height: calc(100vh - var(--nav-height));
+  padding-top: 56px;
+}
+html.js .hero__scroll-hint { display: none; }
+
+/* 搜索命中高亮 */
+.search-hit {
+  animation: hit-pulse 1.6s ease-out both;
+  border-radius: 10px;
+}
+@keyframes hit-pulse {
+  0%   { background: rgba(0, 113, 227, 0.28); box-shadow: 0 0 0 6px rgba(0, 113, 227, 0.28); }
+  100% { background: transparent; box-shadow: 0 0 0 6px transparent; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .search-hit { animation: none; background: rgba(0, 113, 227, 0.2); }
+}
+
+/* 章末翻页 */
+.pager {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  max-width: 1024px;
+  margin-top: 8px;
+  margin-inline: auto;
+  padding: 32px 22px 0;
+}
+.pager__btn {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  max-width: 46%;
+  padding: 14px 18px;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-card);
+  background: var(--white);
+  text-decoration: none;
+  transition: border-color 0.2s ease, box-shadow 0.25s ease, transform 0.25s ease;
+}
+.pager__btn:hover {
+  text-decoration: none;
+  border-color: var(--blue);
+  box-shadow: var(--shadow-card);
+  transform: translateY(-1px);
+}
+.pager__btn--next { margin-left: auto; text-align: right; }
+.pager__label {
+  font-size: 11px;
+  letter-spacing: 0.6px;
+  color: var(--text-secondary);
+}
+.pager__title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--blue-link);
+}
+.pager__btn--prev .pager__title::before { content: "← "; color: var(--text-secondary); font-weight: 400; }
+.pager__btn--next .pager__title::after { content: " →"; color: var(--text-secondary); font-weight: 400; }
+
+/* ============================================================
+   响应式
+   ============================================================ */
+@media (max-width: 960px) {
+  .nav__menu-btn { display: flex; }
+  .sidebar {
+    position: fixed;
+    left: 0; bottom: 0;
+    z-index: 99;
+    width: min(280px, 82vw);
+    transform: translateX(-102%);
+    transition: transform 0.28s ease;
+    box-shadow: none;
+  }
+  .sidebar.open {
+    transform: translateX(0);
+    box-shadow: 24px 0 60px rgba(0, 0, 0, 0.2);
+  }
+  html.js .section { padding: 48px 0; }
+  .nav__search { max-width: none; }
+}
+
+@media (max-width: 640px) {
+  .section { padding: 56px 0; }
+  html.js .section { padding: 40px 0; }
+  .hero { min-height: 88vh; }
+  .chapter-head__title { letter-spacing: -0.1px; }
+  .map__layer { padding: 22px 20px; }
+  .map__layer::after { bottom: -21px; }
+  .stats { grid-template-columns: 1fr 1fr; }
+  .footer__meta { text-align: left; }
+  .pager { flex-direction: column; padding: 32px 22px 0; }
+  .pager__btn { max-width: 100%; width: 100%; }
+  .pager__btn--next { text-align: left; }
+  .nav__search-kbd { display: none; }
+}
+
+@media (max-width: 374px) {
+  .stats { grid-template-columns: 1fr; }
+  .hero__actions { flex-direction: column; }
+  .btn { width: 100%; }
+}
+</style>
+</head>
+<body>
+
+<!-- ============ 顶部导航（品牌 + 全局搜索） ============ -->
+<nav class="nav">
+  <div class="nav__inner">
+    <button class="nav__menu-btn" id="menuBtn" aria-label="打开目录" aria-expanded="false">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+    </button>
+    <a class="nav__brand" href="#top">投资<span>知识体系</span></a>
+
+    <div class="nav__search" id="searchWrap">
+      <svg class="nav__search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input id="searchInput" type="text" placeholder="搜索概念、规则、指标…" autocomplete="off" aria-label="搜索" />
+      <kbd class="nav__search-kbd" id="searchHint">/</kbd>
+      <button class="nav__search-clear" id="clearSearch" hidden aria-label="清除搜索">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>
+      </button>
+      <div class="nav__search-dropdown" id="searchDropdown" hidden></div>
+    </div>
+  </div>
+</nav>
+
+<!-- ============ 布局：侧边栏 + 内容区 ============ -->
+<div class="layout">
+  <div class="layout__scrim" id="layoutScrim" hidden></div>
+
+  <!-- 侧边导航树 -->
+  <aside class="sidebar" id="sidebar">
+    <nav class="sidebar__tree" id="navTree">
+      <button class="snav snav--all" data-view="home">
+        <span class="snav__name">首页 · 体系总览</span>
+      </button>
+
+      <div class="sidebar__group">认知层</div>
+      <button class="snav" data-view="ch1"><span class="snav__no">01</span><span class="snav__name">市场有效性</span></button>
+      <button class="snav" data-view="ch2"><span class="snav__no">02</span><span class="snav__name">行为金融</span></button>
+
+      <div class="sidebar__group">原则层</div>
+      <button class="snav" data-view="ch3"><span class="snav__no">03</span><span class="snav__name">资产配置</span></button>
+      <button class="snav" data-view="ch4"><span class="snav__no">04</span><span class="snav__name">风险管理</span></button>
+      <button class="snav" data-view="ch5"><span class="snav__no">05</span><span class="snav__name">估值与决策</span></button>
+
+      <div class="sidebar__group">执行层</div>
+      <button class="snav" data-view="ch6"><span class="snav__no">06</span><span class="snav__name">执行纪律</span></button>
+
+      <div class="sidebar__group">工具</div>
+      <button class="snav" data-view="summary"><span class="snav__name">终章 · 十条规定</span></button>
+      <button class="snav" data-view="appendix"><span class="snav__name">附录 · 指标速查</span></button>
+    </nav>
+  </aside>
+
+  <!-- 主内容区（一次显示一个视图） -->
+  <main class="content" id="content">
+
+<!-- ============ Hero ============ -->
+<header class="hero view-section" id="top">
+  <div class="hero__content">
+    <p class="hero__kicker">三层架构 · 六大模块 · 一个闭环</p>
+    <h1 class="hero__title">投资知识体系</h1>
+    <p class="hero__subtitle">
+      先理解两件事——市场为什么难以战胜，自己为什么容易犯错；
+      再把认知落成规则：配置、风控、估值，最终固化为可重复执行的纪律。
+    </p>
+    <div class="hero__actions">
+      <a class="btn btn--primary" href="#map">开始探索</a>
+      <a class="btn btn--ghost" href="#ch6">直达执行清单</a>
+    </div>
+  </div>
+  <div class="hero__scroll-hint">向下滚动</div>
+</header>
+
+<!-- ============ 体系地图 ============ -->
+<section class="section section--gray view-section" id="map">
+  <div class="container">
+    <div class="chapter-head reveal">
+      <div class="chapter-head__eyebrow">
+        <span class="chapter-no">总览</span>
+        <span class="layer-tag">体系地图</span>
+      </div>
+      <h2 class="chapter-head__title">三层架构：认知决定原则，原则驱动执行。</h2>
+      <p class="chapter-head__thesis">
+        知识不是清单的堆叠，而是有依赖顺序的层级——先回答"为什么"，再回答"是什么"，最后才是"怎么做"。
+        每一层都以下一层为地基：不理解市场有效性，就无法坚持指数化；不理解行为偏差，再好的规则也会被推翻。
+      </p>
+    </div>
+
+    <div class="map">
+      <div class="map__layer map__layer--cognition reveal">
+        <div class="map__layer-head">
+          <span class="map__layer-title">认知层</span>
+          <span class="map__layer-q">为什么市场是这样运作的？</span>
+        </div>
+        <div class="map__chips">
+          <a class="map__chip" href="#ch1">市场有效性<small>01</small></a>
+          <a class="map__chip" href="#ch2">行为金融<small>02</small></a>
+        </div>
+      </div>
+
+      <div class="map__layer map__layer--principle reveal">
+        <div class="map__layer-head">
+          <span class="map__layer-title">原则层</span>
+          <span class="map__layer-q">基于认知，应该遵循什么规则？</span>
+        </div>
+        <div class="map__chips">
+          <a class="map__chip" href="#ch3">资产配置<small>03</small></a>
+          <a class="map__chip" href="#ch4">风险管理<small>04</small></a>
+          <a class="map__chip" href="#ch5">估值与决策<small>05</small></a>
+        </div>
+      </div>
+
+      <div class="map__layer map__layer--execution reveal">
+        <div class="map__layer-head">
+          <span class="map__layer-title">执行层</span>
+          <span class="map__layer-q">如何把规则变成可重复的动作？</span>
+        </div>
+        <div class="map__chips">
+          <a class="map__chip" href="#ch6">执行纪律<small>06</small></a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 01 市场有效性 ============ -->
+<section class="section section--light view-section" id="ch1">
+  <div class="container">
+    <div class="chapter-head reveal">
+      <div class="chapter-head__eyebrow">
+        <span class="chapter-no">01</span>
+        <span class="layer-tag">认知层 · 起点</span>
+      </div>
+      <h2 class="chapter-head__title">市场有效性</h2>
+      <p class="chapter-head__thesis">
+        先纠正一个直觉误区：<strong>"有效"不是说价格永远正确，而是说——你知道的信息，价格早就知道了</strong>。
+        它回答的是一个很切身的问题：我看到消息再操作，还能赚到钱吗？
+      </p>
+    </div>
+
+    <blockquote class="quote reveal">
+      某公司公布利好消息 → 股价<strong>几秒内</strong>跳涨到位（专业机构、交易程序在同一瞬间抢买）
+      → 等你看到新闻、分析完、下单时，"便宜"已经没了。
+      <small>— 这就是"有效"的日常面目：不是价格正确，而是价格反应快。你赚不到信息差的钱，因为轮到你时信息差已经消失。</small>
+    </blockquote>
+
+    <div class="grid">
+      <div class="card reveal">
+        <div class="card__icon">📉</div>
+        <h3 class="card__title">弱式有效</h3>
+        <p class="card__body">
+          价格已反映<strong>全部历史价格与成交量</strong>。
+          对你的含义：看 K 线找规律 → 没用，可被发现的规律早就被人套利掉了。
+        </p>
+      </div>
+      <div class="card reveal">
+        <div class="card__icon">📰</div>
+        <h3 class="card__title">半强式有效</h3>
+        <p class="card__body">
+          价格已反映<strong>全部公开信息</strong>（财报、新闻、公告）。
+          对你的含义：看到新闻再买卖 → 大概率也没用，别人比你快得多。
+        </p>
+      </div>
+      <div class="card reveal">
+        <div class="card__icon">🔒</div>
+        <h3 class="card__title">强式有效</h3>
+        <p class="card__body">
+          价格已反映<strong>包括内幕在内的一切信息</strong>。
+          现实中从未成立——它只是理论极限，用来看市场"离理想还有多远"。
+        </p>
+      </div>
+    </div>
+
+    <div class="stats">
+      <div class="stat reveal">
+        <div class="stat__value">~90%</div>
+        <div class="stat__label">SPIVA 长期统计：10–15 年维度上，跑输基准的主动基金比例（大多数市场）</div>
+      </div>
+      <div class="stat reveal">
+        <div class="stat__value">4</div>
+        <div class="stat__label">几十年稳定存在的"市场缝隙"：便宜股跑赢贵股（价值）、强者继续偏强（动量）、平淡股不输热门股（低波动）、好公司跑赢（质量）——缝隙存在，说明市场并非完全有效</div>
+      </div>
+      <div class="stat reveal">
+        <div class="stat__value">20%+</div>
+        <div class="stat__label">费率每年只差 1%，30 年后组合终值可能相差 20% 以上——成本是少数确定可控的变量</div>
+      </div>
+    </div>
+
+    <blockquote class="quote reveal">
+      市场必须"足够无效"，才能补偿那些让它变得有效的人。
+      <small>— Grossman–Stiglitz 悖论：如果价格已经完全反映信息，就没人有动力再做研究；正是研究者之间的竞争，把信息不断挤进价格。有效与无效并非对立，而是同时成立。</small>
+    </blockquote>
+
+    <div class="accordion">
+      <h3 class="accordion__title reveal">执行要点</h3>
+      <details class="acc reveal">
+        <summary>核心仓位指数化：接受市场收益，消灭无谓成本</summary>
+        <div class="acc__content">
+          <ul>
+            <li>权益部分的 <strong>≥70%</strong> 配置宽基指数工具，目标是获得市场收益本身，而非战胜它。</li>
+            <li>费率筛选顺序：先看费率与跟踪误差（指数基金偏离基准的程度），再看品牌——指数投资是同质化商品。</li>
+            <li>选择指数化，等于承认"我没有持续的信息优势"——看清这一点，本身就是一种优势。</li>
+          </ul>
+        </div>
+      </details>
+      <details class="acc reveal">
+        <summary>卫星仓位做有纪律的偏离：只在拥有明确优势时出手</summary>
+        <div class="acc__content">
+          <ul>
+            <li>「核心—卫星」策略：大部分资金被动跟随市场（核心），小部分主动出击博取超额收益（卫星）。</li>
+            <li>它与你先定的股债比例不冲突——<strong>两层决策</strong>：股债比例（第 03 章）先定整体风险结构，核心—卫星只切分其中的<strong>权益部分</strong>。例：100 万、股债 50/50 → 权益 50 万再拆为 35 万指数核心 + 15 万卫星。</li>
+            <li>卫星仓位 <strong>≤30%</strong>，且只在三种优势之一下出手：信息优势（比别人更早或更深地了解）、行为优势（能在别人恐慌时保持行动）、结构优势（资金期限更长，等得起）。出手前写得出"我的优势是什么"——写不出来，就不做。</li>
+            <li>卫星仓位的业绩要与指数基准单独对比：连续两年跑输即收缩规模。</li>
+            <li><strong>市场有效性警示</strong>：四条"缝隙"是几十年、几千只股票的平均规律，不是必赚定律；广为人知后还会减弱——价值因子就失灵过近十年。想借缝隙赚钱，先问自己能否扛住它十年不灵。</li>
+            <li><strong>小资金阶段的清醒判断</strong>：资金体量小（如几十万以内）时，卫星仓的绝对收益有限、研究与盯盘成本却不变——<strong>100% 核心</strong>反而是最优解。先把本金做大，再谈主动偏离。</li>
+          </ul>
+        </div>
+      </details>
+      <details class="acc reveal">
+        <summary>成本最小化：把确定的负收益降到最低</summary>
+        <div class="acc__content">
+          <ul>
+            <li>三项成本——<strong>管理费、交易成本、税收</strong>——是投资中唯一 100% 确定发生的负收益。</li>
+            <li>账户摆放也是收益（视所在市场而定）：A 股个人买卖股票与公募基金<strong>免资本利得税</strong>，此项权重可降低；若使用免税/递延账户（如个人养老金），优先放债券利息、REITs 等应税收入高的部分——资产放在哪个账户，是少数<strong>确定性的免费收益</strong>。</li>
+            <li>换手率是隐形杀手：降低交易频率同时改善三项成本与决策质量。</li>
+            <li>每年做一次"成本体检"：把所有持仓费率列出来，看加权平均是否超过 0.5%。</li>
+          </ul>
+        </div>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 02 行为金融（黑色章节） ============ -->
+<section class="section section--dark view-section" id="ch2">
+  <div class="container">
+    <div class="chapter-head reveal">
+      <div class="chapter-head__eyebrow">
+        <span class="chapter-no">02</span>
+        <span class="layer-tag">认知层 · 镜子</span>
+      </div>
+      <h2 class="chapter-head__title">行为金融</h2>
+      <p class="chapter-head__thesis">
+        问自己一个问题：<strong>"为什么我明明懂道理，却总在高点追、低点卖？"</strong>
+        因为你的对手不是市场，而是自己的大脑。每一条偏差都配一条规则化的解毒剂——
+        理解偏差不是为了消灭它，而是为了在它发作时已有预案。
+      </p>
+    </div>
+
+    <div class="table-wrap reveal">
+      <table>
+        <thead>
+          <tr>
+            <th>偏差</th>
+            <th>典型表现</th>
+            <th>解毒剂（规则化）</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>损失厌恶</strong></td>
+            <td>亏损的痛感约为盈利快感的 2–2.5 倍，让人不愿确认亏损、迟迟不敢入场</td>
+            <td>事前写下退出条件；降低查看账户频率（季度 &gt; 每日）</td>
+          </tr>
+          <tr>
+            <td><strong>过度自信</strong></td>
+            <td>高估自己的择时与选股能力，交易过频</td>
+            <td>指数化底仓；用决策日志的胜率数据说话</td>
+          </tr>
+          <tr>
+            <td><strong>确认偏差</strong></td>
+            <td>只收集支持已买标的的证据</td>
+            <td>买入前强制写"反方论证"：这个决定为什么可能是错的？</td>
+          </tr>
+          <tr>
+            <td><strong>锚定效应</strong></td>
+            <td>被买入成本价或历史高点绑架决策</td>
+            <td>只问一个问题："如果今天空仓，我还会按现价买它吗？"</td>
+          </tr>
+          <tr>
+            <td><strong>羊群效应</strong></td>
+            <td>顶部因狂热追高，底部因恐慌割肉</td>
+            <td>再平衡纪律——把逆向操作变成机械流程</td>
+          </tr>
+          <tr>
+            <td><strong>处置效应</strong></td>
+            <td>急于兑现盈利，却死守亏损头寸</td>
+            <td>按预期值而非成本价决策；卖出的唯一依据是"它还值不值得持有"</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <blockquote class="quote reveal">
+      别人的恐慌与贪婪是可以预测的——这正是少数人超额收益的来源。
+      <small>— 行为金融的双重身份：它既解释了你为什么会犯错，也解释了专业投资者为什么能赚到钱。</small>
+    </blockquote>
+
+    <div class="accordion">
+      <h3 class="accordion__title reveal">执行要点</h3>
+      <details class="acc reveal">
+        <summary>环境设计：不依赖意志力，依赖结构</summary>
+        <div class="acc__content">
+          <ul>
+            <li>把决策与执行<strong>在时间上分离</strong>：任何买卖决定至少隔一夜再执行（冷却期规则）。</li>
+            <li>关闭推送、卸载行情软件不是自律，是<strong>移除诱惑源</strong>——查看频率每降一档，冲动交易就少一批。</li>
+            <li>把规则写成自动化流程（定投、条件单、再平衡日历），让"正确的行为"不需要每个当下重新决定。</li>
+          </ul>
+        </div>
+      </details>
+      <details class="acc reveal">
+        <summary>市场极端时的行为预案</summary>
+        <div class="acc__content">
+          <ol>
+            <li><strong>狂热顶部信号</strong>（身边人都在谈股票、新开户激增）：执行再平衡，把超配的权益卖回目标。</li>
+            <li><strong>恐慌底部信号</strong>（媒体宣告"这次不一样"、身边人清仓离场）：按预案动用现金缓冲分批买入。</li>
+            <li>预案必须在平静时写好并签字——情绪接管大脑的时刻，正是规则唯一的价值时刻。</li>
+          </ol>
+        </div>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 03 资产配置 ============ -->
+<section class="section section--light view-section" id="ch3">
+  <div class="container">
+    <div class="chapter-head reveal">
+      <div class="chapter-head__eyebrow">
+        <span class="chapter-no">03</span>
+        <span class="layer-tag">原则层 · 结构</span>
+      </div>
+      <h2 class="chapter-head__title">资产配置</h2>
+      <p class="chapter-head__thesis">
+        认知层到此回答完"为什么"——市场难以战胜<a class="ref" href="#ch1">01</a>，自己也容易犯错<a class="ref" href="#ch2">02</a>。
+        从本章起的原则层，把这些认知翻译成规则。配置只需回答一个问题：
+        <strong>"股市腰斩的那年，我的组合会怎样、我会不会割肉？"</strong>
+        先说一个反直觉的结论："股债各配多少"对长期收益的影响，远大于"挑中哪只股票"——
+        组合的长期波动九成以上由配置比例决定，选股只贡献零头。配置是纲，标的是目。
+        而配置的第一个动作不是挑模板，是先写下两个数字：<strong>这笔钱几年后要用、你最多能忍多大回撤</strong>。
+      </p>
+    </div>
+
+    <blockquote class="quote reveal">
+      同样面对 2007–09 金融危机（美股自峰顶最大跌幅约 50%，美债综合指数约 +5%）：
+      100 万全仓股票 → 剩 50 万，大多数人恐慌割肉，<strong>永久锁定亏损</strong>；
+      60 万股票 + 40 万债券 → 约剩 72 万，痛感能忍、拿得住，之后随市场复苏回来。
+      <small>— 配置真正改变的不是亏多少，而是"你会不会在最疼的时候把股票卖了"。债券的作用是心理压舱石：让你在股灾中不下牌桌。</small>
+    </blockquote>
+
+    <div class="grid">
+      <div class="card reveal">
+        <div class="card__icon">🚀</div>
+        <h3 class="card__title">权益 · 增长引擎</h3>
+        <p class="card__body">
+          长期名义年化约 <strong>7–10%</strong>，波动 15–20%。组合收益的来源，
+          承担波动是获取回报的代价。
+        </p>
+      </div>
+      <div class="card reveal">
+        <div class="card__icon">⚓</div>
+        <h3 class="card__title">债券 · 稳定器</h3>
+        <p class="card__body">
+          收益 3–5%，与股票相关性低。作用不是赚钱，而是<strong>让你在股灾中拿得住股票</strong>。
+          注意债券也会亏：加息时债券价格下跌，期限越长跌得越多——个人持有短中期即可。
+        </p>
+      </div>
+      <div class="card reveal">
+        <div class="card__icon">🛡️</div>
+        <h3 class="card__title">现金 · 期权性</h3>
+        <p class="card__body">
+          流动性储备 + 再平衡弹药。手里有现金，就永远保有<strong>在暴跌时逢低买入的选择权</strong>。
+        </p>
+      </div>
+      <div class="card reveal">
+        <div class="card__icon">🥇</div>
+        <h3 class="card__title">黄金/商品 · 通胀对冲</h3>
+        <p class="card__body">
+          零现金流资产，长期收益≈通胀，但在货币信用受损时期提供<strong>与股债无关的危机对冲</strong>。
+        </p>
+      </div>
+      <div class="card reveal">
+        <div class="card__icon">🏢</div>
+        <h3 class="card__title">REITs · 现金流载体</h3>
+        <p class="card__body">
+          把写字楼、商场切成可小额买卖的份额。收租金、抗通胀，波动介于股债之间。
+        </p>
+      </div>
+      <div class="card reveal">
+        <div class="card__icon">⚖️</div>
+        <h3 class="card__title">配置的本质</h3>
+        <p class="card__body">
+          资产间<strong>涨跌不同步</strong>：同一件事对不同资产影响不同，任一经济环境下，总有资产在对冲另一种资产的失灵。
+        </p>
+      </div>
+    </div>
+
+    <div class="accordion">
+      <h3 class="accordion__title reveal">经典模板与再平衡</h3>
+      <details class="acc reveal">
+        <summary>经典配置模板与压力测试</summary>
+        <div class="acc__content">
+          <ul>
+            <li><strong>第 0 步：先写目标，再挑模板</strong>——这笔钱几年后要用？最多能忍多大回撤？两个数字先定股债上限（见下方"一个可算的锚"），模板只是在上限内填空；跳过这一步，任何模板都无从谈起。</li>
+            <li><strong>60/40 平衡型</strong>：绝大多数投资者的默认解。股票提供增长，债券压住波动，历史上最大跌幅可控。</li>
+            <li><strong>全天候（风险平价）</strong>：按"经济增长 / 衰退 / 通胀 / 通缩"四种环境，各配置一类在该环境下受益的资产——不求哪种环境赚最多，只求任何环境下都不大亏。</li>
+            <li><strong>年龄法则</strong>：股票比例 = 110 − 年龄（现代版）。30 岁配 80% 股票，60 岁配 50%——随生命周期自动降风险。但它是起点不是终点：只回答"平均人"，你的回撤预算与目标期限才有最终决定权。</li>
+            <li><strong>全球分散</strong>：任何单一市场都可能遇到"失去的十年"。权益部分留出 20–40% 配海外指数，是配置中少数<strong>不付代价的保险</strong>。</li>
+            <li><strong>压力测试：买入前先见过最坏情形</strong>——60/40 在 2007–09 约亏 28%（与上文 72 万算例同口径），2022 股债双杀年约 −17%；全天候类组合久期长，快速加息年（如 2022）可能亏 15%–20%；50% 股票的中性组合 2007–09 约 −23%。历史最坏不代表未来最坏——压力测试的意义，是让这些数字在下跌发生前就失去杀伤力。</li>
+          </ul>
+        </div>
+      </details>
+      <details class="acc reveal">
+        <summary>再平衡：唯一制度化的"低买高卖"</summary>
+        <div class="acc__content">
+          <ul>
+            <li><strong>时间法</strong>：固定每 6–12 个月一次，机械执行。</li>
+            <li><strong>阈值法</strong>：任一资产偏离目标配置 ±5 个百分点时触发。</li>
+            <li><strong>混合法（推荐）</strong>：每季度检查一次，但只有偏离 ≥5 个百分点才动手——兼顾纪律与成本。</li>
+            <li>再平衡的真正价值在心理层面：它把"卖出上涨的、买入下跌的"从逆人性的挣扎，变成不需要意志力的例行公事。</li>
+          </ul>
+        </div>
+      </details>
+      <details class="acc reveal">
+        <summary>配置决策三问（写进投资章程）</summary>
+        <div class="acc__content">
+          <ol>
+            <li>这笔钱的投资期限是多久？<strong>期限决定风险承受能力</strong>——五年内要用的钱不进股市。</li>
+            <li>组合跌 30% 时我会怎么做？如果答案是"可能卖出"，那么当前股票比例过高，今天就调低。</li>
+            <li>我的收入来源与股市的相关性如何？人力资本也是资产：收入随周期波动者，应降低权益仓位。</li>
+          </ol>
+          <p style="margin-top: 14px;">
+            <strong>一个可算的锚</strong>：股票比例上限 ≈ 你能承受的最大跌幅 ÷ 50%。
+            最多能忍 20% 回撤 → 股票 ≤40%；能忍 35% → 股票 ≤70%。
+            觉得自己能忍 50% 的，多半高估了自己（对照第 02 章的过度自信）。
+          </p>
+        </div>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 04 风险管理 ============ -->
+<section class="section section--gray view-section" id="ch4">
+  <div class="container">
+    <div class="chapter-head reveal">
+      <div class="chapter-head__eyebrow">
+        <span class="chapter-no">04</span>
+        <span class="layer-tag">原则层 · 生存</span>
+      </div>
+      <h2 class="chapter-head__title">风险管理</h2>
+      <p class="chapter-head__thesis">
+        先问一个问题：<strong>"一次什么样的亏损，会让我永远失去翻身的资本？"</strong>
+        先保证不下牌桌，再谈赢多少——风险管理的全部目的，
+        是把"永久性损失"的概率压到接近零，同时不错过上涨。
+      </p>
+    </div>
+
+    <div class="table-wrap reveal">
+      <table>
+        <thead>
+          <tr>
+            <th>视角</th>
+            <th>风险的定义</th>
+            <th>应对方式</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>学术视角</strong><span class="sub">可量化</span></td>
+            <td>波动率——收益率的标准差</td>
+            <td>分散化、资产配置、对冲</td>
+          </tr>
+          <tr>
+            <td><strong>实战视角</strong><span class="sub">不可逆</span></td>
+            <td>永久性损失——本金再也无法回到原点</td>
+            <td>仓位上限、买入理由被证明不成立就离场、不加杠杆</td>
+          </tr>
+          <tr>
+            <td><strong>关键认知</strong><span class="sub">两者的关系</span></td>
+            <td>波动是通往收益的<em>路径</em>，永久损失才是<em>终点</em></td>
+            <td>可以承受波动，绝不容忍永久损失</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="stats">
+      <div class="stat reveal">
+        <div class="stat__value">2×</div>
+        <div class="stat__label">回撤的非对称算术：亏损 50% 需盈利 100% 才回本。深度回撤是复利最大的敌人</div>
+      </div>
+      <div class="stat reveal">
+        <div class="stat__value">≤10%</div>
+        <div class="stat__label">单一标的上限。任何单一公司归零都不应击穿组合的整体结构</div>
+      </div>
+      <div class="stat reveal">
+        <div class="stat__value">趋同</div>
+        <div class="stat__label">危机中几乎所有资产同涨同跌，分散化恰恰在最需要它的时刻失效——须靠预留现金仓位兜底</div>
+      </div>
+    </div>
+
+    <div class="accordion">
+      <h3 class="accordion__title reveal">执行要点</h3>
+      <details class="acc reveal">
+        <summary>仓位规则：把 Kelly 公式砍半再用</summary>
+        <div class="acc__content">
+          <ul>
+            <li>简化 Kelly：<strong>f = 2p − 1</strong>（p 为胜率，f 为最优仓位占资金的比例）。胜率 55% 时，最优仓位为 10%。</li>
+            <li>实战永远取 <strong>Kelly / 2</strong>：参数估计必有误差，半 Kelly 牺牲少量收益换取大幅更低的破产概率。</li>
+            <li>硬约束清单：单一标的 ≤10%，单一行业 ≤25%，现金缓冲 5–10%，<strong>永远不加杠杆</strong>——杠杆把波动直接转化为永久损失。</li>
+          </ul>
+        </div>
+      </details>
+      <details class="acc reveal">
+        <summary>回撤预算：事前写下，危机时执行</summary>
+        <div class="acc__content">
+          <ul>
+            <li>在平静时期明确"我能承受的最大回撤"（例如 25%），再用这个数字<strong>反推</strong>股票比例——而不是反过来。</li>
+            <li>回撤预算与止损不同：组合层面的回撤预算由资产配置管理；单笔投资的退出，由"买入理由被证明不成立"触发。</li>
+            <li>把规则写在物理可见的地方。危机时的你，不是现在这个理性的你。</li>
+          </ul>
+        </div>
+      </details>
+      <details class="acc reveal">
+        <summary>流动性阶梯：不同期限的钱放在不同的地方</summary>
+        <div class="acc__content">
+          <ol>
+            <li><strong>0–6 个月</strong>生活开支：货币基金 / 活期存款——任何时候都不承担市场风险。</li>
+            <li><strong>6 个月–3 年</strong>确定性支出（首付、学费）：短债 / 定存——锁定收益，拒绝波动。</li>
+            <li><strong>3 年以上</strong>的长期资金：才进入股债配置组合——时间是消化波动的唯一工具。</li>
+          </ol>
+        </div>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 05 估值与决策 ============ -->
+<section class="section section--light view-section" id="ch5">
+  <div class="container">
+    <div class="chapter-head reveal">
+      <div class="chapter-head__eyebrow">
+        <span class="chapter-no">05</span>
+        <span class="layer-tag">原则层 · 判断</span>
+      </div>
+      <h2 class="chapter-head__title">估值与决策</h2>
+      <p class="chapter-head__thesis">
+        这一章只回答两个问题：<strong>估值——"这个东西今天值多少钱？"决策——"这个便宜值不值得出手？"</strong>
+        估值是称重，决策是下注；估值产出判断，决策管理判断的可错性。
+      </p>
+    </div>
+
+    <blockquote class="quote reveal">
+      掷硬币：正面赢 200 元，反面输 100 元。你无法知道这一次的结果——但你不需要知道：
+      期望值 = 50%×200 − 50%×100 = <strong>+50 元</strong>。
+      玩一次是赌博；愿意玩一千次，平均每次赚 50 元几乎被数学锁定——那是生意。
+      <small>— 决策思维的核心转换：像赌场老板一样看"平均每次赚多少"，而不是像赌客一样盯着"这一把开什么"。</small>
+    </blockquote>
+
+    <div class="grid">
+      <div class="card reveal">
+        <div class="card__icon">💎</div>
+        <h3 class="card__title">内在价值</h3>
+        <p class="card__body">
+          估值 = 给"一家公司未来赚的所有钱"<strong>称重</strong>，然后与市价比较：
+          价值 100 元、市价 60 元 → 便宜；价值 100 元、市价 130 元 → 好公司也可能是坏交易。
+          为什么未来的钱要打折？因为今天的钱可以投资增值——十年后的 100 元，不如今天的 100 元值钱。
+          它是一个<strong>区间而非点</strong>（要求回报 8% 它值 125 元，12% 只值 83 元）——
+          估值不是精密天平，是一杆有刻度误差的秤。
+        </p>
+      </div>
+      <div class="card reveal">
+        <div class="card__icon">🛟</div>
+        <h3 class="card__title">安全边际</h3>
+        <p class="card__body">
+          价格相对价值的折扣。它不是收益的放大器，而是<strong>"我错了"的缓冲垫</strong>：
+          便宜 40% 时买入，即使你的估值偏乐观了 30%，这笔交易仍然不亏——
+          <strong>估值产出判断，安全边际让判断错了也活</strong>。
+        </p>
+      </div>
+      <div class="card reveal">
+        <div class="card__icon">🎯</div>
+        <h3 class="card__title">能力圈</h3>
+        <p class="card__body">
+          只在理解范围内出手。能力圈的大小不重要，<strong>知道边界在哪里</strong>才重要——
+          圈外的钱，本来就不属于你。
+        </p>
+      </div>
+      <div class="card card--full reveal">
+        <div class="card__icon">🧮</div>
+        <h3 class="card__title">折现怎么算（点击展开算例）</h3>
+        <div class="card__body">
+          <details class="acc" style="border: none; padding: 0; background: transparent;">
+            <summary style="padding: 12px 0;">展开：一只每年赚 10 元的股票值多少钱？</summary>
+            <div class="acc__content" style="padding: 0;">
+              <p style="margin-bottom: 12px;">
+                设定：某公司每年每股赚 10 元、全部分红，3 年后关闭；你要求 10% 的年回报。
+                折现公式：今天的价值 = 未来的钱 ÷ (1 + 10%)<sup>n</sup>。
+              </p>
+              <table style="min-width: 0; margin-bottom: 12px;">
+                <thead>
+                  <tr><th>年份</th><th>当年利润</th><th>换算过程</th><th>折算到今天</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td>第 1 年</td><td>10 元</td><td>10 ÷ 1.10</td><td><strong>9.09 元</strong></td></tr>
+                  <tr><td>第 2 年</td><td>10 元</td><td>10 ÷ 1.10²（=1.21）</td><td><strong>8.26 元</strong></td></tr>
+                  <tr><td>第 3 年</td><td>10 元</td><td>10 ÷ 1.10³（=1.331）</td><td><strong>7.51 元</strong></td></tr>
+                  <tr><td><strong>合计</strong></td><td><strong>30 元</strong></td><td>—</td><td><strong>24.86 元</strong></td></tr>
+                </tbody>
+              </table>
+              <p style="margin-bottom: 12px;">
+                三年名义上共拿 30 元，但今天的你只应付 <strong>24.86 元</strong>——
+                市价 20 元即便宜约 20%（这就是安全边际）；市价 30 元即为未到手的钱付全价。
+              </p>
+              <p>
+                若公司永不关闭、每年永远分 10 元，公式简化为 10 ÷ 10% = <strong>100 元</strong>。
+                注意：第 3 年只值 7.51 元，第 10 年不足 4 元，50 年后几乎为零——
+                <strong>遥远未来的宏大故事，对今天的价值贡献微乎其微</strong>。
+                这正是盈利集中在远期的"故事股"对利率高度敏感的原因。
+              </p>
+            </div>
+          </details>
+        </div>
+      </div>
+      <div class="card card--full reveal">
+        <div class="card__icon">📐</div>
+        <h3 class="card__title">实操：三步给一只股票定价</h3>
+        <p class="card__body" style="margin-bottom: 14px;">
+          <strong>第一步 · 算"正常年份"的每股盈利</strong>：
+          取过去 5–10 年的平均利润，别用单年——景气顶点的利润会骗人。
+          <strong>第二步 · 定合理市盈率</strong>：两个参照系交叉验证——
+          对照债券（合理 PE ≈ 1 ÷ 要求回报率）＋ 对照自身历史与同行。
+          <strong>第三步 · 合理价打七折才是买价</strong>（安全边际的具体化）。
+        </p>
+        <details class="acc" style="border: none; padding: 0; background: transparent;">
+          <summary style="padding: 12px 0;">展开：完整算例</summary>
+          <div class="acc__content" style="padding: 0;">
+            <p style="margin-bottom: 12px;">
+              某公司过去十年<strong>平均每股赚 5 元</strong>（第一步）。
+              十年期国债 3% ＋ 约 5% 的股票风险补偿 → 我要求 <strong>8%</strong> 回报 →
+              合理 PE = 1 ÷ 8% ≈ <strong>12.5 倍</strong>（第二步之一）。
+              再查它的历史 PE 区间与同行水平，确认 12.5 倍不算离谱（第二步之二）。
+            </p>
+            <p style="margin-bottom: 12px;">
+              合理价 = 5 × 12.5 = <strong>62.5 元</strong>；七折 = <strong>43.75 元以下才买</strong>（第三步）。
+              今天市价 55 元？——好公司，但等。
+              校验：62.5 元买入对应年回报正好 8%（5 ÷ 62.5），数学自洽。
+            </p>
+            <p>
+              <strong>三条边界</strong>：亏损或盈利剧烈波动的公司此法失效（没有"正常盈利"可取平均）；
+              银行、地产等重资产行业看市净率（股价 ÷ 每股净资产）更合适；
+              算不出来就回到能力圈——<strong>放弃不是错，算错了才是</strong>。
+            </p>
+          </div>
+        </details>
+      </div>
+    </div>
+
+    <div class="table-wrap reveal">
+      <table>
+        <thead>
+          <tr>
+            <th>速查工具</th>
+            <th>算法</th>
+            <th>操作信号</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>席勒 CAPE</strong></td>
+            <td>股价 ÷ 十年通胀调整后平均盈利</td>
+            <td>显著高于历史均值（如高出一个标准差）→ 股市整体偏贵，降低权益仓位；反之亦然</td>
+          </tr>
+          <tr>
+            <td><strong>股权风险溢价 ERP</strong></td>
+            <td>盈利收益率（市盈率的倒数）− 十年期国债利率</td>
+            <td>ERP &lt; 0 → 买债比买股划算，增配债券；ERP &gt; 3% → 股票明显更划算，增配股票</td>
+          </tr>
+          <tr>
+            <td><strong>股债性价比</strong></td>
+            <td>指数股息率 vs 债券到期收益率</td>
+            <td>股息率显著高于债息 → 股票相对便宜（粗尺，仅作起点）</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <blockquote class="quote reveal">
+      好决策 ≠ 好结果。用结果评判决策，是投资中最普遍、也最昂贵的逻辑错误。
+      <small>— 决策与结果的分离：正期望的决策重复一千次，才能几乎必然地兑现为收益。</small>
+    </blockquote>
+
+    <div class="accordion">
+      <h3 class="accordion__title reveal">决策框架</h3>
+      <details class="acc reveal">
+        <summary>预期值思维：EV = Σ（概率 × 收益）</summary>
+        <div class="acc__content">
+          <ul>
+            <li>任何机会只需回答三个数：<strong>盈利概率、盈利幅度、亏损幅度</strong>。</li>
+            <li><strong>算例</strong>：某股票，你判断 60% 概率涨 40%、40% 概率跌 20% →
+              EV = 0.6×40% − 0.4×20% = <strong>+16%</strong>，数学上值得买；
+              若换成 30% 概率涨 40%、70% 概率跌 20% → EV = −2%，<strong>再看好也不买</strong>。</li>
+            <li>不对称性优先：优先选择"亏得有限、赚得开放"的结构（如被市场恐慌错杀的优质资产）。</li>
+            <li>正 EV 重复、负 EV 不做、单次结果不重要——买了 +16% EV 的股票仍可能亏，<strong>那不代表决定错了</strong>，重复足够多次，期望值才兑现。</li>
+          </ul>
+        </div>
+      </details>
+      <details class="acc reveal">
+        <summary>贝叶斯更新：新证据调整概率，而非推翻立场</summary>
+        <div class="acc__content">
+          <ul>
+            <li>持有观点时先记下<strong>初始概率</strong>（"我认为它三年内涨 50% 以上的概率是 70%"）。</li>
+            <li><strong>算例</strong>：持仓公司季报利润下滑 15%——不是"完蛋了清仓"（推翻立场），
+              也不是"好公司无视波动"（毫无反应），而是把 70% <strong>下调到 60%</strong>，
+              并写下"再出现一次下滑就降到 50% 以下、考虑离场"。</li>
+            <li>每次调整都要有数字、有理由——数字让你诚实，理由让你可复盘。</li>
+          </ul>
+        </div>
+      </details>
+      <details class="acc reveal">
+        <summary>决策日志：把判断过程显性化</summary>
+        <div class="acc__content">
+          <ul>
+            <li>每笔主动投资记录四项：<strong>买入理由、预期路径、退出条件、当时的情绪状态</strong>。</li>
+            <li><strong>一条真实记录长这样</strong>："2026-03 买入某消费股 @25 元。理由：市价较内在价值折价 30%；
+              预期：三年年化 12%；退出：跌破 20 元或基本面恶化；情绪：平静（非回本心切）。"</li>
+            <li>复盘时对照原始记录——你修正的是"当时的判断"还是"事后的记忆"？不写下来，大脑会自动美化前者。</li>
+            <li>半年统计一次：自己胜率与盈亏比的真实数据，是校准过度自信的最好镜子。</li>
+          </ul>
+        </div>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 06 执行纪律（黑色章节） ============ -->
+<section class="section section--dark view-section" id="ch6">
+  <div class="container">
+    <div class="chapter-head reveal">
+      <div class="chapter-head__eyebrow">
+        <span class="chapter-no">06</span>
+        <span class="layer-tag">执行层 · 落地</span>
+      </div>
+      <h2 class="chapter-head__title">执行纪律</h2>
+      <p class="chapter-head__thesis">
+        前五章都懂了，最后一个问题是：<strong>"道理都明白，我怎么保证每次都照做？"</strong>
+        答案是：不靠意志，靠系统。以下清单把前五章压缩为
+        可打印、可重复的操作系统。
+      </p>
+    </div>
+
+    <div class="accordion">
+      <h3 class="accordion__title reveal">买入前五问清单</h3>
+      <details class="acc reveal">
+        <summary>五问通过，才允许下单</summary>
+        <div class="acc__content">
+          <ol>
+            <li><strong>角色定位</strong>：这笔投资在我的整体配置中扮演什么角色？是核心、卫星还是投机？</li>
+            <li><strong>优势来源</strong>：我凭什么在这笔交易中赚钱——信息、行为还是结构优势？写不出来即放弃（核心仓指数投资无需此问）。</li>
+            <li><strong>最坏情形</strong>：如果一切走向反面，我最多亏多少？这个数字在回撤预算之内吗？</li>
+            <li><strong>认错条件</strong>：什么证据出现时，我承认自己错了并离场？</li>
+            <li><strong>仓位检查</strong>：买入后单一标的是否仍 ≤10%、行业是否 ≤25%、现金缓冲是否 ≥5%？</li>
+          </ol>
+        </div>
+      </details>
+      <details class="acc reveal">
+        <summary>决策日志六栏模板（买入当时填前五栏，复盘时回填结论）</summary>
+        <div class="acc__content">
+          <ol>
+            <li><strong>日期与标的</strong>：几月几日，买什么，占组合比例多少。</li>
+            <li><strong>角色</strong>：核心 / 卫星 / 试错——对应五问第 1 问的答案。</li>
+            <li><strong>买入理由</strong>：一句话写清楚。写不出来的，不许下单。</li>
+            <li><strong>预期与认错条件</strong>：我预期它怎么赚钱；什么证据出现，我承认错了并离场。</li>
+            <li><strong>当时情绪</strong>：兴奋、恐慌还是跟风？只记录，不评判。</li>
+            <li><strong>复盘结论（留空）</strong>：每季度对照回填——是好决策，还是只是好运气？</li>
+          </ol>
+        </div>
+      </details>
+
+      <h3 class="accordion__title reveal">五大例行 SOP</h3>
+      <details class="acc reveal">
+        <summary>定投 SOP · 每月一次</summary>
+        <div class="acc__content">
+          <ol>
+            <li>固定日期、固定金额、固定标的——三固定，消灭一切临场决策。</li>
+            <li>下跌月不加倍、上涨月不减半。计划的弹性就是纪律的漏洞。</li>
+            <li>唯一允许的调整：年收入变化后，每年一次性修订定投金额。</li>
+          </ol>
+        </div>
+      </details>
+      <details class="acc reveal">
+        <summary>再平衡 SOP · 每季度一次</summary>
+        <div class="acc__content">
+          <ol>
+            <li>检查各资产实际比例 vs 目标比例。</li>
+            <li>偏离 &lt; 5 个百分点：不做任何操作，关闭页面。</li>
+            <li>偏离 ≥ 5 个百分点：卖出超配，买入低配，恢复目标。优先在免税/低税账户中操作。</li>
+            <li>记录本次再平衡日期与操作，无论是否动手。</li>
+          </ol>
+        </div>
+      </details>
+      <details class="acc reveal">
+        <summary>复盘 SOP · 每季度一次</summary>
+        <div class="acc__content">
+          <ol>
+            <li>组合层面：收益率、最大回撤、与基准的差异。</li>
+            <li>决策层面：翻出决策日志，逐条区分"好决策坏结果"与"坏决策好结果"。</li>
+            <li>行为层面：本季度有没有违反清单的操作？触发原因是什么偏差？</li>
+            <li>输出一行结论：下季度唯一要改进的一件事。</li>
+          </ol>
+        </div>
+      </details>
+      <details class="acc reveal">
+        <summary>提取 SOP · 退休后启用</summary>
+        <div class="acc__content">
+          <ol>
+            <li><strong>4% 法则</strong>：首年提取组合的 4%，此后按通胀调整——美国历史数据下大概率可支撑 30 年；低利率环境下宜更保守。</li>
+            <li><strong>顺序风险是最大敌人</strong>：退休头几年若遇熊市，边跌边取会永久掏空本金——退休前 5 年应逐步提高债券比例。</li>
+            <li>熊市年份可暂缓提取或削减开支，让组合喘息；牛市年份不需要多取。</li>
+          </ol>
+        </div>
+      </details>
+      <details class="acc reveal">
+        <summary>年度体检 SOP · 每年一次</summary>
+        <div class="acc__content">
+          <ol>
+            <li><strong>收益对照基准</strong>：用<a class="ref" href="#appendix">附录</a>的 CAGR 公式算组合年化收益，与"股债基准组合"对比——长期差异应来自配置，而非运气。</li>
+            <li><strong>回撤对照预算</strong>：算出今年实际最大回撤。超出回撤预算，说明股票上限定高了——立即下调，而不是"下次注意"。</li>
+            <li><strong>夏普对照宽基</strong>：算一遍夏普比率；长期显著低于宽基指数，就简化组合——不要用复杂度换亏钱。</li>
+            <li><strong>结构与成本复查</strong>：加权费率仍 &lt; 0.5%？单一标的 ≤10%、行业 ≤25% 未破？免税账户里是否错放了高税负资产？</li>
+            <li><strong>输出明年的唯一调整</strong>：一年只允许改一个结构性参数——改多了，等于没有系统。</li>
+          </ol>
+        </div>
+      </details>
+
+      <h3 class="accordion__title reveal">三条铁律</h3>
+      <details class="acc reveal">
+        <summary>储蓄率优先 · 成本最小化 · 复利不中断</summary>
+        <div class="acc__content">
+          <ul>
+            <li><strong>先储蓄后投资</strong>：资产十万以内，储蓄率对终值的贡献远大于收益率。早期最大的杠杆是收入减支出。</li>
+            <li><strong>成本最小化</strong>：费率、税、交易摩擦是确定发生的负收益——砍成本不需要任何天赋，只需要执行。</li>
+            <li><strong>复利不中断</strong>：年化 8% 下，24 年即 6 倍。最大的 α 不是某年的超额收益，而是<strong>从未被恐惧中断的复利曲线</strong>。</li>
+          </ul>
+        </div>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 终章 · 一页汇总 ============ -->
+<section class="section section--light view-section" id="summary">
+  <div class="container">
+    <div class="chapter-head reveal">
+      <div class="chapter-head__eyebrow">
+        <span class="chapter-no">终章</span>
+        <span class="layer-tag">一页汇总</span>
+      </div>
+      <h2 class="chapter-head__title">全部体系，十条规定</h2>
+      <p class="chapter-head__thesis">
+        前六章回答"为什么"，这一页只回答"做什么"。
+        打印它、贴在交易软件旁边——<strong>投资成功不取决于记住了多少，而取决于这十条执行了多少。</strong>
+      </p>
+    </div>
+
+    <div class="table-wrap reveal">
+      <table>
+        <thead>
+          <tr>
+            <th>频率</th>
+            <th>动作</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>一次定好</strong></td>
+            <td>
+              ① 写下<strong>回撤预算</strong>（能忍的最大跌幅），用它反推股票比例上限；
+              ② 留足 <strong>6 个月应急现金</strong>；③ 五年内要用的钱，不进股市。
+            </td>
+          </tr>
+          <tr>
+            <td><strong>每年一次</strong></td>
+            <td>
+              ④ <strong>成本体检</strong>：持仓加权费率超过 0.5% 就换便宜的；
+              ⑤ 按收入变化修订一次定投金额，其余时间不看盘。
+            </td>
+          </tr>
+          <tr>
+            <td><strong>每季一次</strong></td>
+            <td>
+              ⑥ <strong>再平衡</strong>：偏离目标 ≥5 个百分点才动手，卖出超配、买入低配；
+              ⑦ <strong>复盘</strong>：对照决策日志，输出下季度唯一要改进的一件事；每年另做一次年度体检，回撤超预算立即下调股票上限。
+            </td>
+          </tr>
+          <tr>
+            <td><strong>每月一次</strong></td>
+            <td>
+              ⑧ <strong>定投</strong>：固定日期、金额、标的三固定——下跌月不加倍、上涨月不减半。
+            </td>
+          </tr>
+          <tr>
+            <td><strong>买入前</strong></td>
+            <td>
+              ⑨ 核心仓直接买宽基指数（占权益的 <strong>≥70%</strong>）；卫星仓先过<strong>买入前五问</strong>，
+              写不出"我的优势是什么"就放弃。
+            </td>
+          </tr>
+          <tr>
+            <td><strong>永远</strong></td>
+            <td>
+              ⑩ <strong>不加杠杆、单一标的 ≤10%、单次决定隔夜再执行</strong>——
+              复利一旦中断，此前全部正确都会归零。
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <blockquote class="quote reveal">
+      市场难以战胜，自己容易犯错——所以不靠预测，靠规则。
+      <small>— 全体系的两个前提，十条规定的全部出处。</small>
+    </blockquote>
+  </div>
+</section>
+
+<!-- ============ 附录 · 指标速查 ============ -->
+<section class="section section--gray view-section" id="appendix">
+  <div class="container">
+    <div class="chapter-head reveal">
+      <div class="chapter-head__eyebrow">
+        <span class="chapter-no">附录</span>
+        <span class="layer-tag">工具箱</span>
+      </div>
+      <h2 class="chapter-head__title">核心指标速查</h2>
+      <p class="chapter-head__thesis">评估任何组合（包括自己），六个数字足够。</p>
+    </div>
+
+    <div class="table-wrap reveal">
+      <table>
+        <thead>
+          <tr>
+            <th>指标</th>
+            <th>定义</th>
+            <th>解读</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>CAGR</strong><span class="sub">年化复合收益</span></td>
+            <td>（期末 ÷ 期初）^(1/年数) − 1</td>
+            <td>收益的"真实速度"，抹平单年大起大落的错觉</td>
+          </tr>
+          <tr>
+            <td><strong>年化波动率</strong></td>
+            <td>月度收益标准差 × √12</td>
+            <td>收益路径的颠簸程度；决定你能否拿得住</td>
+          </tr>
+          <tr>
+            <td><strong>夏普比率</strong></td>
+            <td>（组合收益 − 无风险利率）÷ 波动率</td>
+            <td>每承担一分波动换来多少收益；纯多头组合长期 &gt;1 已属优秀（宽基指数长期约 0.4–0.6）</td>
+          </tr>
+          <tr>
+            <td><strong>最大回撤</strong></td>
+            <td>峰值到谷底的最大跌幅</td>
+            <td>最疼的那个数字——用来反推自己能承受的股债比</td>
+          </tr>
+          <tr>
+            <td><strong>Calmar 比率</strong></td>
+            <td>CAGR ÷ 最大回撤</td>
+            <td>收益与"疼痛"的交换效率，长期投资最该盯的比值</td>
+          </tr>
+          <tr>
+            <td><strong>胜率 × 盈亏比</strong></td>
+            <td>盈利次数占比 × 平均盈利 ÷ 平均亏损</td>
+            <td>期望值的两个因子：低胜率高赔率与高胜率低赔率都可行，但期望必须为正——胜率 × 平均盈利 − 败率 × 平均亏损 &gt; 0</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <blockquote class="quote reveal">
+      本页数字按时效分三类：<strong>算术永真</strong>（回本公式、复利换算）；<strong>规律半衰期长</strong>（跑输比例、行为偏差——持续被研究验证，但属统计倾向）；<strong>市场数据需年检</strong>（收益率区间、税率、4% 法则）。
+      <small>— 7–10% 与 3–5% 均为美股美债的长期历史区间：它们解释过去，不承诺未来，更不等于你所处市场的当下。</small>
+    </blockquote>
+  </div>
+</section>
+
+<!-- ============ 页脚 ============ -->
+<footer class="footer">
+  <div class="footer__inner">
+    <div>
+      <div class="footer__brand">投资知识体系</div>
+      <p>
+        本体系为个人学习框架，不构成任何投资建议。
+        市场有风险，决策需独立；规则写在风暴来临之前。
+      </p>
+    </div>
+    <div class="footer__meta">
+      认知 → 原则 → 执行<br>
+      三层架构 · 六大模块 · 2026
+    </div>
+  </div>
+</footer>
+
+  </main>
+</div>
+
+<script src="app.js"></script>
+</body></html>

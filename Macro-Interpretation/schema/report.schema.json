@@ -1,0 +1,306 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://macro-interpretation.local/report.schema.json",
+  "title": "中国宏观月报 · 数据契约",
+  "description": "宏观指标解读报告的 JSON 数据契约。提示词执行后必须输出符合本 Schema 的 JSON，由 report-template.html 渲染为可视化报告。",
+  "type": "object",
+  "required": ["meta", "indicators", "signals", "rate_cascade", "fx", "cross_validation", "cycle_gauge", "inventory_cycle", "cpi_ppi", "falsification", "watchlist", "sources"],
+  "additionalProperties": false,
+
+  "definitions": {
+    "direction_enum": {
+      "type": "string",
+      "enum": ["up", "down", "flat"],
+      "description": "方向：up=涨/升(红)，down=跌/降(绿)，flat=持平(灰)。遵循国内红涨绿跌惯例。"
+    },
+    "label_enum": {
+      "type": "string",
+      "enum": ["lead", "coin", "lag"],
+      "description": "指标标签：lead=领先，coin=同步，lag=滞后。"
+    },
+    "status_enum": {
+      "type": "string",
+      "enum": ["ok", "no", "wait"],
+      "description": "状态：ok=通/正常(绿)，no=断/异常(红)，wait=待观察(灰)。"
+    },
+    "nullable_string": {
+      "oneOf": [{"type": "string"}, {"type": "null"}],
+      "description": "字符串或 null（数据缺失时填 null，前端渲染为'—'）。"
+    }
+  },
+
+  "properties": {
+    "meta": {
+      "type": "object",
+      "description": "报告元信息（页头展示）。",
+      "required": ["title", "period", "data_cutoff", "generated_at", "search_count", "completeness", "missing", "hero_quote"],
+      "additionalProperties": false,
+      "properties": {
+        "title": {"type": "string", "description": "报告标题，如'中国宏观月报'。"},
+        "period": {"type": "string", "description": "报告期数，如'2026年9月'。"},
+        "data_cutoff": {"type": "string", "description": "数据截至说明，如'2026年9月（PMI·利率·汇率为9月末 · 物价·金融·外贸为8月）'。"},
+        "generated_at": {"type": "string", "description": "生成日期，如'2026-10-02'。"},
+        "search_count": {"type": "integer", "minimum": 0, "description": "本期联网搜索次数。"},
+        "completeness": {
+          "type": "object",
+          "required": ["present", "total"],
+          "additionalProperties": false,
+          "properties": {
+            "present": {"type": "integer", "minimum": 0},
+            "total": {"type": "integer", "minimum": 1}
+          }
+        },
+        "missing": {
+          "type": "array",
+          "description": "缺失数据项名称列表；无缺失为空数组。",
+          "items": {"type": "string"}
+        },
+        "hero_quote": {"type": "string", "description": "一句话图景（结构叙事，30字以内），显示在黑色 Hero 区。"}
+      }
+    },
+
+    "indicators": {
+      "type": "array",
+      "description": "数据总览表：每个指标一行，必须三值齐全或标注缺失。",
+      "items": {
+        "type": "object",
+        "required": ["name", "period", "published", "label"],
+        "additionalProperties": false,
+        "properties": {
+          "name": {"type": "string", "description": "指标名称，如'官方制造业 PMI'。"},
+          "period": {"type": "string", "description": "数据所属期数，如'9月'、'8月'、'8月末'、'1-8月'、'9/30'。"},
+          "published": {"type": "string", "description": "公布值，字符串形式（含单位），如'50.1'、'+0.8%'、'3.0% / 3.5%'。数据缺失填'缺失'。"},
+          "expected": {"$ref": "#/definitions/nullable_string", "description": "市场一致预期值；无预期或不适用填 null。"},
+          "previous": {"$ref": "#/definitions/nullable_string", "description": "前值；不适用填 null。"},
+          "direction": {"$ref": "#/definitions/direction_enum"},
+          "direction_text": {"type": "string", "description": "方向文字，如'▲ +0.3'、'▼ −0.2pct'、'—（正常陡峭）'、'▲ 超预期'。"},
+          "label": {"$ref": "#/definitions/label_enum"}
+        }
+      }
+    },
+
+    "signals": {
+      "type": "object",
+      "description": "三组信号：领先 / 同步 / 滞后 + 一致性。",
+      "required": ["leading", "coincident", "lagging", "consistency"],
+      "additionalProperties": false,
+      "properties": {
+        "leading": {"type": "string", "description": "领先组解读（PMI新订单/社融/利率曲线组合信号）。"},
+        "coincident": {"type": "string", "description": "同步组解读（工业增加值/社零/出口）。"},
+        "lagging": {"type": "string", "description": "滞后组解读（CPI/库存，并注明'坏消息可能是底部特征'）。"},
+        "consistency": {"type": "string", "description": "信号一致性结论：一致→图景强化；背离→以领先组为前瞻线索并解释背离。"}
+      }
+    },
+
+    "rate_cascade": {
+      "type": "object",
+      "description": "利率传导 · 三层瀑布。",
+      "required": ["source", "wholesale", "retail", "diagnosis", "dr007_policy_spread", "ncd_rate"],
+      "additionalProperties": false,
+      "properties": {
+        "source": {
+          "type": "object",
+          "required": ["text", "status"],
+          "additionalProperties": false,
+          "properties": {
+            "text": {"type": "string", "description": "源头层（政策利率）结论，如'7天逆回购1.4%未动，9月转向结构性工具'。"},
+            "status": {"$ref": "#/definitions/status_enum"}
+          }
+        },
+        "wholesale": {
+          "type": "object",
+          "required": ["text", "status"],
+          "additionalProperties": false,
+          "properties": {
+            "text": {"type": "string", "description": "批发价层（DR007/银行间利率）结论。"},
+            "status": {"$ref": "#/definitions/status_enum"}
+          }
+        },
+        "retail": {
+          "type": "object",
+          "required": ["text", "status"],
+          "additionalProperties": false,
+          "properties": {
+            "text": {"type": "string", "description": "实体价层（LPR/企业贷）结论。"},
+            "status": {"$ref": "#/definitions/status_enum"}
+          }
+        },
+        "dr007_policy_spread": {
+          "type": ["number", "null"],
+          "description": "DR007 7日均值与7天逆回购政策利率的利差（bp）。正值=资金面偏紧，负值=偏松。是央行态度的水银柱。数据缺失填 null。"
+        },
+        "ncd_rate": {
+          "type": ["number", "null"],
+          "description": "同业存单（NCD）1年期发行利率（%）。银行负债成本领先指标，领先LPR 1-2个月。数据缺失填 null。"
+        },
+        "diagnosis": {"type": "string", "description": "断流诊断：断点位置与原因假设。"}
+      }
+    },
+
+    "fx": {
+      "type": "object",
+      "description": "汇率三问。",
+      "required": ["what_moves", "why_moves", "transmission", "calibration", "us_cn_10y_spread", "dxy"],
+      "additionalProperties": false,
+      "properties": {
+        "what_moves": {"type": "string", "description": "一问·什么在动：对美元/CFETS篮子是否背离。"},
+        "why_moves": {"type": "string", "description": "二问·为什么动：利差/贸易顺差/预期，哪个主导，证据是什么。"},
+        "transmission": {"type": "string", "description": "三问·传导：出口链受益、进口成本受损、外债主体承压。"},
+        "calibration": {"type": "string", "description": "校准：适度走弱是经济自带减震器，不是国力记分牌。"},
+        "us_cn_10y_spread": {
+          "type": ["number", "null"],
+          "description": "中美10年期国债收益率利差（中国−美国，bp）。汇率核心解释变量，负值=中美利率倒挂。数据缺失填 null。"
+        },
+        "dxy": {
+          "type": ["number", "null"],
+          "description": "美元指数（DXY）。判断'动的是美元还是人民币'的关键参照。数据缺失填 null。"
+        }
+      }
+    },
+
+    "cross_validation": {
+      "type": "object",
+      "description": "交叉验证 · 旁证矩阵。",
+      "required": ["rows", "conclusion"],
+      "additionalProperties": false,
+      "properties": {
+        "rows": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["original", "evidence1", "evidence2", "fit", "fit_class"],
+            "additionalProperties": false,
+            "properties": {
+              "original": {"type": "string", "description": "原数据，如'8月工业增加值 +5.2%'。"},
+              "evidence1": {"type": "string", "description": "旁证一（实物量：用电量/货运量等）。"},
+              "evidence2": {"type": "string", "description": "旁证二（金融类：税收/企业中长贷等）。"},
+              "fit": {"type": "string", "description": "咬合结论文字，如'咬合 · 生产端强可信'、'部分咬合 · 盈利质量存疑'。"},
+              "fit_class": {"$ref": "#/definitions/direction_enum", "description": "咬合颜色：up=咬合(红)，flat=部分咬合(灰)，down=背离(绿)。"}
+            }
+          }
+        },
+        "conclusion": {"type": "string", "description": "软硬对照结论 + 偏差方向与量级。"}
+      }
+    },
+
+    "cycle_gauge": {
+      "type": "object",
+      "description": "周期定位仪表盘 · 四维。",
+      "required": ["dimensions", "verdict", "conclusion", "note"],
+      "additionalProperties": false,
+      "properties": {
+        "dimensions": {
+          "type": "array",
+          "minItems": 4,
+          "maxItems": 4,
+          "items": {
+            "type": "object",
+            "required": ["name", "meta", "fill", "hot", "percentile", "baseline"],
+            "additionalProperties": false,
+            "properties": {
+              "name": {"type": "string", "description": "维度名称：估值分位 / 信贷（社融+利差）/ 情绪（融资余额/新开户）/ 本轮运行时长。"},
+              "meta": {"type": "string", "description": "维度描述文字，含当前值、分位、是否极端。极端值用<span class='extreme'>包裹。"},
+              "extreme": {"type": "boolean", "description": "是否极端（前/后15%）。"},
+              "fill": {"type": "integer", "minimum": 0, "maximum": 100, "description": "进度条填充百分比（0-100），应与 percentile 一致。"},
+              "hot": {"type": "boolean", "description": "是否偏冷极端（红色进度条）。"},
+              "percentile": {
+                "type": ["number", "null"],
+                "description": "历史分位数（0-100）。禁止主观判断'极端'而不给分位。数据缺失或无法计算填 null。"
+              },
+              "baseline": {
+                "type": ["string", "null"],
+                "description": "分位计算基准说明，如'2008年以来沪深300PE'、'2015年以来社融增速'。无法给出填 null。"
+              }
+            }
+          }
+        },
+        "verdict": {"type": "string", "description": "共振判定文字，如'共振判定：1/4 项极端（信贷端偏冷），未达「≥3 项极端且同向」阈值 → 信号不足，维持现状'。"},
+        "conclusion": {
+          "type": "string",
+          "enum": ["进攻", "中性", "防御"],
+          "description": "最终结论。"
+        },
+        "note": {"type": "string", "description": "结构线索与免责声明。"}
+      }
+    },
+
+    "falsification": {
+      "type": "array",
+      "description": "证伪条件列表：出现__信号，说明本报告的__判断错了。",
+      "items": {"type": "string"}
+    },
+
+    "watchlist": {
+      "type": "array",
+      "description": "下月观察清单。",
+      "items": {
+        "type": "object",
+        "required": ["item", "date", "focus"],
+        "additionalProperties": false,
+        "properties": {
+          "item": {"type": "string", "description": "指标名称，如'9月 CPI/PPI'。"},
+          "date": {"type": "string", "description": "大致发布日期，如'约10月9日'。"},
+          "focus": {"type": "string", "description": "关注要点。"}
+        }
+      }
+    },
+
+    "sources": {
+      "type": "array",
+      "description": "数据来源清单：每条含来源文字与可点击链接。",
+      "items": {
+        "type": "object",
+        "required": ["text"],
+        "additionalProperties": false,
+        "properties": {
+          "text": {"type": "string", "description": "来源说明文字，如'9月官方PMI → 国家统计局 · 2026-09-30'。"},
+          "url": {"type": ["string", "null"], "description": "数据来源页链接，无则填 null。"}
+        }
+      }
+    },
+
+    "inventory_cycle": {
+      "type": "object",
+      "description": "库存周期定位（软调查 PMI 分项 + 硬统计工业存货交叉验证）。",
+      "required": ["stage", "pmi_raw_inventory", "pmi_finished_inventory", "industrial_inventory_yoy", "percentile"],
+      "additionalProperties": false,
+      "properties": {
+        "stage": {
+          "type": "string",
+          "enum": ["主动补库", "被动补库", "主动去库", "被动去库"],
+          "description": "库存四阶段：主动补/被动补/主动去/被动去。由新订单-生产-库存组合判定。"
+        },
+        "pmi_raw_inventory": {"type": ["number", "null"], "description": "PMI原材料库存分项。数据缺失填 null。"},
+        "pmi_finished_inventory": {"type": ["number", "null"], "description": "PMI产成品库存分项。数据缺失填 null。"},
+        "industrial_inventory_yoy": {"type": ["number", "null"], "description": "工业企业产成品存货同比（%，硬统计）。数据缺失填 null。"},
+        "percentile": {"type": ["number", "null"], "description": "库存周期所处历史分位（0-100，0=主动去库极端底部，100=主动补库极端顶部）。数据缺失填 null。"}
+      }
+    },
+
+    "cpi_ppi": {
+      "type": "object",
+      "description": "CPI/PPI 量化传导估算。",
+      "required": ["ppi_yoy", "cpi_yoy", "core_cpi_yoy", "scissors", "transmission_lag_quarters", "expected_cpi_in_quarters", "confidence"],
+      "additionalProperties": false,
+      "properties": {
+        "ppi_yoy": {"type": "number", "description": "PPI 同比（%）。"},
+        "cpi_yoy": {"type": "number", "description": "CPI 同比（%）。"},
+        "core_cpi_yoy": {"type": "number", "description": "核心 CPI 同比（%）。"},
+        "scissors": {"type": "number", "description": "PPI−CPI 剪刀差（pct）。正值挤压中下游利润。"},
+        "transmission_lag_quarters": {
+          "type": ["number", "null"],
+          "description": "PPI 向 CPI 传导的历史平均时滞（季度），通常 2-4 个季度。数据缺失填 null。"
+        },
+        "expected_cpi_in_quarters": {
+          "type": ["string", "null"],
+          "description": "按当前 PPI 斜率推算的未来 CPI 区间，如'2-3季度后 CPI 有望回升至 1.0-1.5%'。数据缺失填 null。"
+        },
+        "confidence": {
+          "type": "string",
+          "enum": ["高", "中", "低"],
+          "description": "传导估算可信度。"
+        }
+      }
+    }
+  }
+}

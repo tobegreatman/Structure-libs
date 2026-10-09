@@ -1,0 +1,11 @@
+Macro-Interpretation/
+├── 宏观指标解读提示词手册.md      ← 已改造：输出 JSON 契约，不再直接写 HTML
+├── schema/
+│   ├── report.schema.json         ← 新增：JSON Schema（draft-07）机器契约
+│   └── contract.md                ← 新增：人类可读的契约说明
+├── data/
+│   └── 2026-09.json               ← 新增：示例数据（从原报告提取）
+├── report-template.html           ← 新增：视图模板（CSS + 渲染 JS）
+├── build.js                       ← 新增：构建脚本（JSON → 最终 HTML）
+├── 中国宏观月报-2026年9月.html     ← 已用 JSON 重新生成（原手写版被替换）
+└── DESIGN.md

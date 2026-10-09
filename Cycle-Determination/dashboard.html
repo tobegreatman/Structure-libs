@@ -1,0 +1,1195 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>周期定位仪表盘</title>
+<style>
+  /* ============ 设计令牌（依据 DESIGN.md） ============ */
+  :root {
+    --black: #000000;
+    --pale: #f5f5f7;
+    --ink: #1d1d1f;
+    --white: #ffffff;
+    --blue: #0071e3;
+    --blue-bright: #2997ff;
+    --gray-text: #6e6e73;
+    --gray-border-soft: #d2d2d7;
+    --gray-border-strong: #86868b;
+    --graphite-a: #272729;
+    --graphite-d: #2a2a2c;
+    --font-display: "SF Pro Display", "Inter Tight", "Inter", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    --font-text: "SF Pro Text", "Inter", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: var(--font-text);
+    color: var(--ink);
+    background: var(--pale);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ============ 导航 ============ */
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(0, 0, 0, 0.72);
+    backdrop-filter: saturate(180%) blur(20px);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
+  }
+  .nav-inner {
+    max-width: 1080px; margin: 0 auto;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 22px; height: 48px;
+  }
+  .nav-brand {
+    color: var(--white); font-size: 14px; font-weight: 600;
+    letter-spacing: 0.2px; text-decoration: none;
+  }
+  .nav-brand span { color: var(--blue-bright); }
+  .nav-links { display: flex; gap: 28px; }
+  .nav-links a {
+    color: rgba(255, 255, 255, 0.82); font-size: 12px;
+    text-decoration: none; transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--blue-bright); }
+
+  /* ============ Hero（黑色章节） ============ */
+  .hero {
+    background: var(--black); color: var(--white);
+    text-align: center;
+    padding: clamp(80px, 12vw, 140px) 22px clamp(64px, 9vw, 100px);
+  }
+  .hero-eyebrow {
+    font-size: 14px; font-weight: 600; letter-spacing: 0.3px;
+    color: var(--blue-bright); margin-bottom: 18px;
+    animation: fadeUp 0.8s ease both;
+  }
+  .hero h1 {
+    font-family: var(--font-display); font-weight: 600;
+    font-size: clamp(40px, 6.5vw, 80px);
+    line-height: 1.05; letter-spacing: -0.025em;
+    animation: fadeUp 0.8s ease 0.1s both;
+  }
+  .hero-sub {
+    margin: 22px auto 0; max-width: 620px;
+    font-size: 19px; line-height: 1.5; color: var(--gray-border-strong);
+    animation: fadeUp 0.8s ease 0.2s both;
+  }
+  .hero-meta {
+    margin-top: 30px; font-size: 14px; color: var(--gray-border-strong);
+    animation: fadeUp 0.8s ease 0.3s both;
+  }
+  .hero-meta strong { color: var(--white); font-weight: 600; }
+  .hero-pills {
+    display: flex; flex-wrap: wrap; justify-content: center; gap: 10px;
+    margin-top: 36px; animation: fadeUp 0.8s ease 0.4s both;
+  }
+  .hero-pill {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 8px 18px; border-radius: 980px;
+    background: rgba(41, 151, 255, 0.12);
+    border: 1px solid rgba(41, 151, 255, 0.25);
+    font-size: 13px; color: rgba(255, 255, 255, 0.92);
+  }
+  .hero-pill b { color: var(--blue-bright); font-weight: 600; }
+
+  /* ============ 章节通用 ============ */
+  section { padding: clamp(56px, 8vw, 96px) 22px; }
+  .section-inner { max-width: 1080px; margin: 0 auto; }
+  .section-eyebrow {
+    font-size: 14px; font-weight: 600; color: var(--blue);
+    margin-bottom: 10px; letter-spacing: 0.2px;
+  }
+  .section-title {
+    font-family: var(--font-display); font-weight: 600;
+    font-size: clamp(28px, 4vw, 48px); line-height: 1.1;
+    letter-spacing: -0.01em; margin-bottom: 12px;
+  }
+  .section-desc {
+    font-size: 17px; line-height: 1.5; color: var(--gray-text);
+    max-width: 640px; margin-bottom: 40px;
+  }
+  .dark .section-eyebrow { color: var(--blue-bright); }
+  .dark .section-title { color: var(--white); }
+  .dark .section-desc { color: var(--gray-border-strong); }
+
+  /* ============ 周期卡片（浅灰章节） ============ */
+  .cycles-section { background: var(--pale); }
+  .cycle-grid {
+    display: grid; gap: 16px;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  }
+  .cycle-card {
+    background: var(--white); border-radius: 18px;
+    padding: 24px 22px 20px;
+    transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.35s;
+    animation: fadeUp 0.7s ease both;
+    display: flex; flex-direction: column;
+  }
+  .cycle-card:nth-child(1) { animation-delay: 0.05s; }
+  .cycle-card:nth-child(2) { animation-delay: 0.12s; }
+  .cycle-card:nth-child(3) { animation-delay: 0.19s; }
+  .cycle-card:nth-child(4) { animation-delay: 0.26s; }
+  .cycle-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
+  }
+  .cycle-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+  .cycle-name { font-weight: 600; font-size: 17px; line-height: 1.3; }
+  .cycle-length { font-size: 12px; color: var(--gray-text); margin-top: 3px; }
+  .stage-badge {
+    display: inline-block; padding: 5px 12px; border-radius: 980px;
+    background: var(--blue); color: var(--white);
+    font-size: 12px; font-weight: 600; white-space: nowrap;
+  }
+  .cycle-meta {
+    display: flex; align-items: center; gap: 14px;
+    margin: 14px 0 6px; font-size: 13px; color: var(--gray-text);
+  }
+  .direction { font-weight: 600; color: var(--ink); }
+  .direction.up { color: var(--blue); }
+  .confidence { display: inline-flex; align-items: center; gap: 5px; }
+  .conf-dots { display: inline-flex; gap: 3px; }
+  .conf-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--gray-border-soft);
+  }
+  .conf-dot.on { background: var(--blue); }
+  .phase-track {
+    position: relative; height: 6px; border-radius: 980px;
+    background: var(--gray-border-soft); margin: 12px 0 6px;
+  }
+  .phase-fill {
+    position: absolute; left: 0; top: 0; height: 100%;
+    border-radius: 980px;
+    background: linear-gradient(90deg, rgba(0,113,227,0.35), var(--blue));
+    transition: width 1s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  .phase-now {
+    position: absolute; top: 50%; width: 14px; height: 14px;
+    border-radius: 50%; background: var(--white);
+    border: 3px solid var(--blue);
+    transform: translate(-50%, -50%);
+    box-shadow: 0 0 0 0 rgba(0, 113, 227, 0.4);
+    animation: phasePulse 2.4s ease-out infinite;
+    transition: left 1s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  .phase-tick {
+    position: absolute; top: -3px; width: 1px; height: 12px;
+    background: var(--gray-border-strong); opacity: 0.55;
+  }
+  .phase-label {
+    display: flex; justify-content: space-between;
+    font-size: 11px; color: var(--gray-text); margin-bottom: 14px;
+  }
+  .cycle-evidence { list-style: none; margin-bottom: 12px; flex: 1; }
+  .cycle-evidence li {
+    font-size: 13px; line-height: 1.45; color: var(--ink);
+    padding-left: 14px; position: relative; margin-bottom: 6px;
+  }
+  .cycle-evidence li::before {
+    content: ""; position: absolute; left: 0; top: 7px;
+    width: 5px; height: 5px; border-radius: 50%; background: var(--blue);
+  }
+  .cycle-trigger {
+    background: var(--pale); border-radius: 12px;
+    padding: 10px 14px; font-size: 12px; line-height: 1.5;
+    color: var(--gray-text);
+  }
+  .cycle-trigger b { color: var(--ink); font-weight: 600; }
+
+  /* ============ 波形章节（黑色） ============ */
+  .waves-section { background: var(--black); }
+  .wave-frame {
+    background: var(--graphite-a); border-radius: 28px;
+    padding: clamp(18px, 3vw, 32px);
+    overflow: hidden;
+  }
+  .wave-svg { width: 100%; height: auto; display: block; }
+  .wave-legend {
+    display: flex; flex-wrap: wrap; gap: 18px; margin-top: 22px;
+    font-size: 12px; color: rgba(255, 255, 255, 0.75);
+  }
+  .wave-legend span { display: inline-flex; align-items: center; gap: 7px; }
+  .legend-swatch { width: 18px; height: 3px; border-radius: 2px; display: inline-block; }
+  .nesting-card {
+    margin-top: 24px; background: var(--graphite-d); border-radius: 18px;
+    padding: 24px; display: flex; flex-wrap: wrap; align-items: center; gap: 18px;
+  }
+  .nesting-state {
+    padding: 10px 22px; border-radius: 980px;
+    background: rgba(41, 151, 255, 0.14);
+    border: 1px solid rgba(41, 151, 255, 0.35);
+    color: var(--blue-bright); font-size: 17px; font-weight: 600;
+    animation: nestingBreath 3.5s ease-in-out infinite;
+  }
+  .nesting-body { flex: 1; min-width: 240px; }
+  .nesting-desc { font-size: 15px; line-height: 1.55; color: rgba(255, 255, 255, 0.88); }
+  .nesting-analogy { font-size: 13px; color: var(--gray-border-strong); margin-top: 6px; }
+
+  /* ============ 行业矩阵（白色章节） ============ */
+  .industry-section { background: var(--white); }
+  .heat-legend {
+    display: flex; flex-wrap: wrap; gap: 14px; margin-bottom: 20px;
+    font-size: 12px; color: var(--gray-text);
+  }
+  .heat-legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .heat-chip { width: 14px; height: 14px; border-radius: 4px; display: inline-block; }
+  .table-wrap { overflow-x: auto; border-radius: 18px; border: 1px solid var(--gray-border-soft); }
+  table { width: 100%; border-collapse: collapse; min-width: 800px; }
+  thead th {
+    text-align: left; font-size: 12px; font-weight: 600;
+    color: var(--gray-text); letter-spacing: 0.03em;
+    padding: 10px; background: var(--pale);
+    border-bottom: 1px solid var(--gray-border-soft); white-space: nowrap;
+  }
+  tbody td {
+    padding: 8px 10px; font-size: 13px; line-height: 1.45;
+    border-bottom: 1px solid var(--gray-border-soft);
+    white-space: nowrap; vertical-align: top;
+  }
+  /* 长文本列允许换行，收缩列宽让整表收进视口 */
+  tbody td.wrap { white-space: normal; min-width: 120px; }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr { transition: background 0.18s; }
+  tbody tr:hover { background: rgba(0, 113, 227, 0.045); }
+  .industry-name { font-weight: 600; }
+  .heat {
+    display: inline-block; padding: 3px 9px; border-radius: 7px;
+    font-size: 11.5px; font-weight: 500; color: var(--white);
+  }
+  .heat.h0 { background: var(--gray-border-soft); color: var(--ink); }
+  .heat.h1 { background: rgba(0, 113, 227, 0.25); color: var(--ink); }
+  .heat.h2 { background: rgba(0, 113, 227, 0.55); }
+  .heat.h3 { background: var(--blue); }
+  .heat.hna {
+    background: transparent; color: var(--gray-text);
+    border: 1px solid var(--gray-border-soft);
+  }
+  .muted { color: var(--gray-text); font-size: 13px; }
+  .action-tag { color: var(--blue); font-weight: 600; white-space: nowrap; }
+
+  /* ============ TOP3 推荐（黑色章节） ============ */
+  .top3-section { background: var(--black); }
+  .top3-grid {
+    display: grid; gap: 16px;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  }
+  .top-card {
+    position: relative;
+    background: var(--graphite-a); border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 26px 24px 22px;
+    display: flex; flex-direction: column;
+    transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.35s, border-color 0.35s;
+    animation: fadeUp 0.7s ease both;
+  }
+  .top-card:nth-child(1) { animation-delay: 0.05s; }
+  .top-card:nth-child(2) { animation-delay: 0.14s; }
+  .top-card:nth-child(3) { animation-delay: 0.23s; }
+  .top-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 14px 36px rgba(0, 0, 0, 0.45);
+    border-color: rgba(255, 255, 255, 0.18);
+  }
+  .top-card.first {
+    border-color: rgba(41, 151, 255, 0.42);
+    animation: fadeUp 0.7s ease both, topGlow 3.6s ease-in-out 0.7s infinite;
+  }
+  .top-rank-row {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 12px;
+  }
+  .top-rank {
+    font-family: var(--font-display);
+    font-size: 38px; font-weight: 700; line-height: 1;
+    color: rgba(255, 255, 255, 0.92);
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+  }
+  .top-first {
+    display: inline-block; padding: 4px 11px; border-radius: 980px;
+    background: rgba(41, 151, 255, 0.16); color: var(--blue-bright);
+    border: 1px solid rgba(41, 151, 255, 0.4);
+    font-size: 11px; font-weight: 600; letter-spacing: 0.04em;
+  }
+  .top-action-pill {
+    margin-left: auto;
+    padding: 5px 13px; border-radius: 980px;
+    font-size: 12px; font-weight: 600; white-space: nowrap;
+  }
+  .top-action-pill.right { background: var(--blue-bright); color: var(--black); }
+  .top-action-pill.left {
+    background: rgba(41, 151, 255, 0.14); color: var(--blue-bright);
+    border: 1px solid rgba(41, 151, 255, 0.4);
+  }
+  .top-action-pill.hold {
+    background: transparent; color: rgba(255, 255, 255, 0.7);
+    border: 1px solid var(--gray-border-strong);
+  }
+  .top-name {
+    font-family: var(--font-display); font-size: 21px; font-weight: 600;
+    color: var(--white); line-height: 1.25; margin-bottom: 8px;
+  }
+  .top-logic {
+    font-size: 13.5px; line-height: 1.55; color: rgba(255, 255, 255, 0.72);
+    margin-bottom: 14px; flex: 1;
+  }
+  .top-layers { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 14px; }
+  .top-layer {
+    font-size: 11.5px; padding: 4px 11px; border-radius: 980px;
+    background: var(--graphite-d); color: rgba(255, 255, 255, 0.78);
+    border: 1px solid rgba(255, 255, 255, 0.1); white-space: nowrap;
+  }
+  .top-layer b { color: var(--blue-bright); font-weight: 600; }
+  .top-evidence { list-style: none; margin-bottom: 16px; }
+  .top-evidence li {
+    position: relative; padding-left: 14px;
+    font-size: 12.5px; line-height: 1.5; color: rgba(255, 255, 255, 0.85);
+    margin-bottom: 6px;
+  }
+  .top-evidence li::before {
+    content: ""; position: absolute; left: 0; top: 7px;
+    width: 5px; height: 5px; border-radius: 50%; background: var(--blue-bright);
+  }
+  .top-foot { border-top: 1px solid rgba(255, 255, 255, 0.1); padding-top: 12px; }
+  .top-foot p {
+    font-size: 12px; line-height: 1.55; color: var(--gray-border-strong);
+    margin-bottom: 5px;
+  }
+  .top-foot p:last-child { margin-bottom: 0; }
+  .top-foot b { color: rgba(255, 255, 255, 0.85); font-weight: 600; margin-right: 6px; }
+  .top-empty {
+    background: var(--graphite-a); border: 1px dashed rgba(255, 255, 255, 0.25);
+    border-radius: 20px; padding: 28px; text-align: center;
+    font-size: 14px; line-height: 1.7; color: var(--gray-border-strong);
+  }
+  .top-empty code {
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    background: var(--graphite-d); padding: 2px 8px; border-radius: 6px;
+    font-size: 12px; color: var(--blue-bright);
+  }
+
+  /* ============ 资产与清单（浅灰章节） ============ */
+  .assets-section { background: var(--pale); }
+  .asset-grid {
+    display: grid; gap: 14px;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    margin-bottom: 40px;
+  }
+  .asset-card {
+    background: var(--white); border-radius: 16px; padding: 20px;
+    transition: transform 0.3s, box-shadow 0.3s;
+  }
+  .asset-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1); }
+  .asset-name { font-size: 17px; font-weight: 600; margin-bottom: 8px; }
+  .asset-view { font-size: 13px; line-height: 1.55; color: var(--gray-text); }
+  .two-col {
+    display: grid; gap: 16px;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  }
+  .panel {
+    background: var(--white); border-radius: 18px; padding: 26px;
+  }
+  .panel h3 {
+    font-family: var(--font-display); font-size: 19px;
+    font-weight: 600; margin-bottom: 16px;
+  }
+  .watch-list { list-style: none; counter-reset: watch; }
+  .watch-list li {
+    counter-increment: watch;
+    display: flex; align-items: baseline; gap: 12px;
+    font-size: 14px; line-height: 1.5; padding: 9px 0;
+    border-bottom: 1px solid var(--gray-border-soft);
+  }
+  .watch-list li:last-child { border-bottom: none; }
+  .watch-list li::before {
+    content: counter(watch, decimal-leading-zero);
+    font-size: 12px; font-weight: 600; color: var(--blue);
+    font-variant-numeric: tabular-nums;
+  }
+  .falsify-note {
+    font-size: 14px; line-height: 1.6; color: var(--ink);
+    background: var(--pale); border-radius: 12px; padding: 16px 18px;
+    border-left: 3px solid var(--blue);
+  }
+
+  /* ============ 导入（黑色章节） ============ */
+  .import-section { background: var(--black); }
+  .import-card { background: var(--graphite-a); border-radius: 24px; padding: clamp(20px, 3vw, 32px); }
+  .import-hint { font-size: 14px; color: var(--gray-border-strong); line-height: 1.6; margin-bottom: 16px; }
+  .import-hint code {
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    background: var(--graphite-d); padding: 2px 8px; border-radius: 6px;
+    font-size: 13px; color: var(--blue-bright);
+  }
+  textarea {
+    width: 100%; min-height: 220px; resize: vertical;
+    background: var(--graphite-d); color: rgba(255, 255, 255, 0.9);
+    border: 1px solid var(--gray-border-strong); border-radius: 12px;
+    padding: 14px 16px; font-size: 13px; line-height: 1.6;
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    outline: none; transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  textarea:focus { border-color: var(--blue-bright); box-shadow: 0 0 0 4px rgba(41, 151, 255, 0.18); }
+  .import-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 16px; align-items: center; }
+  .btn {
+    padding: 10px 24px; border-radius: 980px; border: none;
+    font-size: 14px; font-weight: 600; cursor: pointer;
+    font-family: var(--font-text);
+    transition: transform 0.15s, opacity 0.2s, background 0.2s;
+  }
+  .btn:active { transform: scale(0.97); }
+  .btn-primary { background: var(--blue-bright); color: var(--black); }
+  .btn-primary:hover { opacity: 0.88; }
+  .btn-ghost {
+    background: transparent; color: rgba(255, 255, 255, 0.85);
+    border: 1px solid var(--gray-border-strong);
+  }
+  .btn-ghost:hover { border-color: var(--blue-bright); color: var(--blue-bright); }
+  .import-msg {
+    font-size: 13px; margin-left: 6px;
+    opacity: 0; transition: opacity 0.3s;
+  }
+  .import-msg.ok { color: var(--blue-bright); opacity: 1; }
+  .import-msg.err { color: #ff6961; opacity: 1; }
+
+  footer {
+    background: var(--black); color: var(--gray-border-strong);
+    text-align: center; padding: 32px 22px 40px;
+    font-size: 12px; line-height: 1.7;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  /* ============ 动画 ============ */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(18px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes phasePulse {
+    0% { box-shadow: 0 0 0 0 rgba(0, 113, 227, 0.45); }
+    70% { box-shadow: 0 0 0 9px rgba(0, 113, 227, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(0, 113, 227, 0); }
+  }
+  @keyframes nestingBreath {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(41, 151, 255, 0.25); }
+    50% { box-shadow: 0 0 0 10px rgba(41, 151, 255, 0); }
+  }
+  @keyframes topGlow {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(41, 151, 255, 0.3); }
+    50% { box-shadow: 0 0 0 11px rgba(41, 151, 255, 0); }
+  }
+  /* 波形流动：短波快、长波慢 —— 呼应多重波浪同时运行 */
+  @keyframes flowA { to { stroke-dashoffset: -320; } }
+  @keyframes flowB { to { stroke-dashoffset: -320; } }
+  .wave-kichin { stroke-dasharray: 5 9; animation: flowA 7s linear infinite; }
+  .wave-juglar { stroke-dasharray: 6 10; animation: flowB 15s linear infinite; }
+  .wave-kuznets { stroke-dasharray: 7 11; animation: flowB 30s linear infinite; }
+  .wave-kondratieff { stroke-dasharray: 8 12; animation: flowB 48s linear infinite; }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+  }
+
+  /* ============ 响应式 ============ */
+  @media (max-width: 833px) {
+    .nav-links { gap: 16px; }
+    .hero-sub { font-size: 17px; }
+  }
+  @media (max-width: 640px) {
+    .nav-links { display: none; }
+    .cycle-head { flex-direction: column; }
+    .nesting-card { flex-direction: column; align-items: flex-start; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <a class="nav-brand" href="#top">Cycle<span>·</span>Determination</a>
+    <div class="nav-links">
+      <a href="#cycles">周期定位</a>
+      <a href="#waves">波形叠加</a>
+      <a href="#industries">行业分层</a>
+      <a href="#top3">TOP3 推荐</a>
+      <a href="#assets">资产与跟踪</a>
+      <a href="#import">导入数据</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero" id="top">
+  <p class="hero-eyebrow">基钦 · 朱格拉 · 库兹涅茨 · 康德拉季耶夫</p>
+  <h1>周期定位仪表盘</h1>
+  <p class="hero-sub">经济是多重波浪的叠加。四个周期同时运行、相互嵌套——共振下行时萧条最深，错位运行时波动被平滑。</p>
+  <p class="hero-meta">数据时点 <strong id="asOf">—</strong> · 区域 <strong id="region">—</strong></p>
+  <div class="hero-pills" id="heroPills"></div>
+</header>
+
+<section class="cycles-section" id="cycles">
+  <div class="section-inner">
+    <p class="section-eyebrow">四周期定位</p>
+    <h2 class="section-title">各周期当前阶段</h2>
+    <p class="section-desc">置信度由数据证据链支撑；相位进度条标注当前在周期中的位置，圆点为当前时点。</p>
+    <div class="cycle-grid" id="cycleGrid"></div>
+  </div>
+</section>
+
+<section class="waves-section dark" id="waves">
+  <div class="section-inner">
+    <p class="section-eyebrow">多周期嵌套</p>
+    <h2 class="section-title">波形叠加</h2>
+    <p class="section-desc">四条波浪按真实周期长度等比压缩到同一时间轴。短波流动快、长波近乎静止——这正是嵌套的直观形态。竖线为当前时点。</p>
+    <div class="wave-frame">
+      <svg class="wave-svg" id="waveSvg" viewBox="0 0 1200 460" role="img" aria-label="多周期波形叠加图"></svg>
+      <div class="wave-legend" id="waveLegend"></div>
+    </div>
+    <div class="nesting-card">
+      <div class="nesting-state" id="nestingState">—</div>
+      <div class="nesting-body">
+        <p class="nesting-desc" id="nestingDesc">—</p>
+        <p class="nesting-analogy" id="nestingAnalogy"></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="industry-section" id="industries">
+  <div class="section-inner">
+    <p class="section-eyebrow">行业周期分层</p>
+    <h2 class="section-title">同一时点，不同相位</h2>
+    <p class="section-desc">每个行业同时标注库存层（基钦）、产能层（朱格拉）与长期需求三层位置。</p>
+    <div class="heat-legend">
+      <span><i class="heat-chip" style="background:#0071e3"></i>景气上行</span>
+      <span><i class="heat-chip" style="background:rgba(0,113,227,0.55)"></i>初步转好</span>
+      <span><i class="heat-chip" style="background:rgba(0,113,227,0.25)"></i>转弱</span>
+      <span><i class="heat-chip" style="background:#d2d2d7"></i>景气下行</span>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>行业</th><th>库存层（基钦）</th><th>产能层（朱格拉）</th>
+            <th>长期需求</th><th>综合判断</th><th>核心变量</th><th>投资建议</th>
+          </tr>
+        </thead>
+        <tbody id="industryBody"></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section class="top3-section dark" id="top3">
+  <div class="section-inner">
+    <p class="section-eyebrow">行业分层 · 综合结论</p>
+    <h2 class="section-title">综合推荐 TOP 3</h2>
+    <p class="section-desc">按周期位置、证据强度与风险调整综合排序：三层共振者优先，左侧标的以赔率取胜。</p>
+    <div class="top3-grid" id="top3Grid"></div>
+  </div>
+</section>
+
+<section class="assets-section" id="assets">
+  <div class="section-inner">
+    <p class="section-eyebrow">嵌套状态的资产含义</p>
+    <h2 class="section-title">大类资产与跟踪清单</h2>
+    <p class="section-desc">错位期选行业阿尔法，共振期做资产贝塔。</p>
+    <div class="asset-grid" id="assetGrid"></div>
+    <div class="two-col">
+      <div class="panel">
+        <h3>持续跟踪指标</h3>
+        <ol class="watch-list" id="watchList"></ol>
+      </div>
+      <div class="panel">
+        <h3>证伪条件</h3>
+        <p class="falsify-note" id="falsifyNote">—</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="import-section dark" id="import">
+  <div class="section-inner">
+    <p class="section-eyebrow">数据导入</p>
+    <h2 class="section-title">导入分析数据</h2>
+    <p class="section-desc">将 AI 按提示词输出的 JSON 数据块粘贴到下方，仪表盘整体刷新。</p>
+    <div class="import-card">
+      <p class="import-hint">来源：使用 <code>周期定位提示词.md</code> 的总提示词，取报告末尾 <code>json</code> 代码块粘贴于此。</p>
+      <textarea id="jsonInput" spellcheck="false" aria-label="粘贴 JSON 分析数据"></textarea>
+      <div class="import-actions">
+        <button class="btn btn-primary" id="applyBtn">应用数据</button>
+        <button class="btn btn-ghost" id="resetBtn">恢复示例数据</button>
+        <span class="import-msg" id="importMsg"></span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  周期长度（3-4 / 8-10 / 约20 / 50-60 年）是历史统计而非物理定律。<br>
+  本页为分析结果的可视化呈现，不构成投资建议。波形仅示意相位关系，非预测。
+</footer>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ============ 示例数据（演示用，可被导入 JSON 覆盖） ============ */
+  const DEMO_DATA = {
+    as_of: "2026-10",
+    region: ["中国"],
+    cycles: {
+      kichin: {
+        name: "基钦周期", length_years: 3.5, stage: "主动补库（前段）", direction: "回升",
+        confidence: "中", phase: 0.28,
+        evidence: [
+          "PPI 同比 +3.8% 连续回升，环比转正",
+          "9 月 PMI 回升至 50.1，购进价格指数 60.8",
+          "产成品存货名义 +11% 与 PMI 库存分项 47.6 背离，为涨价驱动的弱补库"
+        ],
+        trigger: "社零与固投回升确认补库持续性；若内需走弱则回落至被动补库"
+      },
+      juglar: {
+        name: "朱格拉周期", length_years: 9, stage: "出清期（中段）", direction: "下行",
+        confidence: "中", phase: 0.85,
+        evidence: [
+          "制造业投资 -2.3% 逐月走弱，民间投资 -10.1%",
+          "例外：设备购置 +9.3%、电子电路投资 +57.7%，AI 子周期独立扩张",
+          "晶圆代工利用率 >90% 与总量出清并存"
+        ],
+        trigger: "制造业投资同比转正 + 民间投资回正，确认进入复苏期"
+      },
+      kuznets: {
+        name: "库兹涅茨周期", length_years: 20, stage: "下行出清段（中段）", direction: "下行",
+        confidence: "高", phase: 0.87,
+        evidence: [
+          "新开工 -24.8%（8 月单月 -30.9%），开发投资 -19.9% 未止跌",
+          "广义库存 -19.4%，待售面积 -1.1% 转负",
+          "二手房网签 +10.6%，量增价跌的底部特征萌芽"
+        ],
+        trigger: "新开工降幅收窄至个位数 + 房价环比止跌，进入底部盘整段"
+      },
+      kondratieff: {
+        name: "康德拉季耶夫长波", length_years: 55, stage: "萧条（后段）", direction: "筑底",
+        confidence: "低", phase: 0.92,
+        evidence: [
+          "AI 渗透加速：四大云厂 Capex +86%，电子利润 +110%",
+          "旧通胀回归：CRB 年内 +37%，美联储重启加息至 3.75-4.00%",
+          "生产率兑现尚在早期，长波判断天然低置信度"
+        ],
+        trigger: "AI 对全要素生产率的系统抬升被统计确认，进入复苏"
+      }
+    },
+    industries: [
+      { name: "有色（铜/铝）", inventory: "主动补库", capacity: "出清期（后段）", demand: "成长期", summary: "周期上行 × 供给历史级短缺 × 需求成长", key_var: "铜精矿TC / 智利产量 / 全球PMI", action: "右侧跟随——铜价创新高确认短缺，AI 电力与电气化需求刚性" },
+      { name: "AI算力（服务器/光模块/PCB）", inventory: "主动补库", capacity: "扩张期", demand: "成长期", summary: "三层共振向上，利润三位数增长", key_var: "云厂商 Capex / 1.6T 出货量", action: "右侧跟随——康波主导技术渗透加速，业绩已兑现，回调分批介入" },
+      { name: "半导体", inventory: "主动补库", capacity: "扩张期", demand: "成长期", summary: "代工利用率 >90%，产销两旺", key_var: "代工利用率 / 台积电 Capex", action: "右侧跟随——AI 需求外溢 + 国产化双逻辑" },
+      { name: "消费电子", inventory: "被动去库", capacity: "复苏期", demand: "成熟期", summary: "算力需求外溢，存储/整机涨价（罕见）", key_var: "存储价格 / 新机销量", action: "右侧跟随——次选，AI 带动换机与涨价，弹性弱于算力硬件" },
+      { name: "化工", inventory: "被动去库", capacity: "出清期", demand: "成熟期", summary: "反内卷 + 油价传导，利润 +51% 修复", key_var: "油价 / 化工品价差", action: "右侧跟随——轻仓，复苏早段" },
+      { name: "软件SaaS", inventory: "主动补库", capacity: "扩张期", demand: "成长期", summary: "AI 应用渗透早段，信息服务业投资 +19.2%", key_var: "AI 订阅收入 / 云化进度", action: "右侧跟随——Agent 与 AI 应用兑现节奏决定弹性" },
+      { name: "锂电（储能主线）", inventory: "被动去库", capacity: "出清期（后段）", demand: "成长期", summary: "碳酸锂价格触底企稳，储能需求旺盛", key_var: "碳酸锂价格 / 储能招标量", action: "左侧布局——双底结构 + 储能独立增量，分批介入" },
+      { name: "光伏", inventory: "被动去库", capacity: "出清期（后段）", demand: "成长期", summary: "硅料产量年内最低，价格磨底企稳", key_var: "硅料价格 / 产能退出节奏", action: "左侧布局——轻仓，出清后段等待价格回升确认" },
+      { name: "煤炭", inventory: "主动补库", capacity: "见顶期", demand: "成熟期", summary: "景气高位，地缘溢价驱动", key_var: "美伊局势 / 电厂日耗", action: "持有观察——盈利兑现充分（利润 +51.6%），防停火回吐" },
+      { name: "原油", inventory: "主动补库", capacity: "见顶期", demand: "成熟期", summary: "战争溢价 + 低库存", key_var: "停火谈判 / 美国钻机数", action: "持有观察——事件驱动为主，追高风险大" },
+      { name: "汽车", inventory: "主动去库", capacity: "见顶期", demand: "成熟期", summary: "零售 -18.5%，利润 -16%，价格战未止", key_var: "价格战 / 出口 / 反内卷", action: "持有观察——出清不彻底，出口与政策是变数" },
+      { name: "工程机械", inventory: "被动去库", capacity: "复苏期", demand: "成熟期", summary: "更新周期 + 设备更新政策托底", key_var: "挖掘机销量 / 设备更新政策", action: "持有观察——更新周期启动，但制造业投资走弱压制弹性" },
+      { name: "家电", inventory: "被动去库", capacity: "复苏期", demand: "成熟期", summary: "以旧换新 + 出口对冲地产竣工拖累", key_var: "以旧换新效果 / 地产竣工", action: "持有观察——内需托底与地产拖累并存，格局稳定" },
+      { name: "食品饮料", inventory: "被动去库", capacity: "复苏期", demand: "成熟期", summary: "9 月 CPI 食品分项同比 -1.1%，需求弱复苏", key_var: "餐饮收入 / 提价传导", action: "持有观察——份额向龙头集中，等待提价传导验证" },
+      { name: "纺织服装", inventory: "被动去库", capacity: "复苏期", demand: "成熟期", summary: "出口韧性（8 月整体出口 +25%），纺织利润 +11.9%", key_var: "出口订单 / 内需零售", action: "持有观察——出口对冲内需平淡，利润已转正" },
+      { name: "物管", inventory: "—", capacity: "—", demand: "成熟期", summary: "二手房网签 +10.6% 利好存量管理", key_var: "二手房成交 / 应收账款", action: "持有观察——存量物管受益于二手房放量，新房关联业务承压" },
+      { name: "运营商", inventory: "—", capacity: "扩张期", demand: "成熟期", summary: "类债红利 + 算力网络第二曲线", key_var: "分红率 / 算力资本开支", action: "持有观察——红利属性为盾，算力投资为矛" },
+      { name: "银行", inventory: "—", capacity: "—", demand: "成熟期", summary: "居民净还贷、信贷需求偏弱，息差承压", key_var: "社融 / M1 / 净息差", action: "持有观察——红利防御属性，等待信贷需求回升" },
+      { name: "券商", inventory: "—", capacity: "—", demand: "成熟期", summary: "业绩弹性取决于资本市场活跃度", key_var: "成交额 / 两融余额", action: "持有观察——等待成交量与两融回升的右侧信号" },
+      { name: "保险", inventory: "—", capacity: "—", demand: "成熟期", summary: "储蓄险需求旺盛，长端利率低位压制利差", key_var: "长端利率 / 新单保费", action: "持有观察——负债端改善与资产端承压并存" },
+      { name: "钢铁", inventory: "主动去库", capacity: "出清期", demand: "衰退期", summary: "需求塌方，利润 -62.4%", key_var: "螺纹表观消费 / 限产执行", action: "回避——下行未止，托底依赖反内卷限产执行" },
+      { name: "建材", inventory: "主动去库", capacity: "出清期", demand: "衰退期", summary: "利润 -46.7%，水泥出货双位数负增", key_var: "水泥出货率 / 基建实物量", action: "回避——地产链下行未止，反内卷限产才有波段机会" },
+      { name: "家居", inventory: "主动去库", capacity: "出清期", demand: "衰退期", summary: "地产后周期，销售与新开工双弱", key_var: "商品房销售 / 以旧换新", action: "回避——前周期指标未见底，更新政策仅托底" },
+      { name: "房地产开发", inventory: "主动去库", capacity: "出清期", demand: "衰退期", summary: "新开工 -24.8% 未止跌，托而不举", key_var: "新开工 / 70 城房价", action: "回避——出清未完，仅二手房与城市更新是结构性例外" }
+    ],
+    top3: [
+      {
+        rank: 1, name: "有色（铜为核心，铝/锡次之）", action: "右侧跟随",
+        layers: { inventory: "主动补库", capacity: "出清后段·供给收缩", demand: "成长期" },
+        logic: "唯一“周期上行 × 供给历史级短缺 × 需求成长”三击行业：AI 电力、电网与电气化需求刚性，德银看铜至 22,050 美元/吨。",
+        evidence: [
+          "智利 8 月产量 -13%，15 年单月最低，全球矿端收缩",
+          "铜精矿现货 TC -221 美元/吨，冶炼亏损倒逼减产",
+          "LME 铜创 14,779 美元/吨历史新高，冶炼利润 +82.9%"
+        ],
+        key_var: "铜精矿TC / 智利月度产量 / 美联储利率路径",
+        risk: "美伊停火引发商品回吐；再加息压制金融属性"
+      },
+      {
+        rank: 2, name: "AI 算力硬件（光模块/PCB/服务器）", action: "右侧跟随",
+        layers: { inventory: "主动补库", capacity: "扩张期", demand: "成长期早段" },
+        logic: "康波第六波主导技术的实体映射：云 Capex +86%、电子利润 +110%，朱格拉扩张与主动补库三层共振，业绩已兑现。",
+        evidence: [
+          "四大云厂 Q2 资本开支 1,649 亿美元，同比 +86%",
+          "电子电路投资 +57.7%，晶圆代工利用率 >90%",
+          "高盛上调 2026-28 光模块出货 +21% / +31% / +31%"
+        ],
+        key_var: "云厂商 Capex 指引 / 1.6T 出货节奏",
+        risk: "拥挤度与估值最高；云 Capex 增速失速即证伪"
+      },
+      {
+        rank: 3, name: "新能源储能链（锂电/光伏）", action: "左侧布局",
+        layers: { inventory: "库存底", capacity: "出清期后段", demand: "成长期（储能旺盛）" },
+        logic: "库存与产能双底 + 储能独立增量需求：碳酸锂/硅料价格触底企稳，龙头减产与反内卷治理推进，赔率最优。",
+        evidence: [
+          "碳酸锂价格触底企稳，硅料产量降至年内最低",
+          "储能电池需求旺盛，与 AI 数据中心需求同源",
+          "电气机械利润 -5.2% 处底部区域，预期出清充分"
+        ],
+        key_var: "碳酸锂/硅料价格 / 储能招标量",
+        risk: "出清磨底时间长于预期，价格反复"
+      }
+    ],
+    nesting: {
+      state: "错位运行",
+      description: "基钦回升 × 朱格拉出清 × 库兹涅茨深降 × AI 子周期独立上行，新技术资本开支对冲地产与传统过剩出清。",
+      analogy: "历史相似时期：1998-2001（信息技术浪潮上行对冲传统过剩与地产调整）",
+      assets: {
+        equity: "结构性机会，周期+科技双主线，行业阿尔法优先",
+        bond: "承压：PPI 回升 + 美联储加息，久期宜短",
+        commodity: "上行：供给约束 + 地缘溢价，铜最优",
+        cash: "配置价值下降，但保留停火情景对冲仓",
+        gold: "震荡：紧缩压制金融属性，央行购金与地缘支撑底部"
+      }
+    },
+    watchlist: [
+      "美伊局势与油价（地缘总开关）",
+      "美联储点阵图与美元实际利率",
+      "云厂商季度 Capex 指引与 1.6T 光模块出货量",
+      "铜精矿 TC 与智利月度产量",
+      "碳酸锂/硅料价格与社零、地产销售（内需验证）"
+    ],
+    falsification: "美伊快速停火引发能源与有色深度回吐，或 2027 年云厂商 Capex 增速降至个位数，将同时证伪铜与 AI 算力的需求逻辑。"
+  };
+
+  const STORAGE_KEY = "cycle-dashboard-data";
+  const CYCLE_KEYS = ["kichin", "juglar", "kuznets", "kondratieff"];
+  const CYCLE_LABELS = { kichin: "基钦", juglar: "朱格拉", kuznets: "库兹涅茨", kondratieff: "康波" };
+
+  /* ============ 校验 ============ */
+  function validate(data) {
+    if (!data || typeof data !== "object") throw new Error("数据必须是一个 JSON 对象");
+    if (!data.cycles) throw new Error("缺少 cycles 字段");
+    CYCLE_KEYS.forEach(function (k) {
+      if (!data.cycles[k]) throw new Error("缺少 cycles." + k + " 字段");
+      if (typeof data.cycles[k].phase !== "number" || data.cycles[k].phase < 0 || data.cycles[k].phase > 1) {
+        throw new Error(CYCLE_LABELS[k] + " 的 phase 必须是 0-1 的小数");
+      }
+    });
+    if (!Array.isArray(data.industries)) throw new Error("缺少 industries 数组");
+    if (data.top3 !== undefined) {
+      if (!Array.isArray(data.top3) || data.top3.length !== 3) {
+        throw new Error("top3 必须为包含 3 个对象的数组");
+      }
+    }
+    if (!data.nesting) throw new Error("缺少 nesting 字段");
+    return true;
+  }
+
+  /* ============ 工具 ============ */
+  function el(tag, cls, text) {
+    const node = document.createElement(tag);
+    if (cls) node.className = cls;
+    if (text !== undefined) node.textContent = text;
+    return node;
+  }
+  function confLevel(c) { return c === "高" ? 3 : c === "中" ? 2 : 1; }
+
+  /* 阶段 → 热力档位（0-3）：颜色越深，周期位置越有利；"—"为不适用，中性样式 */
+  var HEAT_MAP = {
+    "主动补库": 3, "被动去库": 2, "被动补库": 1, "主动去库": 0,
+    "扩张期": 3, "复苏期": 2, "见顶期": 1, "出清期": 0,
+    "扩产": 3, "复苏": 2, "见顶": 1, "出清": 0,
+    "成长期": 3, "成熟期": 2, "衰退期": 0
+  };
+  function heatClass(stage) {
+    if (!stage || stage === "—") return "hna";
+    /* 剥离"（后段）"等段内细分后缀后再匹配 */
+    var base = stage.replace(/[（(][^）)]*[）)]/g, "").trim();
+    var h = HEAT_MAP[base];
+    if (h === undefined) return "hna";
+    return "h" + h;
+  }
+
+  /* ============ 渲染：元信息 + Hero pills ============ */
+  function renderMeta(data) {
+    document.getElementById("asOf").textContent = data.as_of || "—";
+    var region = Array.isArray(data.region) ? data.region.join(" / ") : (data.region || "—");
+    document.getElementById("region").textContent = region;
+    var pills = document.getElementById("heroPills");
+    pills.innerHTML = "";
+    CYCLE_KEYS.forEach(function (k) {
+      var c = data.cycles[k];
+      var pill = el("span", "hero-pill");
+      pill.appendChild(document.createTextNode(CYCLE_LABELS[k] + " "));
+      pill.appendChild(el("b", null, c.stage || "—"));
+      pills.appendChild(pill);
+    });
+  }
+
+  /* ============ 渲染：周期卡片 ============ */
+  function renderCycles(data) {
+    var grid = document.getElementById("cycleGrid");
+    grid.innerHTML = "";
+    CYCLE_KEYS.forEach(function (k) {
+      var c = data.cycles[k];
+      var card = el("div", "cycle-card");
+
+      var head = el("div", "cycle-head");
+      var headLeft = el("div");
+      headLeft.appendChild(el("div", "cycle-name", c.name || CYCLE_LABELS[k]));
+      headLeft.appendChild(el("div", "cycle-length", "周期长度 " + (c.length_years || "—") + " 年"));
+      head.appendChild(headLeft);
+      head.appendChild(el("span", "stage-badge", c.stage || "—"));
+      card.appendChild(head);
+
+      var meta = el("div", "cycle-meta");
+      var dir = el("span", "direction " + (/升|上行|复苏/.test(c.direction || "") ? "up" : ""), (c.direction || "—"));
+      meta.appendChild(el("span", null, "方向 ")).appendChild(dir);
+      var conf = el("span", "confidence");
+      conf.appendChild(document.createTextNode("置信度 "));
+      var dots = el("span", "conf-dots");
+      var lvl = confLevel(c.confidence);
+      for (var i = 0; i < 3; i++) {
+        var d = el("i", "conf-dot" + (i < lvl ? " on" : ""));
+        dots.appendChild(d);
+      }
+      conf.appendChild(dots);
+      conf.appendChild(document.createTextNode(" " + (c.confidence || "—")));
+      meta.appendChild(conf);
+      card.appendChild(meta);
+
+      var track = el("div", "phase-track");
+      [25, 50, 75].forEach(function (p) {
+        var tick = el("i", "phase-tick");
+        tick.style.left = p + "%";
+        track.appendChild(tick);
+      });
+      var fill = el("div", "phase-fill");
+      fill.style.width = (Math.round((c.phase || 0) * 100)) + "%";
+      var now = el("div", "phase-now");
+      now.style.left = (Math.round((c.phase || 0) * 100)) + "%";
+      track.appendChild(fill);
+      track.appendChild(now);
+      card.appendChild(track);
+      var pl = el("div", "phase-label");
+      pl.appendChild(el("span", null, "谷底"));
+      pl.appendChild(el("span", null, "峰值"));
+      pl.appendChild(el("span", null, "谷底"));
+      card.appendChild(pl);
+
+      var ev = el("ul", "cycle-evidence");
+      (c.evidence || ["暂无证据"]).forEach(function (e) { ev.appendChild(el("li", null, e)); });
+      card.appendChild(ev);
+
+      var trig = el("div", "cycle-trigger");
+      trig.appendChild(el("b", null, "切换触发 "));
+      trig.appendChild(document.createTextNode(c.trigger || "—"));
+      card.appendChild(trig);
+
+      grid.appendChild(card);
+    });
+  }
+
+  /* ============ 渲染：波形叠加 SVG ============ */
+  function renderWaves(data) {
+    var svg = document.getElementById("waveSvg");
+    svg.innerHTML = "";
+    var NS = "http://www.w3.org/2000/svg";
+    var W = 1200, H = 460, PAD_L = 50, PAD_R = 30, CY = H / 2 - 10;
+    var T_MIN = -8, T_MAX = 4;                 // 时间轴：8 年前 → 4 年后
+    var YEARS = T_MAX - T_MIN;
+    function tx(t) { return PAD_L + (t - T_MIN) / YEARS * (W - PAD_L - PAD_R); }
+
+    /* 系列：白 + 青/黄/粉红（蓝黄轴色相 + 明度双通道分离，红绿色弱友好） */
+    var waves = [
+      { key: "kondratieff", amp: 128, color: "#f5f5f7", opacity: 0.95, width: 2.8 },
+      { key: "kuznets",     amp: 100, color: "#64d2ff", opacity: 0.9,  width: 2.2 },
+      { key: "juglar",      amp: 74,  color: "#ffd60a", opacity: 0.92, width: 2 },
+      { key: "kichin",      amp: 50,  color: "#ff375f", opacity: 0.9,  width: 1.8 }
+    ];
+
+    /* 网格：峰 / 中 / 谷 + 年份刻度 */
+    var grid = document.createElementNS(NS, "g");
+    [CY - 128, CY, CY + 128].forEach(function (y, idx) {
+      var line = document.createElementNS(NS, "line");
+      line.setAttribute("x1", PAD_L); line.setAttribute("x2", W - PAD_R);
+      line.setAttribute("y1", y); line.setAttribute("y2", y);
+      line.setAttribute("stroke", "rgba(255,255,255,0.12)");
+      line.setAttribute("stroke-dasharray", "3 6");
+      grid.appendChild(line);
+      var label = document.createElementNS(NS, "text");
+      label.setAttribute("x", 16); label.setAttribute("y", y + 4);
+      label.setAttribute("fill", "rgba(255,255,255,0.38)");
+      label.setAttribute("font-size", "11");
+      label.textContent = ["峰", "中枢", "谷"][idx];
+      grid.appendChild(label);
+    });
+    [-8, -6, -4, -2, 0, 2, 4].forEach(function (t) {
+      var x = tx(t);
+      var tick = document.createElementNS(NS, "line");
+      tick.setAttribute("x1", x); tick.setAttribute("x2", x);
+      tick.setAttribute("y1", CY + 148); tick.setAttribute("y2", CY + 156);
+      tick.setAttribute("stroke", "rgba(255,255,255,0.3)");
+      grid.appendChild(tick);
+      var label = document.createElementNS(NS, "text");
+      label.setAttribute("x", x); label.setAttribute("y", CY + 174);
+      label.setAttribute("text-anchor", "middle");
+      label.setAttribute("fill", t === 0 ? "#2997ff" : "rgba(255,255,255,0.38)");
+      label.setAttribute("font-size", "12");
+      if (t === 0) { label.setAttribute("font-weight", "600"); }
+      label.textContent = t === 0 ? "现在" : (t > 0 ? "+" + t + "年" : t + "年");
+      grid.appendChild(label);
+    });
+    svg.appendChild(grid);
+
+    /* 波形：y = CY + A·cos(2π(t/T + phase))。SVG y 轴向下，phase 0=谷底，0.5=峰值 */
+    var dotLabels = [];
+    waves.forEach(function (w) {
+      var c = data.cycles[w.key];
+      var T = c.length_years || 3.5, phase = c.phase || 0, A = w.amp;
+      var d = "";
+      for (var px = PAD_L; px <= W - PAD_R; px += 2) {
+        var t = T_MIN + (px - PAD_L) / (W - PAD_L - PAD_R) * YEARS;
+        var y = CY + A * Math.cos(2 * Math.PI * (t / T + phase));
+        d += (px === PAD_L ? "M" : "L") + px.toFixed(1) + " " + y.toFixed(1);
+      }
+      var path = document.createElementNS(NS, "path");
+      path.setAttribute("d", d);
+      path.setAttribute("fill", "none");
+      path.setAttribute("stroke", w.color);
+      path.setAttribute("stroke-opacity", w.opacity);
+      path.setAttribute("stroke-width", w.width);
+      path.setAttribute("stroke-linecap", "round");
+      path.setAttribute("class", "wave-" + w.key);
+      svg.appendChild(path);
+
+      /* 当前相位点 */
+      var y0 = CY + A * Math.cos(2 * Math.PI * phase);
+      var dot = document.createElementNS(NS, "circle");
+      dot.setAttribute("cx", tx(0)); dot.setAttribute("cy", y0.toFixed(1));
+      dot.setAttribute("r", 5); dot.setAttribute("fill", w.color);
+      svg.appendChild(dot);
+
+      dotLabels.push({
+        y0: y0, yLabel: y0,
+        color: w.color, opacity: w.opacity,
+        text: CYCLE_LABELS[w.key] + " · " + (c.stage || "—")
+      });
+    });
+
+    /* 阶段标签：竖线右侧一列，防重叠排布，细连线指向对应相位点 */
+    dotLabels.sort(function (a, b) { return a.y0 - b.y0; });
+    for (var li = 1; li < dotLabels.length; li++) {
+      if (dotLabels[li].yLabel - dotLabels[li - 1].yLabel < 18) {
+        dotLabels[li].yLabel = dotLabels[li - 1].yLabel + 18;
+      }
+    }
+    dotLabels.forEach(function (lb) {
+      var lead = document.createElementNS(NS, "line");
+      lead.setAttribute("x1", tx(0) + 7); lead.setAttribute("y1", lb.y0.toFixed(1));
+      lead.setAttribute("x2", tx(0) + 13); lead.setAttribute("y2", lb.yLabel.toFixed(1));
+      lead.setAttribute("stroke", lb.color);
+      lead.setAttribute("stroke-opacity", Math.min(lb.opacity + 0.25, 1) * 0.6);
+      lead.setAttribute("stroke-width", "1");
+      svg.appendChild(lead);
+      var text = document.createElementNS(NS, "text");
+      text.setAttribute("x", tx(0) + 16); text.setAttribute("y", (lb.yLabel + 4).toFixed(1));
+      text.setAttribute("fill", lb.color);
+      text.setAttribute("font-size", "11");
+      text.setAttribute("font-weight", "500");
+      text.textContent = lb.text;
+      svg.appendChild(text);
+    });
+
+    /* 当前时点竖线（极淡白，参考线存在感低于任何一条波） */
+    var now = document.createElementNS(NS, "line");
+    now.setAttribute("x1", tx(0)); now.setAttribute("x2", tx(0));
+    now.setAttribute("y1", CY - 148); now.setAttribute("y2", CY + 156);
+    now.setAttribute("stroke", "rgba(255,255,255,0.18)");
+    now.setAttribute("stroke-width", "1.5");
+    now.setAttribute("stroke-dasharray", "4 5");
+    svg.appendChild(now);
+
+    /* 图例 */
+    var legend = document.getElementById("waveLegend");
+    legend.innerHTML = "";
+    waves.slice().reverse().forEach(function (w) {
+      var c = data.cycles[w.key];
+      var item = el("span");
+      var sw = el("i", "legend-swatch");
+      sw.style.background = w.color; sw.style.opacity = w.opacity;
+      item.appendChild(sw);
+      item.appendChild(document.createTextNode(
+        (c.name || w.key) + " · " + (c.length_years || "—") + " 年 · " + (c.stage || "—")));
+      legend.appendChild(item);
+    });
+  }
+
+  /* ============ 渲染：行业矩阵 ============ */
+  function renderIndustries(data) {
+    var body = document.getElementById("industryBody");
+    body.innerHTML = "";
+    (data.industries || []).forEach(function (row) {
+      var tr = el("tr");
+      tr.appendChild(el("td", "industry-name", row.name || "—"));
+      [row.inventory, row.capacity, row.demand].forEach(function (stage) {
+        var td = el("td");
+        td.appendChild(el("span", "heat " + heatClass(stage), stage || "—"));
+        tr.appendChild(td);
+      });
+      tr.appendChild(el("td", "wrap", row.summary || "—"));
+      tr.appendChild(el("td", "muted wrap", row.key_var || "—"));
+      var tdA = el("td", "wrap");
+      if (row.action) {
+        var parts = String(row.action).split("——");
+        tdA.appendChild(el("span", "action-tag", parts[0].trim()));
+        if (parts[1]) { tdA.appendChild(document.createTextNode("——" + parts[1])); }
+      } else { tdA.appendChild(document.createTextNode("—")); }
+      tr.appendChild(tdA);
+      body.appendChild(tr);
+    });
+  }
+
+  /* ============ 渲染：TOP3 推荐 ============ */
+  var ACTION_CLASS = { "右侧跟随": "right", "左侧布局": "left", "持有观察": "hold", "回避": "hold" };
+  function renderTop3(data) {
+    var grid = document.getElementById("top3Grid");
+    grid.innerHTML = "";
+    var list = data.top3;
+    if (!Array.isArray(list) || !list.length) {
+      var empty = el("div", "top-empty");
+      empty.appendChild(document.createTextNode("当前数据未包含 top3 字段——在导入的 JSON 中加入 top3 数组（格式见 "));
+      var code = el("code");
+      code.textContent = "周期定位提示词.md";
+      empty.appendChild(code);
+      empty.appendChild(document.createTextNode("），或点击下方「恢复示例数据」查看效果。"));
+      grid.appendChild(empty);
+      return;
+    }
+    list.forEach(function (item, i) {
+      var card = el("article", "top-card" + (i === 0 ? " first" : ""));
+
+      var rankRow = el("div", "top-rank-row");
+      rankRow.appendChild(el("span", "top-rank", "0" + (item.rank || (i + 1))));
+      if (i === 0) rankRow.appendChild(el("span", "top-first", "首选"));
+      var act = String(item.action || "—").split("——")[0].trim();
+      rankRow.appendChild(el("span", "top-action-pill " + (ACTION_CLASS[act] || "hold"), act));
+      card.appendChild(rankRow);
+
+      card.appendChild(el("h3", "top-name", item.name || "—"));
+      if (item.logic) card.appendChild(el("p", "top-logic", item.logic));
+
+      var LAYER_LABELS = [["inventory", "库存"], ["capacity", "产能"], ["demand", "需求"]];
+      var layers = el("div", "top-layers");
+      LAYER_LABELS.forEach(function (pair) {
+        var v = item.layers ? item.layers[pair[0]] : null;
+        if (!v) return;
+        var chip = el("span", "top-layer");
+        chip.appendChild(el("b", null, pair[1]));
+        chip.appendChild(document.createTextNode("·" + v));
+        layers.appendChild(chip);
+      });
+      if (layers.childNodes.length) card.appendChild(layers);
+
+      var ev = el("ul", "top-evidence");
+      (item.evidence || []).forEach(function (e) { ev.appendChild(el("li", null, e)); });
+      if (ev.childNodes.length) card.appendChild(ev);
+
+      var foot = el("div", "top-foot");
+      if (item.key_var) {
+        var p1 = el("p");
+        p1.appendChild(el("b", null, "核心变量"));
+        p1.appendChild(document.createTextNode(item.key_var));
+        foot.appendChild(p1);
+      }
+      if (item.risk) {
+        var p2 = el("p");
+        p2.appendChild(el("b", null, "主要风险"));
+        p2.appendChild(document.createTextNode(item.risk));
+        foot.appendChild(p2);
+      }
+      if (foot.childNodes.length) card.appendChild(foot);
+
+      grid.appendChild(card);
+    });
+  }
+
+  /* ============ 渲染：资产 + 清单 + 证伪 ============ */
+  var ASSET_NAMES = { equity: "股票", bond: "债券", commodity: "商品", cash: "现金", gold: "黄金" };
+  function renderAssets(data) {
+    var grid = document.getElementById("assetGrid");
+    grid.innerHTML = "";
+    var a = (data.nesting && data.nesting.assets) || {};
+    Object.keys(ASSET_NAMES).forEach(function (k) {
+      var card = el("div", "asset-card");
+      card.appendChild(el("div", "asset-name", ASSET_NAMES[k]));
+      card.appendChild(el("p", "asset-view", a[k] || "—"));
+      grid.appendChild(card);
+    });
+    var list = document.getElementById("watchList");
+    list.innerHTML = "";
+    (data.watchlist || []).forEach(function (w) { list.appendChild(el("li", null, w)); });
+    document.getElementById("falsifyNote").textContent = data.falsification || "—";
+    document.getElementById("nestingState").textContent = (data.nesting && data.nesting.state) || "—";
+    document.getElementById("nestingDesc").textContent = (data.nesting && data.nesting.description) || "—";
+    document.getElementById("nestingAnalogy").textContent = (data.nesting && data.nesting.analogy) || "";
+  }
+
+  function renderAll(data) {
+    renderMeta(data);
+    renderCycles(data);
+    renderWaves(data);
+    renderIndustries(data);
+    renderTop3(data);
+    renderAssets(data);
+  }
+
+  /* ============ 导入逻辑 ============ */
+  var input = document.getElementById("jsonInput");
+  var msg = document.getElementById("importMsg");
+
+  function flash(type, text) {
+    msg.className = "import-msg " + type;
+    msg.textContent = text;
+  }
+
+  document.getElementById("applyBtn").addEventListener("click", function () {
+    try {
+      var data = JSON.parse(input.value);
+      validate(data);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      renderAll(data);
+      flash("ok", "已应用并保存到本地");
+      document.getElementById("top").scrollIntoView({ behavior: "smooth" });
+    } catch (err) {
+      flash("err", "导入失败：" + err.message);
+    }
+  });
+
+  document.getElementById("resetBtn").addEventListener("click", function () {
+    localStorage.removeItem(STORAGE_KEY);
+    input.value = JSON.stringify(DEMO_DATA, null, 2);
+    renderAll(DEMO_DATA);
+    flash("ok", "已恢复示例数据");
+    document.getElementById("top").scrollIntoView({ behavior: "smooth" });
+  });
+
+  /* ============ 初始化 ============ */
+  var initial = null;
+  try {
+    initial = JSON.parse(localStorage.getItem(STORAGE_KEY));
+    if (initial) validate(initial);
+  } catch (e) { initial = null; }
+  var data = initial || DEMO_DATA;
+  input.value = JSON.stringify(data, null, 2);
+  renderAll(data);
+})();
+</script>
+</body>
+</html>

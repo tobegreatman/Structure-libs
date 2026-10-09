@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>两类买入信号的有效性证据评估</title>
+<style>
+  :root{
+    --black:#000000; --ink:#1d1d1f; --gray:#6e6e73; --pale:#f5f5f7;
+    --white:#ffffff; --blue:#0071e3; --link:#0066cc; --border:#d2d2d7;
+    --border2:#86868b; --up:#d32f2f; --down:#2e7d32;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{font-family:"SF Pro Text","Inter","Helvetica Neue","PingFang SC","Microsoft YaHei",Arial,sans-serif;color:var(--ink);background:var(--white);line-height:1.7;-webkit-font-smoothing:antialiased;}
+  h1,h2,h3,h4{font-family:"SF Pro Display","Inter Tight","Helvetica Neue","PingFang SC","Microsoft YaHei",sans-serif;line-height:1.15;font-weight:600;}
+  a{color:var(--link);text-decoration:none;}
+  .wrap{max-width:980px;margin:0 auto;padding:0 24px;}
+  nav{position:fixed;top:0;left:0;right:0;z-index:100;backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);background:rgba(255,255,255,.72);border-bottom:1px solid rgba(0,0,0,.06);}
+  .nav-inner{max-width:980px;margin:0 auto;padding:10px 24px;display:flex;align-items:center;gap:18px;flex-wrap:wrap;}
+  .nav-title{font-weight:600;font-size:14px;}
+  .nav-links{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;}
+  .nav-links a{color:var(--ink);opacity:.8;}
+  .nav-links a:hover{color:var(--blue);opacity:1;}
+  .hero{background:var(--black);color:#fff;padding:130px 0 80px;}
+  .hero .kicker{color:var(--blue);font-size:14px;font-weight:600;letter-spacing:2px;text-transform:uppercase;margin-bottom:18px;}
+  .hero h1{font-size:44px;letter-spacing:-.5px;margin-bottom:20px;}
+  .hero p.sub{font-size:18px;color:#a1a1a6;max-width:740px;}
+  .hero .meta{margin-top:30px;display:flex;gap:26px;flex-wrap:wrap;font-size:13px;color:#86868b;}
+  .hero .meta b{color:#f5f5f7;font-weight:600;}
+  section{padding:64px 0;}
+  .sec-pale{background:var(--pale);}
+  .sec-white{background:var(--white);}
+  .kicker2{color:var(--blue);font-size:13px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px;}
+  h2.sec-title{font-size:34px;letter-spacing:-.3px;margin-bottom:12px;}
+  .sec-lead{font-size:17px;color:var(--gray);max-width:760px;margin-bottom:32px;}
+  h3{font-size:22px;margin:36px 0 12px;}
+  p{margin-bottom:14px;}
+  ul,ol{margin:0 0 14px 22px;}
+  li{margin-bottom:6px;}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  @media(max-width:760px){.grid2{grid-template-columns:1fr;} .hero h1{font-size:32px;} h2.sec-title{font-size:26px;}}
+  .card{background:var(--white);border-radius:18px;padding:22px 24px;border:1px solid rgba(0,0,0,.04);}
+  .sec-white .card{background:var(--pale);}
+  .card .tag{display:inline-block;font-size:11px;font-weight:600;color:var(--blue);background:rgba(0,113,227,.08);border-radius:980px;padding:3px 10px;margin-bottom:10px;}
+  .card h4{margin:0 0 6px;font-size:17px;}
+  .card p{font-size:13.5px;color:var(--gray);margin-bottom:8px;}
+  .card p:last-child{margin-bottom:0;}
+  .verdict-ok{color:var(--down);font-weight:700;}
+  .verdict-no{color:var(--up);font-weight:700;}
+  .verdict-mid{color:#b26a00;font-weight:700;}
+  table{width:100%;border-collapse:collapse;font-size:13.5px;margin:18px 0;background:var(--white);border-radius:12px;overflow:hidden;}
+  th{background:var(--ink);color:#fff;text-align:left;padding:10px 12px;font-weight:600;}
+  td{padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:top;}
+  tr:last-child td{border-bottom:none;}
+  tr:nth-child(even) td{background:var(--pale);}
+  .rule{background:rgba(0,113,227,.06);border-left:3px solid var(--blue);border-radius:0 12px 12px 0;padding:14px 18px;margin:16px 0;font-size:14px;}
+  .rule b{color:var(--blue);}
+  .warn{background:rgba(211,47,47,.06);border-left:3px solid var(--up);border-radius:0 12px 12px 0;padding:14px 18px;margin:16px 0;font-size:14px;}
+  .warn b{color:var(--up);}
+  .est{background:rgba(178,106,0,.07);border-left:3px solid #b26a00;border-radius:0 12px 12px 0;padding:14px 18px;margin:16px 0;font-size:13.5px;}
+  .est b{color:#b26a00;}
+  .src{font-size:12px;color:var(--gray);}
+  .diagram{background:var(--white);border:1px solid var(--border);border-radius:18px;padding:26px;margin:26px 0;}
+  .diagram svg{display:block;margin:0 auto;max-width:100%;height:auto;}
+  .diagram .cap{font-size:12px;color:var(--gray);text-align:center;margin-top:12px;}
+  footer{background:var(--pale);padding:40px 0;font-size:12.5px;color:var(--gray);}
+  .disclaimer{background:var(--white);border:1px solid var(--border);border-radius:14px;padding:18px 22px;font-size:12.5px;color:var(--gray);margin-top:20px;}
+  .anchor{padding-top:70px;margin-top:-70px;}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <span class="nav-title">信号有效性评估</span>
+    <div class="nav-links">
+      <a href="#tldr">结论</a>
+      <a href="#evidence-us">美股证据</a>
+      <a href="#evidence-cn">A股证据</a>
+      <a href="#why-no-number">为何没有精确胜率</a>
+      <a href="#expect">合理预期</a>
+      <a href="#verify">自己验证</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="kicker">Evidence Review</div>
+    <h1>突破与回踩，真的有效吗<br>——两类入场信号的有效性证据评估</h1>
+    <p class="sub">对《从认知到体系》信号 A（放量突破）与信号 B（缩量回踩）的证据盘点：学术界验证了什么、A 股的特殊性在哪里、为什么没有人能给你诚实的精确胜率，以及合理预期与自验证方案。</p>
+    <div class="meta">
+      <span>证据来源 <b>学术文献 + 中文实证研究</b></span>
+      <span>检索日期 <b>2026-10-09</b></span>
+      <span>数据性质 <b>公开文献（非自建回测）</b></span>
+    </div>
+  </div>
+</header>
+
+<!-- TL;DR -->
+<section id="tldr" class="sec-pale anchor">
+  <div class="wrap">
+    <div class="kicker2">TL;DR</div>
+    <h2 class="sec-title">三个诚实的结论</h2>
+    <div class="grid2">
+      <div class="card">
+        <span class="tag">结论一</span>
+        <h4>机制是真的：趋势与动量是金融界证据最充分的异象之一</h4>
+        <p>动量效应自 1993 年 Jegadeesh &amp; Titman 论文起，在美股及全球多个市场被反复验证三十余年，是少数能扛住样本外检验与交易成本调整的异象。两类信号的底层逻辑（正反馈、惯性、锚定导致的调整不充分）有真实的人类行为与统计基础——<b>这不是玄学</b>。</p>
+      </div>
+      <div class="card">
+        <span class="tag">结论二</span>
+        <h4>但「这两套具体规则的胜率/盈亏比」没有现成的公开数据</h4>
+        <p>学术证据是<b>组合层面</b>的（买入一篮子赢家股对冲一篮子输家股，看月度组合收益），不是<b>单笔交易层面</b>的（这个突破买进去，赢的概率多少）。任何声称「突破信号胜率 68%」的精确数字，若给不出样本期、市场、执行口径与原始回测，都应视为编造。诚实区间见第 5 章，且标注为经验估计。</p>
+      </div>
+      <div class="card" style="grid-column:1/-1;">
+        <span class="tag">结论三</span>
+        <h4>A 股是关键变量：个股动量显著弱于美股，短期反转主导</h4>
+        <p>多项中文实证研究（1997-2016 样本）发现：A 股<b>个股层面月度动量不显著</b>，1-4 周短期反转效应显著，长期反转更强。这意味着在美股的直接搬运会水土不服——体系里「环境过滤 + 主线过滤 + 盈亏比 ≥ 2:1 + 三维止损」不是装饰，正是为对冲 A 股这一特性而存在的。信号在 A 股的有效性高度依赖这些过滤器是否在位。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 美股证据 -->
+<section id="evidence-us" class="sec-white anchor">
+  <div class="wrap">
+    <div class="kicker2">证据层 1 · 学术</div>
+    <h2 class="sec-title">美股动量：被验证了三十年的异象</h2>
+    <p class="sec-lead">两类信号的共同祖先都是动量/趋势效应。它在学术界的地位如下（数字为组合层面统计，非单笔胜率）。</p>
+    <table>
+      <thead><tr><th style="width:26%">发现</th><th style="width:44%">内容</th><th>来源与口径</th></tr></thead>
+      <tbody>
+        <tr><td><b>动量组合长期正超额</b></td><td>买入过去 6 个月赢家、卖空输家的 6/6 策略，1965-1989 年样本年化复合超额收益约 12%；扣除单边 0.5% 交易成本后仍约 9.3%</td><td>Jegadeesh &amp; Titman (1993)，NYSE/AMEX 数据；此处数字转引自二手综述（Tradicted 研究摘要、Vaasa 大学学位论文，检索于 2026-10-09），<b>需核实原文</b></td></tr>
+        <tr><td><b>正收益月份占比 67%</b></td><td>动量组合在样本期 67% 的月份收益为正（剔除 1 月后 71%）——注意：这是「月份胜率」，不是「交易胜率」</td><td>同上，需核实原文</td></tr>
+        <tr><td><b>样本外持续有效</b></td><td>1990-1997 样本外期间，赢输组合月差约 1.01%，与原样本的 1.11% 接近——排除数据挖掘嫌疑的重要证据</td><td>Jegadeesh &amp; Titman (2001)，转引自 Tradicted 摘要（2026-10-09 检索），需核实原文</td></tr>
+        <tr><td><b>跨市场复现</b></td><td>新兴市场、发达市场均有复现；有综述称 45 篇同行评议研究的 6 个月动量平均夏普约 0.55</td><td>Finexus 综述文章（2026-10-09 检索），二手来源，<b>需核实原文</b></td></tr>
+        <tr><td><b>动量崩溃风险</b></td><td>动量组合在市场剧烈反转期出现深度回撤（如 2008-09、2020-03 月度亏损曾超 15%）——趋势策略的固有尾部风险</td><td>Finexus 综述文章，二手来源，需核实原文</td></tr>
+      </tbody>
+    </table>
+    <div class="rule"><b>怎么读这些数字：</b>学术动量是「每月调仓的多空组合」，不是「看到一个突破就买」。它证明的是<b>惯性这种力量真实存在</b>，为你的信号提供理论弹药；它不能证明你的具体规则能赚多少——那是执行层面的事。</div>
+  </div>
+</section>
+
+<!-- A股证据 -->
+<section id="evidence-cn" class="sec-pale anchor">
+  <div class="wrap">
+    <div class="kicker2">证据层 2 · A股实证</div>
+    <h2 class="sec-title">A 股的特殊性：动量弱、反转强、散户结构</h2>
+    <p class="sec-lead">这是评估里最重要的部分——信号要在 A 股执行，就必须面对 A 股与美股结构不同的事实。</p>
+    <table>
+      <thead><tr><th style="width:26%">发现</th><th style="width:44%">内容</th><th>来源与口径</th></tr></thead>
+      <tbody>
+        <tr><td><b>个股月度动量不显著</b></td><td>1997-2016 年 A 股样本：未发现显著的个股横截面动量效应；3 个月内短期反转效应显著，深市与创业板反转更强</td><td>《个股反转策略与行业动量策略——基于A股市场的实证研究》，中国高校人文社会科学信息网摘要（2017，检索于 2026-10-09），二手摘要，需核实原文</td></tr>
+        <tr><td><b>短中长期结构不同</b></td><td>短期（1-2 周）明显反转；中期（1-12 个月）动量与反转并存；长期（1-3 年）显著反转。整体「反转收益高于动量收益」</td><td>《中国股市短中长期动量与反转效应实证研究》学位论文摘要（国家学术搜索，检索于 2026-10-09），需核实原文</td></tr>
+        <tr><td><b>时序动量部分存在</b></td><td>基于指数的时间序列动量：A 股存在一定程度的短期时序动量与更普遍的长期时序反转；日度频率上有一定动量，周度/月度以反转为多</td><td>国家图书馆学位论文摘要与《投资者情绪与中国股市短期动量效应研究》摘要（检索于 2026-10-09），均需核实原文</td></tr>
+        <tr><td><b>隔夜动量、日内反转</b></td><td>上证50/沪深300/中证500 成分股存在显著「隔夜动量、日内反转」结构，与流动性风险补偿和机构交易行为相关</td><td>清华大学学位论文摘要（检索于 2026-10-09），需核实原文</td></tr>
+      </tbody>
+    </table>
+    <div class="warn"><b>对两类信号的直接含义：</b>① A 股个股层面「追涨」在统计上弱于美股——假突破与冲高回落更常见，信号 A 必须更依赖过滤器（环境态、主线、放量确认）而不是信号本身；② 短期反转主导意味着<b>买点位置比方向判断更重要</b>——这正是信号 B（回踩买）在 A 股相对信号 A（追突破）通常更稳的统计学解释；③ 反转主导的市场里，止盈纪律（分批收网）比美股更重要——利润回撤速度更快。</div>
+    <div class="rule"><b>体系设计的针对性：</b>回看《从认知到体系》——环境三态（只在进攻态打满）、主线过滤（只做有资金正反馈的板块）、盈亏比 ≥ 2:1 才入场、分批止盈 +1R 先收 1/3。这些规则在美股语境里是「优化」，在 A 股语境里是「生存条件」。</div>
+  </div>
+</section>
+
+<!-- 为什么没有精确胜率 -->
+<section id="why-no-number" class="sec-white anchor">
+  <div class="wrap">
+    <div class="kicker2">证据层 3 · 方法论</div>
+    <h2 class="sec-title">为什么给不了你「精确胜率」——以及谁声称能给，谁就有问题</h2>
+    <p class="sec-lead">「这套信号的胜率是多少」这个问题，比看上去复杂得多。四个原因：</p>
+    <div class="grid2">
+      <div class="card"><span class="tag">原因 1</span><h4>信号 ≠ 策略</h4><p>同一个突破信号，配 -5% 紧止损胜率可能 35%，配 -10% 宽止损胜率可能 55%——胜率是信号、止损、止盈、仓位<b>联合决定</b>的产出，不是信号的属性。脱离出场规则谈入场胜率，本身就不成立。</p></div>
+      <div class="card"><span class="tag">原因 2</span><h4>胜率随市场状态剧烈漂移</h4><p>突破信号在单边牛市胜率可能超过 60%，在震荡市可能跌破 30%（假突破密集）。一个不分市场状态的「总胜率」是把苹果和橘子的失败混在一起的平均数，没有决策价值——这正是体系用「环境三态」做前置开关的原因。</p></div>
+      <div class="card"><span class="tag">原因 3</span><h4>公开文献没有这套规则组合的回测</h4><p>学术回测的是「动量因子」不是「你的信号」；民间流传的「突破胜率 70%」类数字普遍缺样本期、缺执行口径、缺成本假设，且大多未经样本外验证。交易文献（如趋势跟踪经典著作）记载的胜率区间约为 35%-45%、盈亏比 2:1 至 3:1——这是<b>经验区间，不是针对本体系规则的回测结果</b>。</p></div>
+      <div class="card"><span class="tag">原因 4</span><h4>幸存者偏差与回测过拟合</h4><p>自己回测也有陷阱：用历史最优参数回测历史（过拟合）、只统计活下来的股票（幸存者偏差）、忽略涨跌停无法成交与滑点（A 股尤其致命）。一个「看起来 65% 胜率」的回测，加上真实摩擦后可能不到 45%。</p></div>
+    </div>
+    <div class="diagram">
+      <svg viewBox="0 0 720 240" xmlns="http://www.w3.org/2000/svg">
+        <text x="360" y="24" text-anchor="middle" font-size="13" font-weight="700" fill="#1d1d1f">证据强度金字塔：从下往上，离「你的实盘胜率」越来越近</text>
+        <polygon points="360,44 300,96 420,96" fill="#0071e3"/>
+        <polygon points="292,104 232,156 488,156 428,104" fill="#6ba8ee"/>
+        <polygon points="224,164 164,216 556,216 496,164" fill="#cde1fa"/>
+        <text x="360" y="80" text-anchor="middle" font-size="11.5" font-weight="700" fill="#fff">你的实盘记录（30 笔以上）</text>
+        <text x="360" y="136" text-anchor="middle" font-size="11.5" font-weight="700" fill="#fff">针对完整规则的诚实回测（含成本/滑点/涨跌停）</text>
+        <text x="360" y="196" text-anchor="middle" font-size="11.5" font-weight="700" fill="#1d1d1f">学术文献 + 交易经典（证明机制存在，不证明你的收益）</text>
+        <text x="690" y="80" text-anchor="end" font-size="10.5" fill="#86868b">唯一能指导你决策的</text>
+        <text x="690" y="196" text-anchor="end" font-size="10.5" fill="#86868b">只能告诉你方向对不对</text>
+      </svg>
+      <div class="cap">图 1 · 证据分层：本报告提供的是底层两层；顶层只能靠你自己积累——第 6 章给出积累方法。</div>
+    </div>
+  </div>
+</section>
+
+<!-- 合理预期 -->
+<section id="expect" class="sec-pale anchor">
+  <div class="wrap">
+    <div class="kicker2">第 5 章 · 诚实区间</div>
+    <h2 class="sec-title">合理预期：带标注的经验区间</h2>
+    <p class="sec-lead">以下区间综合交易文献记载、动量机制特征与 A 股结构折扣给出。<b>它们是经验估计，不是回测数据</b>——用途是校准预期（避免用「胜率 70%」的幻想要求自己），不是承诺。</p>
+    <div class="est"><b>口径说明：</b>R = 单笔风险单位（止损距离）。期望值 = 胜率 × 平均盈利R − 败率 × 平均亏损R。区间为「体系规则被严格执行」前提下的经验估计；执行变形（不止损、追高、无环境过滤）会使实际结果显著劣于下限。</div>
+    <table>
+      <thead><tr><th>口径</th><th>胜率（经验估计）</th><th>平均盈亏比</th><th>单笔期望值</th><th>说明</th></tr></thead>
+      <tbody>
+        <tr><td><b>信号 A · 突破</b>（裸信号，无过滤）</td><td>30% - 45%</td><td>1.5 - 2.5 R</td><td>约 -0.2 ~ +0.3 R</td><td>A 股假突破密集，裸用期望值可能为负——震荡市是主要失血点</td></tr>
+        <tr><td><b>信号 A · 突破</b>（叠加环境+主线+量能过滤）</td><td>40% - 55%</td><td>1.8 - 3 R</td><td>约 +0.2 ~ +0.6 R</td><td>过滤器的价值主要体现在这里：砍掉震荡市的假信号</td></tr>
+        <tr><td><b>信号 B · 回踩</b>（叠加趋势过滤）</td><td>45% - 60%</td><td>1.2 - 2.2 R</td><td>约 +0.1 ~ +0.5 R</td><td>买点位置好 → 胜率更高、止损更近，但单笔盈利小于突破</td></tr>
+        <tr><td><b>体系级</b>（两信号 + 仓位公式 + 三维止损 + 分批止盈）</td><td>40% - 55%</td><td>≥ 1.8 R（目标）</td><td>目标 +0.3 R/笔 左右</td><td>按单笔风险 1.5% 计，+0.3R ≈ 每笔期望 +0.45% 账户净值；每周 1-2 笔合格信号已是不错的频率</td></tr>
+      </tbody>
+    </table>
+    <div class="warn"><b>两个必须接受的现实：</b>① 即使体系完全有效，也有约一半的交易是亏的——低胜率 × 高盈亏比模式的心理成本是它最难的部分，不是技术部分；② 期望值为正不代表每个月为正——连亏 5-8 笔在 40% 胜率体系里是正常事件（概率约 4%-8%，一年遇上几次不奇怪），仓位纪律存在的意义就是让你活到连亏结束。</div>
+  </div>
+</section>
+
+<!-- 自己验证 -->
+<section id="verify" class="sec-white anchor">
+  <div class="wrap">
+    <div class="kicker2">第 6 章 · 行动</div>
+    <h2 class="sec-title">如何得到属于你自己的真实数字</h2>
+    <p class="sec-lead">文献给方向，回测给参考，只有你自己的记录给答案。三条路径，按成本从低到高：</p>
+    <h3>路径 1 · 历史样本手工复盘（0 成本，2-3 个周末）</h3>
+    <ul>
+      <li>从东财选股结果或指数成分股中，随机抽 3 个历史时间段（必须包含一段牛市、一段震荡、一段下跌，如用 2019-2024 间的代表性区间）；</li>
+      <li>用当时可见的信息（不看后视走势）逐根 K 线「走图」，遇到符合条件的信号 A / B 就记录：信号类型、入场价、止损位、后续 20 日走势；</li>
+      <li>样本 ≥ 50 个信号后统计：胜率、平均盈利R、平均亏损R、分环境态的胜率差异；</li>
+      <li>关键纪律：统计时把涨跌停无法成交、2% 滑点、双边佣金印花税全部扣掉——不扣成本的回测都是自欺欺人。</li>
+    </ul>
+    <h3>路径 2 · 模拟盘实盘验证（对应 90 天路径的 31-60 天）</h3>
+    <ul>
+      <li>严格按体系跑 20 笔以上模拟交易，日志全要素记录（见第 14 章模板）；</li>
+      <li>重点观察的不是胜率，是<b>执行偏差率</b>——计划止损的有几次真的止了；</li>
+      <li>模拟盘的心理失真（没有真钱）要打个问号，但规则流程的熟练度是真的。</li>
+    </ul>
+    <h3>路径 3 · 小仓实盘统计（90 天路径的 61-90 天起）</h3>
+    <ul>
+      <li>风险预算减半（0.75%）跑满 30 笔实盘，这是「你的体系、你的执行、当前市场」的唯一真实样本；</li>
+      <li>30 笔后看三个数：期望值是否为正、执行偏差率是否 &lt; 20%、最大连亏笔数是否在仓位设计承受范围内；</li>
+      <li>三项全过 → 恢复全额风险预算；任一不过 → 回路径 1 找漏洞，不要加大仓位「摊平」问题。</li>
+    </ul>
+    <div class="rule"><b>统计口径提醒：</b>30 笔以下不谈结论（小样本噪声），且始终按「信号类型 × 环境态」分组看——你很可能会发现某一格（比如「中性态的突破信号」）在持续亏钱，那才是真正的优化线索：不是推翻体系，而是关掉那一格。</div>
+  </div>
+</section>
+
+<section class="sec-pale">
+  <div class="wrap">
+    <div class="kicker2">总结</div>
+    <h2 class="sec-title">一句话回答你的问题</h2>
+    <p style="font-size:16px;max-width:780px;">两类信号的<b>底层机制</b>有三十年的学术证据支撑，是真的；但「这套具体规则在 A 股的胜率与盈亏比」<b>没有任何公开数据能诚实回答</b>——经验估计是「严格执行下胜率 40%-55%、盈亏比 1.8R 以上、期望值为正」，而验证它的唯一方式是第 6 章的三条路径。谁直接给你一个精确胜率，谁就是在编造——包括这份报告如果这么做了的话。</p>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <p>信号有效性证据评估 | 完稿 2026-10-09 | 配套文件：《从认知到体系》cognition-to-trading-system-20261008.html</p>
+    <p style="margin-top:8px;">文中所有学术数字均转引自公开检索到的二手综述与论文摘要（已逐条标注「需核实原文」），非一手文献核对结果；经验区间为非回测的估计值，仅供预期校准。如需严谨验证，请按第 6 章路径自行积累样本。</p>
+    <div class="disclaimer">
+      <b>免责声明</b>：以上内容基于公开数据和量化分析，仅供参考，不构成投资建议。市场有风险，投资需谨慎。任何投资决策应结合个人风险承受能力、资金状况和投资目标独立判断，必要时咨询持牌专业机构。过往表现不预示未来收益。
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

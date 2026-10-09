@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>打板与龙头情绪流 · 操作体系释义</title>
+<style>
+  :root{
+    --black:#000000; --ink:#1d1d1f; --gray:#6e6e73; --pale:#f5f5f7;
+    --white:#ffffff; --blue:#0071e3; --link:#0066cc; --border:#d2d2d7;
+    --border2:#86868b; --up:#d32f2f; --down:#2e7d32;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{font-family:"SF Pro Text","Inter","Helvetica Neue","PingFang SC","Microsoft YaHei",Arial,sans-serif;color:var(--ink);background:var(--white);line-height:1.7;-webkit-font-smoothing:antialiased;}
+  h1,h2,h3,h4{font-family:"SF Pro Display","Inter Tight","Helvetica Neue","PingFang SC","Microsoft YaHei",sans-serif;line-height:1.15;font-weight:600;}
+  a{color:var(--link);text-decoration:none;}
+  .wrap{max-width:980px;margin:0 auto;padding:0 24px;}
+  nav{position:fixed;top:0;left:0;right:0;z-index:100;backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);background:rgba(255,255,255,.72);border-bottom:1px solid rgba(0,0,0,.06);}
+  .nav-inner{max-width:980px;margin:0 auto;padding:10px 24px;display:flex;align-items:center;gap:18px;flex-wrap:wrap;}
+  .nav-title{font-weight:600;font-size:14px;white-space:nowrap;}
+  .nav-links{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;}
+  .nav-links a{color:var(--ink);opacity:.8;position:relative;padding-bottom:2px;}
+  .nav-links a:hover{color:var(--blue);opacity:1;}
+  .nav-links a.active{color:var(--blue);opacity:1;font-weight:600;}
+  .nav-links a.active::after{content:"";position:absolute;left:0;right:0;bottom:-4px;height:2px;border-radius:2px;background:var(--blue);}
+  .hero{background:var(--black);color:#fff;padding:140px 0 90px;}
+  .hero .kicker{color:var(--blue);font-size:14px;font-weight:600;letter-spacing:2px;text-transform:uppercase;margin-bottom:18px;}
+  .hero h1{font-size:48px;letter-spacing:-.5px;margin-bottom:22px;}
+  .hero p.sub{font-size:19px;color:#a1a1a6;max-width:740px;}
+  .hero .meta{margin-top:34px;display:flex;gap:28px;flex-wrap:wrap;font-size:13px;color:#86868b;}
+  .hero .meta b{color:#f5f5f7;font-weight:600;}
+  section{padding:68px 0;}
+  .sec-pale{background:var(--pale);}
+  .sec-white{background:var(--white);}
+  .sec-black{background:var(--black);color:#f5f5f7;}
+  .sec-black p,.sec-black li{color:#a1a1a6;}
+  .kicker2{color:var(--blue);font-size:13px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px;}
+  h2.sec-title{font-size:36px;letter-spacing:-.3px;margin-bottom:14px;}
+  .sec-lead{font-size:17px;color:var(--gray);max-width:760px;margin-bottom:34px;}
+  .sec-black .sec-lead{color:#a1a1a6;}
+  h3{font-size:23px;margin:38px 0 12px;}
+  h4{font-size:18px;margin:22px 0 8px;}
+  p{margin-bottom:14px;}
+  ul,ol{margin:0 0 14px 22px;}
+  li{margin-bottom:6px;}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;}
+  @media(max-width:760px){.grid2,.grid3{grid-template-columns:1fr;} .hero h1{font-size:34px;} h2.sec-title{font-size:27px;}}
+  .card{background:var(--white);border-radius:18px;padding:22px 24px;border:1px solid rgba(0,0,0,.04);}
+  .sec-white .card{background:var(--pale);}
+  .card .tag{display:inline-block;font-size:11px;font-weight:600;color:var(--blue);background:rgba(0,113,227,.08);border-radius:980px;padding:3px 10px;margin-bottom:10px;}
+  .card h4{margin:0 0 6px;font-size:17px;}
+  .card .one{font-size:14px;color:var(--ink);font-weight:600;margin-bottom:8px;}
+  .card p{font-size:13.5px;color:var(--gray);margin-bottom:8px;}
+  .card p:last-child{margin-bottom:0;}
+  .card .use{font-size:12.5px;color:var(--ink);border-top:1px dashed var(--border);padding-top:8px;margin-top:8px;}
+  .card .use b{color:var(--blue);}
+  table{width:100%;border-collapse:collapse;font-size:13.5px;margin:18px 0;background:var(--white);border-radius:12px;overflow:hidden;}
+  th{background:var(--ink);color:#fff;text-align:left;padding:10px 12px;font-weight:600;}
+  td{padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:top;}
+  tr:last-child td{border-bottom:none;}
+  tr:nth-child(even) td{background:var(--pale);}
+  .rule{background:rgba(0,113,227,.06);border-left:3px solid var(--blue);border-radius:0 12px 12px 0;padding:14px 18px;margin:16px 0;font-size:14px;}
+  .rule b{color:var(--blue);}
+  .warn{background:rgba(211,47,47,.06);border-left:3px solid var(--up);border-radius:0 12px 12px 0;padding:14px 18px;margin:16px 0;font-size:14px;}
+  .warn b{color:var(--up);}
+  .est{background:rgba(178,106,0,.07);border-left:3px solid #b26a00;border-radius:0 12px 12px 0;padding:14px 18px;margin:16px 0;font-size:13.5px;}
+  .est b{color:#b26a00;}
+  .diagram{background:var(--white);border:1px solid var(--border);border-radius:18px;padding:26px;margin:26px 0;}
+  .sec-black .diagram{background:#1d1d1f;border-color:#3a3a3c;}
+  .diagram svg{display:block;margin:0 auto;max-width:100%;height:auto;}
+  .diagram .cap{font-size:12px;color:var(--gray);text-align:center;margin-top:12px;}
+  .sec-black .diagram .cap{color:#86868b;}
+  .gloss{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
+  @media(max-width:760px){.gloss{grid-template-columns:1fr 1fr;}}
+  .gloss-item{background:var(--white);border:1px solid var(--border);border-radius:14px;padding:14px 16px;}
+  .gloss-item b{display:block;font-size:14px;margin-bottom:4px;color:var(--ink);}
+  .gloss-item span{font-size:12.5px;color:var(--gray);}
+  footer{background:var(--pale);padding:40px 0;font-size:12.5px;color:var(--gray);}
+  .disclaimer{background:var(--white);border:1px solid var(--border);border-radius:14px;padding:18px 22px;font-size:12.5px;color:var(--gray);margin-top:20px;}
+  .anchor{padding-top:70px;margin-top:-70px;}
+  .num-badge{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:var(--blue);color:#fff;font-size:13px;font-weight:700;margin-right:10px;}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <span class="nav-title">打板 · 龙头情绪流</span>
+    <div class="nav-links">
+      <a href="#tldr">结论</a>
+      <a href="#essence">本质</a>
+      <a href="#cycle">情绪周期</a>
+      <a href="#leader">龙头生态</a>
+      <a href="#buy">买点</a>
+      <a href="#tape">盘口语言</a>
+      <a href="#sell">卖点</a>
+      <a href="#gauge">情绪温度计</a>
+      <a href="#risk">仓位风控</a>
+      <a href="#taboo">死法清单</a>
+      <a href="#compare">与趋势流</a>
+      <a href="#learn">学习路径</a>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<header class="hero">
+  <div class="wrap">
+    <div class="kicker">Deep Research · Scene 2</div>
+    <h1>打板与龙头情绪流<br>一套高风险流派的操作释义</h1>
+    <p class="sub">A 股涨跌停制度与散户结构催生出的独特生态：赚「隔日情绪溢价」的钱。本文系统梳理其底层逻辑、情绪周期、龙头生态、买卖点、盘口语言与风控纪律——先读懂，再决定要不要碰。</p>
+    <div class="meta">
+      <span>章节 <b>11 章</b></span>
+      <span>手绘图解 <b>5 张</b></span>
+      <span>风险等级 <b>极高（全职门槛）</b></span>
+      <span>完稿 <b>2026-10-09</b></span>
+    </div>
+  </div>
+</header>
+
+<!-- TL;DR -->
+<section id="tldr" class="sec-pale anchor">
+  <div class="wrap">
+    <div class="kicker2">TL;DR</div>
+    <h2 class="sec-title">先说清楚四件事</h2>
+    <div class="grid2">
+      <div class="card"><span class="tag">本质</span><h4>打板赚的不是「涨停」的钱，是「隔日溢价」的钱</h4><p>以涨停价买入，赌的是当晚情绪发酵后，明天有人愿意出更高的价格接力。利润来源是人性（羊群 + 反身性）与制度（涨跌停 + T+1）共同制造的短期供需失衡——今天买不到的焦虑，变成明天高开的溢价。</p></div>
+      <div class="card"><span class="tag">门槛</span><h4>这是 A 股淘汰率最高的打法，没有之一</h4><p>需要盘中实时盯盘、秒级决策、对情绪周期的直觉（以年为单位培养）。T+1 制度下当天买错无法卖出，一次炸板隔日可能亏 10-20%。它不适合绝大多数业余投资者——本文的价值首先是让你<strong>理解市场在发生什么</strong>，其次才是操作。</p></div>
+      <div class="card"><span class="tag">与趋势流的关系</span><h4>两套体系，两套信号，绝不能混用</h4><p>趋势流（本 workspace 主体系）赚「惯性延续」的钱，情绪流赚「情绪脉冲」的钱。用趋势流的止损拿不住情绪流的票，用情绪流的胆子做趋势会反复被甩下车。双修者必须资金隔离、规则隔离（见第 10 章）。</p></div>
+      <div class="card"><span class="tag">风控核心</span><h4>情绪流的风控只有两条：仓位小 + 退潮期空仓</h4><p>情绪流的亏损不来自「看错」而来自「退潮期还在做」。情绪周期（第 2 章）是这套体系的全部中枢：周期向上时大胆，周期向下时一笔不做——空仓不是错过，是这个流派最重要的技术动作。</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- 第1章 本质 -->
+<section id="essence" class="sec-white anchor">
+  <div class="wrap">
+    <div class="kicker2">第 1 章 · 本质</div>
+    <h2 class="sec-title">隔日溢价：制度与人性的合谋</h2>
+    <p class="sec-lead">为什么「以当天最高价买入」这种看似最差的买点，能成为一种可存续的打法？三个要素缺一不可。</p>
+    <div class="grid3">
+      <div class="card"><span class="tag">制度</span><h4>涨跌停 + T+1</h4><p>涨停 = 当天想买的人买不到了，未满足的需求被强制积压到明天。T+1 = 今天进场的人明天才能卖，今天的涨停板是「只进不出」的单向阀门。没有这两个制度，打板生态根本不存在。</p></div>
+      <div class="card"><span class="tag">人性</span><h4>羊群与 FOMO</h4><p>涨停是最强的注意力信号——涨幅榜第一屏全是涨停股。散户的错失恐惧（FOMO）在收盘后发酵一晚，转化为次日集合竞价的抢筹。情绪流玩家赚的就是这批隔夜决策者的钱。</p></div>
+      <div class="card"><span class="tag">结构</span><h4>反身性正循环</h4><p>涨停 → 上榜 → 人气聚集 → 次日抢筹高开 → 再涨停 → 更高人气。龙头股的连板行情本质是反身性自我强化——直到某一天接力资金枯竭，循环反向（A 杀）。</p></div>
+    </div>
+    <div class="diagram">
+      <svg viewBox="0 0 720 250" xmlns="http://www.w3.org/2000/svg">
+        <text x="360" y="22" text-anchor="middle" font-size="13" font-weight="700" fill="#1d1d1f">隔日溢价的反身性回路</text>
+        <g font-size="12">
+          <rect x="60" y="60" width="150" height="52" rx="10" fill="#d32f2f"/>
+          <text x="135" y="82" text-anchor="middle" fill="#fff" font-weight="700">当日涨停封板</text>
+          <text x="135" y="100" text-anchor="middle" fill="#ffe1e1" font-size="10.5">买盘积压 · 只进不出</text>
+          <rect x="290" y="60" width="150" height="52" rx="10" fill="#1d1d1f"/>
+          <text x="365" y="82" text-anchor="middle" fill="#fff" font-weight="700">隔夜发酵</text>
+          <text x="365" y="100" text-anchor="middle" fill="#c7c7cc" font-size="10.5">涨幅榜 · 复盘 · 群讨论</text>
+          <rect x="520" y="60" width="150" height="52" rx="10" fill="#0071e3"/>
+          <text x="595" y="82" text-anchor="middle" fill="#fff" font-weight="700">次日竞价抢筹</text>
+          <text x="595" y="100" text-anchor="middle" fill="#dbeafe" font-size="10.5">高开 = 隔日溢价兑现</text>
+        </g>
+        <g stroke="#86868b" stroke-width="1.6" fill="none">
+          <line x1="212" y1="86" x2="286" y2="86"/><polygon points="286,86 279,82 279,90" fill="#86868b" stroke="none"/>
+          <line x1="442" y1="86" x2="516" y2="86"/><polygon points="516,86 509,82 509,90" fill="#86868b" stroke="none"/>
+          <path d="M 595 114 C 595 190 135 190 135 116"/><polygon points="135,116 131,123 139,123" fill="#86868b" stroke="none"/>
+        </g>
+        <text x="365" y="212" text-anchor="middle" font-size="11" fill="#6e6e73">强势时：次日溢价 → 再涨停 → 再发酵（正循环）｜ 循环断裂日 = 接力资金枯竭日 = A 杀开始</text>
+      </svg>
+      <div class="cap">图 1 · 隔日溢价的生成机制：打板者买入的是「循环继续」的概率，卖出的对象是明天才到场的人。</div>
+    </div>
+    <div class="warn"><b>先泼冷水：</b>这个回路的每一环都在被进化侵蚀——量化资金参与接力与收割、监管对异常交易的监控、题材生命周期缩短。隔日溢价的「平均值」在长期收窄（无公开权威数据，此为市场参与者的普遍经验观察），它对盘感与速度的要求逐年提高。把它当作「知道了就能赚」的方法，是入场的第一步亏损。</div>
+  </div>
+</section>
+
+<!-- 第2章 情绪周期 -->
+<section id="cycle" class="sec-pale anchor">
+  <div class="wrap">
+    <div class="kicker2">第 2 章 · 中枢</div>
+    <h2 class="sec-title">情绪周期：这个流派的全部中枢</h2>
+    <p class="sec-lead">情绪流玩家嘴里「能不能做」，说的永远是周期位置，不是个股。一个题材从诞生到死亡经历六个阶段，每个阶段只允许特定动作。</p>
+    <div class="diagram">
+      <svg viewBox="0 0 720 300" xmlns="http://www.w3.org/2000/svg">
+        <text x="360" y="22" text-anchor="middle" font-size="13" font-weight="700" fill="#1d1d1f">题材情绪周期六阶段</text>
+        <path d="M 40 250 C 90 248 130 240 180 210 C 240 172 290 110 360 84 C 420 62 470 90 530 150 C 580 200 640 236 690 246" fill="none" stroke="#1d1d1f" stroke-width="2.5"/>
+        <g font-size="10.5">
+          <circle cx="80" cy="248" r="4.5" fill="#86868b"/><text x="80" y="272" text-anchor="middle" fill="#86868b" font-weight="700">① 冰点期</text>
+          <circle cx="180" cy="210" r="4.5" fill="#0071e3"/><text x="180" y="234" text-anchor="middle" fill="#0071e3" font-weight="700">② 启动期</text>
+          <circle cx="280" cy="128" r="4.5" fill="#0071e3"/><text x="280" y="152" text-anchor="middle" fill="#0071e3" font-weight="700">③ 发酵期</text>
+          <circle cx="380" cy="80" r="4.5" fill="#d32f2f"/><text x="380" y="66" text-anchor="middle" fill="#d32f2f" font-weight="700">④ 高潮期</text>
+          <circle cx="490" cy="116" r="4.5" fill="#b26a00"/><text x="490" y="140" text-anchor="middle" fill="#b26a00" font-weight="700">⑤ 分歧期</text>
+          <circle cx="620" cy="222" r="4.5" fill="#2e7d32"/><text x="620" y="246" text-anchor="middle" fill="#2e7d32" font-weight="700">⑥ 退潮期</text>
+        </g>
+        <text x="360" y="292" text-anchor="middle" font-size="11" fill="#6e6e73">周期判断错了，同样的动作结果相反：发酵期打板是进攻，退潮期打板是送钱</text>
+      </svg>
+      <div class="cap">图 2 · 情绪周期（示意）：周期不是日历，每个阶段可长可短——判断依据是第 7 章的温度计，不是感觉。</div>
+    </div>
+    <table>
+      <thead><tr><th style="width:12%">阶段</th><th style="width:30%">市场特征</th><th style="width:30%">允许的动作</th><th>绝对禁止</th></tr></thead>
+      <tbody>
+        <tr><td><b>① 冰点期</b></td><td>涨停家数极少（经验值：&lt; 20 家）、连板高度压到 2 板以下、前龙头 A 杀完毕</td><td>空仓观察；记录抗跌的逆势品种与反复异动的新题材——它们在孕育下一个周期</td><td>抄底老题材（退潮余波没完）</td></tr>
+        <tr><td><b>② 启动期</b></td><td>新题材出现首个涨停集群（≥ 3 只同概念首板），有政策/产业/事件催化背书</td><td>试错打首板或次日接力最先封板的领涨者；仓位从轻（试错仓）</td><td>重仓（此时真假题材未分）</td></tr>
+        <tr><td><b>③ 发酵期</b></td><td>龙头走出 2-4 连板、梯队成型（跟风补涨批量首板）、板块成交占比持续放大</td><td>主战场：打板/接力龙头与最强补涨；分歧日低吸龙头；仓位可加到本流派上限</td><td>买后排杂毛（梯队外个股不享受溢价）</td></tr>
+        <tr><td><b>④ 高潮期</b></td><td>龙头缩量加速板、板块掀涨停潮、全网都在讨论、后排股也鸡犬升天</td><td>持有为主，不再开新仓；分批兑现</td><td>追高开新仓——高潮的次日就是分歧</td></tr>
+        <tr><td><b>⑤ 分歧期</b></td><td>龙头炸板/巨震/放巨量，跟风批量炸板掉队，炸板率飙升</td><td>只观察龙头能否「分歧转一致」（第 4 章）；老仓兑现为主</td><td>接力跟风股（分歧日跟风先死）</td></tr>
+        <tr><td><b>⑥ 退潮期</b></td><td>龙头断板后补跌、连板高度逐级压缩、昨日涨停今日平均表现为负</td><td><b>空仓。这是本流派最重要的技术动作</b></td><td>任何形式的开仓——退潮期的每一次出手都在为别人的出货买单</td></tr>
+      </tbody>
+    </table>
+    <div class="rule"><b>规则 2.1：</b>情绪流的第一课不是学买点，是学会识别⑥并管住手。周期判断每天收盘后做一次（用第 7 章温度计），盘中不改判。</div>
+    <div class="est"><b>标注：</b>各阶段的涨停家数、连板高度等阈值为市场参与者的经验口径（经验估计，非统计结论），随市场总量与监管环境漂移，应以自己连续记录的数据校准。</div>
+  </div>
+</section>
+
+<!-- 第3章 龙头生态 -->
+<section id="leader" class="sec-white anchor">
+  <div class="wrap">
+    <div class="kicker2">第 3 章 · 标的</div>
+    <h2 class="sec-title">龙头生态：只做梯队，不做个股</h2>
+    <p class="sec-lead">情绪流里没有「好公司」，只有「好位置」。同一题材内的个股按资金认可度排成梯队，溢价按梯队分配——龙头吃肉、补涨喝汤、梯队外挨打。</p>
+    <div class="diagram">
+      <svg viewBox="0 0 720 290" xmlns="http://www.w3.org/2000/svg">
+        <text x="360" y="22" text-anchor="middle" font-size="13" font-weight="700" fill="#1d1d1f">题材梯队结构：溢价自上而下分配</text>
+        <rect x="280" y="44" width="160" height="46" rx="10" fill="#d32f2f"/>
+        <text x="360" y="64" text-anchor="middle" font-size="12.5" fill="#fff" font-weight="700">总龙头（空间板）</text>
+        <text x="360" y="81" text-anchor="middle" font-size="10.5" fill="#ffe1e1">全场最高连板 · 辨识度最高</text>
+        <rect x="200" y="108" width="140" height="42" rx="10" fill="#e06262"/>
+        <text x="270" y="126" text-anchor="middle" font-size="12" fill="#fff" font-weight="700">补涨龙 / 二当家</text>
+        <text x="270" y="141" text-anchor="middle" font-size="10" fill="#ffeaea">分支题材或第二高度</text>
+        <rect x="380" y="108" width="140" height="42" rx="10" fill="#e06262"/>
+        <text x="450" y="126" text-anchor="middle" font-size="12" fill="#fff" font-weight="700">中军（大市值）</text>
+        <text x="450" y="141" text-anchor="middle" font-size="10" fill="#ffeaea">板块成交额担当 · 机构可参与</text>
+        <rect x="150" y="168" width="130" height="40" rx="10" fill="#f0a3a3"/>
+        <text x="215" y="186" text-anchor="middle" font-size="11.5" fill="#7f1d1d" font-weight="700">跟风（首板群）</text>
+        <text x="215" y="201" text-anchor="middle" font-size="10" fill="#7f1d1d">沾边即涨的批次</text>
+        <rect x="300" y="168" width="130" height="40" rx="10" fill="#f0a3a3"/>
+        <text x="365" y="186" text-anchor="middle" font-size="11.5" fill="#7f1d1d" font-weight="700">卡位股</text>
+        <text x="365" y="201" text-anchor="middle" font-size="10" fill="#7f1d1d">试图抢龙头地位的挑战者</text>
+        <rect x="450" y="168" width="130" height="40" rx="10" fill="#f5f5f7" stroke="#d2d2d7"/>
+        <text x="515" y="186" text-anchor="middle" font-size="11.5" fill="#6e6e73" font-weight="700">梯队外杂毛</text>
+        <text x="515" y="201" text-anchor="middle" font-size="10" fill="#86868b">不享受任何情绪溢价</text>
+        <g font-size="11" fill="#6e6e73">
+          <text x="60" y="248">存活率：逐级递减 →</text>
+          <text x="60" y="268">分歧日的死亡顺序：杂毛先死 → 跟风再死 → 补涨补跌 → 龙头最后断板</text>
+        </g>
+      </svg>
+      <div class="cap">图 3 · 梯队结构（示意）：分歧日的死亡顺序就是梯队的逆序——这就是为什么「买龙头比买跟风安全」反直觉地成立。</div>
+    </div>
+    <h3>龙头的确立：市场选出来的，不是预测出来的</h3>
+    <ul>
+      <li><b>最先涨停：</b>启动日同题材里最先封板、封单最坚决的，通常是种子选手；</li>
+      <li><b>最高连板：</b>二板、三板后还活着且领涨的，市场用真金白银投票完成确认——「三板定妖」的江湖说法指的就是确认点通常在 3 板前后（经验之谈，非规律）；</li>
+      <li><b>题材正宗性：</b>主营业务与题材逻辑贴合度最高的更容易走远，纯蹭概念的先掉队；</li>
+      <li><b>辨识度：</b>名字、股性、历史记忆点——辨识度带来免费的注意力，注意力就是接力资金；</li>
+      <li><b>盘子适中：</b>流通市值过大拉不动连板，过小易被监管与操纵嫌疑盯上（经验口径：数十亿到一两百亿区间最常见，随市场环境漂移）。</li>
+    </ul>
+    <div class="rule"><b>规则 3.1：</b>永远问「它在梯队里是什么位置」。位置不明 = 不做。宁可错过龙头的第一个板，也不在梯队外找「低估的补涨逻辑」——那是趋势流的思维，在这里是亏损来源。</div>
+  </div>
+</section>
+
+<!-- 第4章 买点 -->
+<section id="buy" class="sec-pale anchor">
+  <div class="wrap">
+    <div class="kicker2">第 4 章 · 进攻</div>
+    <h2 class="sec-title">四类买点：从首板到分歧转一致</h2>
+    <p class="sec-lead">情绪流的买点按「确定性—赔率」排布：越早买赔率越高确定性越低，越晚买反之。没有绝对最好的买点，只有与周期阶段匹配的买点。</p>
+    <div class="grid2">
+      <div class="card"><span class="tag">买点 1 · 启动期</span><h4>打首板（打板 / 扫板 / 排板）</h4><p class="one">题材启动日，买入最先封板的领涨者。</p><p><b>打板</b>：封单挂上瞬间以涨停价买入，追求确定封死；<b>扫板</b>：封板前几秒主动向上扫货，抢成本优势；<b>排板</b>：提前挂涨停价排队，赌成交。三者风险递增的反面是成本递增——打板买的是确定性，扫板买的是赔率。</p><p class="use"><b>适用：</b>周期②启动期；非启动期的首板没有溢价土壤。</p></div>
+      <div class="card"><span class="tag">买点 2 · 发酵期</span><h4>接力（二板 / 三板定龙头）</h4><p class="one">龙头确认过程中，次日集合竞价或回封时介入。</p><p>首板次日：高开幅度与竞价量能是强弱的第一次考试（强势通常高开且竞价放量——经验口径）。二板打回封比追高开安全：让获利盘先砸一轮，封得住的才是真强。三板前后龙头地位确立，此后只认它一个。</p><p class="use"><b>适用：</b>周期③发酵期；④高潮期不再接力（买到的常是最后一棒）。</p></div>
+      <div class="card"><span class="tag">买点 3 · 分歧日</span><h4>分歧转一致（龙头回封）</h4><p class="one">高潮后首次大分歧，龙头炸板巨震后重新封死——全场最强信号。</p><p>分歧日是题材的「压力测试」：跟风全灭、龙头炸开后能被新资金重新封上涨停，说明接力资金在更高位置依然认可——「烂板出妖股」的底层逻辑。买点在回封确认的瞬间，不在炸板下跌途中接飞刀。</p><p class="use"><b>适用：</b>周期⑤分歧日唯一允许的动作；转不了一致（回封失败）就是退潮确认。</p></div>
+      <div class="card"><span class="tag">买点 4 · 回踩型</span><h4>龙头首阴 / 龙回头</h4><p class="one">连板中断后首根阴线（首阴）或回调企稳后的二次启动。</p><p>逻辑：人气龙头的第一次分歧回调，常有踏空资金与做 T 资金承接。但这本质是「反抽博弈」而非趋势延续，仓位与预期都要降档，且只在周期未确认退潮时做——退潮期的「首阴」不是首阴，是 A 杀第一根。</p><p class="use"><b>适用：</b>⑤分歧期偏多环境；⑥退潮期禁用。</p></div>
+    </div>
+    <div class="diagram">
+      <svg viewBox="0 0 720 270" xmlns="http://www.w3.org/2000/svg">
+        <text x="180" y="22" text-anchor="middle" font-size="13" font-weight="700" fill="#1d1d1f">强势回封（可参与）</text>
+        <text x="545" y="22" text-anchor="middle" font-size="13" font-weight="700" fill="#1d1d1f">炸板不回封（远离）</text>
+        <!-- left: limit-up, shake, reseal -->
+        <line x1="40" y1="230" x2="320" y2="230" stroke="#86868b" stroke-width="1"/>
+        <line x1="40" y1="60" x2="320" y2="60" stroke="#d32f2f" stroke-width="1" stroke-dasharray="5 4"/>
+        <text x="46" y="52" font-size="10.5" fill="#d32f2f">涨停价</text>
+        <path d="M 50 220 L 90 160 L 115 110 L 130 66 L 150 62 L 165 120 L 185 160 L 210 130 L 235 80 L 250 64 L 310 62" fill="none" stroke="#1d1d1f" stroke-width="2"/>
+        <ellipse cx="185" cy="145" rx="30" ry="26" fill="none" stroke="#b26a00" stroke-width="1.6" stroke-dasharray="4 3"/>
+        <text x="185" y="196" text-anchor="middle" font-size="10" fill="#b26a00">炸板放量换手</text>
+        <circle cx="250" cy="64" r="4" fill="#0071e3"/>
+        <text x="258" y="52" font-size="10.5" fill="#0071e3" font-weight="700">回封确认 = 买点</text>
+        <!-- right: spike, fail, fade -->
+        <line x1="400" y1="230" x2="690" y2="230" stroke="#86868b" stroke-width="1"/>
+        <line x1="400" y1="60" x2="690" y2="60" stroke="#d32f2f" stroke-width="1" stroke-dasharray="5 4"/>
+        <text x="406" y="52" font-size="10.5" fill="#d32f2f">涨停价</text>
+        <path d="M 410 220 L 450 150 L 470 100 L 485 66 L 505 62 L 525 90 L 545 140 L 575 170 L 615 195 L 680 215" fill="none" stroke="#1d1d1f" stroke-width="2"/>
+        <ellipse cx="505" cy="70" rx="24" ry="18" fill="none" stroke="#d32f2f" stroke-width="1.6" stroke-dasharray="4 3"/>
+        <text x="505" y="108" text-anchor="middle" font-size="10" fill="#d32f2f">触板即砸</text>
+        <text x="600" y="250" text-anchor="middle" font-size="10.5" fill="#2e7d32" font-weight="700">均价一路下移 = 出货</text>
+        <text x="360" y="262" text-anchor="middle" font-size="11" fill="#6e6e73">区别只有一个：砸下去之后，有没有人用钱把它买回去</text>
+      </svg>
+      <div class="cap">图 4 · 回封与炸板的分时对比（示意）：买点永远在「重新封死确认」之后，永远不在「下跌途中觉得便宜」之时。</div>
+    </div>
+    <div class="rule"><b>规则 4.1：</b>买点与周期阶段绑定（②首板 / ③接力 / ⑤分歧转一致），阶段不匹配的信号不交易。情绪流最常见的亏损形态就是「用对的买点，错的周期」。</div>
+  </div>
+</section>
+
+<!-- 第5章 盘口语言 -->
+<section id="tape" class="sec-white anchor">
+  <div class="wrap">
+    <div class="kicker2">第 5 章 · 细节</div>
+    <h2 class="sec-title">盘口语言：封单、竞价与换手</h2>
+    <p class="sec-lead">情绪流的「基本面分析」发生在分时与盘口上。三组每天都要读的数据。</p>
+    <h3>集合竞价（9:15-9:25）：隔日溢价的第一次报价</h3>
+    <ul>
+      <li><b>高开幅度：</b>昨日涨停今日高开，溢价兑现；高开 3-7% 且量能配合通常视为强势延续（经验口径），平开/低开 = 不及预期，持仓者第一反应是减；</li>
+      <li><b>竞价量能：</b>竞价成交金额显著放大（对比前几日）说明分歧提前爆发，是好是坏取决于价格方向——放量高开偏强，放量低开偏弱；</li>
+      <li><b>9:20 分水岭：</b>9:20 前可撤单，虚假挂单多；9:20 后不可撤单，价格才可信——看竞价只看最后 5 分钟。</li>
+    </ul>
+    <h3>封单结构：涨停板的「防御工事」</h3>
+    <ul>
+      <li><b>封单金额：</b>封单越大越安全是相对值——看封单/流通市值与封单/当日成交额的比例，绝对数字没有可比性；</li>
+      <li><b>封单变化：</b>封单持续增加 = 共识加强；封单被快速吃掉又反复补单 = 激烈换手（强分歧）；封单悄悄撤掉（封单骤降但价格未开）= 最危险的诱多信号之一；</li>
+      <li><b>开板次数：</b>首次开板放量回封是换手健康；反复开板、越开量越大、回封越来越勉强 = 衰竭（烂板），次日溢价预期大幅下降。</li>
+    </ul>
+    <h3>换手率：分歧的计量器</h3>
+    <ul>
+      <li><b>连板途中的巨量换手板：</b>获利盘大逃亡但被全部承接——若次日能高开弱转强，是空中加油；若低开，昨天的承接盘全部变套牢盘；</li>
+      <li><b>缩量加速板：</b>持有者惜售、场外抢不到——强势，但也意味着获利盘巨大，一旦开板就是集中兑现（高潮期特征，持仓不卖、不开新仓）；</li>
+      <li><b>经验口径（经验估计）：</b>连板股单日换手超过 20-30% 且收烂板，通常被视为高危信号，阈值随个股盘子大小浮动。</li>
+    </ul>
+    <div class="est"><b>方法论提醒：</b>盘口的一切「标准」都是概率倾向而非规则——同样的巨量回封，在发酵期是黄金、在退潮期是陷阱。先判周期（第 2 章），再读盘口；顺序反了，盘口越熟亏得越快。</div>
+  </div>
+</section>
+
+<!-- 第6章 卖点 -->
+<section id="sell" class="sec-pale anchor">
+  <div class="wrap">
+    <div class="kicker2">第 6 章 · 防守</div>
+    <h2 class="sec-title">卖点：不及预期就走，不跟股票谈恋爱</h2>
+    <p class="sec-lead">情绪流持股周期以「天」计，卖点体系比趋势流简单粗暴得多——核心只有一个词：<b>预期差</b>。买入时对它明天的表现有明确预期，不及预期就是卖点本身，不需要更多理由。</p>
+    <div class="grid2">
+      <div class="card"><span class="tag">不及预期</span><h4>隔夜不及预期（最常见卖点）</h4><p>昨日打板，预期今日高开连板或冲高；实际低开或平开无溢价 → 预期已证伪，竞价或开盘后第一时间处理，不抱「等等看」幻想。情绪流里「再等等」的代价是 T+1 下眼睁睁看它奔向跌停。</p></div>
+      <div class="card"><span class="tag">结构破坏</span><h4>断板 / 炸板不回封</h4><p>连板持股收烂板（反复炸板、巨量、尾盘勉强回封）→ 次日溢价预期归零，当日尾盘或次日竞价走。买入的当天炸板且尾盘不回封 → 已浮亏，明日竞价不弱转强立即认亏，这是本流派的标准亏损单，必须习惯。</p></div>
+      <div class="card"><span class="tag">周期证伪</span><h4>板块退潮信号</h4><p>龙头断板后次日不能快速修复（低开低走）、跟风开始批量跌停、梯队瓦解 → 周期进入⑥，板块内所有持仓无条件清，与个股强弱无关。</p></div>
+      <div class="card"><span class="tag">主动止盈</span><h4>高潮期分批兑现</h4><p>缩量加速、全网热议、后排鸡犬升天 = ④高潮特征 → 持有仓分批卖，把「最后一段」留给别人。情绪流赚的是中间段，鱼头鱼尾都带刺。</p></div>
+    </div>
+    <div class="warn"><b>纪律红线：</b>① 亏损单次日不弱转强必须走，禁止「补仓摊低」（T+1 下摊平 = 扩大隔夜风险敞口）；② 单笔亏损预期写入下单前：炸板隔日亏损 5-15% 是本流派的正常成本，承受不了这个波动说明仓位大了或根本不该参与；③ 跌停卖不出去时不排队挂隔夜单死扛，次日集合竞价第一件事重新评估是否继续挂卖。</div>
+  </div>
+</section>
+
+<!-- 第7章 情绪温度计 -->
+<section id="gauge" class="sec-pale anchor">
+  <div class="wrap">
+    <div class="kicker2">第 7 章 · 仪表盘</div>
+    <h2 class="sec-title">情绪温度计：五个每天必看的数字</h2>
+    <p class="sec-lead">把「我觉得今天情绪不错」换成五个可记录的数字。连续记录三个月，你会拥有自己的周期数据库——这是本流派唯一可信的「技术指标」。</p>
+    <table>
+      <thead><tr><th style="width:22%">指标</th><th style="width:40%">含义与读法</th><th>经验参考区间（经验估计，非统计结论）</th></tr></thead>
+      <tbody>
+        <tr><td><b>涨停家数</b></td><td>全市场涨停总数（剔除 ST 与一字新股更准）——情绪的总温度</td><td>&lt; 20 家偏冰点；30-60 家正常活跃；&gt; 80-100 家偏亢奋，亢奋本身是高潮预警</td></tr>
+        <tr><td><b>连板高度</b></td><td>当前最高连板数——风险偏好的天花板</td><td>高度压到 2 板 = 冰点；3-5 板 = 可操作区；≥ 6-7 板后随时进入分歧高危区</td></tr>
+        <tr><td><b>晋级率</b></td><td>昨日 N 连板中今天成功 N+1 板的比例——接力资金的态度</td><td>晋级率持续 &gt; 50% 情绪强；&lt; 30% 接力谨慎；骤降 = 退潮前兆</td></tr>
+        <tr><td><b>炸板率</b></td><td>今日触及涨停但未封住的家数 ÷ 触板总数——封板资金的成功率</td><td>&lt; 25% 健康；&gt; 40% 分歧加剧；连续两日高位 = 退潮确认信号之一</td></tr>
+        <tr><td><b>昨日涨停今日表现</b></td><td>昨日所有涨停股今日平均涨幅（软件有现成指数/板块）——隔日溢价的直接测量</td><td>均值为正且连续 = 生态健康；均值转负 = 打板生态整体失血，停手信号</td></tr>
+      </tbody>
+    </table>
+    <div class="diagram">
+      <svg viewBox="0 0 720 210" xmlns="http://www.w3.org/2000/svg">
+        <text x="360" y="22" text-anchor="middle" font-size="13" font-weight="700" fill="#1d1d1f">五指标 → 周期判断的决策流</text>
+        <g font-size="11.5">
+          <rect x="30" y="50" width="150" height="44" rx="8" fill="#f5f5f7" stroke="#d2d2d7"/><text x="105" y="69" text-anchor="middle" fill="#1d1d1f" font-weight="600">昨日涨停今日表现</text><text x="105" y="85" text-anchor="middle" font-size="10" fill="#86868b">生态是否失血（一票否决）</text>
+          <rect x="200" y="50" width="110" height="44" rx="8" fill="#f5f5f7" stroke="#d2d2d7"/><text x="255" y="69" text-anchor="middle" fill="#1d1d1f" font-weight="600">炸板率</text><text x="255" y="85" text-anchor="middle" font-size="10" fill="#86868b">封板成功率</text>
+          <rect x="330" y="50" width="110" height="44" rx="8" fill="#f5f5f7" stroke="#d2d2d7"/><text x="385" y="69" text-anchor="middle" fill="#1d1d1f" font-weight="600">晋级率</text><text x="385" y="85" text-anchor="middle" font-size="10" fill="#86868b">接力意愿</text>
+          <rect x="460" y="50" width="110" height="44" rx="8" fill="#f5f5f7" stroke="#d2d2d7"/><text x="515" y="69" text-anchor="middle" fill="#1d1d1f" font-weight="600">连板高度</text><text x="515" y="85" text-anchor="middle" font-size="10" fill="#86868b">天花板位置</text>
+          <rect x="590" y="50" width="100" height="44" rx="8" fill="#f5f5f7" stroke="#d2d2d7"/><text x="640" y="69" text-anchor="middle" fill="#1d1d1f" font-weight="600">涨停家数</text><text x="640" y="85" text-anchor="middle" font-size="10" fill="#86868b">总温度</text>
+        </g>
+        <g stroke="#86868b" stroke-width="1.4" fill="none">
+          <line x1="360" y1="96" x2="360" y2="126"/><polygon points="360,126 356,119 364,119" fill="#86868b" stroke="none"/>
+        </g>
+        <rect x="230" y="130" width="260" height="40" rx="20" fill="#0071e3"/>
+        <text x="360" y="155" text-anchor="middle" font-size="12.5" fill="#fff" font-weight="700">定位周期阶段 → 决定今日动作</text>
+        <text x="360" y="196" text-anchor="middle" font-size="11" fill="#6e6e73">五项同向恶化 = 退潮确认（空仓）；五项同向走强 = 发酵/高潮（按阶段表操作）；互相矛盾 = 分歧期（只做龙头回封）</text>
+      </svg>
+      <div class="cap">图 5 · 温度计决策流：先读「昨日涨停今日表现」——它为负时，后面四项再好也降为观望。</div>
+    </div>
+  </div>
+</section>
+
+<!-- 第8章 仓位风控 -->
+<section id="risk" class="sec-pale anchor">
+  <div class="wrap">
+    <div class="kicker2">第 8 章 · 生存</div>
+    <h2 class="sec-title">仓位与风控：先保证死在退潮期之前学不会</h2>
+    <p class="sec-lead">情绪流的单笔波动远大于趋势流（炸板隔日 -10% 起步是常态），风控参数必须全面收紧。</p>
+    <table>
+      <thead><tr><th style="width:24%">参数</th><th style="width:36%">情绪流口径</th><th>与趋势流（主体系）对比</th></tr></thead>
+      <tbody>
+        <tr><td>单笔风险预算</td><td><b>账户 0.5% - 1%</b>（试错期再减半）</td><td>1% - 1.5%——情绪流必须更低，因为单笔实际亏损波动更大</td></tr>
+        <tr><td>同时持仓数</td><td>≤ 3 只，且同属一个题材梯队时按一笔算</td><td>逻辑相同：同题材 = 一笔暴露</td></tr>
+        <tr><td>总仓位上限</td><td>发酵期 ≤ 50%；其余阶段 ≤ 20%；退潮期 <b>0%</b></td><td>趋势流进攻态可到 80%——情绪流永不满仓，隔夜风险无法对冲</td></tr>
+        <tr><td>止损方式</td><td>次日竞价/开盘处理为主（不及预期即走），无「移动止损」概念</td><td>趋势流是价格/逻辑/时间三维止损，持仓周期完全不同</td></tr>
+        <tr><td>最大回撤熔断</td><td>账户自高点回撤 10% → 强制空仓一周只做复盘</td><td>通用纪律，情绪流执行更严格</td></tr>
+      </tbody>
+    </table>
+    <div class="rule"><b>规则 8.1（T+1 专项）：</b>当天买入的仓位，在当天收盘前没有任何纠错手段——所以买入决策必须假设「收盘就收在最差情形」。接受不了「买入即浮亏 -3%，次日再低开 -5%」的组合，买入键就不该按。</div>
+    <div class="rule"><b>规则 8.2（A 杀认知）：</b>龙头连板行情的终结方式 rarely 是温和回调，常见是高位放巨量后连续缩量跌停的 A 字杀——跑不掉不是因为没看盘，是因为跌停板封死无人接盘。控制 A 杀风险的唯一方法是仓位与分批兑现，不是止损手速。</div>
+  </div>
+</section>
+
+<!-- 第9章 死法清单 -->
+<section id="taboo" class="sec-white anchor">
+  <div class="wrap">
+    <div class="kicker2">第 9 章 · 逆向</div>
+    <h2 class="sec-title">常见死法清单</h2>
+    <p class="sec-lead">这个流派的阵亡名单惊人地相似。逆向思维：先知道会怎么死，再决定要不要上这条路。</p>
+    <div class="grid2">
+      <div class="card"><span class="tag">死法 1</span><h4>退潮期重仓</h4><p>占阵亡原因的一半以上。周期已转⑥仍「轻仓试错」「博反抽」——退潮期的每一次出手都是给主升浪赚到钱的人接盘。<b>对策：</b>温度计五项恶化即空仓，无例外。</p></div>
+      <div class="card"><span class="tag">死法 2</span><h4>买梯队外个股</h4><p>「这个也沾边、位置还低」——梯队外个股没有接力资金关注，涨时不跟、跌时领跌。<b>对策：</b>只交易梯队表上写得清位置的票。</p></div>
+      <div class="card"><span class="tag">死法 3</span><h4>炸板后摊平 / 死扛</h4><p>买入炸板被套，次日补仓「摊低成本」——T+1 制度下这是把一天的风险敞口滚成一周。<b>对策：</b>不及预期即走，情绪流没有「摊平」这个词。</p></div>
+      <div class="card"><span class="tag">死法 4</span><h4>分歧日接跟风</h4><p>龙头巨震时去抄「跌得多的跟风股」——分歧日的死亡顺序是梯队逆序，跟风先死且死了不复活。<b>对策：</b>分歧日只允许一个动作：等龙头回封确认。</p></div>
+      <div class="card"><span class="tag">死法 5</span><h4>高潮日开新仓</h4><p>全网都在喊的当天冲进去——买到的是主升浪的最后一段与次日分歧的全套伤害。<b>对策：</b>高潮期只卖不买。</p></div>
+      <div class="card"><span class="tag">死法 6</span><h4>用趋势流的耐心做情绪流</h4><p>套了之后「改成中线持有」——两种体系的逻辑互斥，混用者两头挨打（详见第 10 章）。<b>对策：</b>下单前写明这是哪套体系的单，规则不跨界。</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- 第10章 与趋势流对比 -->
+<section id="compare" class="sec-pale anchor">
+  <div class="wrap">
+    <div class="kicker2">第 10 章 · 边界</div>
+    <h2 class="sec-title">情绪流 vs 趋势流：两套规则，不可混用</h2>
+    <p class="sec-lead">主体系（趋势流）与本流派在几乎每个环节上都是镜像。理解差异，比掌握任何一派的技术都重要。</p>
+    <table>
+      <thead><tr><th style="width:16%">维度</th><th style="width:42%">打板 / 龙头情绪流</th><th>趋势流（主体系信号 A/B）</th></tr></thead>
+      <tbody>
+        <tr><td>利润来源</td><td>隔日情绪溢价（反身性脉冲）</td><td>趋势惯性延续（动量，学术证据强）</td></tr>
+        <tr><td>持股周期</td><td>1-5 天</td><td>2-8 周</td></tr>
+        <tr><td>买点哲学</td><td>买在最强处（涨停确认）</td><td>买在分歧衰竭处（回踩）或共识形成处（突破）</td></tr>
+        <tr><td>止损方式</td><td>不及预期次日即走，无固定止损位</td><td>价格 / 逻辑 / 时间三维止损</td></tr>
+        <tr><td>盯盘要求</td><td>盘中实时，秒级决策</td><td>盘后 30 分钟足够</td></tr>
+        <tr><td>核心风险</td><td>A 杀、炸板隔日 -10%+</td><td>假突破、趋势逆转（损耗可控）</td></tr>
+        <tr><td>空仓时机</td><td>情绪退潮期</td><td>环境防守态</td></tr>
+        <tr><td>证据基础</td><td>江湖经验与微观结构逻辑，统计验证少</td><td>动量/趋势学术证据充分（A 股打折扣但有过滤器）</td></tr>
+        <tr><td>适合人群</td><td>全职、抗压、盘感以年计</td><td>业余可执行</td></tr>
+      </tbody>
+    </table>
+    <div class="rule"><b>规则 10.1（双修纪律）：</b>若执意两者都做：① 资金物理隔离（两个账户，比例自定但固定）；② 规则不跨界——情绪流的票不用三维止损，趋势流的票不打板买；③ 同一阶段只在一个体系里「进攻」，另一个默认收缩；④ 任何一方连续亏损，停的是那一方，不是两边互相补贴。</div>
+    <div class="est"><b>倾向性建议（有观点）：</b>对无法全天盯盘的投资者，情绪流应当只作为「市场理解课」而非「交易执行课」——用它读懂市场的情绪结构（周期、梯队、温度计），把执行留在趋势流体系里。理解情绪流能让趋势流的环境判断更准，这是它对业余投资者最大的价值。</div>
+  </div>
+</section>
+
+<!-- 第11章 学习路径 -->
+<section id="learn" class="sec-white anchor">
+  <div class="wrap">
+    <div class="kicker2">第 11 章 · 路径</div>
+    <h2 class="sec-title">学习路径：六个月模拟，再谈真钱</h2>
+    <div class="grid3">
+      <div class="card"><span class="tag">第 1-2 月</span><h4>只看不买</h4><p>每天收盘记录情绪温度计五指标；跟踪当日梯队（龙头/补涨/跟风）；给每个涨停归类题材与位置。目标：看到盘面能脱口而出当前周期阶段。</p></div>
+      <div class="card"><span class="tag">第 3-4 月</span><h4>模拟盘 + 复盘对照</h4><p>按本体系规则跑模拟：买点必须绑定周期阶段，卖点执行「不及预期即走」。重点统计：炸板率、隔日溢价兑现率、退潮期是否管住手。目标：模拟 30 笔，执行偏差 &lt; 30%。</p></div>
+      <div class="card"><span class="tag">第 5-6 月</span><h4>极小仓实盘</h4><p>单笔风险 0.25-0.5%（远低于趋势流），只在发酵期出手。目标不是赚钱，是验证「真钱压力下纪律是否变形」——这一步过不去的人，永远停在模拟盘就是胜利。</p></div>
+    </div>
+    <h3>每日复盘模板（情绪流专用）</h3>
+    <table>
+      <thead><tr><th style="width:26%">栏目</th><th>内容</th></tr></thead>
+      <tbody>
+        <tr><td>温度计五指标</td><td>涨停家数 / 连板高度 / 晋级率 / 炸板率 / 昨日涨停今日表现 → 判定周期阶段</td></tr>
+        <tr><td>梯队表</td><td>总龙头（几板）/ 补涨 / 中军 / 新题材首板群 → 明日观察名单</td></tr>
+        <tr><td>今日操作对照</td><td>动作 vs 周期阶段是否匹配；买点属于四类中的哪类；卖点是否执行「不及预期」</td></tr>
+        <tr><td>明日预期</td><td>对持仓与龙头的明日走势写下明确预期（高开/连板/分歧）——明天对照「预期差」执行卖点</td></tr>
+      </tbody>
+    </table>
+    <div class="warn"><b>最后的劝退：</b>如果读完本文你的感受是「兴奋」，请重读第 8、9 章；如果你的感受是「繁琐与敬畏」，你具备了开始六个月模拟的正确心态。这个流派里，活得久的人都先学会了害怕。</div>
+  </div>
+</section>
+
+<!-- 结语 -->
+<section class="sec-black">
+  <div class="wrap">
+    <div class="kicker2">结语</div>
+    <h2 class="sec-title" style="color:#f5f5f7;">情绪流教给所有交易者的三件事</h2>
+    <p style="max-width:760px;font-size:16px;">即使一辈子不打一次板，这套生态依然值得理解：<b style="color:#f5f5f7;">① 价格短期由情绪定价</b>——涨幅榜是情绪的投票器，读懂它比读懂财报更快知道钱在往哪走；<b style="color:#f5f5f7;">② 周期大于个股</b>——任何打法都有它的季节，退潮期空仓的智慧通用；<b style="color:#f5f5f7;">③ 预期差是唯一的卖点</b>——买入时写下明天的预期，不及预期就走，这条纪律放进任何体系都成立。</p>
+    <p style="max-width:760px;font-size:16px;">打板是 A 股最锋利的刀。锋利的东西不分敌我——它切向市场之前，先考验握刀的手。</p>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <p>打板与龙头情绪流 · 操作体系释义 | 完稿 2026-10-09 | 配套文件：《从认知到体系》cognition-to-trading-system-20261008.html（趋势流主体系）</p>
+    <p style="margin-top:8px;">本文为流派知识梳理与操作框架释义，文中全部阈值（涨停家数、连板高度、晋级率、炸板率、换手率等）均为市场参与者经验口径（经验估计，非统计结论或回测结果），随市场环境与监管变化漂移；游资心法类内容属江湖经验总结，不构成可验证的方法论。情绪流为极高风险交易风格，T+1 制度下买入当日无法纠错，可能造成大幅亏损。</p>
+    <div class="disclaimer">
+      <b>免责声明</b>：以上内容基于公开数据和量化分析，仅供参考，不构成投资建议。市场有风险，投资需谨慎。任何投资决策应结合个人风险承受能力、资金状况和投资目标独立判断，必要时咨询持牌专业机构。过往表现不预示未来收益。
+    </div>
+  </div>
+</footer>
+
+<script>
+// 导航 scroll-spy
+(function(){
+  var links=Array.prototype.slice.call(document.querySelectorAll('.nav-links a'));
+  var items=links.map(function(a){
+    var id=a.getAttribute('href').slice(1);
+    return {a:a, el:document.getElementById(id)};
+  }).filter(function(it){return it.el;});
+  function setActive(a){
+    links.forEach(function(l){l.classList.toggle('active', l===a);});
+  }
+  function onScroll(){
+    var y=window.scrollY+90;
+    var current=items[0];
+    for(var i=0;i<items.length;i++){
+      if(items[i].el.offsetTop<=y){current=items[i];}else{break;}
+    }
+    if(window.innerHeight+window.scrollY>=document.body.scrollHeight-4){
+      current=items[items.length-1];
+    }
+    if(current){setActive(current.a);}
+  }
+  var ticking=false;
+  window.addEventListener('scroll',function(){
+    if(!ticking){
+      window.requestAnimationFrame(function(){onScroll();ticking=false;});
+      ticking=true;
+    }
+  },{passive:true});
+  links.forEach(function(a){
+    a.addEventListener('click',function(){setActive(a);});
+  });
+  onScroll();
+})();
+</script>
+</body>
+</html>

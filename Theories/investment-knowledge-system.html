@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>中国股市投资知识体系 · 从认知到执行的完整操作系统</title>
+<style>
+  :root{
+    --bg:#f5f5f7;
+    --card:#ffffff;
+    --ink:#1d1d1f;
+    --ink2:#6e6e73;
+    --ink3:#86868b;
+    --blue:#0071e3;
+    --blue-soft:#e8f1fd;
+    --red:#d7000f;        /* A股: 红涨 */
+    --red-soft:#fdecec;
+    --green:#0a7a3d;      /* A股: 绿跌 */
+    --green-soft:#e9f6ee;
+    --amber:#b25f00;
+    --amber-soft:#fdf3e4;
+    --line:rgba(0,0,0,.08);
+    --radius:24px;
+    --shadow:0 4px 24px rgba(0,0,0,.06);
+    --shadow-hover:0 12px 40px rgba(0,0,0,.10);
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","PingFang SC","Helvetica Neue","Microsoft YaHei",sans-serif;
+    background:var(--bg);
+    color:var(--ink);
+    line-height:1.7;
+    -webkit-font-smoothing:antialiased;
+  }
+  ::selection{background:var(--blue);color:#fff}
+
+  /* ---------- 顶部毛玻璃导航 ---------- */
+  nav{
+    position:fixed;top:0;left:0;right:0;z-index:100;
+    background:rgba(245,245,247,.72);
+    backdrop-filter:saturate(180%) blur(20px);
+    -webkit-backdrop-filter:saturate(180%) blur(20px);
+    border-bottom:1px solid var(--line);
+  }
+  .nav-inner{
+    max-width:1080px;margin:0 auto;padding:0 24px;height:52px;
+    display:flex;align-items:center;gap:4px;overflow-x:auto;
+  }
+  .nav-inner::-webkit-scrollbar{display:none}
+  .nav-logo{font-weight:600;font-size:15px;white-space:nowrap;margin-right:16px}
+  .nav-logo span{color:var(--blue)}
+  .nav-inner a{
+    font-size:12px;color:var(--ink2);text-decoration:none;white-space:nowrap;
+    padding:6px 10px;border-radius:8px;transition:.2s;
+  }
+  .nav-inner a:hover{color:var(--ink);background:rgba(0,0,0,.05)}
+
+  /* ---------- Hero ---------- */
+  .hero{
+    padding:160px 24px 80px;text-align:center;
+    max-width:900px;margin:0 auto;
+  }
+  .hero .kicker{
+    display:inline-block;font-size:13px;font-weight:600;letter-spacing:.12em;
+    color:var(--blue);background:var(--blue-soft);
+    padding:6px 16px;border-radius:999px;margin-bottom:24px;
+  }
+  .hero h1{
+    font-size:clamp(40px,7vw,72px);font-weight:700;letter-spacing:-.02em;line-height:1.1;
+    background:linear-gradient(135deg,#1d1d1f 30%,#0071e3 100%);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+    margin-bottom:20px;
+  }
+  .hero p.sub{font-size:clamp(17px,2.4vw,22px);color:var(--ink2);max-width:640px;margin:0 auto 36px}
+  .hero .meta{font-size:13px;color:var(--ink3)}
+
+  /* ---------- 布局 ---------- */
+  .wrap{max-width:1080px;margin:0 auto;padding:0 24px}
+  section.module{padding:72px 0 8px}
+  .mod-head{display:flex;align-items:baseline;gap:18px;margin-bottom:8px}
+  .mod-num{
+    font-size:56px;font-weight:700;color:rgba(0,0,0,.08);line-height:1;
+    font-variant-numeric:tabular-nums;
+  }
+  .mod-head h2{font-size:clamp(26px,4vw,36px);font-weight:700;letter-spacing:-.01em}
+  .mod-lead{color:var(--ink2);font-size:16px;max-width:760px;margin:6px 0 32px}
+
+  .card{
+    background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);
+    padding:32px;margin-bottom:24px;transition:box-shadow .3s,transform .3s;
+  }
+  .card:hover{box-shadow:var(--shadow-hover)}
+  .card h3{font-size:20px;font-weight:700;margin-bottom:14px;letter-spacing:-.01em}
+  .card h4{font-size:16px;font-weight:600;margin:20px 0 8px}
+  .card p{font-size:15px;color:var(--ink2);margin-bottom:10px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+  @media(max-width:820px){.grid2,.grid3{grid-template-columns:1fr}}
+
+  .mini{
+    background:var(--card);border-radius:18px;box-shadow:var(--shadow);
+    padding:24px;transition:transform .25s,box-shadow .25s;
+  }
+  .mini:hover{transform:translateY(-4px);box-shadow:var(--shadow-hover)}
+  .mini .t{font-size:15px;font-weight:700;margin-bottom:6px}
+  .mini .d{font-size:13.5px;color:var(--ink2);line-height:1.65}
+  .mini .tag{
+    display:inline-block;font-size:11px;font-weight:600;padding:2px 10px;border-radius:999px;
+    margin-bottom:10px;
+  }
+  .tag-b{background:var(--blue-soft);color:var(--blue)}
+  .tag-r{background:var(--red-soft);color:var(--red)}
+  .tag-g{background:var(--green-soft);color:var(--green)}
+  .tag-a{background:var(--amber-soft);color:var(--amber)}
+
+  /* ---------- 表格 ---------- */
+  table{width:100%;border-collapse:collapse;font-size:14px;margin:12px 0}
+  th,td{padding:12px 14px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+  th{font-weight:600;color:var(--ink);background:#fafafc;font-size:13px}
+  tr:last-child td{border-bottom:none}
+  td{color:var(--ink2)}
+  td b{color:var(--ink)}
+  .up{color:var(--red);font-weight:600}
+  .down{color:var(--green);font-weight:600}
+
+  /* ---------- 高亮语录 / 要点 ---------- */
+  .quote{
+    border-left:4px solid var(--blue);background:var(--blue-soft);
+    padding:18px 22px;border-radius:0 16px 16px 0;margin:18px 0;
+    font-size:15.5px;font-weight:500;color:var(--ink);
+  }
+  .warn{
+    border-left:4px solid var(--red);background:var(--red-soft);
+    padding:16px 20px;border-radius:0 16px 16px 0;margin:16px 0;
+    font-size:14.5px;color:var(--ink);
+  }
+  ul.tick,ol.tick{list-style:none;margin:8px 0}
+  ul.tick li,ol.tick li{
+    position:relative;padding:6px 0 6px 30px;font-size:14.5px;color:var(--ink2);
+  }
+  ul.tick li::before{
+    content:"";position:absolute;left:2px;top:13px;width:8px;height:8px;
+    border-radius:50%;background:var(--blue);
+  }
+  ol.tick{counter-reset:li}
+  ol.tick li::before{
+    counter-increment:li;content:counter(li);
+    position:absolute;left:0;top:9px;width:20px;height:20px;border-radius:50%;
+    background:var(--blue);color:#fff;font-size:11px;font-weight:700;
+    display:flex;align-items:center;justify-content:center;
+  }
+  ul.tick li b,ol.tick li b{color:var(--ink)}
+
+  /* ---------- 八步闭环流程图 ---------- */
+  .flow{
+    display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin:28px 0 8px;
+  }
+  .flow .step{
+    background:var(--card);border:1px solid var(--line);border-radius:14px;
+    padding:12px 18px;font-size:13.5px;font-weight:600;text-align:center;
+    box-shadow:var(--shadow);min-width:104px;
+  }
+  .flow .step small{display:block;font-size:11px;font-weight:400;color:var(--ink3);margin-top:2px}
+  .flow .arrow{align-self:center;color:var(--ink3);font-size:16px}
+  .flow .loop{
+    width:100%;text-align:center;font-size:12.5px;color:var(--blue);font-weight:600;margin-top:4px;
+  }
+
+  /* ---------- 计算器 ---------- */
+  .calc{
+    display:grid;grid-template-columns:1fr 1fr;gap:28px;align-items:start;
+  }
+  @media(max-width:820px){.calc{grid-template-columns:1fr}}
+  .calc label{font-size:13px;font-weight:600;color:var(--ink);display:block;margin:14px 0 6px}
+  .calc input{
+    width:100%;padding:12px 14px;font-size:15px;border:1px solid var(--line);
+    border-radius:12px;background:#fafafc;outline:none;transition:.2s;
+    font-family:inherit;
+  }
+  .calc input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(0,113,227,.15)}
+  .calc-out{
+    background:linear-gradient(160deg,#0a84ff,#0066cc);color:#fff;
+    border-radius:20px;padding:28px;
+  }
+  .calc-out .big{font-size:40px;font-weight:700;letter-spacing:-.02em;line-height:1.15}
+  .calc-out .lbl{font-size:13px;opacity:.85;margin-top:16px}
+  .calc-out .row{display:flex;justify-content:space-between;font-size:14px;margin-top:6px;opacity:.95}
+  .formula{
+    font-family:"SF Mono",Menlo,Consolas,monospace;font-size:13.5px;
+    background:#1d1d1f;color:#7ee0a3;padding:14px 18px;border-radius:12px;margin:14px 0;
+    overflow-x:auto;
+  }
+
+  /* ---------- 清单 ---------- */
+  .checklist label{
+    display:flex;gap:14px;align-items:flex-start;padding:12px 4px;border-bottom:1px solid var(--line);
+    cursor:pointer;font-size:14.5px;color:var(--ink2);transition:.2s;
+  }
+  .checklist label:last-child{border-bottom:none}
+  .checklist input{accent-color:var(--blue);width:18px;height:18px;margin-top:3px;flex-shrink:0}
+  .checklist input:checked + span{color:var(--ink3);text-decoration:line-through}
+  .checklist b{color:var(--ink)}
+
+  /* ---------- 滚动出现动画 ---------- */
+  .reveal{opacity:0;transform:translateY(28px);transition:opacity .7s ease,transform .7s ease}
+  .reveal.on{opacity:1;transform:none}
+
+  footer{
+    max-width:1080px;margin:64px auto 0;padding:32px 24px 56px;
+    border-top:1px solid var(--line);font-size:12.5px;color:var(--ink3);line-height:1.8;
+  }
+  footer .disc{
+    background:var(--card);border-radius:16px;padding:20px 24px;margin-bottom:18px;
+    color:var(--ink2);
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <div class="nav-logo">投资<span>·</span>体系</div>
+    <a href="#overview">总览</a>
+    <a href="#m1">认知</a>
+    <a href="#m2">市场</a>
+    <a href="#m3">选股</a>
+    <a href="#m4">估值</a>
+    <a href="#m5">计划</a>
+    <a href="#m6">仓位</a>
+    <a href="#m7">止损</a>
+    <a href="#m8">复盘</a>
+    <a href="#checklist">清单</a>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="kicker">CHINA A-SHARE · DEEP RESEARCH</div>
+  <h1>中国股市投资<br>知识体系</h1>
+  <p class="sub">一套先进、高效、可执行的投资操作系统——从认知筑基到复盘进化，八个模块闭环，每一条规则都能落地。</p>
+  <div class="meta">版本 2026.10 · 适用于 A 股市场 · 红涨绿跌约定</div>
+</header>
+
+<!-- ================= 总览 ================= -->
+<section class="module" id="overview">
+  <div class="wrap">
+    <div class="mod-head reveal"><div class="mod-num">00</div><h2>体系总览：八步闭环</h2></div>
+    <p class="mod-lead reveal">投资不是单次买卖，而是一台循环运转的机器。每个模块只做一件事，做到极致；每完成一轮，用复盘修正下一轮。</p>
+    <div class="flow reveal">
+      <div class="step">01 认知筑基<small>第一性原理</small></div><div class="arrow">→</div>
+      <div class="step">02 判断市场<small>定档位</small></div><div class="arrow">→</div>
+      <div class="step">03 精选个股<small>深度研究</small></div><div class="arrow">→</div>
+      <div class="step">04 估值定价<small>贵不贵</small></div><div class="arrow">→</div>
+      <div class="step">05 交易计划<small>怎么买卖</small></div><div class="arrow">→</div>
+      <div class="step">06 仓位风控<small>买多少</small></div><div class="arrow">→</div>
+      <div class="step">07 止损执行<small>错了怎么办</small></div><div class="arrow">→</div>
+      <div class="step">08 复盘进化<small>下次更好</small></div>
+      <div class="loop">↺ 复盘结论回流到认知与市场判断，体系持续进化</div>
+    </div>
+    <div class="card reveal">
+      <h3>为什么大多数人在 A 股亏钱？</h3>
+      <p>不是因为不懂技术，而是<b style="color:var(--ink)">把碎片知识当成了系统</b>：听了逻辑就重仓（没有仓位模块）、跌了死扛（没有止损模块）、赚钱归因于能力、亏钱归因于运气（没有复盘模块）。这套体系的全部目的，是把"知道"变成"做到"。</p>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 01 认知 ================= -->
+<section class="module" id="m1">
+  <div class="wrap">
+    <div class="mod-head reveal"><div class="mod-num">01</div><h2>认知筑基：六条第一性原理</h2></div>
+    <p class="mod-lead reveal">所有技术方法都建立在这六条之上。行情越极端，越要回到这里。</p>
+    <div class="grid3">
+      <div class="mini reveal"><span class="tag tag-b">原理一</span><div class="t">买股票 = 买公司</div><div class="d">你买的不是一串跳动的代码，而是企业未来现金流的索取权。代码背后没有生意，就只有博弈。</div></div>
+      <div class="mini reveal"><span class="tag tag-b">原理二</span><div class="t">价格 ≠ 价值</div><div class="d">市场短期是投票机（情绪与资金），长期是称重机（盈利与现金流）。赚短期的钱靠判断情绪，赚长期的钱靠判断生意。</div></div>
+      <div class="mini reveal"><span class="tag tag-b">原理三</span><div class="t">安全边际</div><div class="d">好公司 + 好价格缺一不可。再好的资产，买贵了也可能让你三年不赚钱。预留犯错空间，是对自己无知的诚实。</div></div>
+      <div class="mini reveal"><span class="tag tag-b">原理四</span><div class="t">能力圈</div><div class="d">只投看得懂的行业和公司。圈的大小不重要，知道圈的边界在哪里才重要。看不懂的上涨，通常以看不懂的下跌收场。</div></div>
+      <div class="mini reveal"><span class="tag tag-b">原理五</span><div class="t">预期差 = 超额收益</div><div class="d">股价反映的是市场共识。你赚的钱来自"共识与现实的差"：被低估的盈利弹性、被高估的短期风险、被忽视的新业务。没有预期差，就没有超额收益。</div></div>
+      <div class="mini reveal"><span class="tag tag-b">原理六</span><div class="t">概率与赔率</div><div class="d">市场没有确定性，只有期望值。单笔对错不重要，长期反复执行"高期望值"的动作才重要。用仓位管理概率，用止损保护赔率。</div></div>
+    </div>
+
+    <div class="card reveal">
+      <h3>A 股五个结构性特征（与成熟市场的关键差异）</h3>
+      <table>
+        <tr><th style="width:180px">特征</th><th>含义与应对</th></tr>
+        <tr><td><b>T+1 交易制度</b></td><td>当日买入次日才能卖出，日内犯错无法当场纠正 → 买点要求更高，情绪化追高的代价被制度放大。</td></tr>
+        <tr><td><b>涨跌停限制</b></td><td>主板 ±10%，创业板 / 科创板 ±20%，ST ±5%。涨停买不进、跌停卖不出 → 流动性风险真实存在，不碰连续缩量涨停后的高位接力。</td></tr>
+        <tr><td><b>政策驱动强</b></td><td>产业政策可直接改变行业盈利中枢 → 必须建立"政策 → 行业 → 公司"的传导链思维，重大政策先问"谁受益、兑现到哪张报表"。</td></tr>
+        <tr><td><b>散户占比高、波动大</b></td><td>情绪与题材轮动快、波动率高 → 止损纪律和仓位管理的权重，比成熟市场更高。</td></tr>
+        <tr><td><b>颜色约定相反</b></td><td><span class="up">红色 = 上涨</span>，<span class="down">绿色 = 下跌</span>，与欧美市场相反 → 看境外行情软件时注意切换直觉。</td></tr>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 02 市场 ================= -->
+<section class="module" id="m2">
+  <div class="wrap">
+    <div class="mod-head reveal"><div class="mod-num">02</div><h2>判断市场：先定档位，再谈个股</h2></div>
+    <p class="mod-lead reveal">同一支股票，在不同的市场档位里完全是两笔交易。仓位天花板由市场状态决定，不由你的信心决定。</p>
+    <div class="card reveal">
+      <h3>市场四档状态</h3>
+      <table>
+        <tr><th>档位</th><th>特征</th><th>操作含义</th></tr>
+        <tr><td><b style="color:var(--red)">进攻档</b></td><td>指数上行 + 广度健康 + 主线清晰 + 量能配合</td><td>可加风险敞口，聚焦主线龙头，仓位可至上限</td></tr>
+        <tr><td><b style="color:var(--amber)">震荡档</b></td><td>指数横盘、热点快速轮动、赚钱效应一般</td><td>精选个股、控制总仓位、做短不做长</td></tr>
+        <tr><td><b>切换档</b></td><td>旧主线退潮、新主线未明、结构混乱</td><td>减少新进场，等结构清晰再动手</td></tr>
+        <tr><td><b style="color:var(--green)">防守档</b></td><td>广度恶化、防御板块走强、量能萎缩</td><td>减仓 + 防守配置 + 现金为王</td></tr>
+      </table>
+      <h4>广度比指数更诚实——五个体检指标</h4>
+      <ul class="tick">
+        <li><b>涨跌家数比</b>：指数涨但下跌家数更多 = 少数权重硬拉，典型脆弱信号。</li>
+        <li><b>创新高 / 新低个股数</b>：新高持续扩容是健康牛；新高萎缩是动能衰竭。</li>
+        <li><b>行业参与度</b>：80% 以上行业上涨为全面扩散（健康）；少数赛道独涨为局部抱团（高风险）。</li>
+        <li><b>成交额</b>：价涨量增可信；价涨量缩是存量博弈的互掏口袋。</li>
+        <li><b>北向资金 / 两融余额</b>：观察增量资金的方向与持续性，而非单日进出。</li>
+      </ul>
+      <div class="warn">核心警示：<b>广度恶化通常先于指数回落</b>。指数还在涨、广度已掉头，往往是聚焦过度后的脆弱阶段。"指数没跌"绝不等于"市场健康"。</div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 03 选股 ================= -->
+<section class="module" id="m3">
+  <div class="wrap">
+    <div class="mod-head reveal"><div class="mod-num">03</div><h2>精选个股：深度研究七步法</h2></div>
+    <p class="mod-lead reveal">研究不是资料堆砌，而是回答两个问题：市场为什么买这只股票？未来还会不会继续买？</p>
+    <div class="card reveal">
+      <ol class="tick">
+        <li><b>拆解业务结构</b>：哪块业务最关键、哪块决定估值、是否有真壁垒。区分主业 / 增长业务 / 衰退边缘业务。</li>
+        <li><b>行业格局与公司位置</b>：行业处于导入 / 成长 / 成熟 / 下行哪一阶段？空间多大？公司是龙头、细分龙头、追赶者还是边缘？</li>
+        <li><b>核心投资逻辑（2-4 条）</b>：每条必须写清——逻辑本身、为什么成立、对业绩或估值的影响路径、是否已被充分定价。<b>拒绝"受益于行业发展"这类泛逻辑。</b></li>
+        <li><b>未来 1-3 年增长驱动</b>：来自产品放量、价格上行、份额提升、新业务还是成本改善？明确最关键的那一个业绩变量。</li>
+        <li><b>市场共识与预期差</b>：市场已普遍接受什么？真正可能形成超额收益的预期差是什么？这是高质量投研的核心交付。</li>
+        <li><b>估值方法选择与位置</b>：选什么方法、为什么（见模块 04），当前处于历史分位什么位置、行业横向对比如何。</li>
+        <li><b>风险清单</b>：短期与中期分开（需求 / 价格 / 客户集中 / 产能 / 政策 / 竞争），不泛泛提示。</li>
+      </ol>
+      <div class="quote">一句话本质检验："买这家公司，本质上是在买 ______。"（如"买的是 AI 算力资本开支周期的量价齐升"）——逼自己把逻辑收敛成一句可证伪的话。</div>
+      <h4>长周期视角</h4>
+      <p>财务与估值数据优先看近 10 年：3 年看不出周期位置和估值中枢；上市不足 10 年的次新股按实际年限评估。所有关键数据必须可追溯到来源与时点，多源冲突时优先采信交易所公告、公司年报等一手来源。</p>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 04 估值 ================= -->
+<section class="module" id="m4">
+  <div class="wrap">
+    <div class="mod-head reveal"><div class="mod-num">04</div><h2>估值定价：先分类，再选尺</h2></div>
+    <p class="mod-lead reveal">估值回答三件事：该用什么方法、当前股价里已经包含了什么、什么会触发重估或杀估值。</p>
+    <div class="card reveal">
+      <h3>公司类型 × 估值方法对照</h3>
+      <table>
+        <tr><th>公司类型</th><th>首选方法</th><th>关键注意</th></tr>
+        <tr><td><b>高成长</b></td><td>PE / PEG / PS / EV-EBITDA</td><td>PEG 看增速与估值的匹配，增速证伪即双杀</td></tr>
+        <tr><td><b>稳健成长</b></td><td>PE / PEG</td><td>看增长持续性而非单年增速</td></tr>
+        <tr><td><b>周期</b></td><td>PB / 周期中枢 PE / 盈利拐点</td><td>高 PE 时可能是底部（盈利最差），低 PE 时可能是顶部</td></tr>
+        <tr><td><b>价值 / 红利</b></td><td>PE / PB / 股息率</td><td>验证分红持续性，不能只看单次股息率</td></tr>
+        <tr><td><b>平台 / 金融</b></td><td>分部估值 / DCF / P-AUM</td><td>多业务加总，避免一把尺子量全身</td></tr>
+      </table>
+      <h4>估值位置：历史分位三档</h4>
+      <ul class="tick">
+        <li><b>30% 分位以下</b>：偏低——但低估值不等于便宜，先排除基本面恶化的"价值陷阱"。</li>
+        <li><b>30%-70%</b>：中性——赚业绩的钱，估值贡献有限。</li>
+        <li><b>70% 以上</b>：偏高——高估值不等于必须卖，但要求增速与质量持续兑现。</li>
+      </ul>
+      <h4>拆解"股价里已经包含了什么"</h4>
+      <p>高估值隐含：未来高增速、景气持续、市占率提升、新业务高弹性。低估值隐含：周期下行担忧、业绩见顶、治理折价。<b>说清楚市场已定价了什么，估值分析才有意义。</b></p>
+      <div class="grid2" style="margin-top:16px">
+        <div class="mini"><span class="tag tag-r">重估触发</span><div class="d">业绩超预期 · 产业趋势强化 · 商业模式改善 · 资金风格切换 · 治理改善</div></div>
+        <div class="mini"><span class="tag tag-g">杀估值触发</span><div class="d">增速下修 · 景气拐点 · 竞争恶化 · 风险偏好下降 · 政策冲击</div></div>
+      </div>
+      <h4 style="margin-top:22px">DCF 使用纪律（如需）</h4>
+      <p>WACC 通常取 8%-12%，永续增长率 2%-3%；必须做 Bear / Base / Bull 三情景，<b>不把单一情景当目标价</b>；终值占比超过 70% 要警惕模型失真。跨公司对比前先核对财年口径（财年 ≠ 自然年）。</p>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 05 交易计划 ================= -->
+<section class="module" id="m5">
+  <div class="wrap">
+    <div class="mod-head reveal"><div class="mod-num">05</div><h2>交易计划：具体条件 + 具体动作</h2></div>
+    <p class="mod-lead reveal">"逢低布局、注意风险"不是计划。计划 = 现在处于什么位置 → 什么条件做什么动作 → 什么情况计划作废。</p>
+    <div class="card reveal">
+      <h3>第一步：判断当前交易位置</h3>
+      <table>
+        <tr><th>位置</th><th>特征</th><th>信号</th></tr>
+        <tr><td><b>低位启动</b></td><td>长期下跌后横盘 / 放量突破</td><td>30 日低点 + 放量</td></tr>
+        <tr><td><b>趋势中继</b></td><td>上升趋势中回调</td><td>5 日线附近 + 缩量</td></tr>
+        <tr><td><b>高位加速</b></td><td>连续大涨后加速</td><td>远离 5 日线 + 放量（警惕透支）</td></tr>
+        <tr><td><b>高位震荡</b></td><td>高位横盘</td><td>5 日线走平 + 高换手</td></tr>
+        <tr><td><b>下跌反抽</b></td><td>下跌后反弹</td><td>5 日线下方 + 无量（持续性弱）</td></tr>
+      </table>
+      <h4>第二步：入场四依据（缺一不可，理由不足宁可等确认）</h4>
+      <ul class="tick">
+        <li><b>逻辑催化</b>：政策 / 业绩 / 订单，有明确的事件或数据支撑。</li>
+        <li><b>趋势结构</b>：突破 / 回踩 / 反转，位置对。</li>
+        <li><b>量价配合</b>：放量上涨、缩量回调为健康结构。</li>
+        <li><b>市场环境</b>：大盘与板块支持（回到模块 02 定档）。环境不支持时降仓或放弃。</li>
+      </ul>
+      <h4>第三步：分仓路径（一把梭不是计划）</h4>
+      <table>
+        <tr><th>批次</th><th>比例</th><th>触发条件</th></tr>
+        <tr><td><b>试错仓</b></td><td>10-20%</td><td>首次信号出现</td></tr>
+        <tr><td><b>确认仓</b></td><td>+20-30%</td><td>走势符合预期</td></tr>
+        <tr><td><b>加仓仓</b></td><td>+20-30%</td><td>强势确认 / 关键突破</td></tr>
+        <tr><td><b>重仓</b></td><td>&gt;70%</td><td>仅限极强势 + 市场环境支持</td></tr>
+      </table>
+      <h4>第四步：止盈与失效条件</h4>
+      <ul class="tick">
+        <li><b>止盈三种</b>：目标止盈（前高 / 阻力位）、情绪止盈（换手 &gt;15% + 放量滞涨）、时间止盈（计划周期到）。分批执行：先回收成本，再吃主升，留底仓博第二段。</li>
+        <li><b>失效条件（高质量计划必备）</b>：催化证伪 / 板块转弱 / 龙头负反馈 / 放量破位 / 次日反馈差。任何一条触发，计划作废而非修改。</li>
+      </ul>
+      <div class="warn">止损位写完就是写完，不要事后宽松；环境不支持时，敢直说"这笔不执行"。</div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 06 仓位 ================= -->
+<section class="module" id="m6">
+  <div class="wrap">
+    <div class="mod-head reveal"><div class="mod-num">06</div><h2>仓位风控：由风险反推，不由信心正推</h2></div>
+    <p class="mod-lead reveal">仓位是风险决策，不是方向决策。信心高 ≠ 应该重仓；没有止损位，就没有仓位计算。</p>
+    <div class="card reveal">
+      <h3>核心公式</h3>
+      <div class="formula">可承受仓位 = 单笔风险预算 ÷ 止损距离<br>例：账户 100 万，单笔最多亏 1%（1 万），止损距离 7% → 仓位 ≈ 14.3 万</div>
+      <ul class="tick">
+        <li><b>先定风险边界</b>：单笔最大可承受亏损（常见 0.5%-2% 账户）、整体仓位天花板、行业 / 风格集中度上限。</li>
+        <li><b>不确定性决定首笔</b>：不确定性越高，首笔越克制（10-20% 试错仓起步），验证后再放大。</li>
+        <li><b>止损距离过远 → 缩小仓位</b>，而不是放宽纪律。止损距离是仓位的分母。</li>
+        <li><b>组合相关性是隐藏风险</b>：3 只半导体加在一起，就是一笔半导体仓位。新仓按"补充暴露"而非独立头寸处理。</li>
+        <li><b>加仓条件</b>：原逻辑被强化 + 走势符合预期 + 量价配合 + 环境升级。不在浮盈上盲目加码。</li>
+        <li><b>压力测试</b>：想象开盘跳空、连续不利波动、环境突变——不能接受，说明当前仓位偏大。</li>
+      </ul>
+    </div>
+
+    <div class="card reveal">
+      <h3>仓位计算器（动手算一遍）</h3>
+      <div class="calc">
+        <div>
+          <label>账户总资金（元）</label>
+          <input id="cap" type="number" value="1000000" min="0">
+          <label>单笔风险预算（占账户 %，常见 0.5-2）</label>
+          <input id="risk" type="number" value="1" step="0.1" min="0">
+          <label>止损距离（%，买入价到止损位的幅度）</label>
+          <input id="stop" type="number" value="7" step="0.5" min="0.1">
+        </div>
+        <div class="calc-out">
+          <div class="lbl">可承受仓位（上限）</div>
+          <div class="big" id="outPos">¥ 142,857</div>
+          <div class="row"><span>单笔最大亏损额</span><b id="outLoss">¥ 10,000</b></div>
+          <div class="row"><span>仓位占账户比例</span><b id="outPct">14.3%</b></div>
+          <div class="row"><span>触发止损后账户回撤</span><b id="outDD">-1.0%</b></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 07 止损 ================= -->
+<section class="module" id="m7">
+  <div class="wrap">
+    <div class="mod-head reveal"><div class="mod-num">07</div><h2>止损纪律：价格 × 逻辑 × 时间，三维刹车</h2></div>
+    <p class="mod-lead reveal">止损的本质不是认错，而是用确定的小成本，消除不确定性的大风险。</p>
+    <div class="grid3">
+      <div class="mini reveal"><span class="tag tag-r">价格止损</span><div class="t">客观位 + 确认方式</div><div class="d">跌破关键支撑（前低 / 5 日线 / 20 日线）或幅度 -5% 至 -8%（按波动率调整）。必须写清确认方式——收盘破位、盘中破位还是连续破位，避免被瞬时插针误伤。</div></div>
+      <div class="mini reveal"><span class="tag tag-a">逻辑止损</span><div class="t">买入理由消失</div><div class="d">核心催化失效（利好落空 / 公告澄清）、板块转弱（龙头跌停 / 板块跌超 5%）、放量破位（成交量放大 1.5 倍 + 跌破关键位）。逻辑没了，价格没跌也该走。</div></div>
+      <div class="mini reveal"><span class="tag tag-b">时间止损</span><div class="t">资金的机会成本</div><div class="d">预期多久验证？短线 5-10 个交易日、中线 1-2 个月仍横盘弱势，资金占用已达时间阈值 → 降仓或退出，把资金还给更好的机会。</div></div>
+    </div>
+    <div class="card reveal">
+      <h3>触发后的动作顺序（纪律的核心）</h3>
+      <ol class="tick">
+        <li>触发即执行事先写好的动作：先减半再观察、一次性退出、或等收盘确认——触发前定好，触发后照做。</li>
+        <li><b>触发后禁止重新评估持有理由</b>——评估应在触发前完成。"再等等说不定回来"是自我合理化。</li>
+        <li>区分噪音与真失效：盘中快速插针后收回通常是诱空；连续多日趋势性破位才是真失效。</li>
+        <li>目标价到达 ≠ 必须卖：判断预期兑现度与新催化，强势穿越可上调目标；但目标价触发后回落，重点警惕兑现风险。</li>
+      </ol>
+      <div class="quote">脱锚训练：成本价不是市场关心的变量。"我成本 35 元套了 40% 怎么办" → 换成"以现在的基本面、估值、位置，它今天还值不值得持有？"市场从不知道你的成本。</div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 08 复盘 ================= -->
+<section class="module" id="m8">
+  <div class="wrap">
+    <div class="mod-head reveal"><div class="mod-num">08</div><h2>复盘进化：区分运气与能力</h2></div>
+    <p class="mod-lead reveal">没有复盘的体系会退化。复盘的目标只有一个：让下一次决策的期望值更高。</p>
+    <div class="card reveal">
+      <h3>交易日志四要素</h3>
+      <table>
+        <tr><th>要素</th><th>记录内容</th></tr>
+        <tr><td><b>买入理由</b></td><td>当时的投资逻辑 + 预期差 + 一句话本质（买它本质上是买什么）</td></tr>
+        <tr><td><b>当时预期</b></td><td>预期多久验证、目标位、止损位、失效条件——全部事前写死</td></tr>
+        <tr><td><b>实际结果</b></td><td>盈亏、持有时长、过程最大回撤</td></tr>
+        <tr><td><b>偏差归因</b></td><td>结果与预期的差来自哪里：判断错误 / 执行走样 / 随机波动？</td></tr>
+      </table>
+      <ul class="tick">
+        <li><b>赚钱 ≠ 做对</b>：靠运气赚的钱，复盘时要标记为运气，否则会强化错误动作。</li>
+        <li><b>亏钱 ≠ 做错</b>：按系统执行的止损是成本，不是错误；该止没止才是错误。</li>
+        <li><b>维护一份个人错误清单</b>：追高、一把梭、止损走样、盈利不走坐过山车——重复犯同一个错之前，先把它写下来。</li>
+        <li><b>拉长周期看自己</b>：单季盈亏无意义，以 3-5 年年化收益与最大回撤评价体系是否有效。</li>
+        <li><b>让结论回流</b>：复盘发现的环境误判 → 修正模块 02 的档位标准；发现的逻辑错误 → 修正模块 03 的研究清单。</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 清单 ================= -->
+<section class="module" id="checklist">
+  <div class="wrap">
+    <div class="mod-head reveal"><div class="mod-num">✓</div><h2>下单前十问检查清单</h2></div>
+    <p class="mod-lead reveal">每一笔交易前，逐项打勾。任何一项答不上来，这单就不该下。</p>
+    <div class="card checklist reveal">
+      <label><input type="checkbox"><span><b>1. 市场档位明确</b>：当前是进攻 / 震荡 / 切换 / 防守哪一档？仓位上限随之定了吗？</span></label>
+      <label><input type="checkbox"><span><b>2. 广度健康</b>：涨跌家数、新高新低数支持指数表现吗？还是少数权重硬拉？</span></label>
+      <label><input type="checkbox"><span><b>3. 一句话本质</b>：买这家公司本质上是在买什么？能用一句可证伪的话说出来吗？</span></label>
+      <label><input type="checkbox"><span><b>4. 预期差存在</b>：我的判断与市场共识的差在哪？凭什么我是对的？</span></label>
+      <label><input type="checkbox"><span><b>5. 估值有位置</b>：用的什么估值方法？历史分位在哪一档？股价里已包含了什么预期？</span></label>
+      <label><input type="checkbox"><span><b>6. 位置判断正确</b>：当前是低位启动 / 趋势中继 / 高位加速 / 高位震荡 / 下跌反抽？</span></label>
+      <label><input type="checkbox"><span><b>7. 入场四依据齐全</b>：逻辑催化、趋势结构、量价配合、市场环境，缺哪个？</span></label>
+      <label><input type="checkbox"><span><b>8. 仓位由公式算出</b>：风险预算 ÷ 止损距离 = 仓位，而不是"感觉可以重仓"？</span></label>
+      <label><input type="checkbox"><span><b>9. 三维止损写死</b>：价格位（含确认方式）、逻辑失效条件、时间阈值，都写下来了吗？</span></label>
+      <label><input type="checkbox"><span><b>10. 压力测试通过</b>：明天跳空低开、连续三日不利波动，我还能平静执行计划吗？</span></label>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="disc">
+    <b>免责声明</b>：以上内容基于公开数据和量化分析，仅供参考，不构成投资建议。市场有风险，投资需谨慎。任何投资决策应结合个人风险承受能力、资金状况和投资目标独立判断，必要时咨询持牌专业机构。过往表现不预示未来收益。
+  </div>
+  本页为投资知识体系（方法论框架），不含任何具体标的推荐与实时行情数据。文中阈值（如止损幅度、仓位比例、分位区间）为行业通行经验值，应结合个人情况调整。<br>
+  中国股市投资知识体系 · 生成于 2026-10-04 · 浅色研报风 / Apple Design Language
+</footer>
+
+<script>
+// ---------- 滚动出现动画 ----------
+(function(){
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(e.isIntersecting){ e.target.classList.add('on'); io.unobserve(e.target); }
+    });
+  },{threshold:.12});
+  document.querySelectorAll('.reveal').forEach(function(el){ io.observe(el); });
+})();
+
+// ---------- 仓位计算器 ----------
+(function(){
+  var cap = document.getElementById('cap');
+  var risk = document.getElementById('risk');
+  var stop = document.getElementById('stop');
+  var outPos = document.getElementById('outPos');
+  var outLoss = document.getElementById('outLoss');
+  var outPct = document.getElementById('outPct');
+  var outDD = document.getElementById('outDD');
+  function fmt(n){ return '¥ ' + Math.round(n).toLocaleString('zh-CN'); }
+  function calc(){
+    var c = parseFloat(cap.value) || 0;
+    var r = parseFloat(risk.value) || 0;
+    var s = parseFloat(stop.value) || 0;
+    var loss = c * r / 100;
+    var pos = s > 0 ? loss / (s / 100) : 0;
+    outPos.textContent = fmt(pos);
+    outLoss.textContent = fmt(loss);
+    outPct.textContent = (c > 0 ? (pos / c * 100) : 0).toFixed(1) + '%';
+    outDD.textContent = '-' + r.toFixed(1) + '%';
+  }
+  [cap, risk, stop].forEach(function(el){ el.addEventListener('input', calc); });
+  calc();
+})();
+</script>
+</body>
+</html>

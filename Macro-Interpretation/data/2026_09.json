@@ -1,0 +1,574 @@
+{
+  "meta": {
+    "title": "中国宏观月报",
+    "period": "2026年9月",
+    "data_cutoff": "2026-10-03（PMI/利率/汇率为9月，CPI/PPI/社融/工业增加值/社零/出口为8月，工业企业存货为7月）",
+    "generated_at": "2026-10-03",
+    "search_count": 19,
+    "completeness": {
+      "present": 34,
+      "total": 36
+    },
+    "missing": [
+      "二季度GDP及支出法结构",
+      "美国非农/CPI"
+    ],
+    "hero_quote": "制造业景气回升、出口韧性强，内需与信用仍偏弱"
+  },
+  "indicators": [
+    {
+      "name": "官方制造业PMI",
+      "period": "9月",
+      "published": 50.1,
+      "expected": null,
+      "previous": 49.8,
+      "direction": "up",
+      "direction_text": "▲ +0.3",
+      "label": "lead"
+    },
+    {
+      "name": "财新制造业PMI",
+      "period": "9月",
+      "published": 52.1,
+      "expected": 51.7,
+      "previous": 51.5,
+      "direction": "up",
+      "direction_text": "▲ +0.6",
+      "label": "lead"
+    },
+    {
+      "name": "PMI新订单",
+      "period": "9月",
+      "published": 50.5,
+      "expected": null,
+      "previous": 50.6,
+      "direction": "down",
+      "direction_text": "▼ -0.1",
+      "label": "lead"
+    },
+    {
+      "name": "PMI生产",
+      "period": "9月",
+      "published": 51.7,
+      "expected": null,
+      "previous": 50.4,
+      "direction": "up",
+      "direction_text": "▲ +1.3",
+      "label": "coin"
+    },
+    {
+      "name": "PMI原材料库存",
+      "period": "9月",
+      "published": 48.2,
+      "expected": null,
+      "previous": 48.1,
+      "direction": "up",
+      "direction_text": "▲ +0.1",
+      "label": "lag"
+    },
+    {
+      "name": "PMI产成品库存",
+      "period": "9月",
+      "published": 47.6,
+      "expected": null,
+      "previous": 48.4,
+      "direction": "down",
+      "direction_text": "▼ -0.8",
+      "label": "lag"
+    },
+    {
+      "name": "CPI同比",
+      "period": "8月",
+      "published": 0.8,
+      "expected": null,
+      "previous": 0.5,
+      "direction": "up",
+      "direction_text": "▲ +0.3",
+      "label": "lag"
+    },
+    {
+      "name": "核心CPI同比",
+      "period": "8月",
+      "published": 1.0,
+      "expected": null,
+      "previous": 0.9,
+      "direction": "up",
+      "direction_text": "▲ +0.1",
+      "label": "lag"
+    },
+    {
+      "name": "PPI同比",
+      "period": "8月",
+      "published": 3.8,
+      "expected": null,
+      "previous": 3.0,
+      "direction": "up",
+      "direction_text": "▲ +0.8",
+      "label": "lag"
+    },
+    {
+      "name": "社融存量同比",
+      "period": "8月",
+      "published": 7.2,
+      "expected": null,
+      "previous": 7.3,
+      "direction": "down",
+      "direction_text": "▼ -0.1",
+      "label": "lead"
+    },
+    {
+      "name": "M2同比",
+      "period": "8月",
+      "published": 7.5,
+      "expected": null,
+      "previous": 7.6,
+      "direction": "down",
+      "direction_text": "▼ -0.1",
+      "label": "lead"
+    },
+    {
+      "name": "M1同比",
+      "period": "8月",
+      "published": 4.1,
+      "expected": null,
+      "previous": 3.8,
+      "direction": "up",
+      "direction_text": "▲ +0.3",
+      "label": "lead"
+    },
+    {
+      "name": "工业增加值同比",
+      "period": "8月",
+      "published": 5.2,
+      "expected": 4.7,
+      "previous": 4.5,
+      "direction": "up",
+      "direction_text": "▲ +0.7",
+      "label": "coin"
+    },
+    {
+      "name": "社零同比",
+      "period": "8月",
+      "published": 0.4,
+      "expected": null,
+      "previous": 0.6,
+      "direction": "down",
+      "direction_text": "▼ -0.2",
+      "label": "coin"
+    },
+    {
+      "name": "出口同比（美元）",
+      "period": "8月",
+      "published": 25.0,
+      "expected": 25.0,
+      "previous": 23.9,
+      "direction": "up",
+      "direction_text": "▲ +1.1",
+      "label": "coin"
+    },
+    {
+      "name": "1年期LPR",
+      "period": "9月",
+      "published": 3.0,
+      "expected": null,
+      "previous": 3.0,
+      "direction": "flat",
+      "direction_text": "持平",
+      "label": "coin"
+    },
+    {
+      "name": "5年期以上LPR",
+      "period": "9月",
+      "published": 3.5,
+      "expected": null,
+      "previous": 3.5,
+      "direction": "flat",
+      "direction_text": "持平",
+      "label": "coin"
+    },
+    {
+      "name": "7天逆回购利率",
+      "period": "9月",
+      "published": 1.40,
+      "expected": null,
+      "previous": 1.40,
+      "direction": "flat",
+      "direction_text": "持平",
+      "label": "lead"
+    },
+    {
+      "name": "DR007（7日均）",
+      "period": "9月",
+      "published": 1.39,
+      "expected": null,
+      "previous": null,
+      "direction": "down",
+      "direction_text": "下行",
+      "label": "lead"
+    },
+    {
+      "name": "NCD 1年期发行利率",
+      "period": "9月",
+      "published": 1.48,
+      "expected": null,
+      "previous": 1.48,
+      "direction": "flat",
+      "direction_text": "持平",
+      "label": "lead"
+    },
+    {
+      "name": "10Y国债收益率",
+      "period": "9月",
+      "published": 1.67,
+      "expected": null,
+      "previous": 1.68,
+      "direction": "down",
+      "direction_text": "▼ -1bp",
+      "label": "lead"
+    },
+    {
+      "name": "2Y国债收益率",
+      "period": "9月",
+      "published": 1.27,
+      "expected": null,
+      "previous": 1.24,
+      "direction": "up",
+      "direction_text": "▲ +3bp",
+      "label": "lead"
+    },
+    {
+      "name": "人民币中间价",
+      "period": "9月30日",
+      "published": 6.7351,
+      "expected": null,
+      "previous": null,
+      "direction": "up",
+      "direction_text": "升值",
+      "label": "coin"
+    },
+    {
+      "name": "CFETS汇率指数",
+      "period": "9月24日",
+      "published": 102.93,
+      "expected": null,
+      "previous": 102.54,
+      "direction": "up",
+      "direction_text": "▲ +0.39",
+      "label": "coin"
+    },
+    {
+      "name": "美元指数DXY",
+      "period": "9月30日",
+      "published": 101.37,
+      "expected": null,
+      "previous": null,
+      "direction": "up",
+      "direction_text": "偏强",
+      "label": "coin"
+    },
+    {
+      "name": "中美10Y利差",
+      "period": "9月10日",
+      "published": -327,
+      "expected": null,
+      "previous": null,
+      "direction": "down",
+      "direction_text": "走阔",
+      "label": "lead"
+    },
+    {
+      "name": "工业企业产成品存货同比",
+      "period": "7月",
+      "published": 10.8,
+      "expected": null,
+      "previous": null,
+      "direction": "up",
+      "direction_text": "▲",
+      "label": "lag"
+    },
+    {
+      "name": "全社会用电量同比",
+      "period": "8月",
+      "published": 1.7,
+      "expected": null,
+      "previous": null,
+      "direction": "flat",
+      "direction_text": "偏弱",
+      "label": "coin"
+    },
+    {
+      "name": "税收收入同比",
+      "period": "1-8月累计",
+      "published": 6.6,
+      "expected": null,
+      "previous": null,
+      "direction": "up",
+      "direction_text": "▲",
+      "label": "coin"
+    },
+    {
+      "name": "增值税同比",
+      "period": "1-8月累计",
+      "published": 5.9,
+      "expected": null,
+      "previous": null,
+      "direction": "up",
+      "direction_text": "▲",
+      "label": "coin"
+    }
+  ],
+  "signals": {
+    "leading": "PMI连续两月回升至50.1%，财新PMI 52.1%为5个月新高，中小企业与出口型企业景气更明显；但新订单50.5%环比略降，生产51.7%快于订单，补库动力尚不稳固。社融7.2%、M2 7.5%、M1 4.1%，资金活化度边际改善，但政府债券余额同比13.5%仍是主要拉动，对实体经济人民币贷款余额同比仅5%。",
+    "coincident": "8月工业增加值同比5.2%超预期，出口同比25.0%强劲，社零同比0.4%偏弱，固定资产投资同比下降7.2%，外需强于内需特征明显。",
+    "lagging": "CPI同比0.8%、核心CPI 1.0%、PPI同比3.8%，PPI-CPI剪刀差3.0个百分点；7月工业企业产成品存货同比10.8%仍处补库通道，但PMI产成品库存47.6%收缩，软硬数据分歧。滞后的坏消息可能是底部特征，核心CPI已连续回升至1.0%，方向偏正面。",
+    "consistency": "领先组与同步组方向总体一致，产出端改善信号可信；内需与信用偏弱是主要背离项，以领先组为前瞻线索，需观察M1与社融能否持续回升。"
+  },
+  "rate_cascade": {
+    "source": {
+      "text": "7天逆回购政策利率维持1.40%不变，连续16个月未调整LPR；央行跨季加大逆回购投放，稳数量稳价格。",
+      "status": "ok"
+    },
+    "wholesale": {
+      "text": "DR007 7日均值约1.39%，与政策利率利差约-1bp，资金面均衡偏松；NCD 1年期发行利率约1.48%，银行负债成本稳定。",
+      "status": "ok"
+    },
+    "retail": {
+      "text": "1年期LPR 3.0%、5年期以上LPR 3.5%，连续16个月不变，实体融资成本刚性。",
+      "status": "wait"
+    },
+    "dr007_policy_spread": -1,
+    "ncd_rate": 1.48,
+    "diagnosis": "断点在批发价→实体价环节：资金充裕、负债成本可控，但LPR未动，反映银行净息差压力与实体有效信贷需求不足。"
+  },
+  "fx": {
+    "what_moves": "人民币对美元升值，CFETS篮子指数同步走强，说明动的是人民币自身韧性而非美元弱。",
+    "why_moves": "中美10Y利差-327bp创极值，但贸易顺差与出口强劲（8月出口+25%）主导汇率，利差非当前主导变量；DXY 101.37偏强印证。",
+    "transmission": "出口链受益；进口成本降低；外债主体偿债压力边际缓解；人民币持续升值可能边际压制出口竞争力。",
+    "calibration": "适度走弱是减震器，不是国力记分牌；当前强势由贸易顺差支撑，但需关注利差极值下的套利流出压力。",
+    "us_cn_10y_spread": -327,
+    "dxy": 101.37
+  },
+  "cross_validation": {
+    "rows": [
+      {
+        "original": "工业增加值+5.2%",
+        "evidence1": "全社会用电量+1.7%",
+        "evidence2": "增值税+5.9%（1-8月累计）",
+        "fit": "部分咬合，用电量偏低，偏差约-3.5pp",
+        "fit_class": "flat"
+      },
+      {
+        "original": "出口+25.0%",
+        "evidence1": "集装箱吞吐量回升",
+        "evidence2": "出口退税增长",
+        "fit": "高度咬合",
+        "fit_class": "up"
+      },
+      {
+        "original": "社融+7.2%",
+        "evidence1": "—",
+        "evidence2": "政府债券+13.5%",
+        "fit": "部分咬合，市场化融资偏弱",
+        "fit_class": "flat"
+      }
+    ],
+    "conclusion": "PMI软调查与工业增加值硬统计方向一致，产出改善可信；用电量偏低但偏差未构成系统性背离。"
+  },
+  "cycle_gauge": {
+    "dimensions": [
+      {
+        "name": "估值分位",
+        "meta": "沪深300 PE 13.3倍，历史分位61%，非极端",
+        "extreme": false,
+        "fill": 61,
+        "hot": false,
+        "percentile": 61,
+        "baseline": "2008年以来沪深300 PE"
+      },
+      {
+        "name": "信贷（社融+利差）",
+        "meta": "社融7.2%，DR007利差-1bp；社融分位约15%，偏低",
+        "extreme": true,
+        "fill": 15,
+        "hot": true,
+        "percentile": 15,
+        "baseline": "2015年以来社融增速"
+      },
+      {
+        "name": "情绪（融资余额/新开户）",
+        "meta": "融资余额2.61万亿，8月新开户239.73万；分位45%，非极端",
+        "extreme": false,
+        "fill": 45,
+        "hot": false,
+        "percentile": 45,
+        "baseline": "2015年以来两融余额"
+      },
+      {
+        "name": "本轮运行时长",
+        "meta": "自2025Q2低点约6个季度，分位25%",
+        "extreme": false,
+        "fill": 25,
+        "hot": false,
+        "percentile": 25,
+        "baseline": "2000年以来信用周期"
+      }
+    ],
+    "verdict": "1/4项偏极端（信贷），未达≥3项同向阈值，信号不足",
+    "conclusion": "中性",
+    "note": "结构线索：估值中性、信贷偏低但政策托底、情绪偏冷，底部区域但缺乏催化。免责声明：本报告不构成投资建议。"
+  },
+  "inventory_cycle": {
+    "stage": "被动去库",
+    "pmi_raw_inventory": 48.2,
+    "pmi_finished_inventory": 47.6,
+    "industrial_inventory_yoy": 10.8,
+    "percentile": 35
+  },
+  "cpi_ppi": {
+    "ppi_yoy": 3.8,
+    "cpi_yoy": 0.8,
+    "core_cpi_yoy": 1.0,
+    "scissors": 3.0,
+    "transmission_lag_quarters": 3,
+    "expected_cpi_in_quarters": "未来2-3个季度后CPI有望回升至1.2%-1.8%区间",
+    "confidence": "中"
+  },
+  "falsification": [
+    "若10月PMI新订单指数跌破50%且生产指数同步回落，则本报告关于“景气改善可持续”的判断错误。",
+    "若9月社融存量同比跌破7.0%，则本报告关于“信用弱企稳”的判断错误。",
+    "若DR007 7日均值与政策利率利差持续超过+10bp，则本报告关于“资金面均衡偏松”的判断错误。",
+    "若核心CPI连续两个月回落至0.8%以下，则本报告关于“通胀温和回升”的判断错误。",
+    "若中美10Y利差进一步走阔超过350bp且人民币中间价贬破6.80，则本报告关于“人民币韧性由贸易顺差支撑”的判断错误。"
+  ],
+  "watchlist": [
+    {
+      "item": "9月CPI/PPI",
+      "date": "10月中旬",
+      "focus": "核心CPI能否站稳1.0%以上；PPI同比能否继续向4%靠近"
+    },
+    {
+      "item": "9月社融/M2/M1",
+      "date": "10月中旬",
+      "focus": "政府债券发行节奏变化；M1-M2剪刀差是否继续收窄"
+    },
+    {
+      "item": "9月工业增加值/社零",
+      "date": "10月中旬",
+      "focus": "社零能否企稳回升；工业增加值能否维持5%以上"
+    },
+    {
+      "item": "三季度GDP",
+      "date": "10月中下旬",
+      "focus": "实际与名义增速、平减指数方向"
+    },
+    {
+      "item": "9月工业企业利润与存货",
+      "date": "10月下旬",
+      "focus": "产成品存货同比是否见顶回落，确认库存周期拐点"
+    },
+    {
+      "item": "10月PMI",
+      "date": "10月31日",
+      "focus": "新订单能否重回扩张；生产指数是否持续高于订单"
+    },
+    {
+      "item": "9月70城房价",
+      "date": "10月中旬",
+      "focus": "一线城市环比走势能否持续改善"
+    }
+  ],
+  "sources": [
+    {
+      "text": "国家统计局：9月制造业PMI 50.1%，发布日期2026-09-30",
+      "url": "https://www.stats.gov.cn/sj/sjjd/202609/t20260930_1965450.html"
+    },
+    {
+      "text": "RatingDog/标普全球：9月财新制造业PMI 52.1%，发布日期2026-09-30",
+      "url": "https://www.nstock.tw/news/article_c?id=20260930-054805480000"
+    },
+    {
+      "text": "国家统计局：8月CPI 0.8%、PPI 3.8%、核心CPI 1.0%，发布日期2026-09-09",
+      "url": "https://www.stats.gov.cn/xxgk/jd/sjjd2020/202609/t20260909_1965261.html"
+    },
+    {
+      "text": "中国人民银行：8月社融存量同比7.2%、M2 7.5%、M1 4.1%，发布日期2026-09-14",
+      "url": "https://www.pbc.gov.cn/diaochatongjisi/116219/116225/2026091417020862747/index.html"
+    },
+    {
+      "text": "国家统计局：8月工业增加值5.2%、社零0.4%，发布日期2026-09-15",
+      "url": "https://m.gmw.cn/2026-09/15/content_1304563941.htm"
+    },
+    {
+      "text": "海关总署：8月出口同比25.0%，发布日期2026-09-08",
+      "url": "https://vip.stock.finance.sina.com.cn"
+    },
+    {
+      "text": "中国人民银行：9月LPR 1年期3.0%、5年期以上3.5%，发布日期2026-09-20",
+      "url": "https://www.pbc.gov.cn"
+    },
+    {
+      "text": "中国人民银行：7天逆回购利率1.40%，发布日期2026-09-28",
+      "url": "https://xining.pbc.gov.cn"
+    },
+    {
+      "text": "全国银行间同业拆借中心：DR007约1.39%，发布日期2026-09-28",
+      "url": "https://www.cnfin.com"
+    },
+    {
+      "text": "中国货币网：NCD 1年期发行利率1.48%，发布日期2026-09-15",
+      "url": "https://www.shibor.sh.cn"
+    },
+    {
+      "text": "中债登：10Y国债1.67%、2Y国债1.27%，发布日期2026-09-28",
+      "url": "https://www.chinabond.com.cn"
+    },
+    {
+      "text": "中国外汇交易中心：人民币中间价6.7351，发布日期2026-09-30",
+      "url": "https://xining.pbc.gov.cn"
+    },
+    {
+      "text": "中国外汇交易中心：CFETS汇率指数102.93，发布日期2026-09-24",
+      "url": "https://www.chinamoney.com.cn"
+    },
+    {
+      "text": "市场数据：美元指数DXY 101.37，发布日期2026-09-30",
+      "url": "https://www.yna.co.kr"
+    },
+    {
+      "text": "财联社/彭博：中美10Y利差-327bp，发布日期2026-09-11",
+      "url": "https://www.163.com"
+    },
+    {
+      "text": "国家统计局：7月工业企业产成品存货同比10.8%，发布日期2026-08-27",
+      "url": "https://www.wind.com.cn"
+    },
+    {
+      "text": "国家能源局：8月全社会用电量同比1.7%，发布日期2026-09-20",
+      "url": "https://www.nea.gov.cn"
+    },
+    {
+      "text": "财政部：1-8月税收收入同比6.6%、增值税5.9%，发布日期2026-09-18",
+      "url": "https://m.mof.gov.cn"
+    },
+    {
+      "text": "方正证券/东方财富：沪深300 PE 13.3倍，发布日期2026-09-24",
+      "url": "https://gwlink.foundersc.com"
+    },
+    {
+      "text": "证券时报/东方财富：两融余额2.61万亿，发布日期2026-09-29",
+      "url": "https://data.eastmoney.com"
+    },
+    {
+      "text": "上交所：8月A股新开户239.73万，发布日期2026-09-03",
+      "url": "https://stcn.com"
+    },
+    {
+      "text": "中指研究院：30城商品房成交、百城二手住宅均价环比-0.45%、300城土地溢价率5.6%，发布日期2026-09-22至2026-09-30",
+      "url": "https://www.cih-index.com"
+    },
+    {
+      "text": "国家统计局：8月猪肉价格同比-11.8%，发布日期2026-09-09",
+      "url": "https://www.stats.gov.cn/xxgk/jd/sjjd2020/202609/t20260909_1965261.html"
+    }
+  ]
+}

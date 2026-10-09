@@ -1,0 +1,1391 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>威科夫量价分析 · Wyckoff Method 图解精要</title>
+<style>
+:root{
+  --bg:#000;
+  --bg2:#0b0b0f;
+  --txt:#f5f5f7;
+  --sub:#a1a1a6;
+  --dim:#86868b;
+  --blue:#0a84ff;
+  --cyan:#64d2ff;
+  /* A股惯例：红涨绿跌 */
+  --up:#ff453a;
+  --down:#30d158;
+  --green:#30d158;
+  --red:#ff453a;
+  --orange:#ff9f0a;
+  --purple:#bf5af2;
+  --yellow:#ffd60a;
+  --card:rgba(255,255,255,.045);
+  --stroke:rgba(255,255,255,.09);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  background:var(--bg);
+  color:var(--txt);
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","PingFang SC","Helvetica Neue","Microsoft YaHei",sans-serif;
+  -webkit-font-smoothing:antialiased;
+  line-height:1.65;
+  overflow-x:hidden;
+}
+body::before{
+  content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
+  background:
+    radial-gradient(900px 500px at 15% -5%, rgba(10,132,255,.14), transparent 60%),
+    radial-gradient(800px 500px at 85% 8%, rgba(191,90,242,.10), transparent 60%),
+    radial-gradient(700px 600px at 50% 110%, rgba(100,210,255,.07), transparent 60%);
+}
+/* ============ NAV ============ */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  backdrop-filter:saturate(180%) blur(20px);
+  -webkit-backdrop-filter:saturate(180%) blur(20px);
+  background:rgba(8,8,10,.72);
+  border-bottom:1px solid rgba(255,255,255,.08);
+}
+.nav-inner{
+  max-width:1080px;margin:0 auto;padding:0 24px;
+  height:52px;display:flex;align-items:center;justify-content:space-between;
+}
+.brand{font-size:15px;font-weight:600;letter-spacing:.02em;display:flex;align-items:center;gap:8px;color:var(--txt);text-decoration:none}
+.brand .dot{width:8px;height:8px;border-radius:50%;background:linear-gradient(135deg,var(--cyan),var(--purple));box-shadow:0 0 12px rgba(100,210,255,.6)}
+.nav-links{
+  display:flex;gap:2px;flex-wrap:nowrap;overflow-x:auto;scroll-behavior:smooth;min-width:0;
+  scrollbar-width:none;-ms-overflow-style:none;
+  -webkit-mask-image:linear-gradient(90deg,transparent 0,#000 14px,#000 calc(100% - 14px),transparent 100%);
+  mask-image:linear-gradient(90deg,transparent 0,#000 14px,#000 calc(100% - 14px),transparent 100%);
+}
+.nav-links::-webkit-scrollbar{display:none}
+.nav-links a{
+  color:var(--sub);text-decoration:none;font-size:12.5px;padding:6px 11px;border-radius:99px;
+  transition:color .25s,background .25s;white-space:nowrap;position:relative;
+}
+.nav-links a:hover{color:#fff;background:rgba(255,255,255,.08)}
+.nav-links a.active{color:#fff;background:rgba(255,255,255,.14);box-shadow:inset 0 0 0 1px rgba(255,255,255,.10)}
+.nav-links a.active::after{
+  content:"";position:absolute;left:11px;right:11px;bottom:-1px;height:2px;border-radius:2px;
+  background:linear-gradient(90deg,var(--cyan),var(--purple));
+}
+@media(max-width:900px){.nav-links{display:none}}
+/* ============ HERO ============ */
+.hero{
+  min-height:94vh;display:flex;flex-direction:column;justify-content:center;align-items:center;
+  text-align:center;padding:120px 24px 80px;position:relative;
+}
+.hero .kicker{
+  font-size:13px;letter-spacing:.35em;text-transform:uppercase;color:var(--dim);
+  margin-bottom:26px;font-weight:600;
+}
+.hero h1{
+  font-size:clamp(48px,8.5vw,96px);font-weight:700;letter-spacing:-.03em;line-height:1.05;
+  background:linear-gradient(180deg,#fff 30%,rgba(255,255,255,.55));
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+}
+.hero h1 .grad{
+  background:linear-gradient(92deg,var(--cyan) 0%,var(--blue) 35%,var(--purple) 75%);
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+}
+.hero .sub{
+  margin-top:30px;font-size:clamp(17px,2.4vw,21px);color:var(--sub);max-width:680px;
+  font-weight:400;
+}
+.hero .quote{
+  margin-top:34px;padding:14px 26px;border:1px solid var(--stroke);border-radius:99px;
+  font-size:14px;color:var(--cyan);background:rgba(100,210,255,.05);
+}
+.hero .scroll-hint{
+  margin-top:70px;color:var(--dim);font-size:12px;letter-spacing:.2em;
+  animation:float 2.6s ease-in-out infinite;
+}
+@keyframes float{0%,100%{transform:translateY(0);opacity:.5}50%{transform:translateY(8px);opacity:1}}
+/* ============ SECTIONS ============ */
+section{max-width:1080px;margin:0 auto;padding:96px 24px 20px;scroll-margin-top:62px}
+.sec-head{margin-bottom:44px}
+.pill{
+  display:inline-flex;align-items:center;gap:8px;
+  font-size:12px;font-weight:600;letter-spacing:.18em;color:var(--cyan);
+  padding:7px 16px;border-radius:99px;border:1px solid rgba(100,210,255,.25);
+  background:rgba(100,210,255,.06);margin-bottom:22px;
+}
+.pill.purple{color:var(--purple);border-color:rgba(191,90,242,.3);background:rgba(191,90,242,.06)}
+.pill.green{color:var(--green);border-color:rgba(48,209,88,.28);background:rgba(48,209,88,.06)}
+.pill.orange{color:var(--orange);border-color:rgba(255,159,10,.28);background:rgba(255,159,10,.06)}
+.pill.red{color:var(--red);border-color:rgba(255,69,58,.28);background:rgba(255,69,58,.06)}
+.pill.yellow{color:var(--yellow);border-color:rgba(255,214,10,.28);background:rgba(255,214,10,.05)}
+h2{
+  font-size:clamp(32px,5vw,50px);font-weight:700;letter-spacing:-.025em;line-height:1.12;
+  margin-bottom:18px;
+}
+h2 .grad{background:linear-gradient(92deg,var(--cyan),var(--purple));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.lead{font-size:17.5px;color:var(--sub);max-width:780px}
+.lead strong,.card strong{color:#fff;font-weight:600}
+/* ============ CARDS & GRIDS ============ */
+.grid{display:grid;gap:18px;margin-top:36px}
+.g2{grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
+.g3{grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
+.g4{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+.card{
+  background:var(--card);border:1px solid var(--stroke);border-radius:24px;padding:26px 26px 24px;
+  backdrop-filter:blur(10px);transition:transform .35s ease,border-color .35s ease,background .35s ease;
+  position:relative;overflow:hidden;
+}
+.card:hover{transform:translateY(-4px);border-color:rgba(255,255,255,.18);background:rgba(255,255,255,.065)}
+.card h3{font-size:18px;font-weight:650;letter-spacing:-.01em;margin-bottom:10px;display:flex;align-items:baseline;gap:9px;flex-wrap:wrap}
+.card h3 .en{font-size:12px;color:var(--dim);font-weight:500;letter-spacing:.03em}
+.card p{font-size:14.5px;color:var(--sub)}
+.card p+p{margin-top:9px}
+.card .num{
+  font-size:12px;font-weight:700;color:var(--dim);
+  position:absolute;top:22px;right:24px;opacity:.7;
+}
+.tag{
+  display:inline-block;font-size:11.5px;font-weight:600;padding:3px 10px;border-radius:99px;
+  margin-bottom:12px;letter-spacing:.04em;
+}
+.tag.blue{color:var(--blue);background:rgba(10,132,255,.13)}
+.tag.green{color:var(--green);background:rgba(48,209,88,.13)}
+.tag.red{color:var(--red);background:rgba(255,69,58,.13)}
+.tag.orange{color:var(--orange);background:rgba(255,159,10,.13)}
+.tag.purple{color:var(--purple);background:rgba(191,90,242,.13)}
+.tag.cyan{color:var(--cyan);background:rgba(100,210,255,.12)}
+.tag.yellow{color:var(--yellow);background:rgba(255,214,10,.12)}
+/* ============ FIGURES ============ */
+figure{
+  margin-top:40px;background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.02));
+  border:1px solid var(--stroke);border-radius:28px;padding:34px 28px 24px;
+  overflow:hidden;
+}
+figure svg{width:100%;height:auto;display:block}
+figcaption{
+  margin-top:20px;text-align:center;font-size:13px;color:var(--dim);
+  padding-top:16px;border-top:1px solid rgba(255,255,255,.06);
+}
+figcaption b{color:var(--sub);font-weight:600}
+/* SVG 内部通用 */
+.s-line{stroke:#e8e8ed;stroke-width:2.4;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.s-dash{stroke:rgba(255,255,255,.35);stroke-width:1.4;stroke-dasharray:5 5;fill:none}
+.s-dot{fill:#fff;stroke:rgba(0,0,0,.4);stroke-width:1.5}
+.s-lab{font-size:12.5px;font-weight:600;fill:#f5f5f7;font-family:-apple-system,"PingFang SC",sans-serif}
+.s-lab.dim{fill:#98989d;font-weight:500}
+.s-lab.up{fill:var(--red)}          /* 红涨 */
+.s-lab.dn{fill:var(--green)}        /* 绿跌 */
+.s-lab.ac{fill:var(--cyan)}
+.s-lab.yl{fill:var(--yellow)}
+.s-lab.sm{font-size:11px;font-weight:500}
+.s-dimV{stroke:rgba(255,255,255,.12);stroke-width:1;stroke-dasharray:2 6}
+.s-zone{fill:rgba(255,255,255,.06);stroke:rgba(255,255,255,.22);stroke-width:1;stroke-dasharray:4 4}
+.vol{fill:rgba(100,210,255,.40)}
+.vol.cl{fill:rgba(255,159,10,.66)}
+.vol.dm{fill:rgba(255,69,58,.62)}
+.vol.sp{fill:rgba(48,209,88,.62)}
+.vol.tst{fill:rgba(255,255,255,.85)}
+.phase-lab{font-size:12px;font-weight:700;font-family:-apple-system,"PingFang SC",sans-serif;text-anchor:middle}
+.mini-fig{background:rgba(255,255,255,.03);border:1px solid var(--stroke);border-radius:18px;padding:18px 16px 14px}
+.mini-fig h4{font-size:14.5px;font-weight:650;margin-bottom:3px}
+.mini-fig .en{font-size:11px;color:var(--dim);font-weight:500}
+.mini-fig p{font-size:12.5px;color:var(--sub);margin-top:10px;line-height:1.55}
+.mini-fig svg{width:100%;height:auto;display:block;margin-top:6px}
+/* ============ TABLES ============ */
+.tbl-wrap{margin-top:36px;border:1px solid var(--stroke);border-radius:22px;overflow:hidden;background:var(--card)}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{
+  text-align:left;padding:15px 20px;font-size:12px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--dim);font-weight:600;background:rgba(255,255,255,.035);
+  border-bottom:1px solid var(--stroke);white-space:nowrap;
+}
+td{padding:14px 20px;border-bottom:1px solid rgba(255,255,255,.05);color:var(--sub);vertical-align:top}
+tr:last-child td{border-bottom:none}
+td b{color:#fff;font-weight:600}
+tr:hover td{background:rgba(255,255,255,.025)}
+.up-t{color:var(--red)!important;font-weight:600}
+.dn-t{color:var(--green)!important;font-weight:600}
+.ac-t{color:var(--cyan)!important;font-weight:600}
+.yl-t{color:var(--yellow)!important;font-weight:600}
+/* ============ MISC ============ */
+.callout{
+  margin-top:34px;border-radius:22px;padding:26px 30px;
+  background:linear-gradient(120deg,rgba(100,210,255,.09),rgba(191,90,242,.07));
+  border:1px solid rgba(100,210,255,.22);
+  font-size:15px;color:var(--sub);
+}
+.callout b{color:#fff}
+.callout .h{font-size:13px;font-weight:700;letter-spacing:.14em;color:var(--cyan);margin-bottom:10px;text-transform:uppercase}
+.callout.warn{
+  background:linear-gradient(120deg,rgba(255,159,10,.09),rgba(255,69,58,.06));
+  border-color:rgba(255,159,10,.25);
+}
+.callout.warn .h{color:var(--orange)}
+.split{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:36px}
+@media(max-width:760px){.split{grid-template-columns:1fr}}
+.vs{
+  border-radius:22px;padding:26px;border:1px solid var(--stroke);background:var(--card);
+}
+.vs h4{font-size:16.5px;font-weight:650;margin-bottom:12px;display:flex;align-items:baseline;gap:8px}
+.vs h4 .en{font-size:11.5px;color:var(--dim);font-weight:500}
+.vs ul{list-style:none}
+.vs li{font-size:14px;color:var(--sub);padding:7px 0 7px 22px;position:relative;border-bottom:1px dashed rgba(255,255,255,.06)}
+.vs li:last-child{border-bottom:none}
+.vs li::before{content:"";position:absolute;left:2px;top:15px;width:6px;height:6px;border-radius:50%}
+.vs.v1 li::before{background:var(--red)}
+.vs.v2 li::before{background:var(--orange)}
+.vs.v3 li::before{background:var(--green)}
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px;margin-top:36px}
+.step{
+  border:1px solid var(--stroke);border-radius:20px;padding:22px 20px;background:var(--card);position:relative;
+}
+.step .n{
+  width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-size:14px;font-weight:700;color:#000;background:linear-gradient(135deg,var(--cyan),var(--blue));
+  margin-bottom:14px;
+}
+.step h4{font-size:15.5px;font-weight:650;margin-bottom:8px}
+.step p{font-size:13px;color:var(--sub)}
+.reveal{opacity:0;transform:translateY(34px);transition:opacity .9s cubic-bezier(.16,1,.3,1),transform .9s cubic-bezier(.16,1,.3,1)}
+.reveal.on{opacity:1;transform:none}
+.divider{max-width:1080px;margin:60px auto 0;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.14),transparent)}
+footer{max-width:1080px;margin:0 auto;padding:80px 24px 100px}
+footer h3{font-size:20px;font-weight:650;margin-bottom:26px}
+.refs{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:10px}
+.refs a{
+  font-size:13px;color:var(--sub);text-decoration:none;padding:11px 16px;border-radius:12px;
+  background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);transition:.25s;
+  display:block;
+}
+.refs a:hover{color:#fff;background:rgba(255,255,255,.07)}
+.refs a .src{color:var(--dim);font-size:11px;display:block;margin-top:2px}
+.footer-note{margin-top:50px;font-size:12px;color:var(--dim);line-height:1.8;border-top:1px solid rgba(255,255,255,.07);padding-top:24px}
+.checklist{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px;margin-top:36px}
+.check{
+  display:flex;gap:14px;align-items:flex-start;padding:18px 20px;border-radius:18px;
+  background:var(--card);border:1px solid var(--stroke);
+}
+.check .ic{
+  flex:0 0 26px;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-size:13px;font-weight:700;color:#000;margin-top:2px;
+}
+.check p{font-size:13.5px;color:var(--sub)}
+.check p b{color:#fff}
+.series{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+.series a{
+  font-size:13px;color:var(--sub);text-decoration:none;padding:8px 16px;border-radius:99px;
+  border:1px solid var(--stroke);background:rgba(255,255,255,.03);transition:.25s;
+}
+.series a:hover{color:#fff;border-color:rgba(255,255,255,.3)}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <a class="brand" href="#top"><span class="dot"></span>威科夫量价 · 图解精要</a>
+    <div class="nav-links">
+      <a href="#origin">起源</a><a href="#cycle">市场周期</a><a href="#laws">三大法则</a><a href="#accumulation">吸筹</a><a href="#distribution">派发</a><a href="#glossary">词典</a><a href="#volume">量价细节</a><a href="#tests">九项检验</a><a href="#tactics">五步法</a><a href="#pitfalls">误区</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero" id="top">
+  <div class="kicker">Wyckoff Method · 量价分析完全图解</div>
+  <h1>威科夫量价分析<br><span class="grad">与主力同行的百年地图</span></h1>
+  <p class="sub">价格为什么涨？因为有人先买了。威科夫方法用价格与成交量的"行为语言"，还原复合人（Composite Man）——市场主导力量——从吸筹、拉升到派发、下跌的完整作战地图。本指南精炼其理论体系：三大法则、A–E 阶段结构、九项检验与实战战术。</p>
+  <div class="quote">"市场的未来走势，可以通过其自身行为加以研判——因为价格行为反映了主导者的计划与意图。" — 理查德·D·威科夫</div>
+  <div class="scroll-hint">向下滚动开始 ↓</div>
+</header>
+
+<main>
+<!-- ══════════════ 01 起源与复合人 ══════════════ -->
+<section id="origin">
+  <div class="sec-head reveal">
+    <span class="pill">01 · 起源与核心哲学</span>
+    <h2>像<span class="grad">复合人</span>一样思考</h2>
+    <p class="lead">威科夫只用三样东西读市场：<strong>价格、成交量、以及它们所处的趋势位置</strong>。他的全部理论建立在一个思维实验上——把市场想象为由一位精明的"复合人"操控，研究图表时问自己：<strong>"如果我是他，此刻我会怎么做？"</strong></p>
+  </div>
+  <div class="grid g3 reveal">
+    <div class="card">
+      <span class="num">1873–1934</span>
+      <span class="tag blue">创始人</span>
+      <h3>理查德·D·威科夫 <span class="en">Richard D. Wyckoff</span></h3>
+      <p>15 岁入行跑单，25 岁拥有自己的经纪行，后创办《华尔街杂志》（发行量一度超 20 万份）。近距离观察利弗莫尔、基恩等大操盘手的实战手法，1931 年在纽约创办<strong>股市科学研究所</strong>，课程《股票市场科学与技术教程》成为传世教材。</p>
+    </div>
+    <div class="card">
+      <span class="num">思维模型</span>
+      <span class="tag cyan">核心概念</span>
+      <h3>复合人 <span class="en">Composite Man / Operator</span></h3>
+      <p>把所有大资金拟人化为一位"操盘手"：<strong>低位悄悄吸筹 → 拉抬价格 → 高位派发给公众 → 压价退出</strong>。他的一切行动都为自身利益服务，且必然在图表上留下量价足迹。价格周期，就是他的资金曲线。</p>
+    </div>
+    <div class="card">
+      <span class="num">对手盘</span>
+      <span class="tag orange">博弈视角</span>
+      <h3>他制造你的情绪</h3>
+      <p>跌到抛售高潮让你<strong>恐惧交出筹码</strong>，涨到购买高潮让你<strong>贪婪高位接盘</strong>；Spring（弹簧）与 UTAD（派发后上冲）是他故意设置的陷阱——先扫掉你的止损，再启动真正的行情。</p>
+    </div>
+  </div>
+  <div class="grid g4 reveal">
+    <div class="card">
+      <span class="tag purple">传承 · 比喻大师</span>
+      <h3>Bob Evans</h3>
+      <p>威科夫课程的执教者之一，贡献了<strong>小溪（Creek）与冰面（Ice）</strong>的比喻体系，以及 Spring（弹簧）这一术语。</p>
+    </div>
+    <div class="card">
+      <span class="tag purple">传承 · 体系化</span>
+      <h3>Hank Pruden</h3>
+      <p>将结构图整理为 <strong>A–E 五阶段模型</strong>、系统化九项检验，著作《顶级交易三大技能》是现代威科夫教学的基石。</p>
+    </div>
+    <div class="card">
+      <span class="tag purple">传承 · VSA</span>
+      <h3>Tom Williams</h3>
+      <p>曾任机构操盘手，把威科夫量价原理发展为 <strong>VSA（量价分化分析）</strong>：价差 + 收盘位置 + 成交量，置于背景下解读。</p>
+    </div>
+    <div class="card">
+      <span class="tag purple">传承 · 当代</span>
+      <h3>Weis / Coulling / Villahermosa</h3>
+      <p>David Weis 的<strong>威斯波浪</strong>、Anna Coulling《量价分析》面向大众、Ruben Villahermosa 的现代畅销教材——方法在量化时代依然被专业交易员沿用。</p>
+    </div>
+  </div>
+  <div class="callout reveal">
+    <div class="h">为什么百年不衰</div>
+    无论主力用人工还是算法执行，<strong>建仓 → 拉升 → 出货 → 压价的行为周期无法省略</strong>——大资金进出必然留下量价足迹。高频交易只是把吸筹与派发做得更快、更碎，底层供需逻辑从未改变。这是威科夫方法穿越一个世纪依然有效的根本原因。
+  </div>
+</section>
+
+<div class="divider"></div>
+<!-- ══════════════ 02 市场周期 ══════════════ -->
+<section id="cycle">
+  <div class="sec-head reveal">
+    <span class="pill cyan">02 · 市场周期</span>
+    <h2>四阶段循环：<span class="grad">主力的作战地图</span></h2>
+    <p class="lead">市场永远在四个阶段间循环：<strong>吸筹 → 拉升 → 派发 → 下跌</strong>。横盘不是"没有行情"，而是主力活动最密集的战场；趋势只是横盘孕育的"果"。识别当前所处的阶段与位置，是一切量价分析的<strong>前提</strong>——同样的信号，位置不同，含义相反。</p>
+  </div>
+
+  <figure class="reveal">
+    <svg viewBox="0 0 1000 400" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <marker id="arrW" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M 0 0 L 10 5 L 0 10 z" fill="#e8e8ed"/>
+        </marker>
+        <marker id="arrR" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+          <path d="M 0 0 L 10 5 L 0 10 z" fill="#ff453a"/>
+        </marker>
+        <marker id="arrG" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+          <path d="M 0 0 L 10 5 L 0 10 z" fill="#30d158"/>
+        </marker>
+      </defs>
+      <!-- 区带 -->
+      <rect x="38" y="238" width="190" height="66" rx="12" fill="rgba(100,210,255,.08)" stroke="rgba(100,210,255,.35)" stroke-dasharray="4 4"/>
+      <rect x="296" y="182" width="84" height="52" rx="10" fill="rgba(100,210,255,.05)" stroke="rgba(100,210,255,.28)" stroke-dasharray="4 4"/>
+      <rect x="478" y="44" width="182" height="66" rx="12" fill="rgba(191,90,242,.08)" stroke="rgba(191,90,242,.35)" stroke-dasharray="4 4"/>
+      <rect x="737" y="186" width="80" height="50" rx="10" fill="rgba(191,90,242,.05)" stroke="rgba(191,90,242,.28)" stroke-dasharray="4 4"/>
+      <!-- 价格浪 -->
+      <path class="s-line" marker-end="url(#arrW)" d="M 45 272 L 68 296 L 92 252 L 116 297 L 140 253 L 164 295 L 188 251 L 212 292 L 245 225 L 268 248 L 292 190 L 312 228 L 332 192 L 352 226 L 372 190 L 405 120 L 435 148 L 465 92 L 488 58 L 512 96 L 536 56 L 560 95 L 584 57 L 608 96 L 632 58 L 655 100 L 685 160 L 710 138 L 735 195 L 755 192 L 775 224 L 795 190 L 815 222 L 845 285 L 870 265 L 895 330 L 915 315"/>
+      <!-- 方向箭头 -->
+      <line x1="415" y1="115" x2="447" y2="72" stroke="#ff453a" stroke-width="3" stroke-linecap="round" marker-end="url(#arrR)"/>
+      <line x1="842" y1="262" x2="874" y2="302" stroke="#30d158" stroke-width="3" stroke-linecap="round" marker-end="url(#arrG)"/>
+      <!-- 区带标签 -->
+      <text x="125" y="228" text-anchor="middle" class="s-lab ac">吸筹 Accumulation</text>
+      <text x="338" y="174" text-anchor="middle" class="s-lab ac s-lab sm">再吸筹</text>
+      <text x="569" y="34" text-anchor="middle" class="s-lab" fill="#bf5af2">派发 Distribution</text>
+      <text x="777" y="178" text-anchor="middle" class="s-lab sm" fill="#bf5af2">再派发</text>
+      <!-- 阶段说明 -->
+      <text x="125" y="376" text-anchor="middle" class="s-lab ac s-lab sm">① 吸筹：恐慌中建仓（区间震荡）</text>
+      <text x="410" y="376" text-anchor="middle" class="s-lab up s-lab sm">② 拉升：需求主导，回调即买点</text>
+      <text x="665" y="376" text-anchor="middle" class="s-lab sm" fill="#bf5af2">③ 派发：狂热中出货</text>
+      <text x="885" y="376" text-anchor="middle" class="s-lab dn s-lab sm">④ 下跌：供给主导，反弹即卖点</text>
+    </svg>
+    <figcaption><b>威科夫市场周期</b>：吸筹 → 拉升 → 派发 → 下跌，循环往复；趋势途中会形成更短更浅的<b>再吸筹 / 再派发</b>交易区间（趋势的加油站）</figcaption>
+  </figure>
+
+  <div class="grid g4 reveal">
+    <div class="card">
+      <span class="tag cyan">阶段①</span>
+      <h3>吸筹 <span class="en">Accumulation</span></h3>
+      <p>下跌末端的横盘区间。公众在恐慌中交出筹码，主力静默接货。<strong>区间即战场</strong>——"因"在此积累，吸筹的深度决定未来行情的高度。</p>
+    </div>
+    <div class="card">
+      <span class="tag red">阶段②</span>
+      <h3>拉升 <span class="en">Markup</span></h3>
+      <p>供给枯竭 + 需求主导，最小阻力方向向上。特征：高点低点持续抬升、上涨放量回调缩量。途中的再吸筹区间是趋势交易者的加仓点。</p>
+    </div>
+    <div class="card">
+      <span class="tag purple">阶段③</span>
+      <h3>派发 <span class="en">Distribution</span></h3>
+      <p>上涨末端的横盘区间。公众狂热追高，主力借流动性出货。UTAD 牛市陷阱套牢最后一批买家，"因"在此转向空头。</p>
+    </div>
+    <div class="card">
+      <span class="tag green">阶段④</span>
+      <h3>下跌 <span class="en">Markdown</span></h3>
+      <p>需求枯竭 + 供给主导。反弹一次比一次弱——对多头而言每一次反弹都是逃命机会，对空头而言是做空入场点。</p>
+    </div>
+  </div>
+  <div class="callout reveal">
+    <div class="h">位置先于信号</div>
+    分析任何图表的第一步：<strong>市场（和个股）处于四阶段循环的哪个位置？处于交易区间的哪个阶段？</strong>高位放量长阳可能是购买高潮（BC），低位放量长阳可能是强势信号（SOS）——脱离背景读信号，是量价分析最大的错误来源。
+  </div>
+</section>
+
+<div class="divider"></div>
+<!-- ══════════════ 03 三大法则 ══════════════ -->
+<section id="laws">
+  <div class="sec-head reveal">
+    <span class="pill green">03 · 三大法则</span>
+    <h2>一切判断的<span class="grad">三条公理</span></h2>
+    <p class="lead">三大法则是威科夫方法的"宪法"，所有结构、事件与检验都是它们的具体化：<strong>供需法则告诉你方向，因果法则告诉你空间，努力与结果法则告诉你转折。</strong></p>
+  </div>
+
+  <div class="grid g3 reveal">
+    <div class="card">
+      <span class="num">Law 1</span>
+      <span class="tag blue">方向</span>
+      <h3>供需法则 <span class="en">Supply &amp; Demand</span></h3>
+      <p>需求 &gt; 供给 → 涨；供给 &gt; 需求 → 跌；均衡 → 区间。判断依据不是新闻，而是量价行为本身：<strong>上涨放量 = 需求真实；上涨缩量 = 需求缺席（无需求）</strong>。最好的交易，发生在供需失衡最悬殊的位置——高潮与真空。</p>
+    </div>
+    <div class="card">
+      <span class="num">Law 2</span>
+      <span class="tag orange">空间</span>
+      <h3>因果法则 <span class="en">Cause &amp; Effect</span></h3>
+      <p>横盘区间是"因"，随后的趋势是"果"。<strong>因的计量不是时间，而是点数图（P&amp;F）横向计数</strong>：吸筹区间的计数深度决定上涨目标，派发区间决定下跌目标——"横有多长、竖有多高"的严谨版本。</p>
+    </div>
+    <div class="card">
+      <span class="num">Law 3</span>
+      <span class="tag yellow">转折</span>
+      <h3>努力与结果 <span class="en">Effort vs Result</span></h3>
+      <p>成交量是努力，价格推进（价差）是结果。<strong>努力与结果背离 = 转折预警</strong>：巨量却推不动价格，说明有对手盘在吸收；缩量却能轻松推进，说明最小阻力方向已打开。</p>
+    </div>
+  </div>
+
+  <!-- 因果法则：点数图计数 -->
+  <div class="split reveal">
+    <figure style="margin-top:0">
+      <svg viewBox="0 0 760 400" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="arrP" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="#ff453a"/>
+          </marker>
+        </defs>
+        <!-- 网格 -->
+        <g stroke="rgba(255,255,255,.07)" stroke-width="1">
+          <line x1="40" y1="60" x2="475" y2="60"/><line x1="40" y1="84" x2="475" y2="84"/>
+          <line x1="40" y1="108" x2="475" y2="108"/><line x1="40" y1="132" x2="475" y2="132"/>
+          <line x1="40" y1="156" x2="475" y2="156"/><line x1="40" y1="180" x2="475" y2="180"/>
+          <line x1="40" y1="204" x2="475" y2="204"/><line x1="40" y1="228" x2="475" y2="228"/>
+          <line x1="40" y1="252" x2="475" y2="252"/><line x1="40" y1="276" x2="475" y2="276"/>
+          <line x1="40" y1="300" x2="475" y2="300"/>
+        </g>
+        <g stroke="rgba(255,255,255,.05)" stroke-width="1">
+          <line x1="55" y1="48" x2="55" y2="312"/><line x1="115" y1="48" x2="115" y2="312"/>
+          <line x1="175" y1="48" x2="175" y2="312"/><line x1="235" y1="48" x2="235" y2="312"/>
+          <line x1="295" y1="48" x2="295" y2="312"/><line x1="355" y1="48" x2="355" y2="312"/>
+          <line x1="415" y1="48" x2="415" y2="312"/><line x1="475" y1="48" x2="475" y2="312"/>
+        </g>
+        <!-- 价格轴 -->
+        <g class="s-lab dim" font-size="11" text-anchor="end">
+          <text x="36" y="64">58</text><text x="36" y="112">56</text>
+          <text x="36" y="160">54</text><text x="36" y="208">52</text>
+          <text x="36" y="256">50</text><text x="36" y="304">48</text>
+        </g>
+        <!-- X / O -->
+        <g font-family="-apple-system,sans-serif" font-size="15" font-weight="700" text-anchor="middle">
+          <g fill="#ff6b61">
+            <text x="100" y="257">X</text><text x="100" y="233">X</text><text x="100" y="209">X</text><text x="100" y="185">X</text><text x="100" y="161">X</text>
+            <text x="160" y="233">X</text><text x="160" y="209">X</text><text x="160" y="185">X</text><text x="160" y="161">X</text><text x="160" y="137">X</text>
+            <text x="220" y="185">X</text><text x="220" y="161">X</text><text x="220" y="137">X</text><text x="220" y="113">X</text>
+            <text x="280" y="185">X</text><text x="280" y="161">X</text><text x="280" y="137">X</text><text x="280" y="113">X</text>
+            <text x="340" y="209">X</text><text x="340" y="185">X</text><text x="340" y="161">X</text><text x="340" y="137">X</text>
+            <text x="400" y="233">X</text><text x="400" y="209">X</text><text x="400" y="185">X</text><text x="400" y="161">X</text>
+            <text x="460" y="257">X</text><text x="460" y="233">X</text><text x="460" y="209">X</text><text x="460" y="185">X</text>
+            <text x="460" y="161">X</text><text x="460" y="137">X</text><text x="460" y="113">X</text><text x="460" y="89">X</text><text x="460" y="65">X</text>
+          </g>
+          <g fill="#30d158">
+            <text x="70" y="137">O</text><text x="70" y="161">O</text><text x="70" y="185">O</text><text x="70" y="209">O</text><text x="70" y="233">O</text><text x="70" y="257">O</text>
+            <text x="130" y="161">O</text><text x="130" y="185">O</text><text x="130" y="209">O</text><text x="130" y="233">O</text>
+            <text x="190" y="137">O</text><text x="190" y="161">O</text><text x="190" y="185">O</text><text x="190" y="209">O</text>
+            <text x="250" y="113">O</text><text x="250" y="137">O</text><text x="250" y="161">O</text><text x="250" y="185">O</text>
+            <text x="310" y="113">O</text><text x="310" y="137">O</text><text x="310" y="161">O</text><text x="310" y="185">O</text><text x="310" y="209">O</text>
+            <text x="370" y="137">O</text><text x="370" y="161">O</text><text x="370" y="185">O</text><text x="370" y="209">O</text><text x="370" y="233">O</text>
+            <text x="430" y="161">O</text><text x="430" y="185">O</text><text x="430" y="209">O</text><text x="430" y="233">O</text><text x="430" y="257">O</text>
+          </g>
+        </g>
+        <!-- 计数线 -->
+        <line x1="40" y1="252" x2="700" y2="252" class="s-dash" stroke="rgba(255,214,10,.6)"/>
+        <text x="60" y="278" class="s-lab yl s-lab sm">计数线（区间低点所在行）</text>
+        <!-- 投影箭头 -->
+        <path d="M 480 252 L 680 74" stroke="#ff453a" stroke-width="2.6" stroke-dasharray="7 6" fill="none" marker-end="url(#arrP)"/>
+        <text x="560" y="118" class="s-lab up">果：投影目标 92</text>
+        <text x="560" y="138" class="s-lab dim s-lab sm">+42 = 14 列 × 1 × 3</text>
+        <!-- 计数括线 -->
+        <line x1="55" y1="330" x2="475" y2="330" stroke="rgba(255,255,255,.4)" stroke-width="1.4"/>
+        <line x1="55" y1="322" x2="55" y2="338" stroke="rgba(255,255,255,.4)" stroke-width="1.4"/>
+        <line x1="475" y1="322" x2="475" y2="338" stroke="rgba(255,255,255,.4)" stroke-width="1.4"/>
+        <text x="265" y="358" text-anchor="middle" class="s-lab ac">横向计数 = 14 列（"因"的规模）</text>
+        <text x="265" y="384" text-anchor="middle" class="s-lab dim s-lab sm">1×3 点数图 · 每格 $1 · 3 格转向</text>
+      </svg>
+      <figcaption><b>点数图横向计数</b>（因果法则的落地）：在交易区间内数出横向列数，按 <b>列数 × 每格值 × 转向格数</b> 投射目标——<b>50 + 14×1×3 = 92</b></figcaption>
+    </figure>
+    <div>
+      <div class="card" style="margin-top:0">
+        <span class="tag orange">计数操作要点</span>
+        <h3>Count Guide 实务</h3>
+        <p><strong>① 计数起点</strong>：以区间低点（或弹簧低点）所在行为计数线；<strong>② 保守优先</strong>：不同行计数结果不同，取最小值作为最小目标；<strong>③ 镜像对称</strong>：派发区间的计数向下投射；<strong>④ 目标性质</strong>：P&amp;F 目标是"停、看、听"区域——减仓、收紧止损、观察反应，<strong>不是</strong>精确的反转坐标。</p>
+      </div>
+      <div class="card" style="margin-top:18px">
+        <span class="tag yellow">常见误读</span>
+        <h3>时间 ≠ 因</h3>
+        <p>"盘得越久涨得越高"是简化说法。<strong>因的度量是横向计数的列数，不是天数</strong>：一个窄而浅的区间哪怕横一年，计数可能还不如一个宽区间三个月。判断空间，永远回到计数本身。</p>
+      </div>
+      <div class="callout warn" style="margin-top:18px">
+        <div class="h">检验 9 的由来</div>
+        因果法则给出目标后，"预估盈利 ≥ 止损风险 × 3"（九项检验第九条）才有计算依据——<strong>盈亏比一票否决</strong>：目标不够远的形态，再完美也放弃。
+      </div>
+    </div>
+  </div>
+  <!-- 努力与结果：四种典型组合 -->
+  <div class="grid g4 reveal" style="margin-top:44px">
+    <div class="mini-fig">
+      <h4>停止行为 · 吸收</h4>
+      <div class="en">Stopping Action / Absorption</div>
+      <svg viewBox="0 0 400 200" xmlns="http://www.w3.org/2000/svg">
+        <line x1="30" y1="172" x2="370" y2="172" stroke="rgba(255,255,255,.15)" stroke-width="1"/>
+        <line x1="90" y1="40" x2="90" y2="118" stroke="#e8e8ed" stroke-width="5" stroke-linecap="round"/>
+        <line x1="83" y1="85" x2="97" y2="85" stroke="#e8e8ed" stroke-width="3"/>
+        <line x1="200" y1="92" x2="200" y2="116" stroke="#e8e8ed" stroke-width="5" stroke-linecap="round"/>
+        <line x1="193" y1="108" x2="207" y2="108" stroke="#e8e8ed" stroke-width="3"/>
+        <line x1="310" y1="55" x2="310" y2="118" stroke="#e8e8ed" stroke-width="5" stroke-linecap="round"/>
+        <line x1="303" y1="62" x2="317" y2="62" stroke="#e8e8ed" stroke-width="3"/>
+        <rect x="83" y="114" width="14" height="58" class="vol cl"/>
+        <rect x="193" y="158" width="14" height="14" class="vol tst"/>
+        <rect x="303" y="128" width="14" height="44" class="vol dm"/>
+        <text x="90" y="30" text-anchor="middle" class="s-lab s-lab sm">巨量宽幅</text>
+        <text x="132" y="100" class="s-lab yl s-lab sm">收中部</text>
+        <text x="200" y="82" text-anchor="middle" class="s-lab dim s-lab sm">缩量持稳</text>
+        <text x="310" y="42" text-anchor="middle" class="s-lab up s-lab sm">反弹确立</text>
+      </svg>
+      <p>巨量下杀、极宽波幅，收盘却脱离最低点——<b>努力巨大、向下结果有限</b>：供给正被主力吸收，是下跌行情的"停止行为"。</p>
+    </div>
+    <div class="mini-fig">
+      <h4>上冲乏力 · 供给涌现</h4>
+      <div class="en">Effort to Rise, No Result</div>
+      <svg viewBox="0 0 400 200" xmlns="http://www.w3.org/2000/svg">
+        <line x1="30" y1="172" x2="370" y2="172" stroke="rgba(255,255,255,.15)" stroke-width="1"/>
+        <line x1="90" y1="115" x2="90" y2="45" stroke="#e8e8ed" stroke-width="5" stroke-linecap="round"/>
+        <line x1="83" y1="52" x2="97" y2="52" stroke="#e8e8ed" stroke-width="3"/>
+        <line x1="200" y1="45" x2="200" y2="64" stroke="#e8e8ed" stroke-width="5" stroke-linecap="round"/>
+        <line x1="193" y1="60" x2="207" y2="60" stroke="#e8e8ed" stroke-width="3"/>
+        <line x1="310" y1="64" x2="310" y2="128" stroke="#e8e8ed" stroke-width="5" stroke-linecap="round"/>
+        <line x1="303" y1="120" x2="317" y2="120" stroke="#e8e8ed" stroke-width="3"/>
+        <rect x="83" y="116" width="14" height="56" class="vol dm"/>
+        <rect x="193" y="158" width="14" height="14" class="vol tst"/>
+        <rect x="303" y="140" width="14" height="32" class="vol sp"/>
+        <text x="90" y="36" text-anchor="middle" class="s-lab up s-lab sm">巨量上攻</text>
+        <text x="200" y="36" text-anchor="middle" class="s-lab dim s-lab sm">无跟进</text>
+        <text x="310" y="152" text-anchor="middle" class="s-lab dn s-lab sm">回落</text>
+      </svg>
+      <p>高位巨量长阳，价格却再无推进、随即回落——<b>努力巨大、向上结果有限</b>：上方供给正被抛出，出现在高位即购买高潮前兆。</p>
+    </div>
+    <div class="mini-fig">
+      <h4>无供应 · 看涨</h4>
+      <div class="en">No Supply</div>
+      <svg viewBox="0 0 400 200" xmlns="http://www.w3.org/2000/svg">
+        <line x1="30" y1="172" x2="370" y2="172" stroke="rgba(255,255,255,.15)" stroke-width="1"/>
+        <line x1="90" y1="60" x2="90" y2="100" stroke="#e8e8ed" stroke-width="5" stroke-linecap="round"/>
+        <line x1="83" y1="68" x2="97" y2="68" stroke="#e8e8ed" stroke-width="3"/>
+        <line x1="200" y1="100" x2="200" y2="116" stroke="#e8e8ed" stroke-width="5" stroke-linecap="round"/>
+        <line x1="193" y1="112" x2="207" y2="112" stroke="#e8e8ed" stroke-width="3"/>
+        <line x1="310" y1="50" x2="310" y2="112" stroke="#e8e8ed" stroke-width="5" stroke-linecap="round"/>
+        <line x1="303" y1="56" x2="317" y2="56" stroke="#e8e8ed" stroke-width="3"/>
+        <rect x="83" y="142" width="14" height="30" class="vol dm"/>
+        <rect x="193" y="162" width="14" height="10" class="vol tst"/>
+        <rect x="303" y="134" width="14" height="38" class="vol dm"/>
+        <text x="200" y="88" text-anchor="middle" class="s-lab dim s-lab sm">窄幅 · 极缩量</text>
+        <text x="310" y="40" text-anchor="middle" class="s-lab up s-lab sm">轻松新高</text>
+      </svg>
+      <p>回调波幅窄、成交量极低——<b>几乎没有人想卖</b>。测试支撑时出现无供应，是供给已吸收的铁证（Test 的理想形态）；拉升途中的无供应回调 = 最佳加仓点。</p>
+    </div>
+    <div class="mini-fig">
+      <h4>无需求 · 看跌</h4>
+      <div class="en">No Demand</div>
+      <svg viewBox="0 0 400 200" xmlns="http://www.w3.org/2000/svg">
+        <line x1="30" y1="172" x2="370" y2="172" stroke="rgba(255,255,255,.15)" stroke-width="1"/>
+        <line x1="90" y1="45" x2="90" y2="95" stroke="#e8e8ed" stroke-width="5" stroke-linecap="round"/>
+        <line x1="83" y1="88" x2="97" y2="88" stroke="#e8e8ed" stroke-width="3"/>
+        <line x1="200" y1="78" x2="200" y2="95" stroke="#e8e8ed" stroke-width="5" stroke-linecap="round"/>
+        <line x1="193" y1="82" x2="207" y2="82" stroke="#e8e8ed" stroke-width="3"/>
+        <line x1="310" y1="82" x2="310" y2="148" stroke="#e8e8ed" stroke-width="5" stroke-linecap="round"/>
+        <line x1="303" y1="138" x2="317" y2="138" stroke="#e8e8ed" stroke-width="3"/>
+        <rect x="83" y="142" width="14" height="30" class="vol sp"/>
+        <rect x="193" y="162" width="14" height="10" class="vol tst"/>
+        <rect x="303" y="132" width="14" height="40" class="vol sp"/>
+        <text x="200" y="66" text-anchor="middle" class="s-lab dim s-lab sm">窄幅 · 极缩量</text>
+        <text x="310" y="160" text-anchor="middle" class="s-lab dn s-lab sm">跌破支撑</text>
+      </svg>
+      <p>反弹波幅窄、成交量极低——<b>几乎没有人想买</b>。反弹测试阻力时出现无需求，证明买盘枯竭（UTAD 之后 Test 的理想形态）；下跌途中的无需求反弹 = 最佳做空点。</p>
+    </div>
+  </div>
+  <div class="callout reveal">
+    <div class="h">努力与结果的底层逻辑</div>
+    成交量代表投入市场的"力量"，价差代表这股力量取得的"战果"。<strong>力量的消耗必然留下痕迹</strong>：向上使尽全力（巨量）却推不动（窄幅），力量被谁消耗了？——被看不见的卖方（吸收）；几乎不费力（缩量）却能推进（宽幅），说明对面无人抵抗（真空）。背离之处，即是真相所在。
+  </div>
+</section>
+
+<div class="divider"></div>
+<!-- ══════════════ 04 吸筹结构 ══════════════ -->
+<section id="accumulation">
+  <div class="sec-head reveal">
+    <span class="pill orange">04 · 吸筹结构</span>
+    <h2>吸筹：A–E 五阶段<span class="grad">全景图解</span></h2>
+    <p class="lead">下跌之后的横盘区间，按证据链推进分为五个阶段：<strong>A 止跌 → B 构建因 → C 测试（弹簧）→ D 需求主导 → E 拉升</strong>。九大事件（PS、SC、AR、ST、Spring、Test、SOS、LPS、JAC）依次登场。注意：结构图是<strong>假设检验的框架</strong>，不是每张图都会凑齐所有事件。</p>
+  </div>
+
+  <figure class="reveal">
+    <svg viewBox="0 0 1000 620" xmlns="http://www.w3.org/2000/svg">
+      <!-- 阶段色带 -->
+      <rect x="92" y="22" width="250" height="556" fill="rgba(255,159,10,.05)"/>
+      <rect x="342" y="22" width="330" height="556" fill="rgba(10,132,255,.05)"/>
+      <rect x="672" y="22" width="156" height="556" fill="rgba(255,214,10,.06)"/>
+      <rect x="828" y="22" width="102" height="556" fill="rgba(191,90,242,.06)"/>
+      <rect x="930" y="22" width="70" height="556" fill="rgba(255,69,58,.07)"/>
+      <line x1="342" y1="22" x2="342" y2="578" class="s-dimV"/>
+      <line x1="672" y1="22" x2="672" y2="578" class="s-dimV"/>
+      <line x1="828" y1="22" x2="828" y2="578" class="s-dimV"/>
+      <line x1="930" y1="22" x2="930" y2="578" class="s-dimV"/>
+      <text x="217" y="44" class="phase-lab" fill="#ff9f0a">阶段 A · 止跌</text>
+      <text x="507" y="44" class="phase-lab" fill="#409cff">阶段 B · 构建因</text>
+      <text x="750" y="44" class="phase-lab" fill="#ffd60a">阶段 C · 测试</text>
+      <text x="879" y="44" class="phase-lab" fill="#bf5af2">阶段 D · 需求</text>
+      <text x="963" y="44" class="phase-lab" fill="#ff453a">阶段 E</text>
+
+      <!-- 区间支撑 -->
+      <line x1="150" y1="342" x2="800" y2="342" class="s-dash"/>
+      <text x="200" y="362" class="s-lab dim">区间支撑（SC / ST 低点）</text>
+
+      <!-- 小溪 Creek -->
+      <path d="M 250 176 C 330 196, 420 201, 505 198 C 570 196, 640 206, 700 210 C 745 213, 780 210, 815 206"
+            fill="none" stroke="rgba(100,210,255,.55)" stroke-width="1.6" stroke-dasharray="6 5"/>
+      <text x="470" y="170" class="s-lab ac">小溪 Creek（沿反弹高点的曲折阻力）</text>
+
+      <!-- 价格路径 -->
+      <path class="s-line" d="M 30 55 L 70 150 L 95 128 L 130 248 L 152 228 L 175 345 L 205 255 L 235 268 L 255 180 L 290 240 L 320 338 L 355 245 L 385 195 L 420 262 L 445 318 L 480 252 L 505 198 L 540 258 L 565 312 L 600 252 L 625 202 L 660 258 L 685 310 L 712 372 L 740 298 L 768 218 L 792 262 L 815 208 L 850 155 L 885 100 L 915 168 L 945 118 L 990 58"/>
+      <line x1="175" y1="345" x2="175" y2="368" stroke="#e8e8ed" stroke-width="2"/>
+      <polygon points="982,68 998,68 990,50" fill="#ff453a"/>
+
+      <!-- 事件点 -->
+      <circle cx="712" cy="372" r="10" fill="rgba(255,214,10,.16)"/>
+      <circle cx="130" cy="248" r="5" class="s-dot"/>
+      <circle cx="175" cy="368" r="5" class="s-dot"/>
+      <circle cx="255" cy="180" r="5" class="s-dot"/>
+      <circle cx="320" cy="338" r="5" class="s-dot"/>
+      <circle cx="712" cy="372" r="5" class="s-dot"/>
+      <circle cx="792" cy="262" r="5" class="s-dot"/>
+      <circle cx="885" cy="100" r="5" class="s-dot"/>
+      <circle cx="915" cy="168" r="5" class="s-dot"/>
+
+      <!-- 事件标签 -->
+      <text x="98" y="282" class="s-lab">PS 初步支撑</text>
+      <text x="130" y="394" class="s-lab">SC 抛售高潮（巨量）</text>
+      <text x="215" y="156" class="s-lab">AR 自动反弹</text>
+      <text x="298" y="382" class="s-lab">ST 二次测试（缩量）</text>
+      <text x="660" y="398" class="s-lab yl">Spring 弹簧 / 震仓</text>
+      <text x="770" y="292" class="s-lab ac">Test 测试（极缩量）</text>
+      <text x="820" y="74" class="s-lab up">SOS 强势信号（放量）</text>
+      <text x="833" y="240" class="s-lab sm" fill="#64d2ff">JAC 跃过小溪</text>
+      <text x="924" y="198" class="s-lab sm" fill="#bf5af2">LPS / BUCE</text>
+
+      <!-- 成交量 -->
+      <line x1="0" y1="428" x2="1000" y2="428" stroke="rgba(255,255,255,.12)"/>
+      <text x="8" y="420" class="s-lab dim">成交量</text>
+      <line x1="0" y1="580" x2="1000" y2="580" stroke="rgba(255,255,255,.12)"/>
+      <rect x="54" y="534" width="12" height="46" class="vol"/>
+      <rect x="84" y="522" width="12" height="58" class="vol"/>
+      <rect x="124" y="516" width="12" height="64" class="vol"/>
+      <rect x="169" y="458" width="12" height="122" class="vol cl"/>
+      <rect x="209" y="508" width="12" height="72" class="vol"/>
+      <rect x="249" y="492" width="12" height="88" class="vol"/>
+      <rect x="289" y="524" width="12" height="56" class="vol"/>
+      <rect x="314" y="530" width="12" height="50" class="vol"/>
+      <rect x="354" y="524" width="12" height="56" class="vol"/>
+      <rect x="439" y="534" width="12" height="46" class="vol"/>
+      <rect x="559" y="540" width="12" height="40" class="vol"/>
+      <rect x="679" y="550" width="12" height="30" class="vol"/>
+      <rect x="706" y="524" width="12" height="56" class="vol cl"/>
+      <rect x="742" y="550" width="12" height="30" class="vol"/>
+      <rect x="786" y="568" width="12" height="12" class="vol tst"/>
+      <rect x="879" y="474" width="12" height="106" class="vol dm"/>
+      <rect x="909" y="560" width="12" height="20" class="vol tst"/>
+      <rect x="959" y="498" width="12" height="82" class="vol dm"/>
+      <rect x="984" y="490" width="12" height="90" class="vol dm"/>
+      <text x="175" y="450" text-anchor="middle" class="s-lab s-lab sm" fill="#ff9f0a">高潮量</text>
+      <text x="515" y="522" class="s-lab dim s-lab sm">B 阶段量能整体递减 →</text>
+      <text x="792" y="560" text-anchor="middle" class="s-lab s-lab sm">极缩量</text>
+      <text x="885" y="466" text-anchor="middle" class="s-lab up s-lab sm">放量</text>
+    </svg>
+    <figcaption><b>威科夫吸筹结构图（含弹簧变体 · 结构图 #1）</b>：价格主图 + 成交量副图 · A–E 阶段与九大事件全景 · JAC = 跃过小溪，BUCE = 回踩小溪沿</figcaption>
+  </figure>
+  <div class="grid g2 reveal">
+    <div class="card">
+      <span class="num">A</span>
+      <span class="tag orange">止跌</span>
+      <h3>阶段 A · 供给的最后狂欢</h3>
+      <p><strong>PS 初步支撑</strong>：下跌途中首次明显放量承接——波幅放大、跌速放缓、收盘脱离低点，专业资金进场的第一证据。<strong>SC 抛售高潮</strong>：恐慌总爆发，巨量 + 极宽波幅 + 长下影，收盘常回到区间中部——大量筹码从公众转移到专业买方（"停止行为"）。<strong>AR 自动反弹</strong>：卖压暂竭引发的技术性反弹（空头回补 + 抄底盘），其高点定义区间上沿。<strong>ST 二次测试</strong>：再次下探 SC 区域复核供给，理想形态是<strong>量能与波幅双缩、低点不低于 SC</strong>。</p>
+      <p>⚠ 若 ST 明显跌破 SC，预示新低或更漫长的盘整；PS–SC–AR–ST 四部曲越完整，吸筹定性越可靠。</p>
+    </div>
+    <div class="card">
+      <span class="num">B</span>
+      <span class="tag blue">构建因</span>
+      <h3>阶段 B · 主力的战场</h3>
+      <p>区间正式成形，多空反复拉锯：数次类 ST 测试、对上下边界的<strong>假突破</strong>、量能整体递减。主力利用双向对倒掩饰吸筹——上涨时卖出压制（避免暴露意图），下跌时悄悄回补。<strong>"因"的规模（P&amp;F 横向计数）在此积累</strong>：横盘不是浪费时间，是在为未来的趋势积蓄燃料。</p>
+      <p>⚠ B 阶段方向不可预测——它是假设的检验期而非方向期，教科书式的抄底亏损大多发生在这里。</p>
+    </div>
+    <div class="card">
+      <span class="num">C</span>
+      <span class="tag yellow">测试</span>
+      <h3>阶段 C · 黄金坑的诞生</h3>
+      <p><strong>Spring 弹簧</strong>：价格跌破区间支撑（SC/ST 低点）后迅速收回。三重目的：①触发止损单、收割残余浮动供给 ②诱空，让最后的悲观者交出筹码 ③主力以更低价格补足仓位。确认链条：<strong>跌破 → 快速收回 → Test（低量回测弹簧低点）</strong>——极缩量的 Test 是供给已被吸收的铁证，也是对 Spring 真伪的裁决。</p>
+      <p>⚠ 跌得深不等于破位失败——收回速度与 Test 量能才是裁判；没有 Spring 的吸筹同样存在（结构 #2：以最后一次 ST 充当 C 阶段测试）。</p>
+    </div>
+    <div class="card">
+      <span class="num">D</span>
+      <span class="tag purple">右侧</span>
+      <h3>阶段 D · 需求主导的证据链</h3>
+      <p>Test 通过后：<strong>SOS 强势信号</strong>（放量、宽幅上攻）——通常正是 <strong>JAC 跃过小溪</strong>的一跳；随后回落形成 <strong>LPS 最后支撑点</strong>（缩量、窄幅、低点抬高）。SOS/LPS 可交替出现多轮，低点持续上移——需求全面接管的证据链。<strong>BUCE 回踩小溪沿</strong>：Evans 的比喻——跳出小溪后回头把脚弄湿，即突破后的缩量回抽，经典右侧入场点。</p>
+      <p>⚠ D 阶段的 LPS 回调必须缩量；放量回调 = 区间内仍有供给，警惕价格重返区间。</p>
+    </div>
+    <div class="card">
+      <span class="num">E</span>
+      <span class="tag red">兑现</span>
+      <h3>阶段 E · 拉升</h3>
+      <p>价格彻底离开区间，最小阻力方向向上。拉升途中会形成更短、更浅的<strong>再吸筹交易区间</strong>——注意其阶段 A 常长得像派发（没有 SC、PS 不明显），是趋势的"加油站"而非终点。</p>
+      <p>回调至再吸筹区上沿 / 原区间顶部 = 趋势交易者的加仓点（支撑阻力互换原理）。</p>
+    </div>
+    <div class="card">
+      <span class="tag yellow">C 阶段放大</span>
+      <h3>弹簧的三种深度变体</h3>
+      <p>按跌破支撑后的深度分为三型（见下图）：①未及前低——最温和的震仓；②触及前低——标准弹簧；③深破前低——<strong>终端震仓（Terminal Shakeout）</strong>，带"烟火"的猛烈洗盘，往往伴随更急促的收回与更凌厉的后续拉升。深度越深、收回越快，随后的行情往往越强——弹簧被压得越狠，弹得越高。</p>
+    </div>
+  </div>
+
+  <div class="grid g3 reveal" style="margin-top:18px">
+    <div class="mini-fig">
+      <h4>① 未及前低</h4>
+      <div class="en">Spring Type 1 · 浅震仓</div>
+      <svg viewBox="0 0 300 190" xmlns="http://www.w3.org/2000/svg">
+        <line x1="15" y1="58" x2="285" y2="58" class="s-dash"/>
+        <line x1="15" y1="110" x2="285" y2="110" class="s-dash"/>
+        <text x="20" y="126" class="s-lab dim s-lab sm">支撑</text>
+        <path class="s-line" d="M 20 42 L 45 88 L 65 70 L 85 118 L 100 100 L 112 60 L 132 98 L 152 58 L 172 96 L 192 60 L 212 95 L 230 62 L 248 116 L 262 82 L 285 42"/>
+        <line x1="85" y1="118" x2="85" y2="128" stroke="#e8e8ed" stroke-width="2"/>
+        <circle cx="85" cy="128" r="3.5" class="s-dot"/>
+        <circle cx="248" cy="116" r="9" fill="rgba(255,214,10,.15)"/>
+        <circle cx="248" cy="116" r="4" class="s-dot"/>
+        <text x="70" y="145" class="s-lab dim s-lab sm">SC</text>
+        <text x="235" y="140" class="s-lab yl s-lab sm">Spring</text>
+      </svg>
+      <p>跌破支撑但未触及 SC 低点即收回——供给压力最轻的确认。</p>
+    </div>
+    <div class="mini-fig">
+      <h4>② 触及前低</h4>
+      <div class="en">Spring Type 2 · 标准弹簧</div>
+      <svg viewBox="0 0 300 190" xmlns="http://www.w3.org/2000/svg">
+        <line x1="15" y1="58" x2="285" y2="58" class="s-dash"/>
+        <line x1="15" y1="110" x2="285" y2="110" class="s-dash"/>
+        <text x="20" y="126" class="s-lab dim s-lab sm">支撑</text>
+        <path class="s-line" d="M 20 42 L 45 88 L 65 70 L 85 118 L 100 100 L 112 60 L 132 98 L 152 58 L 172 96 L 192 60 L 212 95 L 230 62 L 248 123 L 262 82 L 285 42"/>
+        <line x1="85" y1="118" x2="85" y2="128" stroke="#e8e8ed" stroke-width="2"/>
+        <circle cx="85" cy="128" r="3.5" class="s-dot"/>
+        <circle cx="248" cy="123" r="9" fill="rgba(255,214,10,.15)"/>
+        <circle cx="248" cy="123" r="4" class="s-dot"/>
+        <text x="70" y="145" class="s-lab dim s-lab sm">SC</text>
+        <text x="235" y="147" class="s-lab yl s-lab sm">Spring</text>
+      </svg>
+      <p>精确回踩 SC 低点区域后收回——教科书式的弹簧形态。</p>
+    </div>
+    <div class="mini-fig">
+      <h4>③ 深破前低</h4>
+      <div class="en">Spring Type 3 · 终端震仓</div>
+      <svg viewBox="0 0 300 190" xmlns="http://www.w3.org/2000/svg">
+        <line x1="15" y1="58" x2="285" y2="58" class="s-dash"/>
+        <line x1="15" y1="110" x2="285" y2="110" class="s-dash"/>
+        <text x="20" y="126" class="s-lab dim s-lab sm">支撑</text>
+        <path class="s-line" d="M 20 42 L 45 88 L 65 70 L 85 118 L 100 100 L 112 60 L 132 98 L 152 58 L 172 96 L 192 60 L 212 95 L 230 62 L 248 140 L 262 82 L 285 42"/>
+        <line x1="85" y1="118" x2="85" y2="128" stroke="#e8e8ed" stroke-width="2"/>
+        <circle cx="85" cy="128" r="3.5" class="s-dot"/>
+        <circle cx="248" cy="140" r="9" fill="rgba(255,214,10,.15)"/>
+        <circle cx="248" cy="140" r="4" class="s-dot"/>
+        <text x="70" y="145" class="s-lab dim s-lab sm">SC</text>
+        <text x="232" y="164" class="s-lab yl s-lab sm">终端震仓</text>
+      </svg>
+      <p>远破 SC 低点的猛烈洗盘——吓出最顽固的持仓者，收回越快，后续动能越强。</p>
+    </div>
+  </div>
+
+  <div class="callout reveal">
+    <div class="h">小溪与冰面 · Evans 的比喻</div>
+    长期下跌后，卖压如溪水般逐渐"退潮"，沿反弹高点连成的曲折阻力线就是<strong>小溪（Creek）</strong>。价格第一次跳过小溪（JAC）后常回踩溪沿"弄湿脚"（BUCE）再上行——那是趋势给人的第二次上车机会。镜像地，派发区间沿回调低点连成的支撑线是<strong>冰面（Ice）</strong>：价格跌破冰面后每次反抽都是逃命机会——掉进冰水里，别指望冰面再托住你。
+  </div>
+</section>
+
+<div class="divider"></div>
+<!-- ══════════════ 05 派发结构 ══════════════ -->
+<section id="distribution">
+  <div class="sec-head reveal">
+    <span class="pill purple">05 · 派发结构</span>
+    <h2>派发：吸筹的<span class="grad">镜像</span></h2>
+    <p class="lead">上涨之后的横盘区间，事件与吸筹一一对称：<strong>PSY–BC–AR–ST 对应 PS–SC–AR–ST，UTAD 对应 Spring，SOW–LPSY 对应 SOS–LPS</strong>。主力在此完成出货，把筹码交给狂热的公众。读懂派发，才能在"最后的狂欢"里全身而退。</p>
+  </div>
+
+  <figure class="reveal">
+    <svg viewBox="0 0 1000 620" xmlns="http://www.w3.org/2000/svg">
+      <!-- 阶段色带 -->
+      <rect x="92" y="22" width="253" height="556" fill="rgba(255,159,10,.05)"/>
+      <rect x="345" y="22" width="327" height="556" fill="rgba(10,132,255,.05)"/>
+      <rect x="672" y="22" width="156" height="556" fill="rgba(255,214,10,.06)"/>
+      <rect x="828" y="22" width="102" height="556" fill="rgba(191,90,242,.06)"/>
+      <rect x="930" y="22" width="70" height="556" fill="rgba(48,209,88,.07)"/>
+      <line x1="345" y1="22" x2="345" y2="578" class="s-dimV"/>
+      <line x1="672" y1="22" x2="672" y2="578" class="s-dimV"/>
+      <line x1="828" y1="22" x2="828" y2="578" class="s-dimV"/>
+      <line x1="930" y1="22" x2="930" y2="578" class="s-dimV"/>
+      <text x="218" y="44" class="phase-lab" fill="#ff9f0a">阶段 A · 止涨</text>
+      <text x="508" y="44" class="phase-lab" fill="#409cff">阶段 B · 构建因</text>
+      <text x="750" y="44" class="phase-lab" fill="#ffd60a">阶段 C · 测试</text>
+      <text x="879" y="44" class="phase-lab" fill="#bf5af2">阶段 D · 供给</text>
+      <text x="963" y="44" class="phase-lab" fill="#30d158">阶段 E</text>
+
+      <!-- 区间阻力 -->
+      <path d="M 322 106 C 420 128, 520 134, 700 126" fill="none" stroke="rgba(191,90,242,.55)" stroke-width="1.6" stroke-dasharray="6 5"/>
+      <text x="430" y="94" class="s-lab" fill="#bf5af2">区间阻力（ST / 反弹高点）</text>
+
+      <!-- 冰面 Ice -->
+      <path d="M 265 242 C 350 252, 450 254, 550 250 C 620 247, 700 244, 810 248" fill="none" class="s-dash"/>
+      <text x="420" y="278" class="s-lab dim">冰线 Ice（沿回调低点的支撑）</text>
+
+      <!-- 价格路径 -->
+      <path class="s-line" d="M 30 420 L 75 300 L 100 318 L 140 215 L 165 236 L 185 80 L 215 182 L 240 162 L 265 245 L 295 178 L 325 112 L 355 188 L 385 242 L 420 184 L 445 130 L 480 186 L 505 244 L 540 184 L 565 132 L 600 186 L 625 244 L 660 186 L 690 130 L 715 60 L 750 232 L 778 152 L 802 210 L 835 285 L 865 348 L 895 320 L 922 262 L 950 335 L 985 415"/>
+      <line x1="185" y1="80" x2="185" y2="55" stroke="#e8e8ed" stroke-width="2"/>
+      <line x1="715" y1="60" x2="715" y2="38" stroke="#e8e8ed" stroke-width="2"/>
+      <polygon points="977,412 993,412 985,430" fill="#30d158"/>
+
+      <!-- 事件点 -->
+      <circle cx="715" cy="38" r="10" fill="rgba(255,214,10,.16)"/>
+      <circle cx="100" cy="318" r="5" class="s-dot"/>
+      <circle cx="185" cy="55" r="5" class="s-dot"/>
+      <circle cx="265" cy="245" r="5" class="s-dot"/>
+      <circle cx="325" cy="112" r="5" class="s-dot"/>
+      <circle cx="715" cy="38" r="5" class="s-dot"/>
+      <circle cx="778" cy="152" r="5" class="s-dot"/>
+      <circle cx="865" cy="348" r="5" class="s-dot"/>
+      <circle cx="922" cy="262" r="5" class="s-dot"/>
+
+      <!-- 事件标签 -->
+      <text x="60" y="350" class="s-lab">PSY 初步供应</text>
+      <text x="105" y="42" class="s-lab">BC 购买高潮（巨量）</text>
+      <text x="240" y="280" class="s-lab">AR 自动回调</text>
+      <text x="338" y="88" class="s-lab">ST 二次测试（缩量）</text>
+      <text x="612" y="26" class="s-lab yl">UTAD 派发后上冲（牛市陷阱）</text>
+      <text x="786" y="128" class="s-lab ac">Test 测试（极缩量）</text>
+      <text x="838" y="382" class="s-lab dn">SOW 弱势信号（放量）</text>
+      <text x="928" y="246" class="s-lab sm" fill="#bf5af2">LPSY</text>
+
+      <!-- 成交量 -->
+      <line x1="0" y1="428" x2="1000" y2="428" stroke="rgba(255,255,255,.12)"/>
+      <text x="8" y="420" class="s-lab dim">成交量</text>
+      <line x1="0" y1="580" x2="1000" y2="580" stroke="rgba(255,255,255,.12)"/>
+      <rect x="54" y="534" width="12" height="46" class="vol"/>
+      <rect x="94" y="514" width="12" height="66" class="vol"/>
+      <rect x="134" y="522" width="12" height="58" class="vol"/>
+      <rect x="179" y="458" width="12" height="122" class="vol cl"/>
+      <rect x="219" y="510" width="12" height="70" class="vol"/>
+      <rect x="259" y="495" width="12" height="85" class="vol"/>
+      <rect x="299" y="524" width="12" height="56" class="vol"/>
+      <rect x="319" y="528" width="12" height="52" class="vol"/>
+      <rect x="379" y="524" width="12" height="56" class="vol"/>
+      <rect x="499" y="522" width="12" height="58" class="vol"/>
+      <rect x="559" y="540" width="12" height="40" class="vol"/>
+      <rect x="684" y="550" width="12" height="30" class="vol"/>
+      <rect x="709" y="520" width="12" height="60" class="vol cl"/>
+      <rect x="744" y="550" width="12" height="30" class="vol"/>
+      <rect x="772" y="568" width="12" height="12" class="vol tst"/>
+      <rect x="859" y="476" width="12" height="104" class="vol sp"/>
+      <rect x="916" y="560" width="12" height="20" class="vol tst"/>
+      <rect x="944" y="500" width="12" height="80" class="vol sp"/>
+      <rect x="979" y="490" width="12" height="90" class="vol sp"/>
+      <text x="185" y="450" text-anchor="middle" class="s-lab s-lab sm" fill="#ff9f0a">高潮量</text>
+      <text x="515" y="522" class="s-lab dim s-lab sm">B 阶段量能整体递减 →</text>
+      <text x="778" y="560" text-anchor="middle" class="s-lab s-lab sm">极缩量</text>
+      <text x="865" y="468" text-anchor="middle" class="s-lab dn s-lab sm">放量</text>
+    </svg>
+    <figcaption><b>威科夫派发结构图（含 UTAD 变体 · 结构图 #1）</b>：与吸筹完全镜像 · UTAD = 派发后上冲（对应吸筹的 Spring），SOW 破冰线后 LPSY 反抽 = 最后逃命点</figcaption>
+  </figure>
+  <div class="grid g2 reveal">
+    <div class="card">
+      <span class="num">A</span>
+      <span class="tag orange">止涨</span>
+      <h3>阶段 A · 需求的最后狂欢</h3>
+      <p><strong>PSY 初步供应</strong>：涨势中首次出现明显供给——放量滞涨、上影拉长、涨幅收窄。<strong>BC 购买高潮</strong>：公众狂热追顶 + 主力借机出货，巨量、极宽波幅、收盘脱离最高点；利好满天飞往往正是此刻。<strong>AR 自动回调</strong>：买压暂竭后的技术性回落，低点定义区间下沿（冰线锚点）。<strong>ST 二次测试</strong>：反弹复核 BC 区域，理想形态量能波幅双缩、高点不创新高。</p>
+      <p>⚠ BC 的收盘位置是关键：巨量长上影收在中部以下 = 上方供给真实涌出。</p>
+    </div>
+    <div class="card">
+      <span class="num">B</span>
+      <span class="tag blue">构建因</span>
+      <h3>阶段 B · 出货的伪装</h3>
+      <p>区间震荡，主力掩护出货：下跌时买回托住价格（维持区间假象），上涨时分批派发。对上下边界的反复测试中，<strong>UT 上冲</strong>开始出现——冲上阻力后无力维持、回落区间内，即需求不足的早期证据。量能整体递减，反弹的量一次比一次弱。</p>
+      <p>⚠ B 阶段的反弹缩量（无需求）是派发定性的重要证据，而非"洗盘"。</p>
+    </div>
+    <div class="card">
+      <span class="num">C</span>
+      <span class="tag yellow">测试</span>
+      <h3>阶段 C · 牛市陷阱</h3>
+      <p><strong>UTAD 派发后上冲</strong>：价格冲上区间阻力、看似突破创新高，随后迅速跌回区间内——Spring 的镜像。三重目的：①测试残余需求是否已被榨干 ②在更好的价位完成最后出货 ③把最后一批追多者套在山顶。确认链条：<strong>冲高 → 失败跌回 → Test（反弹极缩量）</strong>——反弹无需求 = 买盘枯竭的裁决。</p>
+      <p>⚠ 没有 UTAD 的派发同样存在（结构 #2）；UTAD 不必创新高，冲破阻力再失败即算。</p>
+    </div>
+    <div class="card">
+      <span class="num">D</span>
+      <span class="tag purple">右侧</span>
+      <h3>阶段 D · 供给主导的证据链</h3>
+      <p>Test 确认无需求后：<strong>SOW 弱势信号</strong>——放量、宽幅下杀，跌破冰线；随后反弹形成 <strong>LPSY 最后供给点</strong>（缩量、窄幅、高点降低，反抽至冰线下方即告失败）。反弹一次比一次弱，低点持续下移——供给全面接管的证据链。LPSY 是多头最后的逃命点，也是空头的高胜率入场点。</p>
+      <p>⚠ LPSY 反弹必须缩量；放量反抽逼近冰线上方 = 区间内需求仍在，警惕重返区间。</p>
+    </div>
+    <div class="card">
+      <span class="num">E</span>
+      <span class="tag green">兑现</span>
+      <h3>阶段 E · 下跌</h3>
+      <p>价格彻底离开区间，最小阻力方向向下。下跌途中形成更短更浅的<strong>再派发交易区间</strong>——每一次反弹至再派发区都是减仓 / 做空机会。公众在"便宜了"的幻觉中不断接飞刀，主力在反弹中清空最后的存货。</p>
+    </div>
+    <div class="card">
+      <span class="tag yellow">易混点</span>
+      <h3>UT ≠ UTAD</h3>
+      <p><strong>UT（上冲）</strong>可出现在 B 阶段：试探性冲高评估需求，是噪音级证据；<strong>UTAD（派发后上冲）</strong>专指 C 阶段的结构性终极上冲——它之后市场必须走弱（Test 无需求 + SOW）才算确认。实战含义：见到 UT 不必立即做空（可能只是 B 阶段震荡），<strong>见到 UTAD 后的首次 LPSY 才是高胜率空点</strong>。</p>
+    </div>
+  </div>
+
+  <div class="callout warn reveal">
+    <div class="h">派发比吸筹更难读</div>
+    顶部区间的情绪是<strong>狂热而非恐惧</strong>——好消息不断、专家一致看多、突破假象频出，做空者反复被打脸。威科夫的忠告：不要预测顶部，<strong>只交易证据链完整的 D 阶段</strong>（UTAD → 无需求 Test → SOW → LPSY）；在 C 阶段之前，永远假设趋势仍向上。
+  </div>
+</section>
+
+<div class="divider"></div>
+<!-- ══════════════ 06 事件词典 ══════════════ -->
+<section id="glossary">
+  <div class="sec-head reveal">
+    <span class="pill yellow">06 · 事件词典</span>
+    <h2>二十大术语<span class="grad">速查表</span></h2>
+    <p class="lead">所有结构事件的中英文对照与一句话精确定义。建议连同"出现位置"一起记忆——<strong>同一个事件，出现在不同阶段意义完全不同</strong>（例如 UT 在 B 阶段是噪音，在 C 阶段就是结构性证据）。</p>
+  </div>
+  <div class="tbl-wrap reveal">
+    <table>
+      <thead>
+        <tr><th>缩写</th><th>英文全称</th><th>中文</th><th>出现位置</th><th>核心含义</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><b>PS</b></td><td>Preliminary Support</td><td>初步支撑</td><td>吸筹 A</td><td>下跌中首次放量承接，跌速放缓、收盘脱离低点</td></tr>
+        <tr><td><b>SC</b></td><td>Selling Climax</td><td>抛售高潮</td><td class="yl-t">吸筹 A</td><td>恐慌抛售总爆发：巨量、极宽波幅、供给大规模转移</td></tr>
+        <tr><td><b>AR</b></td><td>Automatic Rally</td><td>自动反弹</td><td>吸筹 A / 派发 A</td><td>卖压（买压）暂竭后的技术性反弹（回调），界定区间边界</td></tr>
+        <tr><td><b>ST</b></td><td>Secondary Test</td><td>二次测试</td><td>吸筹 A / 派发 B</td><td>对高潮区域的复核，理想特征为量能与波幅双缩</td></tr>
+        <tr><td><b>Spring</b></td><td>Spring</td><td>弹簧</td><td class="yl-t">吸筹 C</td><td>跌破区间支撑后迅速收回的"最后一跌"，牛市陷阱</td></tr>
+        <tr><td><b>Shakeout</b></td><td>Terminal Shakeout</td><td>终端震仓</td><td>吸筹 C</td><td>更深更猛的弹簧变体，"带烟火的洗盘"</td></tr>
+        <tr><td><b>Test</b></td><td>Test</td><td>测试</td><td>吸筹 C/D · 派发 C/D</td><td>低量回测（反抽）关键位，确认供给/需求已被吸收</td></tr>
+        <tr><td><b>SOS</b></td><td>Sign of Strength</td><td>强势信号</td><td class="up-t">吸筹 D</td><td>放量、宽幅上攻，常与跃过小溪同时发生</td></tr>
+        <tr><td><b>JAC</b></td><td>Jump Across the Creek</td><td>跃过小溪</td><td>吸筹 D</td><td>SOS 穿越小溪阻力的关键一跳，区间目的暴露</td></tr>
+        <tr><td><b>BUCE</b></td><td>Back-Up to Edge of Creek</td><td>回踩小溪沿</td><td>吸筹 D</td><td>跃过小溪后的缩量回抽（"弄湿脚"），即 LPS</td></tr>
+        <tr><td><b>LPS</b></td><td>Last Point of Support</td><td>最后支撑点</td><td class="up-t">吸筹 D</td><td>突破前的最后回调低点，经典加仓 / 入场位</td></tr>
+        <tr><td><b>Creek</b></td><td>The Creek</td><td>小溪</td><td>吸筹</td><td>沿 AR 以来反弹高点连成的曲折阻力线（Evans 比喻）</td></tr>
+        <tr><td><b>PSY</b></td><td>Preliminary Supply</td><td>初步供应</td><td>派发 A</td><td>涨势中首次明显供给：放量滞涨、上影拉长</td></tr>
+        <tr><td><b>BC</b></td><td>Buying Climax</td><td>购买高潮</td><td class="yl-t">派发 A</td><td>狂热追顶 + 主力出货：巨量宽幅、收盘脱离高点</td></tr>
+        <tr><td><b>UT</b></td><td>Upthrust</td><td>上冲</td><td>派发 B</td><td>冲上阻力后回落的试探性上冲，需求不足的早期证据</td></tr>
+        <tr><td><b>UTAD</b></td><td>Upthrust After Distribution</td><td>派发后上冲</td><td class="yl-t">派发 C</td><td>突破区间阻力后失败的终极上冲，熊市陷阱</td></tr>
+        <tr><td><b>SOW</b></td><td>Sign of Weakness</td><td>弱势信号</td><td class="dn-t">派发 D</td><td>放量、宽幅下杀，跌破冰线</td></tr>
+        <tr><td><b>LPSY</b></td><td>Last Point of Supply</td><td>最后供给点</td><td class="dn-t">派发 D</td><td>破位后缩量反抽至冰线下方，最后逃命 / 做空点</td></tr>
+        <tr><td><b>Ice</b></td><td>The Ice</td><td>冰线</td><td>派发</td><td>沿 AR 以来回调低点连成的支撑线，破位即失守</td></tr>
+        <tr><td><b>TR</b></td><td>Trading Range</td><td>交易区间</td><td>通用</td><td>主力活动的主战场，"因"的构建场所</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="callout reveal">
+    <div class="h">记忆口诀</div>
+    <strong>吸筹四部曲"停、反、测、弹"</strong>（PS 止跌 → SC 高潮 → AR 反弹 → ST 测试），<strong>派发四部曲"停、回、测、冲"</strong>（PSY → BC → AR → ST/UT）；<strong>C 看陷阱（Spring / UTAD），D 看证据（SOS–LPS / SOW–LPSY）</strong>，B 阶段只观察、不下注。
+  </div>
+</section>
+
+<div class="divider"></div>
+<!-- ══════════════ 07 量价细节 ══════════════ -->
+<section id="volume">
+  <div class="sec-head reveal">
+    <span class="pill red">07 · 量价细节</span>
+    <h2>阅读成交量的<span class="grad">军规</span></h2>
+    <p class="lead">价格告诉你"发生了什么"，成交量告诉你"为什么会发生"。量价组合的解读没有灰色地带——<strong>每一组行为都对应唯一的供需状态</strong>，前提是把它放进正确的背景（位置）里。</p>
+  </div>
+
+  <div class="tbl-wrap reveal">
+    <table>
+      <thead>
+        <tr><th>价格行为</th><th>成交量</th><th>名称</th><th>解读</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><b>宽幅下杀，收在中部以上</b></td><td>巨量</td><td class="yl-t">抛售高潮 SC</td><td>恐慌出清 + 主力吸收，趋势末端信号</td></tr>
+        <tr><td>巨量下杀后窄幅持稳</td><td>急缩</td><td class="ac-t">Test / 停止行为确认</td><td>供给枯竭确认，下杀动能已被吸收</td></tr>
+        <tr><td>窄幅下跌</td><td>极低</td><td class="up-t">无供应 No Supply</td><td>没人想卖 → 看涨，最佳加仓信号</td></tr>
+        <tr><td>窄幅上涨</td><td>极低</td><td class="dn-t">无需求 No Demand</td><td>没人想买 → 看跌，反弹乏力的铁证</td></tr>
+        <tr><td>宽幅上涨但无后续跟进</td><td>巨量</td><td class="dn-t">上冲乏力</td><td>高位 = 供给涌现 / 对倒出货（BC 前兆）</td></tr>
+        <tr><td>宽幅上涨且持续跟进</td><td>放量</td><td class="up-t">强势信号 SOS</td><td>需求真实且主导，突破有效</td></tr>
+        <tr><td>回调至支撑 / 小溪沿</td><td>递减</td><td class="up-t">LPS 特征</td><td>回调中供给缺席，右侧入场窗口</td></tr>
+        <tr><td>拉升途中缩量上行</td><td>低量</td><td class="ac-t">供给真空</td><td>最小阻力方向畅通，趋势健康</td></tr>
+        <tr><td>突破关键位（小溪/冰线）</td><td>显著放量</td><td class="ac-t">有效突破门槛</td><td>缩量突破默认存疑，等待回抽确认</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="grid g3 reveal">
+    <div class="card">
+      <span class="tag cyan">六条军规 · 一</span>
+      <h3>量是努力，价差是结果</h3>
+      <p>任何单一根 K 线都必须同时看两个维度。<strong>背离（巨量窄幅 / 缩量宽幅）本身就是信号</strong>，比单纯的方向信息更有价值。</p>
+    </div>
+    <div class="card">
+      <span class="tag cyan">六条军规 · 二</span>
+      <h3>高潮量在转折，不在中段</h3>
+      <p>巨量高潮（SC / BC）几乎只出现在趋势<strong>末端</strong>。趋势中段的量能应当有序递增——中段出现天量，警惕转折提前到来。</p>
+    </div>
+    <div class="card">
+      <span class="tag cyan">六条军规 · 三</span>
+      <h3>测试必须缩量</h3>
+      <p>ST、Test、LPS 的合法性全部建立在<strong>量能收缩</strong>上。不缩量的测试是警告：那不是测试，是还有对手盘在场。</p>
+    </div>
+    <div class="card">
+      <span class="tag cyan">六条军规 · 四</span>
+      <h3>收盘位置 &gt; 波幅</h3>
+      <p>同样宽幅的 K 线，收在上 1/3 与收在下 1/3 是两个世界。<strong>收盘位置揭示多空谁赢得了这根 K 线的战争</strong>，是 VSA 的核心变量。</p>
+    </div>
+    <div class="card">
+      <span class="tag cyan">六条军规 · 五</span>
+      <h3>背景决定含义</h3>
+      <p>同样的巨量长阳：下跌末端 = 停止行为，高位区间 = 购买高潮，趋势中段 = 需求延续。<strong>先定位阶段，再解读信号</strong>。</p>
+    </div>
+    <div class="card">
+      <span class="tag cyan">六条军规 · 六</span>
+      <h3>波段视角：波图</h3>
+      <p>威科夫用<strong>波图（Wave Chart）</strong>把 3–5 根 K 线组成一个"操作波"，比较连续上涨波与下跌波的<strong>幅度、时长与量能</strong>——努力与结果在波段级别的应用，判断多空力量的整体消长。</p>
+    </div>
+  </div>
+
+  <div class="callout reveal">
+    <div class="h">VSA：威科夫量价原理的现代封装</div>
+    Tom Williams（前机构操盘手）在《Master the Markets》中把威科夫的量价原理封装为 <strong>VSA（Volume Spread Analysis）三要素：价差（Spread）× 收盘位置（Close）× 成交量（Volume）</strong>，置于市场背景下解读。核心信号包括 Stopping Volume（停止量）、No Demand / No Supply（无需求 / 无供应）、Upthrust（上冲）、Shakeout（震仓）、Effort to Rise / Fall（上攻 / 下杀努力）。Anna Coulling 的《量价分析》进一步将其系统化——它们与本文的九大事件一一对应，只是术语不同。
+  </div>
+</section>
+
+<div class="divider"></div>
+<!-- ══════════════ 08 九项检验 ══════════════ -->
+<section id="tests">
+  <div class="sec-head reveal">
+    <span class="pill">08 · 九项检验</span>
+    <h2>扣动扳机前的<span class="grad">九道检查</span></h2>
+    <p class="lead">如果说三大法则是宪法，结构图是地图，九项检验就是<strong>入场前的发射程序</strong>：判断交易区间是否接近尾声、新趋势是否即将展开（最小阻力方向是否确立）。出处：Pruden《顶级交易三大技能》（2007）整理自威科夫课程原文。原则：<strong>满足的检验越多，胜率越高；但第 9 项拥有一票否决权。</strong></p>
+  </div>
+
+  <div class="tbl-wrap reveal">
+    <table>
+      <thead>
+        <tr><th>#</th><th>买入检验（吸筹）</th><th>卖出检验（派发）</th><th>核对图表</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>1</td><td><b>下跌目标已达成</b>——前一轮下跌的 P&amp;F 计数走完，旧"因"的果已兑现</td><td><b>上涨目标已达成</b>——前一轮上涨的计数走完</td><td>点数图</td></tr>
+        <tr><td>2</td><td><b>出现 PS、SC、ST</b>——阶段 A 停跌四部曲（含 AR）完整</td><td><b>出现 PSY、BC</b>——阶段 A 止涨结构完整</td><td>柱线 / 点数图</td></tr>
+        <tr><td>3</td><td><b>量价行为转多</b>：反弹放量、回调缩量</td><td><b>量价行为转空</b>：反弹缩量、回调放量</td><td>柱线 / 点数图</td></tr>
+        <tr><td>4</td><td><b>下跌步伐被打破</b>——供给线（下降趋势线）被上穿</td><td><b>上涨步伐被打破</b>——需求线（上升趋势线）被下穿</td><td>柱线 / 点数图</td></tr>
+        <tr><td>5</td><td><b>低点抬高</b>（Higher Lows）</td><td><b>个股弱于大盘</b>：反弹乏力、回调领跌</td><td>柱线图</td></tr>
+        <tr><td>6</td><td><b>高点抬高</b>（Higher Highs）</td><td><b>高点降低</b>（Lower Highs）</td><td>柱线 / 点数图</td></tr>
+        <tr><td>7</td><td><b>个股强于大盘</b>：反弹更劲、回调更抗跌</td><td><b>低点降低</b>（Lower Lows）</td><td>柱线 / 点数图</td></tr>
+        <tr><td>8</td><td><b>底部成形</b>——横向区间（Base）构建完成，计数足够</td><td><b>顶部成形</b>——横向区间（Crown 王冠）构建完成</td><td>点数图</td></tr>
+        <tr><td>9</td><td><b>预估上行空间 ≥ 初始止损风险 × 3</b></td><td><b>预估下行空间 ≥ 初始止损风险 × 3</b></td><td>点数图 + 柱线图</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="split reveal">
+    <div class="card" style="margin-top:0">
+      <span class="tag blue">最常被跳过 · 检验 7</span>
+      <h3>相对强度：个股不是孤岛</h3>
+      <p>威科夫课程原文：<strong>四分之三以上的个股与大盘同步</strong>。不把指数放在旁边对照，你无法知道一只"完美吸筹"是个股独立行为，还是 merely 跟随大盘的贝塔。真正的强势股 = 指数反弹时涨得更多、指数回调时跌得更少——<strong>这是机构资金聚集地的指纹</strong>。</p>
+    </div>
+    <div class="card" style="margin-top:0">
+      <span class="tag orange">一票否决 · 检验 9</span>
+      <h3>3 : 1 盈亏比的算术</h3>
+      <p>唯一带数字的检验，也是唯一能<strong>否决一个完美形态</strong>的检验：若 LPS 距离止损 3 元、而 P&amp;F 目标距入场只剩 6 元——放弃。3:1 的盈亏比意味着 <strong>25% 胜率即可保本</strong>；用筛选换盈亏比，而不是用频率换胜率。</p>
+    </div>
+  </div>
+
+  <div class="callout reveal">
+    <div class="h">威科夫的原话</div>
+    "在所有检验指向同一个方向之前，不要建仓。满足的检验越多，成功的概率越大。"——九项检验不是打分制，而是<strong>发射检查单</strong>：可以带着一两项未满足进场，但必须清楚知道自己在承担哪一项风险、为什么仍然值得。
+  </div>
+</section>
+
+<div class="divider"></div>
+<!-- ══════════════ 09 五步法与战术 ══════════════ -->
+<section id="tactics">
+  <div class="sec-head reveal">
+    <span class="pill green">09 · 五步法与实战战术</span>
+    <h2>从研判到扣扳机的<span class="grad">完整流程</span></h2>
+    <p class="lead">威科夫的选股与入场五步法（Wyckoff's Approach）是一个自上而下的作战计划：<strong>先市场、再个股、再就绪度、最后择时</strong>——顺序不可颠倒。</p>
+  </div>
+
+  <div class="steps reveal">
+    <div class="step">
+      <div class="n">1</div>
+      <h4>判断大盘</h4>
+      <p>市场处于四阶段循环的哪个位置？供需分析指向哪个方向？→ 决定做多、做空还是观望。逆大盘的交易从一开始就背负赔率。</p>
+    </div>
+    <div class="step">
+      <div class="n">2</div>
+      <h4>选择同向个股</h4>
+      <p>涨势中选<b>强于大盘</b>者（反弹更劲、回调更抗跌）；跌势中选<b>弱于大盘</b>者。拿不准就跳过——永远有下一只。</p>
+    </div>
+    <div class="step">
+      <div class="n">3</div>
+      <h4>筛选"因"足够大</h4>
+      <p>用因果法则：只做吸筹 / 派发区间 P&amp;F 计数 ≥ 最低盈利目标的标的——<b>因不够，果不来</b>。</p>
+    </div>
+    <div class="step">
+      <div class="n">4</div>
+      <h4>确认就绪度</h4>
+      <p>九项检验：区间是否接近尾声？最小阻力方向是否确立？供给是否已被吸收？——不齐不下注。</p>
+    </div>
+    <div class="step">
+      <div class="n">5</div>
+      <h4>借大盘择时</h4>
+      <p>3/4 以上个股与大盘同步：等大盘转折信号（纸带阅读 / 三 K 净额法）出现再入场，设好初始止损并跟随移动。</p>
+    </div>
+  </div>
+
+  <div class="split reveal">
+    <div class="vs v1">
+      <h4>计划 A · 激进：弹簧入场 <span class="en">Spring Entry</span></h4>
+      <ul>
+        <li><b>入场</b>：Spring 跌破支撑后快速收回的当日 / 次日，或低量 Test 确认时</li>
+        <li><b>止损</b>：Spring 最低点下方（结构证伪位，空间小）</li>
+        <li><b>加仓</b>：SOS + JAC 突破后，回踩 LPS / BUCE 加至全仓</li>
+        <li><b>优势</b>：止损距离最小，盈亏比最高</li>
+        <li><b>代价</b>：胜率换盈亏比——弹簧可能失败，需快切</li>
+      </ul>
+    </div>
+    <div class="vs v3">
+      <h4>计划 B · 稳健：LPS 入场 <span class="en">Right-Side Entry</span></h4>
+      <ul>
+        <li><b>等待</b>：SOS + JAC 确认区间目的已暴露，方向尘埃落定</li>
+        <li><b>入场</b>：缩量回踩小溪沿 / LPS 时</li>
+        <li><b>止损</b>：LPS 低点下方</li>
+        <li><b>优势</b>：胜率最高——右侧证据链完整，方向已确认</li>
+        <li><b>代价</b>：牺牲弹簧到 SOS 之间的一段利润，止损距离更大</li>
+      </ul>
+    </div>
+  </div>
+  <div class="callout warn reveal">
+    <div class="h">做空镜像</div>
+    计划 A'：UTAD 冲高失败跌回区间时做空，止损设于 UTAD 最高点上方；计划 B'：SOW 破冰线后，缩量反抽 LPSY 时做空，止损设于 LPSY 高点上方。目标同样由派发区间的 P&amp;F 计数向下投射，盈亏比同样执行 3:1 一票否决。
+  </div>
+
+  <div class="grid g3 reveal">
+    <div class="card">
+      <span class="tag blue">退出 · 一</span>
+      <h3>目标区：停、看、听</h3>
+      <p>到达 P&amp;F 计数目标≠必然反转：<strong>减仓、收紧止损、观察量价反应</strong>。出现对己方不利的结构信号（多单遇 BC / UT、空单遇 SC / Spring）才离场。</p>
+    </div>
+    <div class="card">
+      <span class="tag blue">退出 · 二</span>
+      <h3>结构证伪即离场</h3>
+      <p>LPS 被跌破 = 吸筹假设证伪；LPSY 被升破 = 派发假设证伪。<strong>止损设在结构失效位，而不是资金承受位</strong>——位置由市场决定，仓位由止损反推。</p>
+    </div>
+    <div class="card">
+      <span class="tag blue">退出 · 三</span>
+      <h3>战役原则 Campaign</h3>
+      <p>威科夫把一轮完整持仓称为"战役"：<strong>计划 → 试仓 → 顺势加仓金字塔 → 移动止损 → 目标区了结</strong>。铁律：绝不向亏损仓位加码摊低；认错要快，让利润奔跑。</p>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+<!-- ══════════════ 10 误区与局限 ══════════════ -->
+<section id="pitfalls">
+  <div class="sec-head reveal">
+    <span class="pill orange">10 · 误区与局限</span>
+    <h2>威科夫也救不了<span class="grad">错误的使用者</span></h2>
+    <p class="lead">方法的主观性是特征也是陷阱。以下错误几乎出现在每一个初学者的第一笔亏损里——<strong>多数不是方法失效，而是方法被用错</strong>。</p>
+  </div>
+  <div class="grid g3 reveal">
+    <div class="card">
+      <span class="tag red">误区 · 一</span>
+      <h3>横盘 ≠ 吸筹</h3>
+      <p>横盘只是横盘。只有证据链到位（缩量测试、低点抬高、SOS）才能定性为吸筹。<strong>下跌中继的横盘（再派发）长得和吸筹一模一样</strong>——区别在量价细节，不在形状。</p>
+    </div>
+    <div class="card">
+      <span class="tag red">误区 · 二</span>
+      <h3>模板 ≠ 承诺</h3>
+      <p>结构图是假设检验框架：<strong>允许事件缺失</strong>（无 Spring 的吸筹 #2、无 UTAD 的派发 #2）。强行给每根 K 线贴标签、要求图表凑齐所有事件，是把地图当成了领土。</p>
+    </div>
+    <div class="card">
+      <span class="tag red">误区 · 三</span>
+      <h3>个股 ≠ 孤岛</h3>
+      <p>跳过检验 7（相对强度）= 闭眼交易：大盘下跌中的"完美吸筹"多数只是反弹中继。<strong>指数永远摆在个股旁边</strong>。</p>
+    </div>
+    <div class="card">
+      <span class="tag red">误区 · 四</span>
+      <h3>B 阶段抄底摸顶</h3>
+      <p>"因"未构建完成就下注 = 赌方向而非交易证据。<strong>B 阶段只做一件事：观察并计数</strong>，把弹药留给 C 和 D。</p>
+    </div>
+    <div class="card">
+      <span class="tag red">误区 · 五</span>
+      <h3>目标 ≠ 精确点位</h3>
+      <p>P&amp;F 计数目标是"停、看、听"区域，不是反转坐标。到目标区就减仓收紧止损，<strong>不要等市场精确服从你的算术</strong>。</p>
+    </div>
+    <div class="card">
+      <span class="tag red">误区 · 六</span>
+      <h3>信号 ≠ 仓位</h3>
+      <p>盈亏比不达 3:1（检验 9），再完美的形态也放弃。<strong>威科夫交易的频率本来就低</strong>——等来的 A+ 结构，才是全部利润的来源。</p>
+    </div>
+  </div>
+  <div class="callout warn reveal">
+    <div class="h">方法的边界</div>
+    威科夫本人承认：此法<strong>无法完全机械化</strong>，事件识别存在主观性与确认滞后（结构常常走完才完全确认）；算法与高频让现代市场的结构更快、更碎，日内噪音更重。<strong>但它分析的底层对象——大资金的进出与人群的情绪——从未改变</strong>。正确的定位：威科夫提供的是解读市场的框架与纪律，而非自动印钞机。
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══════════════ 11 速查清单 ══════════════ -->
+<section id="recap">
+  <div class="sec-head reveal">
+    <span class="pill cyan">11 · 速查清单</span>
+    <h2>一页带走全部<span class="grad">要点</span></h2>
+  </div>
+  <div class="checklist reveal">
+    <div class="check"><div class="ic" style="background:var(--cyan)">✓</div><p><b>先看大盘再看个股</b>：四分之三个股随大盘——逆大盘的形态天然降级。</p></div>
+    <div class="check"><div class="ic" style="background:var(--cyan)">✓</div><p><b>像复合人一样思考</b>：每根 K 线背后问"主力此刻想让我做什么"。</p></div>
+    <div class="check"><div class="ic" style="background:var(--cyan)">✓</div><p><b>三法定纲</b>：供需定方向，因果定空间，努力与结果定转折。</p></div>
+    <div class="check"><div class="ic" style="background:var(--cyan)">✓</div><p><b>位置先于信号</b>：同样的量价组合，高位与低位含义相反。</p></div>
+    <div class="check"><div class="ic" style="background:var(--cyan)">✓</div><p><b>PS–SC–AR–ST 四部曲</b>= 下跌刹车；SC 收盘位置是吸收与否的裁决。</p></div>
+    <div class="check"><div class="ic" style="background:var(--cyan)">✓</div><p><b>Spring 是机会，Test 是裁决</b>：弹簧之后没有低量测试，就不是弹簧。</p></div>
+    <div class="check"><div class="ic" style="background:var(--cyan)">✓</div><p><b>买在 LPS，不追在 SOS</b>：突破后的缩量回抽才是右侧入场点（BUCE）。</p></div>
+    <div class="check"><div class="ic" style="background:var(--cyan)">✓</div><p><b>小溪之上不言顶，冰线之下不言底</b>：BUCE 是二次上车，LPSY 是最后逃命。</p></div>
+    <div class="check"><div class="ic" style="background:var(--cyan)">✓</div><p><b>测试必须缩量</b>：不缩量的测试 = 对手盘还在场 = 警告。</p></div>
+    <div class="check"><div class="ic" style="background:var(--cyan)">✓</div><p><b>计数而非时间</b>：P&amp;F 横向计数才是"因"，天数不是。</p></div>
+    <div class="check"><div class="ic" style="background:var(--cyan)">✓</div><p><b>检验 7 别跳过</b>：相对强度是机构资金的指纹。</p></div>
+    <div class="check"><div class="ic" style="background:var(--cyan)">✓</div><p><b>3:1 一票否决</b>：盈亏比不达标，形态再完美也放弃。</p></div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<footer>
+  <h3>主要参考来源</h3>
+  <div class="refs">
+    <a href="https://www.wyckoffanalytics.com/wp-content/uploads/2020/05/Wyckoff-Method_Wyckoff-Analytics_english.pdf" target="_blank" rel="noopener">Richard D. Wyckoff: His Method and Story（九项检验 / 结构图原始出处）<span class="src">wyckoffanalytics.com</span></a>
+    <a href="https://tradingwyckoff.com/en/wyckoff-method/" target="_blank" rel="noopener">The Wyckoff Method Complete Guide · Ruben Villahermosa<span class="src">tradingwyckoff.com</span></a>
+    <a href="https://chartschool.stockcharts.com/" target="_blank" rel="noopener">ChartSchool 威科夫方法教程 · StockCharts<span class="src">chartschool.stockcharts.com</span></a>
+    <a href="https://chartmini.com/blog/wyckoff-method-explained-accumulation-and-distribution-phases-2026" target="_blank" rel="noopener">Wyckoff Accumulation and Distribution: Phases A–E Explained<span class="src">chartmini.com</span></a>
+    <a href="https://www.thinkmarkets.com/en/trading-academy/technical-analysis/wyckoff-method-accumulation-distribution-trading-guide/" target="_blank" rel="noopener">Wyckoff Method Trading Guide · ThinkMarkets<span class="src">thinkmarkets.com</span></a>
+    <a href="https://xueqiu.com/6519483209/134952292" target="_blank" rel="noopener">威科夫方法五步骤中文译介 · 雪球<span class="src">xueqiu.com</span></a>
+  </div>
+  <p class="footer-note" style="margin-top:24px">
+    延伸书目：Hank Pruden《The Three Skills of Top Trading》(Wiley, 2007) · Tom Williams《Master the Markets》(VSA) · David Weis《Trades About to Happen》(Wiley, 2013) · Anna Coulling《A Complete Guide to Volume Price Analysis》· Ruben Villahermosa《Trading Wyckoff》。<br>
+    同系列理论精炼：<a href="缠论.html" style="color:var(--sub)">缠论</a> · <a href="价格行为图解.html" style="color:var(--sub)">价格行为图解</a> · <a href="趋势交易.html" style="color:var(--sub)">趋势交易</a>
+  </p>
+  <p class="footer-note">
+    本指南为威科夫量价分析理论的教学性精炼总结，仅供学习研究，不构成任何投资建议。本文颜色遵循 A 股惯例：红 = 上涨 / 多头，绿 = 下跌 / 空头；吸筹 / 派发结构图为高度风格化的教学示意图，真实市场的事件顺序可以缺失、重叠或变形——结构图是假设检验的框架，不是对未来的承诺。<br><br>
+    威科夫量价分析 · Wyckoff Method 图解精要 · 深度研究报告 · 2026
+  </p>
+</footer>
+
+</main>
+
+<script>
+(function(){
+  var els = document.querySelectorAll('.reveal');
+  if(!('IntersectionObserver' in window)){
+    els.forEach(function(e){e.classList.add('on')});
+    return;
+  }
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(en){
+      if(en.isIntersecting){
+        en.target.classList.add('on');
+        io.unobserve(en.target);
+      }
+    });
+  },{threshold:.12, rootMargin:'0px 0px -40px 0px'});
+  els.forEach(function(e){io.observe(e)});
+})();
+
+/* ---- 导航滚动联动：高亮当前章节 + 自动定位 ---- */
+(function(){
+  var navBox = document.querySelector('.nav-links');
+  var links = Array.prototype.slice.call(document.querySelectorAll('.nav-links a'));
+  if(!links.length) return;
+
+  var sections = links.map(function(a){
+    var href = a.getAttribute('href') || '';
+    return href.charAt(0) === '#' ? document.getElementById(href.slice(1)) : null;
+  });
+  var current = -1, lockUntil = 0;
+
+  function centerLink(a){
+    if(!navBox || !a) return;
+    var target = a.offsetLeft - (navBox.clientWidth - a.offsetWidth) / 2;
+    var max = navBox.scrollWidth - navBox.clientWidth;
+    target = Math.max(0, Math.min(target, max));
+    if(Math.abs(navBox.scrollLeft - target) > 1 && navBox.scrollTo){
+      navBox.scrollTo({left:target, behavior:'smooth'});
+    }else{
+      navBox.scrollLeft = target;
+    }
+  }
+
+  function mark(i){
+    if(i === current) return;
+    current = i;
+    links.forEach(function(a,k){
+      var on = (k === i);
+      a.classList.toggle('active', on);
+      if(on){ a.setAttribute('aria-current','true'); }else{ a.removeAttribute('aria-current'); }
+    });
+    centerLink(links[i]);
+  }
+
+  function update(){
+    if(Date.now() < lockUntil) return;
+    var line = 96; // 固定导航高度(52) + 余量
+    var idx = 0;
+    for(var i=0;i<sections.length;i++){
+      var s = sections[i];
+      if(s && s.getBoundingClientRect().top - line <= 0) idx = i;
+    }
+    if(window.innerHeight + window.pageYOffset >= document.documentElement.scrollHeight - 2){
+      idx = sections.length - 1;
+    }
+    mark(idx);
+  }
+
+  links.forEach(function(a,i){
+    a.addEventListener('click', function(){
+      lockUntil = Date.now() + 900; // 平滑滚动期间锁定，避免中途跳变
+      mark(i);
+    });
+  });
+
+  var ticking = false;
+  function onScroll(){
+    if(ticking) return;
+    ticking = true;
+    requestAnimationFrame(function(){ update(); ticking = false; });
+  }
+  window.addEventListener('scroll', onScroll, {passive:true});
+  window.addEventListener('resize', onScroll);
+  window.addEventListener('load', update);
+  update();
+})();
+</script>
+</body>
+</html>

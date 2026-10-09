@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CognitionOS · 知识与认知体系</title>
+  <meta name="description" content="构建你的第二大脑——原子化知识卡片、心智模型库与一张随思考生长的认知网络。">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='14' fill='%230071e3'/%3E%3Cpath d='M16 5a11 11 0 0 0 0 22z' fill='%23fff'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Inter+Tight:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/design-system.css">
+  <link rel="stylesheet" href="css/cognitive.css">
+</head>
+<body>
+
+  <!-- ========== 导航 ========== -->
+  <nav class="nav" id="nav">
+    <div class="nav-inner">
+      <a class="nav-brand" href="#top">
+        <span class="nav-brand-mark">◐</span>
+        <span>CognitionOS</span>
+      </a>
+      <ul class="nav-links" id="navLinks">
+        <li><a href="#graph" data-spy="graph">图谱</a></li>
+        <li><a href="#models" data-spy="models">模型</a></li>
+        <li><a href="#cycle" data-spy="cycle">飞轮</a></li>
+        <li><a href="#cards" data-spy="cards">卡片</a></li>
+        <li><a href="#paths" data-spy="paths">路径</a></li>
+        <li><a href="#index" data-spy="index">指数</a></li>
+      </ul>
+      <a class="btn btn-blue btn-sm nav-cta" href="#cards">开始构建</a>
+    </div>
+  </nav>
+
+  <!-- ========== 首屏 ========== -->
+  <header class="section section-dark hero" id="top">
+    <!-- 星座背景 -->
+    <div class="hero-constellation" aria-hidden="true">
+      <svg viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice">
+        <g class="const-lines">
+          <path class="const-line" d="M120 200 L260 120 L430 190 L610 80 L780 150 L960 70 L1150 140 L1320 90" />
+          <path class="const-line" d="M150 400 L350 560 L560 470 L830 420 L1080 480 L1290 380" />
+          <path class="const-line" d="M980 700 L1240 640 L1290 380" />
+          <path class="const-line" d="M700 760 L980 700 L420 750" />
+          <path class="const-line" d="M610 80 L560 470" />
+          <path class="const-line" d="M1150 140 L1080 480" />
+        </g>
+        <g class="const-nodes">
+          <circle class="const-node" cx="120" cy="200" r="2" style="--tw:3.4s; --td:.2s"/>
+          <circle class="const-node const-node--blue" cx="260" cy="120" r="2.6" style="--tw:5s; --td:1s"/>
+          <circle class="const-node" cx="430" cy="190" r="1.8" style="--tw:4.2s; --td:.6s"/>
+          <circle class="const-node" cx="610" cy="80" r="2.2" style="--tw:3.8s; --td:1.4s"/>
+          <circle class="const-node const-node--blue" cx="780" cy="150" r="2.4" style="--tw:5.6s; --td:.3s"/>
+          <circle class="const-node" cx="960" cy="70" r="1.8" style="--tw:4.6s; --td:2s"/>
+          <circle class="const-node" cx="1150" cy="140" r="2.2" style="--tw:3.2s; --td:.8s"/>
+          <circle class="const-node const-node--blue" cx="1320" cy="90" r="2.6" style="--tw:5.2s; --td:1.2s"/>
+          <circle class="const-node" cx="150" cy="400" r="1.8" style="--tw:4.4s; --td:.4s"/>
+          <circle class="const-node" cx="350" cy="560" r="2.2" style="--tw:3.6s; --td:1.6s"/>
+          <circle class="const-node const-node--blue" cx="560" cy="470" r="2.4" style="--tw:5.4s; --td:.7s"/>
+          <circle class="const-node" cx="830" cy="420" r="1.8" style="--tw:4s; --td:.1s"/>
+          <circle class="const-node" cx="1080" cy="480" r="2.2" style="--tw:3.8s; --td:1.9s"/>
+          <circle class="const-node" cx="1290" cy="380" r="2" style="--tw:4.8s; --td:.9s"/>
+          <circle class="const-node" cx="1240" cy="640" r="1.8" style="--tw:5.1s; --td:.5s"/>
+          <circle class="const-node" cx="980" cy="700" r="2.2" style="--tw:3.5s; --td:1.3s"/>
+          <circle class="const-node" cx="700" cy="760" r="1.8" style="--tw:4.3s; --td:.2s"/>
+          <circle class="const-node" cx="420" cy="750" r="2" style="--tw:5.3s; --td:1.7s"/>
+        </g>
+      </svg>
+    </div>
+
+    <div class="hero-content">
+      <p class="hero-eyebrow">Personal Knowledge &amp; Cognition System</p>
+      <h1 class="hero-title">构建你的<br><span class="accent">第二大脑</span></h1>
+      <p class="hero-subtitle">知识不是收藏，而是连接。以原子化卡片与心智模型，编织一张随思考生长的认知网络。</p>
+      <div class="hero-actions">
+        <a href="#cards" class="btn btn-blue btn-lg">开始构建</a>
+        <a href="#method" class="btn btn-ghost-dark btn-lg">了解方法</a>
+      </div>
+      <div class="hero-meta">
+        <div class="hero-stat"><strong data-counter="248">0</strong><span>知识卡片</span></div>
+        <div class="hero-stat"><strong data-counter="1032">0</strong><span>概念连接</span></div>
+        <div class="hero-stat"><strong data-counter="12">0</strong><span>心智模型</span></div>
+        <div class="hero-stat"><strong data-counter="87">0</strong><span>认知指数</span></div>
+      </div>
+    </div>
+
+    <div class="hero-scroll-hint" aria-hidden="true">
+      <span>向下探索</span>
+      <svg width="14" height="9" viewBox="0 0 14 9" fill="none">
+        <path d="M1 1l6 6 6-6" stroke="#6e6e73" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+  </header>
+
+  <main>
+
+    <!-- ========== 方法论 ========== -->
+    <section class="section section-pale" id="method">
+      <div class="container">
+        <div class="section-head section-head--center reveal">
+          <p class="section-eyebrow">The Method</p>
+          <h2 class="section-title">一套可迭代的认知方法</h2>
+          <p class="section-lede">不需要复杂的工具链。三个原则，一个飞轮，就能让知识开始生长。</p>
+        </div>
+        <div class="method-grid">
+          <article class="card card-hover method-card reveal" style="--d:.05s">
+            <div class="method-num">01</div>
+            <h3>原子化<span class="method-en">Atomic</span></h3>
+            <p>一张卡片，一个想法。把知识打碎成最小的可复用单元，降低认知负荷，让每个想法都能被独立检索、组合与重用。</p>
+          </article>
+          <article class="card card-hover method-card reveal" style="--d:.15s">
+            <div class="method-num">02</div>
+            <h3>连接化<span class="method-en">Connected</span></h3>
+            <p>知识的价值来自连接，而非占有。卡片之间的双向链接，编织出你独有的语义网络——孤立的笔记只是存档。</p>
+          </article>
+          <article class="card card-hover method-card reveal" style="--d:.25s">
+            <div class="method-num">03</div>
+            <h3>复利化<span class="method-en">Compounding</span></h3>
+            <p>思考像利息一样滚动。每天一张卡片，一年后是 365 个可组合的认知单元；十年后，是一套无法被复制的思维体系。</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== 知识图谱 ========== -->
+    <section class="section section-white" id="graph">
+      <div class="container container-wide">
+        <div class="section-head reveal">
+          <p class="section-eyebrow">Knowledge Graph</p>
+          <h2 class="section-title">你的知识，正在生长成一张网络</h2>
+          <p class="section-lede">点击任意节点，探索概念之间的连接。每个概念都是一张可检索的卡片，每一次连接都在提升网络密度。</p>
+        </div>
+
+        <div class="graph-layout">
+          <div class="reveal" style="--d:.1s">
+            <div class="graph-frame">
+              <svg id="graphSvg" viewBox="0 0 1000 660" role="img" aria-label="知识概念图谱">
+                <defs>
+                  <radialGradient id="nodeHubGrad" cx="35%" cy="30%" r="80%">
+                    <stop offset="0%" stop-color="#3d9bff"/>
+                    <stop offset="100%" stop-color="#0071e3"/>
+                  </radialGradient>
+                </defs>
+                <g id="graphEdges"></g>
+                <g id="graphNodes"></g>
+              </svg>
+            </div>
+            <div class="graph-legend">
+              <span class="legend-item"><span class="legend-dot legend-dot--hub"></span>核心枢纽</span>
+              <span class="legend-item"><span class="legend-dot legend-dot--sat"></span>子系统</span>
+              <span class="legend-item"><span class="legend-dot legend-dot--leaf"></span>概念</span>
+              <span class="legend-item"><span class="legend-dash"></span>跨域连接</span>
+            </div>
+          </div>
+
+          <aside class="graph-panel reveal" style="--d:.2s" id="graphPanel" aria-live="polite"></aside>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== 心智模型库 ========== -->
+    <section class="section section-pale" id="models">
+      <div class="container">
+        <div class="section-head section-head--center reveal">
+          <p class="section-eyebrow">Mental Models</p>
+          <h2 class="section-title">心智模型库</h2>
+          <p class="section-lede">跨学科的思维工具箱。手中的模型越多，越能用多元视角逼近真相——避免「拿锤子的人，看什么都像钉子」。</p>
+        </div>
+
+        <div class="models-toolbar reveal" id="modelsToolbar" role="tablist" aria-label="模型分类筛选"></div>
+        <div class="models-grid reveal" id="modelsGrid" style="--d:.1s"></div>
+      </div>
+    </section>
+
+    <!-- ========== 认知飞轮 ========== -->
+    <section class="section section-dark" id="cycle">
+      <div class="container">
+        <div class="section-head section-head--center reveal">
+          <p class="section-eyebrow">Cognition Flywheel</p>
+          <h2 class="section-title">认知飞轮：让学习自我驱动</h2>
+          <p class="section-lede">五个环节首尾相接，转动一次，理解便加深一层。</p>
+        </div>
+
+        <div class="cycle-viewport reveal" style="--d:.1s">
+          <div class="cycle-wheel">
+            <svg class="cycle-orbits" viewBox="0 0 560 560" aria-hidden="true">
+              <circle class="cycle-guide" cx="280" cy="280" r="208"/>
+              <circle class="cycle-guide cycle-guide--dash" cx="280" cy="280" r="240"/>
+              <circle class="cycle-guide cycle-guide--inner" cx="280" cy="280" r="128"/>
+            </svg>
+
+            <div class="orbit-dot"></div>
+            <div class="orbit-dot orbit-dot--2"></div>
+            <div class="orbit-dot orbit-dot--3"></div>
+
+            <div class="cycle-hub">
+              <strong>认知飞轮</strong>
+              <span>The Flywheel</span>
+            </div>
+
+            <div class="cycle-stage" style="--i:0">
+              <div class="stage-box">
+                <div class="stage-dot">
+                  <span class="stage-num">01</span>
+                  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 3v12m0 0l-4-4m4 4l4-4"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/>
+                  </svg>
+                </div>
+                <div class="stage-name">输入</div>
+                <div class="stage-desc">阅读 · 观察 · 对话</div>
+              </div>
+            </div>
+
+            <div class="cycle-stage" style="--i:1">
+              <div class="stage-box">
+                <div class="stage-dot">
+                  <span class="stage-num">02</span>
+                  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 5h18l-7 8v6l-4 2v-8L3 5z"/>
+                  </svg>
+                </div>
+                <div class="stage-name">处理</div>
+                <div class="stage-desc">提炼 · 重述 · 关联</div>
+              </div>
+            </div>
+
+            <div class="cycle-stage" style="--i:2">
+              <div class="stage-box">
+                <div class="stage-dot">
+                  <span class="stage-num">03</span>
+                  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                    <ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5"/><path d="M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/>
+                  </svg>
+                </div>
+                <div class="stage-name">存储</div>
+                <div class="stage-desc">间隔重复 · 语境连接</div>
+              </div>
+            </div>
+
+            <div class="cycle-stage" style="--i:3">
+              <div class="stage-box">
+                <div class="stage-dot">
+                  <span class="stage-num">04</span>
+                  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+                  </svg>
+                </div>
+                <div class="stage-name">输出</div>
+                <div class="stage-desc">写作 · 讲授 · 创作</div>
+              </div>
+            </div>
+
+            <div class="cycle-stage" style="--i:4">
+              <div class="stage-box">
+                <div class="stage-dot">
+                  <span class="stage-num">05</span>
+                  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 12a9 9 0 1 1-2.6-6.4"/><path d="M21 3v6h-6"/>
+                  </svg>
+                </div>
+                <div class="stage-name">反馈</div>
+                <div class="stage-desc">检验盲区 · 修正模型</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <p class="cycle-caption reveal" style="--d:.2s">
+          <strong>输出不是终点，而是下一轮输入的起点。</strong><br>
+          当飞轮转起来，学习便从意志力驱动，变为系统驱动。
+        </p>
+      </div>
+    </section>
+
+    <!-- ========== 知识卡片流 ========== -->
+    <section class="section section-white" id="cards">
+      <div class="container">
+        <div class="section-head section-head--center reveal">
+          <p class="section-eyebrow">Atomic Notes</p>
+          <h2 class="section-title">知识卡片流</h2>
+          <p class="section-lede">此刻闪过的念头，值得被立刻捕获。写下它，连接它——每一个想法都在让网络变得更稠密。</p>
+        </div>
+
+        <div class="capture reveal" style="--d:.08s">
+          <textarea id="noteInput" placeholder="捕获此刻的想法…" maxlength="300" rows="1"></textarea>
+          <input class="tags-input" id="noteTags" type="text" placeholder="#标签，逗号分隔" maxlength="60">
+          <button class="btn btn-blue btn-sm" id="noteAdd">添加卡片</button>
+        </div>
+        <p class="capture-hint reveal" style="--d:.12s">Ctrl / ⌘ + Enter 快速保存 · 数据仅保存在你的浏览器本地</p>
+
+        <div class="note-grid" id="noteGrid"></div>
+      </div>
+    </section>
+
+    <!-- ========== 学习路径 ========== -->
+    <section class="section section-pale" id="paths">
+      <div class="container">
+        <div class="section-head reveal">
+          <p class="section-eyebrow">Learning Paths</p>
+          <h2 class="section-title">学习路径</h2>
+          <p class="section-lede">由概念编织而成的进阶地图。每掌握一个概念，路径就点亮一分。</p>
+        </div>
+
+        <div class="paths-grid">
+          <article class="card card-hover path-card reveal" style="--d:.05s">
+            <div class="path-top">
+              <h3>认知科学基础</h3>
+              <span class="chip st-done">已完成</span>
+            </div>
+            <p>注意力、工作记忆、遗忘曲线与组块化——理解大脑如何处理信息，是一切的起点。</p>
+            <div class="path-topics">
+              <span class="note-tag">注意力</span><span class="note-tag">工作记忆</span>
+              <span class="note-tag">遗忘曲线</span><span class="note-tag">组块化</span>
+            </div>
+            <div class="path-progress">
+              <div class="progress-bar"><div class="progress-fill" style="--w:100%"></div></div>
+              <div class="progress-meta"><span><strong>12 / 12</strong> 概念</span><span>100%</span></div>
+            </div>
+          </article>
+
+          <article class="card card-hover path-card reveal" style="--d:.13s">
+            <div class="path-top">
+              <h3>系统思维</h3>
+              <span class="chip st-doing">进行中</span>
+            </div>
+            <p>反馈回路、存量与流量、涌现与杠杆点——从线性因果，走向网状结构。</p>
+            <div class="path-topics">
+              <span class="note-tag">反馈回路</span><span class="note-tag">存量流量</span>
+              <span class="note-tag">涌现</span><span class="note-tag">杠杆点</span>
+            </div>
+            <div class="path-progress">
+              <div class="progress-bar"><div class="progress-fill" style="--w:68%"></div></div>
+              <div class="progress-meta"><span><strong>9 / 13</strong> 概念</span><span>68%</span></div>
+            </div>
+          </article>
+
+          <article class="card card-hover path-card reveal" style="--d:.21s">
+            <div class="path-top">
+              <h3>决策科学</h3>
+              <span class="chip st-doing">进行中</span>
+            </div>
+            <p>概率思维、贝叶斯更新、损失厌恶与期望值——在不确定中做出更优选择。</p>
+            <div class="path-topics">
+              <span class="note-tag">概率思维</span><span class="note-tag">贝叶斯更新</span>
+              <span class="note-tag">损失厌恶</span><span class="note-tag">期望值</span>
+            </div>
+            <div class="path-progress">
+              <div class="progress-bar"><div class="progress-fill" style="--w:34%"></div></div>
+              <div class="progress-meta"><span><strong>5 / 15</strong> 概念</span><span>34%</span></div>
+            </div>
+          </article>
+
+          <article class="card card-hover path-card reveal" style="--d:.29s">
+            <div class="path-top">
+              <h3>元认知 Mastery</h3>
+              <span class="chip st-todo">刚开始</span>
+            </div>
+            <p>反思框架、偏差清单与思维审计——审视思考本身，是最高阶的认知能力。</p>
+            <div class="path-topics">
+              <span class="note-tag">反思框架</span><span class="note-tag">偏差清单</span>
+              <span class="note-tag">思维审计</span>
+            </div>
+            <div class="path-progress">
+              <div class="progress-bar"><div class="progress-fill" style="--w:8%"></div></div>
+              <div class="progress-meta"><span><strong>1 / 12</strong> 概念</span><span>8%</span></div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== 认知指数 ========== -->
+    <section class="section section-graphite" id="index">
+      <div class="container">
+        <div class="section-head reveal">
+          <p class="section-eyebrow">Cognition Index</p>
+          <h2 class="section-title">认知指数</h2>
+          <p class="section-lede">知识网络的体检报告，量化你的思维生长信号。</p>
+        </div>
+
+        <div class="index-layout">
+          <div class="gauge-wrap reveal" style="--d:.08s">
+            <svg class="gauge-svg" width="264" height="264" viewBox="0 0 264 264" aria-hidden="true">
+              <defs>
+                <linearGradient id="gaugeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#2997ff"/>
+                  <stop offset="100%" stop-color="#0071e3"/>
+                </linearGradient>
+              </defs>
+              <circle class="gauge-track" cx="132" cy="132" r="100"/>
+              <circle class="gauge-ring" cx="132" cy="132" r="100"/>
+            </svg>
+            <div class="gauge-center">
+              <div class="gauge-val" data-counter="87">0</div>
+              <div class="gauge-label">Cognition Index</div>
+              <div class="gauge-status"><span class="chip chip-bright">网络健康 · 良好</span></div>
+            </div>
+          </div>
+
+          <div class="metrics reveal" style="--d:.18s">
+            <div class="metric-row">
+              <span class="metric-name">连接密度</span>
+              <div class="metric-track"><div class="metric-fill" style="--w:92%; --md:.35s"></div></div>
+              <span class="metric-val" data-counter="92">0</span>
+            </div>
+            <div class="metric-row">
+              <span class="metric-name">复习活跃度</span>
+              <div class="metric-track"><div class="metric-fill" style="--w:78%; --md:.5s"></div></div>
+              <span class="metric-val" data-counter="78">0</span>
+            </div>
+            <div class="metric-row">
+              <span class="metric-name">模型掌握度</span>
+              <div class="metric-track"><div class="metric-fill" style="--w:81%; --md:.65s"></div></div>
+              <span class="metric-val" data-counter="81">0</span>
+            </div>
+            <div class="metric-row">
+              <span class="metric-name">输出频率</span>
+              <div class="metric-track"><div class="metric-fill" style="--w:74%; --md:.8s"></div></div>
+              <span class="metric-val" data-counter="74">0</span>
+            </div>
+          </div>
+        </div>
+
+        <p class="index-note reveal" style="--d:.26s">
+          认知指数由<strong>连接密度、复习活跃度、模型掌握度与输出频率</strong>加权合成。
+          它不衡量你知道多少，而是衡量你的知识网络<strong>生长的信号强度</strong>——
+          当指数持续上升，意味着你的第二大脑正在自我强化。
+        </p>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ========== 页脚 ========== -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div>
+          <a class="footer-brand" href="#top"><span class="nav-brand-mark">◐</span>CognitionOS</a>
+          <p class="footer-tagline">以原子化卡片与心智模型，构建随思考生长的认知网络。为思考者而建。</p>
+        </div>
+        <div class="footer-col">
+          <h4>方法论</h4>
+          <a href="#method">原子化</a>
+          <a href="#method">连接化</a>
+          <a href="#method">复利化</a>
+          <a href="#cycle">认知飞轮</a>
+        </div>
+        <div class="footer-col">
+          <h4>探索</h4>
+          <a href="#graph">知识图谱</a>
+          <a href="#models">心智模型库</a>
+          <a href="#cards">知识卡片</a>
+          <a href="#index">认知指数</a>
+        </div>
+      </div>
+      <div class="footer-legal">
+        <span>© 2026 CognitionOS · 为思考者而建</span>
+        <span>所有数据仅保存在你的浏览器本地</span>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/cognitive.js?v=2"></script>
+</body>
+</html>

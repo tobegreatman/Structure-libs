@@ -1,0 +1,964 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>从认知到体系 · 深度研究与可执行交易系统</title>
+<style>
+  :root{
+    --black:#000000; --ink:#1d1d1f; --gray:#6e6e73; --pale:#f5f5f7;
+    --white:#ffffff; --blue:#0071e3; --link:#0066cc; --border:#d2d2d7;
+    --border2:#86868b; --up:#d32f2f; --down:#2e7d32;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{font-family:"SF Pro Text","Inter","Helvetica Neue","PingFang SC","Microsoft YaHei",Arial,sans-serif;color:var(--ink);background:var(--white);line-height:1.7;-webkit-font-smoothing:antialiased;}
+  h1,h2,h3,h4{font-family:"SF Pro Display","Inter Tight","Helvetica Neue","PingFang SC","Microsoft YaHei",sans-serif;line-height:1.15;font-weight:600;}
+  a{color:var(--link);text-decoration:none;}
+  .wrap{max-width:980px;margin:0 auto;padding:0 24px;}
+  /* nav */
+  nav{position:fixed;top:0;left:0;right:0;z-index:100;backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);background:rgba(255,255,255,.72);border-bottom:1px solid rgba(0,0,0,.06);}
+  .nav-inner{max-width:980px;margin:0 auto;padding:10px 24px;display:flex;align-items:center;gap:18px;flex-wrap:wrap;}
+  .nav-title{font-weight:600;font-size:14px;white-space:nowrap;}
+  .nav-links{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;}
+  .nav-links a{color:var(--ink);opacity:.8;position:relative;padding-bottom:2px;}
+  .nav-links a:hover{color:var(--blue);opacity:1;}
+  .nav-links a.active{color:var(--blue);opacity:1;font-weight:600;}
+  .nav-links a.active::after{content:"";position:absolute;left:0;right:0;bottom:-4px;height:2px;border-radius:2px;background:var(--blue);}
+  /* hero */
+  .hero{background:var(--black);color:#fff;padding:140px 0 90px;}
+  .hero .kicker{color:var(--blue);font-size:14px;font-weight:600;letter-spacing:2px;text-transform:uppercase;margin-bottom:18px;}
+  .hero h1{font-size:52px;letter-spacing:-.5px;margin-bottom:22px;}
+  .hero p.sub{font-size:19px;color:#a1a1a6;max-width:720px;}
+  .hero .meta{margin-top:34px;display:flex;gap:28px;flex-wrap:wrap;font-size:13px;color:#86868b;}
+  .hero .meta b{color:#f5f5f7;font-weight:600;}
+  /* sections */
+  section{padding:72px 0;}
+  .sec-pale{background:var(--pale);}
+  .sec-white{background:var(--white);}
+  .sec-black{background:var(--black);color:#f5f5f7;}
+  .sec-black p,.sec-black li{color:#a1a1a6;}
+  .kicker2{color:var(--blue);font-size:13px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px;}
+  h2.sec-title{font-size:38px;letter-spacing:-.3px;margin-bottom:14px;}
+  .sec-lead{font-size:17px;color:var(--gray);max-width:760px;margin-bottom:36px;}
+  .sec-black .sec-lead{color:#a1a1a6;}
+  h3{font-size:24px;margin:40px 0 14px;}
+  h4{font-size:18px;margin:24px 0 8px;}
+  p{margin-bottom:14px;}
+  ul,ol{margin:0 0 14px 22px;}
+  li{margin-bottom:6px;}
+  /* cards */
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;}
+  @media(max-width:760px){.grid2,.grid3{grid-template-columns:1fr;} .hero h1{font-size:36px;} h2.sec-title{font-size:28px;}}
+  .card{background:var(--white);border-radius:18px;padding:22px 24px;border:1px solid rgba(0,0,0,.04);}
+  .sec-white .card{background:var(--pale);}
+  .card .tag{display:inline-block;font-size:11px;font-weight:600;color:var(--blue);background:rgba(0,113,227,.08);border-radius:980px;padding:3px 10px;margin-bottom:10px;}
+  .card h4{margin:0 0 6px;font-size:17px;}
+  .card .one{font-size:14px;color:var(--ink);font-weight:600;margin-bottom:8px;}
+  .card p{font-size:13.5px;color:var(--gray);margin-bottom:8px;}
+  .card .use{font-size:12.5px;color:var(--ink);border-top:1px dashed var(--border);padding-top:8px;}
+  .card .use b{color:var(--blue);}
+  /* tldr */
+  .tldr-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  @media(max-width:760px){.tldr-grid{grid-template-columns:1fr;}}
+  .tldr-card{background:var(--white);border-radius:18px;padding:24px;border:1px solid rgba(0,0,0,.04);}
+  .tldr-card h4{color:var(--blue);font-size:15px;margin-bottom:8px;}
+  .tldr-card p{font-size:14px;color:var(--ink);}
+  /* diagram */
+  .diagram{background:var(--white);border:1px solid var(--border);border-radius:18px;padding:26px;margin:26px 0;}
+  .sec-black .diagram{background:#1d1d1f;border-color:#3a3a3c;}
+  .diagram .cap{font-size:12px;color:var(--gray);text-align:center;margin-top:12px;}
+  .sec-black .diagram .cap{color:#86868b;}
+  .diagram svg{display:block;margin:0 auto;max-width:100%;height:auto;}
+  /* tables */
+  table{width:100%;border-collapse:collapse;font-size:13.5px;margin:18px 0;background:var(--white);border-radius:12px;overflow:hidden;}
+  th{background:var(--ink);color:#fff;text-align:left;padding:10px 12px;font-weight:600;white-space: nowrap;}
+  td{padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:top;}
+  tr:last-child td{border-bottom:none;}
+  tr:nth-child(even) td{background:var(--pale);}
+  /* rule box */
+  .rule{background:rgba(0,113,227,.06);border-left:3px solid var(--blue);border-radius:0 12px 12px 0;padding:14px 18px;margin:16px 0;font-size:14px;}
+  .rule b{color:var(--blue);}
+  .warn{background:rgba(211,47,47,.06);border-left:3px solid var(--up);border-radius:0 12px 12px 0;padding:14px 18px;margin:16px 0;font-size:14px;}
+  .warn b{color:var(--up);}
+  /* checklist */
+  .checklist{background:var(--white);border-radius:18px;padding:24px;border:1px solid rgba(0,0,0,.04);}
+  .checklist label{display:flex;gap:12px;align-items:flex-start;padding:11px 10px;border-bottom:1px solid var(--pale);cursor:pointer;font-size:14px;border-radius:8px;}
+  .checklist label:hover{background:var(--pale);}
+  .checklist label:last-child{border-bottom:none;}
+  .checklist input{margin-top:4px;width:17px;height:17px;accent-color:var(--blue);flex-shrink:0;}
+  .checklist .done-line{text-decoration:line-through;color:var(--gray);}
+  .check-status{margin-top:14px;font-size:13.5px;font-weight:600;}
+  /* calculator */
+  .calc{background:var(--white);border-radius:18px;padding:26px;border:1px solid rgba(0,0,0,.04);}
+  .calc-row{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:14px;}
+  .calc-field{flex:1;min-width:180px;}
+  .calc-field label{display:block;font-size:12.5px;color:var(--gray);margin-bottom:5px;font-weight:600;}
+  .calc-field input{width:100%;padding:10px 12px;border:1px solid var(--border2);border-radius:10px;font-size:15px;color:var(--ink);}
+  .calc-field input:focus{outline:2px solid var(--blue);border-color:var(--blue);}
+  .calc-out{background:var(--pale);border-radius:14px;padding:18px 20px;font-size:14px;}
+  .calc-out .big{font-size:26px;font-weight:700;color:var(--blue);font-family:"SF Pro Display",sans-serif;}
+  .btn{background:var(--blue);color:#fff;border:none;border-radius:980px;padding:11px 26px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;}
+  .btn:hover{opacity:.9;}
+  .btn-ghost{background:transparent;color:var(--blue);border:1px solid var(--blue);border-radius:980px;padding:10px 24px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;margin-left:10px;}
+  /* toc chips */
+  .chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:28px;}
+  .chip{font-size:12px;background:var(--white);border:1px solid var(--border);border-radius:980px;padding:5px 13px;color:var(--ink);}
+  .sec-black .chip{background:#1d1d1f;border-color:#3a3a3c;color:#f5f5f7;}
+  .chip:hover{border-color:var(--blue);color:var(--blue);}
+  /* footer */
+  footer{background:var(--pale);padding:40px 0;font-size:12.5px;color:var(--gray);}
+  .disclaimer{background:var(--white);border:1px solid var(--border);border-radius:14px;padding:18px 22px;font-size:12.5px;color:var(--gray);margin-top:20px;}
+  .num-badge{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:var(--blue);color:#fff;font-size:13px;font-weight:700;margin-right:10px;flex-shrink:0;}
+  .step-row{display:flex;gap:0;align-items:flex-start;margin-bottom:8px;}
+  .anchor{padding-top:70px;margin-top:-70px;}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <span class="nav-title">从认知到体系</span>
+    <div class="nav-links">
+      <a href="#tldr">结论</a>
+      <a href="#part1">认知知识库</a>
+      <a href="#layer1">世界观</a>
+      <a href="#layer2">经济学</a>
+      <a href="#layer3">人性</a>
+      <a href="#layer4">思维</a>
+      <a href="#layer5">市场</a>
+      <a href="#part2">交易体系</a>
+      <a href="#strategies">两套策略</a>
+      <a href="#execute">执行工具</a>
+      <a href="#path">学习路径</a>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<header class="hero">
+  <div class="wrap">
+    <div class="kicker">Deep Research · Scene 2</div>
+    <h1>从认知到体系<br>深度认知知识库 × 可执行交易系统</h1>
+    <p class="sub">对世界、经济学、人性、思维与交易市场的五层深度认知，梳理为 30 个核心概念的知识库；再把每一条认知翻译成规则，构建一套条件化、可执行、可复盘的波段交易体系与两套具体策略。</p>
+    <div class="meta">
+      <span>知识概念 <b>30 个</b></span>
+      <span>手绘图解 <b>12 张</b></span>
+      <span>执行工具 <b>3 件</b></span>
+      <span>完稿 <b>2026-10-08</b></span>
+    </div>
+  </div>
+</header>
+
+<!-- TL;DR -->
+<section id="tldr" class="sec-pale anchor">
+  <div class="wrap">
+    <div class="kicker2">TL;DR</div>
+    <h2 class="sec-title">先说结论</h2>
+    <p class="sec-lead">整份研究可以压缩成四句话。</p>
+    <div class="tldr-grid">
+      <div class="tldr-card">
+        <h4>① 认知有顺序</h4>
+        <p>世界是复杂系统（不可预测、周期循环、幂律分布）→ 经济是信用与激励驱动的交换网络 → 市场参与者是有系统偏差的人 → 人必须用思维模型对冲偏差 → 市场是这五层认知的实时考场。跳过底层直接学 K 线，等于在沙滩上盖楼。</p>
+      </div>
+      <div class="tldr-card">
+        <h4>② 认知不产生收益，规则才产生</h4>
+        <p>知道「损失厌恶」不亏钱，「止损机械化执行」才不亏钱。本报告第二部分把 30 个概念逐条映射成 18 条具体规则（映射表见第 6 章）——认知的唯一用途是让你相信规则值得执行。</p>
+      </div>
+      <div class="tldr-card">
+        <h4>③ 体系的核心是「条件 → 动作」</h4>
+        <p>全体系没有一句「逢低布局、注意风险」。每个环节都是条件化触发：环境定仓位上限、三过滤定标的、两类信号定入场、风险预算÷止损距离定仓位、价格/逻辑/时间三维定出场。不满足条件就不做——不交易也是交易决策。</p>
+      </div>
+      <div class="tldr-card">
+        <h4>④ 优势的来源：期望值为正 × 活得够久</h4>
+        <p>单笔盈亏是随机的，长期结果由期望值（胜率 × 盈亏比）决定。策略不追求高胜率，追求不对称：亏时小亏、赚时大赚（趋势的力量 + 幂律分布）。仓位规则保证任何单笔错误都伤不到账户的 1.5%——先活下来，复利才有意义。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PART 1 总览 -->
+<section id="part1" class="sec-white anchor">
+  <div class="wrap">
+    <div class="kicker2">Part 1 · 认知知识库</div>
+    <h2 class="sec-title">五层认知结构</h2>
+    <p class="sec-lead">深度认知不是知识量的堆积，而是层次有序的框架：每层解释下一层「为什么是这样」。五层自下而上——世界观告诉你什么可能发生，经济学告诉你资源怎么流动，人性告诉你参与者会犯什么错，思维告诉你如何不犯同样的错，市场认知告诉你这些规律在交易里的具体形态。</p>
+    <div class="diagram">
+      <svg viewBox="0 0 720 340" xmlns="http://www.w3.org/2000/svg">
+        <!-- pyramid 5 layers -->
+        <polygon points="360,20 300,84 420,84" fill="#0071e3"/>
+        <polygon points="292,92 232,156 488,156 428,92" fill="#3d8ce8"/>
+        <polygon points="224,164 164,228 556,228 496,164" fill="#6ba8ee"/>
+        <polygon points="156,236 96,300 624,300 564,236" fill="#9cc4f3"/>
+        <text x="360" y="62" text-anchor="middle" font-size="13" font-weight="700" fill="#fff">⑤ 交易市场</text>
+        <text x="360" y="130" text-anchor="middle" font-size="13" font-weight="700" fill="#fff">④ 思维模型</text>
+        <text x="360" y="202" text-anchor="middle" font-size="13" font-weight="700" fill="#fff">③ 人性与偏差</text>
+        <text x="360" y="274" text-anchor="middle" font-size="13" font-weight="700" fill="#1d1d1f">② 经济学</text>
+        <rect x="28" y="308" width="664" height="28" rx="6" fill="#f5f5f7"/>
+        <text x="360" y="327" text-anchor="middle" font-size="13" font-weight="700" fill="#1d1d1f">① 世界观：复杂系统 · 周期 · 概率 · 幂律（一切的地基）</text>
+        <!-- side annotations -->
+        <text x="690" y="62" text-anchor="end" font-size="11" fill="#86868b">应用层：在这里赚钱或亏钱</text>
+        <text x="690" y="327" text-anchor="end" font-size="11" fill="#86868b">地基：决定了上面一切成立的前提</text>
+      </svg>
+      <div class="cap">图 1 · 五层认知金字塔：越靠下越稳定（世界观几百年不变），越靠上越具体（市场规则随时代微调）。学习顺序建议自下而上，应用顺序自上而下。</div>
+    </div>
+    <div class="chips">
+      <a class="chip" href="#layer1">① 世界观 ×6</a>
+      <a class="chip" href="#layer2">② 经济学 ×6</a>
+      <a class="chip" href="#layer3">③ 人性 ×6</a>
+      <a class="chip" href="#layer4">④ 思维 ×6</a>
+      <a class="chip" href="#layer5">⑤ 市场 ×6</a>
+    </div>
+    <p style="font-size:13.5px;color:var(--gray);">共 30 个核心概念，每个概念按「一句话精炼 → 详解 → 交易中的应用」三段呈现。这一部分是 Part 2 交易体系的全部理论弹药。</p>
+  </div>
+</section>
+
+<!-- LAYER 1 世界观 -->
+<section id="layer1" class="sec-pale anchor">
+  <div class="wrap">
+    <div class="kicker2">Layer 1 · 世界观</div>
+    <h2 class="sec-title">世界如何运转</h2>
+    <p class="sec-lead">六个概念回答一个问题：未来能被预测到什么程度？答案是——方向可判、路径不可测、肥尾必然发生。这决定了交易体系必须「重应对、轻预测」。</p>
+    <div class="grid2">
+      <div class="card"><span class="tag">WORLD 01</span><h4>复杂系统与涌现</h4><p class="one">整体的行为无法从个体行为推导——万亿神经元涌现出意识，万级参与者涌现出趋势与崩盘。</p><p>复杂系统的特征是：对初始条件敏感（蝴蝶效应）、存在相变（量变到质变的临界点）、无法精确预测但可识别状态。市场是典型的复杂适应系统。</p><p class="use"><b>交易应用：</b>放弃精确预测点位，改为识别市场「状态」（趋势/震荡/危机），每种状态对应一套预案。</p></div>
+      <div class="card"><span class="tag">WORLD 02</span><h4>反馈回路（正反馈与负反馈）</h4><p class="one">正反馈自我强化（涨→吸引买盘→更涨），负反馈回归均衡（涨→太贵→卖压→回落）。</p><p>系统的行为模式由反馈结构决定。正反馈制造趋势与泡沫，负反馈制造均值回归与震荡。识别当前哪种反馈占主导，比预测价格重要得多。</p><p class="use"><b>交易应用：</b>趋势策略赚正反馈的钱，震荡策略赚负反馈的钱；两种策略的信号绝不能混用。</p></div>
+      <div class="card"><span class="tag">WORLD 03</span><h4>周期嵌套</h4><p class="one">从心跳到文明，万物皆周期；大周期套小周期，共振时行情最猛烈。</p><p>库存周期（3-4 年）、资本开支周期（7-10 年）、信贷周期、技术革命周期（50-60 年康波）层层嵌套。周期不是精确的钟表，是「春夏秋冬」的概率倾向——不知道哪天降温，但知道冬天要来了。</p><p class="use"><b>交易应用：</b>用大周期定战略方向（做多还是防守），用小周期定战术节奏（何时进出）。</p></div>
+      <div class="card"><span class="tag">WORLD 04</span><h4>幂律与肥尾</h4><p class="one">世界的收益分布不是正态钟形，而是幂律长尾——少数事件贡献大部分结果。</p><p>城市人口、财富、图书销量、股价收益都近似幂律。含义：极端事件的频率远超正态分布的估计（「百年一遇」十年出现三次）；同时，少数大赢家贡献组合的大部分收益。</p><p class="use"><b>交易应用：</b>① 永远为黑天鹅留安全边际（仓位纪律）；② 让利润奔跑——砍掉的是亏损，不是盈利。</p></div>
+      <div class="card"><span class="tag">WORLD 05</span><h4>概率与不确定性</h4><p class="one">世界是概率的：好决策可能坏结果，坏决策可能好结果——决策质量与结果质量要分开评价。</p><p>奈特区分「风险」（概率已知）与「不确定性」（概率未知）。市场大部分时候处于后者。应对不确定性的工具不是更精确的预测，而是冗余、期权性与反脆弱结构。</p><p class="use"><b>交易应用：</b>用期望值而非单次结果评估体系；用仓位控制而非预测精度管理不确定性。</p></div>
+      <div class="card"><span class="tag">WORLD 06</span><h4>熵增与耗散结构</h4><p class="one">封闭系统趋向混乱；只有持续输入能量的开放系统才能维持秩序。</p><p>普利高津的耗散结构理论：远离平衡态 + 持续能量交换 = 自组织秩序。经济体、企业、交易者的心智都服从这个规律——停止学习和交换，系统就腐化。</p><p class="use"><b>交易应用：</b>交易体系必须持续复盘迭代（输入能量），否则随市场结构变化而失效。没有一劳永逸的系统。</p></div>
+    </div>
+    <div class="diagram">
+      <svg viewBox="0 0 720 260" xmlns="http://www.w3.org/2000/svg">
+        <!-- normal vs power law -->
+        <text x="170" y="24" text-anchor="middle" font-size="13" font-weight="700" fill="#1d1d1f">正态分布（日常直觉）</text>
+        <text x="545" y="24" text-anchor="middle" font-size="13" font-weight="700" fill="#1d1d1f">幂律分布（市场现实）</text>
+        <line x1="40" y1="210" x2="300" y2="210" stroke="#86868b" stroke-width="1"/>
+        <path d="M 60 210 Q 170 20 280 210" fill="none" stroke="#0071e3" stroke-width="2.5"/>
+        <text x="170" y="235" text-anchor="middle" font-size="11" fill="#86868b">极端事件概率≈0 → 误以为安全</text>
+        <line x1="400" y1="210" x2="700" y2="210" stroke="#86868b" stroke-width="1"/>
+        <path d="M 420 40 C 440 120 470 175 520 196 C 570 210 650 212 690 213" fill="none" stroke="#d32f2f" stroke-width="2.5"/>
+        <rect x="600" y="150" width="90" height="58" fill="rgba(211,47,47,.08)" rx="6"/>
+        <text x="645" y="172" text-anchor="middle" font-size="11" fill="#d32f2f" font-weight="700">肥尾区</text>
+        <text x="645" y="188" text-anchor="middle" font-size="10" fill="#86868b">黑天鹅高频出现</text>
+        <text x="545" y="235" text-anchor="middle" font-size="11" fill="#86868b">少数暴涨暴跌贡献大部分收益</text>
+      </svg>
+      <div class="cap">图 2 · 正态 vs 幂律：直觉来自正态世界（身高、考试分数），市场活在幂律世界。用正态思维做风控，一次肥尾就出局。（示意曲线，非精确数学绘图）</div>
+    </div>
+  </div>
+</section>
+
+<!-- LAYER 2 经济学 -->
+<section id="layer2" class="sec-white anchor">
+  <div class="wrap">
+    <div class="kicker2">Layer 2 · 经济学</div>
+    <h2 class="sec-title">资源如何流动</h2>
+    <p class="sec-lead">经济学的核心不是公式，是理解「谁在什么激励下做什么交易」。宏观层面抓信用与流动性，微观层面抓供需与激励——这两个抓手覆盖 80% 的经济现象。</p>
+    <div class="grid2">
+      <div class="card"><span class="tag">ECON 01</span><h4>供需与价格发现</h4><p class="one">价格是供需的瞬时均衡点，功能是传递信息、配置资源——价格是信号，不是结论。</p><p>价格涨说明边际买家比边际卖家急迫。分析价格要回到「谁在买、谁在卖、为什么」——同样的涨价，由产业资本增持驱动与由散户追涨驱动，含义完全不同。</p><p class="use"><b>交易应用：</b>量价配合分析的本质：量是参与人数，价是方向，量价背离 = 信号源枯竭的预警。</p></div>
+      <div class="card"><span class="tag">ECON 02</span><h4>货币、信用与流动性</h4><p class="one">现代经济的燃料不是货币本身，而是信用——信用的扩张与收缩驱动资产价格的潮汐。</p><p>达利欧的债务周期框架：短期债务周期（5-8 年）与长期债务周期（75-100 年）。央行放水时信用扩张、资产水涨船高；信用收缩时最先杀的是高估值与高杠杆。流动性是资产价格的第一推动力。</p><p class="use"><b>交易应用：</b>利率与流动性环境决定市场的大贝塔：宽信用期进攻、紧信用期防守——这是体系里「环境判断」层的理论依据。</p></div>
+      <div class="card"><span class="tag">ECON 03</span><h4>激励机制</h4><p class="one">给我看激励，我就能告诉你结果——人是激励的动物，制度通过激励塑造行为。</p><p>基金经理收管理费 → 倾向于做大规模而非做高收益；卖方分析师收佣金 → 倾向于唱多；大股东持股集中 → 在意股价。读懂激励就读懂了各类市场参与者言论的可信度。</p><p class="use"><b>交易应用：</b>评估任何信息先问「说这话的人靠什么赚钱」。研报、大V、上市公司公告全部过一遍激励滤镜。</p></div>
+      <div class="card"><span class="tag">ECON 04</span><h4>比较优势与分工</h4><p class="one">即使处处不如人，专注相对劣势最小的领域分工交换，双方都能更好。</p><p>李嘉图的比较优势是国际贸易与分工的基石，也是个人定位的隐喻：你不需要比所有人强，只需要在自己相对优势最大的环节做到极致。</p><p class="use"><b>交易应用：</b>散户的比较优势是「小而灵活、无排名压力、可空仓」；跟机构拼信息与研究深度是以短击长。</p></div>
+      <div class="card"><span class="tag">ECON 05</span><h4>边际思维</h4><p class="one">理性的决策看边际：下一个单位的成本与收益，而不是总量或平均。</p><p>钻石贵水便宜不是因为水没用，而是边际效用不同；企业该不该增产看边际成本与边际收益；价格由边际交易者决定——最后一个买家和最后一个卖家定价，而不是全体持仓者。</p><p class="use"><b>交易应用：</b>存量观点不定价，边际变化才定价。财报超预期与否，比较的是「实际 vs 边际预期」，不是「实际 vs 去年」。</p></div>
+      <div class="card"><span class="tag">ECON 06</span><h4>机会成本</h4><p class="one">做任何选择的真实成本，是你放弃的最好替代选项。</p><p>持有现金的机会成本是错过的行情，持有股票的机会成本是这笔钱能买的其他股票。套牢死扛的真实成本不是浮亏，是资金被占用期间错过的所有机会。</p><p class="use"><b>交易应用：</b>复盘时多问「今天重新选，我还会买它吗？」——答案是否，就该换仓，与成本价无关（参见人性层的锚定偏差）。</p></div>
+    </div>
+    <div class="diagram">
+      <svg viewBox="0 0 720 250" xmlns="http://www.w3.org/2000/svg">
+        <!-- credit cycle transmission -->
+        <text x="360" y="22" text-anchor="middle" font-size="13" font-weight="700" fill="#1d1d1f">信用周期 → 资产价格传导链</text>
+        <g font-size="12">
+          <rect x="20" y="60" width="150" height="54" rx="10" fill="#0071e3"/>
+          <text x="95" y="82" text-anchor="middle" fill="#fff" font-weight="700">央行与政策</text>
+          <text x="95" y="100" text-anchor="middle" fill="#dbeafe" font-size="10.5">利率 · 准备金 · 投放</text>
+          <rect x="200" y="60" width="150" height="54" rx="10" fill="#3d8ce8"/>
+          <text x="275" y="82" text-anchor="middle" fill="#fff" font-weight="700">信用与流动性</text>
+          <text x="275" y="100" text-anchor="middle" fill="#e3f0fd" font-size="10.5">社融 · M2 · 信贷脉冲</text>
+          <rect x="380" y="60" width="150" height="54" rx="10" fill="#6ba8ee"/>
+          <text x="455" y="82" text-anchor="middle" fill="#fff" font-weight="700">企业与盈利</text>
+          <text x="455" y="100" text-anchor="middle" fill="#eaf3fd" font-size="10.5">订单 · 利润 · 预期</text>
+          <rect x="560" y="60" width="140" height="54" rx="10" fill="#1d1d1f"/>
+          <text x="630" y="82" text-anchor="middle" fill="#fff" font-weight="700">资产价格</text>
+          <text x="630" y="100" text-anchor="middle" fill="#c7c7cc" font-size="10.5">估值 × 盈利双击/杀</text>
+        </g>
+        <g stroke="#86868b" stroke-width="1.6" fill="none">
+          <line x1="172" y1="87" x2="196" y2="87"/><polygon points="196,87 189,83 189,91" fill="#86868b" stroke="none"/>
+          <line x1="352" y1="87" x2="376" y2="87"/><polygon points="376,87 369,83 369,91" fill="#86868b" stroke="none"/>
+          <line x1="532" y1="87" x2="556" y2="87"/><polygon points="556,87 549,83 549,91" fill="#86868b" stroke="none"/>
+        </g>
+        <text x="360" y="152" text-anchor="middle" font-size="11.5" fill="#6e6e73">传导有时滞：政策 → 信用约 1-2 个季度，信用 → 盈利约 2-3 个季度</text>
+        <line x1="60" y1="180" x2="660" y2="180" stroke="#d2d2d7" stroke-width="1"/>
+        <g font-size="11" fill="#6e6e73">
+          <text x="60" y="206">宽信用期 → 先涨估值（分母端），成长股受益</text>
+          <text x="60" y="226">盈利兑现期 → 涨业绩（分子端），顺周期受益</text>
+          <text x="400" y="206">紧信用期 → 杀估值，高估值高杠杆先跌</text>
+          <text x="400" y="226">信用收缩后期 → 优质资产被错杀，布局窗口</text>
+        </g>
+      </svg>
+      <div class="cap">图 3 · 信用周期传导链：流动性的潮汐决定市场的贝塔。环境判断层（第 7 章）把这条链压缩成可观察的指标组合。</div>
+    </div>
+  </div>
+</section>
+
+<!-- LAYER 3 人性 -->
+<section id="layer3" class="sec-pale anchor">
+  <div class="wrap">
+    <div class="kicker2">Layer 3 · 人性</div>
+    <h2 class="sec-title">人会犯什么错</h2>
+    <p class="sec-lead">行为金融学的全部结论可以浓缩为一句：人是「一台会系统性出错的预测机器」。这些偏差不是缺点清单，是交易对手盘的利润来源——也是你必须用规则锁死的漏洞。</p>
+    <div class="grid2">
+      <div class="card"><span class="tag">MIND 01</span><h4>前景理论与损失厌恶</h4><p class="one">亏 1 万的痛苦约等于赚 2-2.5 万的快乐；人对损失和收益的心理权重不对称。</p><p>卡尼曼与特沃斯基的前景理论：价值函数在损失区更陡，且参照点依赖（以买入价/前高为锚）。损失厌恶直接导致散户两大顽疾：过早止盈（怕到手的飞了）+ 死扛亏损（不愿兑现痛苦）。</p><p class="use"><b>交易应用：</b>止损止盈全部在下单前写死、机械化执行——用规则代替参照点漂移时的人性决策。</p></div>
+      <div class="card"><span class="tag">MIND 02</span><h4>锚定与参照点</h4><p class="one">人的判断被第一印象或任意数字锚住，即使那个数字与价值毫无关系。</p><p>成本价、历史高点、整数关口都是心理锚。「回本就卖」「跌到 XX 就割」里的数字全是锚，不是市场决定的合理位置。市场从不关心你的成本。</p><p class="use"><b>交易应用：</b>评估持仓先脱锚——忘掉成本，问「现在这个价格，基于当前信息，该持有吗」。</p></div>
+      <div class="card"><span class="tag">MIND 03</span><h4>羊群效应与反身性</h4><p class="one">人会在不确定中模仿他人；群体的模仿反过来改变基本面——预期自我实现。</p><p>索罗斯的反身性：价格影响基本面，基本面再影响价格，形成正反馈循环（房价涨 → 抵押物升值 → 更多信贷 → 房价更涨）。循环在拐点前一直成立，拐点后加速崩塌。</p><p class="use"><b>交易应用：</b>趋势中不猜顶（循环会自我强化），但追踪「循环赖以成立的前提」何时消失——前提消失日就是离场日。</p></div>
+      <div class="card"><span class="tag">MIND 04</span><h4>过度自信与后见之明</h4><p class="one">人系统性地高估自己的判断精度，并在事后把运气解释成实力。</p><p>牛市里人人都是股神：浮盈被归因为能力，回撤被归因为运气。后见之明让复盘失真——「我当时就知道会涨」是记忆重构，不是事实。</p><p class="use"><b>交易应用：</b>交易日志必须事前记录理由，事后对照——用白纸黑字对抗记忆重构。长期胜率数据是唯一可信的自我认知。</p></div>
+      <div class="card"><span class="tag">MIND 05</span><h4>即时满足与多巴胺</h4><p class="one">大脑对即时奖励的反应远强于延迟奖励——频繁交易是生理冲动，不是策略。</p><p>下单、盯盘、刷行情都触发多巴胺；空仓等待是反本能的痛苦。赌场与券商都靠这个机制赚钱。交易频率与收益率在多数研究里负相关（此结论为学界常见发现，具体数字因样本而异）。</p><p class="use"><b>交易应用：</b>用「信号清单 + 条件触发」限制出手次数；把盯盘时间换成复盘时间。无聊是这套体系的成本，也是门槛。</p></div>
+      <div class="card"><span class="tag">MIND 06</span><h4>自我合理化与确认偏误</h4><p class="one">先有立场，后找证据——人会本能地只看见支持自己持仓的信息。</p><p>持仓后看利空会自动打折，看利好会自动放大；被套后「从短线做成股东」是最典型的合理化。认知失调越深，合理化越强。</p><p class="use"><b>交易应用：</b>每笔交易入场前写好「失效条件」（什么发生就证明我错了）——先定义错误，错误出现时才认得出。</p></div>
+    </div>
+    <div class="diagram">
+      <svg viewBox="0 0 720 300" xmlns="http://www.w3.org/2000/svg">
+        <!-- prospect theory value function -->
+        <text x="360" y="24" text-anchor="middle" font-size="13" font-weight="700" fill="#1d1d1f">前景理论价值函数：损失区更陡</text>
+        <line x1="90" y1="160" x2="650" y2="160" stroke="#86868b" stroke-width="1.2"/>
+        <line x1="370" y1="50" x2="370" y2="270" stroke="#86868b" stroke-width="1.2"/>
+        <text x="645" y="180" font-size="11" fill="#86868b" text-anchor="end">收益 →</text>
+        <text x="382" y="265" font-size="11" fill="#86868b">← 损失</text>
+        <!-- value curve: concave gains, convex steeper losses -->
+        <path d="M 370 160 Q 450 128 560 100 Q 620 88 640 84" fill="none" stroke="#0071e3" stroke-width="2.5"/>
+        <path d="M 370 160 Q 300 196 210 232 Q 150 252 110 260" fill="none" stroke="#d32f2f" stroke-width="3.5"/>
+        <!-- reference point -->
+        <circle cx="370" cy="160" r="4" fill="#1d1d1f"/>
+        <text x="382" y="152" font-size="11" fill="#1d1d1f" font-weight="600">参照点（如成本价）</text>
+        <!-- annotations -->
+        <line x1="520" y1="112" x2="520" y2="160" stroke="#d2d2d7" stroke-width="1" stroke-dasharray="3 3"/>
+        <line x1="220" y1="160" x2="220" y2="228" stroke="#d2d2d7" stroke-width="1" stroke-dasharray="3 3"/>
+        <text x="530" y="130" font-size="11" fill="#0071e3">+10% 的快乐</text>
+        <text x="120" y="212" font-size="11" fill="#d32f2f" font-weight="700">−10% 的痛苦 ≈ 2 倍以上</text>
+        <text x="370" y="292" text-anchor="middle" font-size="11.5" fill="#6e6e73">行为后果：过早止盈（锁定快乐） + 死扛亏损（逃避痛苦） = 散户标准亏钱动作</text>
+      </svg>
+      <div class="cap">图 4 · 前景理论价值函数（示意）：损失侧曲线更陡，且一切相对参照点衡量。交易体系的对策是把参照点从「成本价」换成「规则」。</div>
+    </div>
+    <div class="diagram">
+      <svg viewBox="0 0 720 260" xmlns="http://www.w3.org/2000/svg">
+        <!-- market emotion cycle -->
+        <text x="360" y="22" text-anchor="middle" font-size="13" font-weight="700" fill="#1d1d1f">市场情绪周期：人性在价格上的投影</text>
+        <path d="M 50 220 C 120 218 170 200 230 160 C 290 120 330 70 390 62 C 450 56 500 100 560 160 C 600 200 650 222 680 226" fill="none" stroke="#1d1d1f" stroke-width="2.5"/>
+        <g font-size="10.5" fill="#6e6e73">
+          <circle cx="120" cy="214" r="3.5" fill="#0071e3"/><text x="120" y="240" text-anchor="middle">怀疑</text>
+          <circle cx="230" cy="160" r="3.5" fill="#0071e3"/><text x="230" y="184" text-anchor="middle">乐观</text>
+          <circle cx="320" cy="92" r="3.5" fill="#0071e3"/><text x="320" y="116" text-anchor="middle">兴奋</text>
+          <circle cx="390" cy="62" r="3.5" fill="#d32f2f"/><text x="390" y="48" text-anchor="middle" fill="#d32f2f" font-weight="700">狂热（风险最大）</text>
+          <circle cx="480" cy="92" r="3.5" fill="#2e7d32"/><text x="480" y="116" text-anchor="middle">否认</text>
+          <circle cx="570" cy="168" r="3.5" fill="#2e7d32"/><text x="570" y="192" text-anchor="middle">恐慌</text>
+          <circle cx="660" cy="222" r="3.5" fill="#2e7d32"/><text x="660" y="246" text-anchor="middle" fill="#2e7d32" font-weight="700">绝望（机会最大）</text>
+        </g>
+        <text x="360" y="282" text-anchor="middle" font-size="11.5" fill="#6e6e73">同一批人，同一个市场——情绪周期永远重复，因为人性不变。你的对手盘的情绪就是你的环境变量。</text>
+      </svg>
+      <div class="cap">图 5 · 情绪周期（示意）：狂热时想到的是「这次不一样」，绝望时想到的是「再也不玩了」——两个念头来自同一种人性。</div>
+    </div>
+  </div>
+</section>
+
+<!-- LAYER 4 思维 -->
+<section id="layer4" class="sec-white anchor">
+  <div class="wrap">
+    <div class="kicker2">Layer 4 · 思维</div>
+    <h2 class="sec-title">如何不犯错</h2>
+    <p class="sec-lead">知道了人会犯什么错，还需要工具来对冲。这六个思维模型是芒格「格栅理论」里对交易直接有用的部分——它们的共同点是：把「我觉得」变成「可计算、可检验」。</p>
+    <div class="grid2">
+      <div class="card"><span class="tag">THINK 01</span><h4>第一性原理</h4><p class="one">回到不可再分的基本事实重新推理，而不是类比和惯例。</p><p>「大家都这么做」是类比，「这笔交易的期望值为正吗、风险在哪」是第一性原理。所有交易流派的终点都要回答：你的利润从谁的口袋里来、凭什么持续？</p><p class="use"><b>交易应用：</b>学任何策略先拆到底层假设：赚的是趋势的钱、均值回归的钱、还是流动性的钱？假设失效策略就失效。</p></div>
+      <div class="card"><span class="tag">THINK 02</span><h4>概率思维与期望值</h4><p class="one">每个决策都是下注：期望值 = 胜率 × 平均盈利 − 败率 × 平均亏损。</p><p>正期望值的亏单是好交易，负期望值的盈单是坏交易。接受「单笔结果随机、长期结果确定」是从赌徒到交易者的分水岭。</p><p class="use"><b>交易应用：</b>体系设计的全部目标：让期望值稳定为正（本章图 6），让单笔风险小到坏运气杀不死你。</p></div>
+      <div class="card"><span class="tag">THINK 03</span><h4>贝叶斯更新</h4><p class="one">先给先验概率，每来一条新证据就按比例更新——观点应该跟随证据流动。</p><p>好交易者不是没有观点，而是观点的「置信度随证据连续调整」。看多 60% → 利空出现 → 调到 45% → 触发失效线 → 离场。拒绝更新 = 把交易做成信仰。</p><p class="use"><b>交易应用：</b>持仓期间每天问：「今天的信息让我更确定还是更不确定？」确定度跌破阈值就减仓，不等到止损。</p></div>
+      <div class="card"><span class="tag">THINK 04</span><h4>逆向思维（Inversion）</h4><p class="one">反过来想：不先问「怎么赢」，先问「怎么死」——避开所有死法，剩下的路自然通向胜利。</p><p>芒格：「我只想知道我会死在哪里，这样我就永远不去那儿。」交易中的死法清单是明确的：重仓、无止损、加杠杆、频繁交易、摊平亏损、报复性交易。避开它们，盈利只是时间问题。</p><p class="use"><b>交易应用：</b>体系的「禁做清单」（第 13 章）比「必做清单」更重要——不做什么决定了你能不能活到复利起效。</p></div>
+      <div class="card"><span class="tag">THINK 05</span><h4>能力圈</h4><p class="one">重要的不是圈有多大，而是清楚地知道边界在哪。</p><p>圈内你有信息优势和判断校准，圈外你就是韭菜。圈可以慢慢扩大，但自以为在圈内是致命的——邓宁-克鲁格效应保证新手最容易高估自己的圈。</p><p class="use"><b>交易应用：</b>限定标的池（熟悉的 2-3 个行业 + 指数 ETF），圈外机会一律放弃。错过不亏钱，做错才亏钱。</p></div>
+      <div class="card"><span class="tag">THINK 06</span><h4>二阶思维</h4><p class="one">每个行动都有后果，后果还有后果——多想一层，胜率就高一分。</p><p>一阶思维：降息 → 利好 → 买。二阶思维：降息已被定价多少？利好兑现会不会是卖点？别人现在怎么想？市场定价的是预期差，不是事实本身。</p><p class="use"><b>交易应用：</b>看到任何消息先问三句：预期到了吗？定价了吗？谁会在边际上改变行为？——三问不过关，消息不构成交易理由。</p></div>
+    </div>
+    <div class="diagram">
+      <svg viewBox="0 0 720 290" xmlns="http://www.w3.org/2000/svg">
+        <!-- expectancy matrix -->
+        <text x="360" y="24" text-anchor="middle" font-size="13" font-weight="700" fill="#1d1d1f">期望值矩阵：胜率 × 盈亏比的四种组合</text>
+        <g font-size="12">
+          <rect x="140" y="50" width="250" height="95" rx="12" fill="#f5f5f7" stroke="#d2d2d7"/>
+          <text x="265" y="76" text-anchor="middle" font-weight="700" fill="#1d1d1f">高胜率 × 低盈亏比</text>
+          <text x="265" y="97" text-anchor="middle" font-size="11" fill="#6e6e73">典型：抄底抢反弹、卖期权</text>
+          <text x="265" y="118" text-anchor="middle" font-size="11" fill="#d32f2f" font-weight="600">舒服但危险：一次大亏吞掉百次小赚</text>
+          <rect x="410" y="50" width="250" height="95" rx="12" fill="#e8f2fd" stroke="#0071e3"/>
+          <text x="535" y="76" text-anchor="middle" font-weight="700" fill="#0071e3">低胜率 × 高盈亏比 ★</text>
+          <text x="535" y="97" text-anchor="middle" font-size="11" fill="#6e6e73">典型：趋势跟踪、突破交易</text>
+          <text x="535" y="118" text-anchor="middle" font-size="11" fill="#0071e3" font-weight="600">难受但赚钱：靠少数大趋势吃饱</text>
+          <rect x="140" y="165" width="250" height="95" rx="12" fill="#fdecec" stroke="#d32f2f"/>
+          <text x="265" y="191" text-anchor="middle" font-weight="700" fill="#d32f2f">低胜率 × 低盈亏比</text>
+          <text x="265" y="212" text-anchor="middle" font-size="11" fill="#6e6e73">典型：频繁交易、摊平亏损</text>
+          <text x="265" y="233" text-anchor="middle" font-size="11" fill="#d32f2f" font-weight="600">必死局：散户默认模式</text>
+          <rect x="410" y="165" width="250" height="95" rx="12" fill="#f5f5f7" stroke="#d2d2d7"/>
+          <text x="535" y="191" text-anchor="middle" font-weight="700" fill="#1d1d1f">高胜率 × 高盈亏比</text>
+          <text x="535" y="212" text-anchor="middle" font-size="11" fill="#6e6e73">传说中的圣杯</text>
+          <text x="535" y="233" text-anchor="middle" font-size="11" fill="#6e6e73" font-weight="600">不存在——别找，找了就进左下象限</text>
+        </g>
+        <text x="360" y="284" text-anchor="middle" font-size="11.5" fill="#6e6e73">示例：胜率 40% × 盈亏比 3:1 → 期望值 = 0.4×3 − 0.6×1 = +0.6R，长期必赚（R=单笔风险单位）</text>
+      </svg>
+      <div class="cap">图 6 · 期望值矩阵：右上象限是本体系的全部追求。它不追求「经常对」，追求「错时小错、对时大对」。</div>
+    </div>
+  </div>
+</section>
+
+<!-- LAYER 5 市场 -->
+<section id="layer5" class="sec-pale anchor">
+  <div class="wrap">
+    <div class="kicker2">Layer 5 · 交易市场</div>
+    <h2 class="sec-title">市场这台机器</h2>
+    <p class="sec-lead">前四层在市场里的具体投影。六个概念回答：价格到底是什么、钱从哪来、你在跟谁博弈。</p>
+    <div class="grid2">
+      <div class="card"><span class="tag">MKT 01</span><h4>价格的本质：共识的实时投票</h4><p class="one">短期是投票机（情绪与资金），长期是称重机（价值与盈利）——格雷厄姆。</p><p>价格 ≠ 价值，价格 = 当前所有参与者用真金白银投出的共识。共识可以被情绪严重扭曲（泡沫/恐慌），但长期向价值收敛。赚「扭曲修复」的钱是价值派，赚「扭曲强化」的钱是趋势派。</p><p class="use"><b>交易应用：</b>先想清楚自己赚哪一段：本体系主赚趋势段（扭曲强化），辅以环境层的价值约束（不在泡沫顶接棒）。</p></div>
+      <div class="card"><span class="tag">MKT 02</span><h4>零和与负和结构</h4><p class="one">短线博弈层面，市场扣掉成本后是负和——你的超额收益必须来自别人的错误。</p><p>市场长期总收益来自企业盈利（正和），但短线差价是参与者间的转移支付，还要交佣金印花税。含义残酷：你的交易优势必须真实存在——信息、速度、纪律、成本，你至少赢一样。</p><p class="use"><b>交易应用：</b>散户唯一稳定优势是纪律与耐心（机构有排名压力不能等）。体系设计把这个优势最大化：少出手、敢空仓。</p></div>
+      <div class="card"><span class="tag">MKT 03</span><h4>趋势：市场唯一的免费午餐</h4><p class="one">动量效应（涨者恒涨）是横跨百年、全市场、最稳健被验证的异象。</p><p>趋势存在的根源在人性层：信息扩散需要时间 + 羊群效应 + 锚定（人们对旧价格恋恋不舍，调整总是不充分）。学术界动量因子研究数十年来持续有效（Jegadeesh &amp; Titman 1993 起，结论稳健但参数随样本期变化）。</p><p class="use"><b>交易应用：</b>体系的骨架是趋势跟踪：不预测拐点，只在趋势确认后上车、破坏后下车——用纪律收割人性。</p></div>
+      <div class="card"><span class="tag">MKT 04</span><h4>量价结构：供需的裸K语言</h4><p class="one">价是方向，量是参与强度，持仓结构是潜在供需——三者合起来是市场的「供用心电图」。</p><p>放量突破 = 新共识形成；缩量回调 = 抛压衰竭；放量滞涨 = 分歧加剧。量价背离永远先于价格拐点，因为边际资金的枯竭早于价格的转向（边际思维的市场版）。</p><p class="use"><b>交易应用：</b>体系的两类入场信号（突破/回踩）都用「量」做确认条件，无量信号直接放弃。</p></div>
+      <div class="card"><span class="tag">MKT 05</span><h4>参与者生态：你在食物链哪环</h4><p class="one">国家队/社保（压舱石）、公募（排名驱动）、外资（全球配置）、游资（情绪放大器）、散户（流动性提供者）——不同物种，不同行为模式。</p><p>游资打板赚隔日情绪差，公募调仓赚季度景气差，量化赚微观结构的钱。每种玩家有自己的时间尺度和止损纪律，混在一起的市场才会「该涨不涨、该跌不跌」。</p><p class="use"><b>交易应用：</b>想清楚这笔交易在赚谁的钱、周期和谁一致。做波段就不要在意日内波动——那不是你的猎物。</p></div>
+      <div class="card"><span class="tag">MKT 06</span><h4>A股特征适配</h4><p class="one">散户占比高、政策影响大、涨跌停制度、T+1、做空受限——制度决定了策略的形态。</p><p>散户占比高 → 情绪波动更大、题材脉冲更猛；T+1 → 日内错误无法当日纠正，隔夜风险真实存在；涨跌停 → 极端日流动性消失，止损可能无法执行。任何舶来策略都要过一遍制度适配。</p><p class="use"><b>交易应用：</b>仓位公式里止损距离要含「一个跌停无法卖出」的情景；T+1 下不做尾盘追高；政策敏感期降低题材仓位。</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- PART 2 -->
+<section id="part2" class="sec-black anchor">
+  <div class="wrap">
+    <div class="kicker2">Part 2 · 交易体系</div>
+    <h2 class="sec-title" style="color:#f5f5f7;">从认知到规则</h2>
+    <p class="sec-lead">认知不产生收益，规则才产生。第二部分把 Part 1 的 30 个概念蒸馏成一套七环体系：每个环节都是「条件 → 动作」，没有模糊地带。</p>
+    <div class="diagram">
+      <svg viewBox="0 0 720 300" xmlns="http://www.w3.org/2000/svg">
+        <!-- 7-step loop -->
+        <g font-size="11.5" font-weight="600">
+          <rect x="60" y="40" width="130" height="46" rx="23" fill="#0071e3"/><text x="125" y="68" text-anchor="middle" fill="#fff">① 环境判断</text>
+          <rect x="230" y="40" width="130" height="46" rx="23" fill="#0071e3"/><text x="295" y="68" text-anchor="middle" fill="#fff">② 选标过滤</text>
+          <rect x="400" y="40" width="130" height="46" rx="23" fill="#0071e3"/><text x="465" y="68" text-anchor="middle" fill="#fff">③ 入场触发</text>
+          <rect x="570" y="40" width="110" height="46" rx="23" fill="#0071e3"/><text x="625" y="68" text-anchor="middle" fill="#fff">④ 仓位计算</text>
+          <rect x="570" y="140" width="110" height="46" rx="23" fill="#0071e3"/><text x="625" y="168" text-anchor="middle" fill="#fff">⑤ 持有管理</text>
+          <rect x="400" y="140" width="130" height="46" rx="23" fill="#0071e3"/><text x="465" y="168" text-anchor="middle" fill="#fff">⑥ 出场执行</text>
+          <rect x="230" y="140" width="130" height="46" rx="23" fill="#0071e3"/><text x="295" y="168" text-anchor="middle" fill="#fff">⑦ 复盘记录</text>
+          <rect x="60" y="140" width="130" height="46" rx="23" fill="#3a3a3c"/><text x="125" y="168" text-anchor="middle" fill="#a1a1a6">空仓 / 等待</text>
+        </g>
+        <g stroke="#86868b" stroke-width="1.6" fill="none">
+          <line x1="192" y1="63" x2="226" y2="63"/><polygon points="226,63 219,59 219,67" fill="#86868b" stroke="none"/>
+          <line x1="362" y1="63" x2="396" y2="63"/><polygon points="396,63 389,59 389,67" fill="#86868b" stroke="none"/>
+          <line x1="532" y1="63" x2="566" y2="63"/><polygon points="566,63 559,59 559,67" fill="#86868b" stroke="none"/>
+          <line x1="625" y1="88" x2="625" y2="136"/><polygon points="625,136 621,129 629,129" fill="#86868b" stroke="none"/>
+          <line x1="566" y1="163" x2="532" y2="163"/><polygon points="532,163 539,159 539,167" fill="#86868b" stroke="none"/>
+          <line x1="396" y1="163" x2="362" y2="163"/><polygon points="362,163 369,159 369,167" fill="#86868b" stroke="none"/>
+          <line x1="226" y1="163" x2="192" y2="163"/><polygon points="192,163 199,159 199,167" fill="#86868b" stroke="none"/>
+          <line x1="125" y1="136" x2="125" y2="90"/><polygon points="125,90 121,97 129,97" fill="#86868b" stroke="none"/>
+        </g>
+        <text x="360" y="230" text-anchor="middle" font-size="11.5" fill="#86868b">环境不支持 → 直接进「空仓等待」，这是体系的默认状态，不是异常状态</text>
+        <text x="360" y="252" text-anchor="middle" font-size="11.5" fill="#86868b">复盘输出回流环境判断：每一笔结束都让下一笔的环境认知更准</text>
+      </svg>
+      <div class="cap">图 7 · 七环交易闭环：空仓是默认态，交易是例外态——体系把「不做什么」放在了和「做什么」同等的位置。</div>
+    </div>
+  </div>
+</section>
+
+<!-- 映射表 -->
+<section id="mapping" class="sec-white anchor">
+  <div class="wrap">
+    <div class="kicker2">第 6 章 · 认知 → 规则映射</div>
+    <h2 class="sec-title">每条认知，都有一条对应的规则</h2>
+    <p class="sec-lead">这是整份报告的枢纽：左边的概念回答「为什么这条规则必须执行」，右边的规则回答「具体怎么做」。执行不下去的时候，回到左边找理由。</p>
+    <table>
+      <thead><tr><th style="width:24%">认知（为什么）</th><th style="width:36%">规则（怎么做）</th><th>体系位置</th></tr></thead>
+      <tbody>
+        <tr><td>复杂系统不可精确预测</td><td>不做点位预测，只做状态识别：趋势 / 震荡 / 危机三态切换预案</td><td>① 环境判断</td></tr>
+        <tr><td>周期嵌套</td><td>大周期定仓位上限，小周期定进出时机；逆大周期的交易仓位减半</td><td>① 环境判断</td></tr>
+        <tr><td>信用周期传导</td><td>宽信用期允许满仓上限 80%，紧信用期压到 30% 以下</td><td>① 环境判断</td></tr>
+        <tr><td>幂律与肥尾</td><td>盈利仓位让利润奔跑（移动止盈），亏损仓位快速了断；单笔最大风险 ≤ 账户 1.5%</td><td>④⑤⑥</td></tr>
+        <tr><td>正反馈 vs 负反馈</td><td>趋势市用突破/回踩信号，震荡市全部信号降级为试错仓——两市的规则不混用</td><td>③ 入场触发</td></tr>
+        <tr><td>边际思维</td><td>只看边际变化（催化是否新增、资金是否增量），不看存量观点</td><td>② 选标过滤</td></tr>
+        <tr><td>激励机制</td><td>所有外部信息（研报/大V/群消息）先过激励滤镜，唱多者利益相关则证据降级</td><td>② 选标过滤</td></tr>
+        <tr><td>前景理论 · 损失厌恶</td><td>止损止盈在下单前写入计划单，触发时机械执行，禁止盘中重新评估</td><td>⑥ 出场执行</td></tr>
+        <tr><td>锚定偏差</td><td>复盘与调仓决策禁止出现成本价；统一问「今天重新选还买吗」</td><td>⑤ 持有管理</td></tr>
+        <tr><td>反身性</td><td>趋势中不猜顶，但追踪循环前提（逻辑催化）——前提消失即离场，不等价格确认</td><td>⑤⑥</td></tr>
+        <tr><td>过度自信 / 后见之明</td><td>交易日志事前写理由与失效条件，事后对照打分；连续盈利后不加杠杆不放宽规则</td><td>⑦ 复盘</td></tr>
+        <tr><td>即时满足 / 多巴胺</td><td>每周最多 3 笔新开仓；无信号日不打开交易软件</td><td>③ 入场触发</td></tr>
+        <tr><td>期望值思维</td><td>只执行期望值 &gt; 0 的 setups：预估盈亏比 &lt; 2:1 的交易直接放弃</td><td>③ 入场触发</td></tr>
+        <tr><td>逆向思维</td><td>禁做清单优先于必做清单：重仓/摊平/杠杆/追高/听消息，触碰即停手一周</td><td>执行纪律</td></tr>
+        <tr><td>能力圈</td><td>标的池限定熟悉行业 + 指数 ETF，池外机会不碰；池每年评估一次</td><td>② 选标过滤</td></tr>
+        <tr><td>贝叶斯更新</td><td>持仓置信度随证据调整：新利空出现当日降仓 1/3，跌破失效线清仓</td><td>⑤ 持有管理</td></tr>
+        <tr><td>机会成本</td><td>月度换仓审视：持仓按「今日重选」打分，排名垫底的 1/5 强制进入观察名单</td><td>⑤⑦</td></tr>
+        <tr><td>熵增 / 耗散结构</td><td>每季度一次体系审计：规则是否需要随市场结构（制度、参与者变化）迭代</td><td>⑦ 复盘</td></tr>
+      </tbody>
+    </table>
+    <div class="rule"><b>读表方式：</b>这张表是体系的「宪法」——后文每一章的具体参数（止损 -7%、单笔 1.5% 风险等）都可以按个人承受度调整，但映射关系本身不能破坏：每条规则背后必须站着一条你真正理解的认知，否则压力来临时你执行不下去。</div>
+  </div>
+</section>
+
+<!-- 环境判断 -->
+<section id="env" class="sec-pale anchor">
+  <div class="wrap">
+    <div class="kicker2">第 7 章 · 环 ①</div>
+    <h2 class="sec-title">环境判断：先定能不能做，再定做多少</h2>
+    <p class="sec-lead">环境三态决定仓位天花板。判断标准全部可观察、可量化，不含主观成分——每周日收盘后花 15 分钟更新一次。</p>
+    <table>
+      <thead><tr><th>环境态</th><th>判定条件（同时满足）</th><th>仓位天花板</th><th>允许的操作</th></tr></thead>
+      <tbody>
+        <tr><td><b style="color:var(--up);">进攻态</b></td><td>① 指数在 60 日线上方且 60 日线向上；② 上涨家数占比 &gt; 55%（连续 3 日）；③ 两市成交额高于 20 日均量</td><td><b>≤ 80%</b></td><td>突破 + 回踩信号均可执行，可打满分仓</td></tr>
+        <tr><td><b>中性态</b></td><td>指数在 60 日线附近（±3%）震荡，或广度在 35%-55% 之间</td><td><b>≤ 40%</b></td><td>只做回踩信号（放弃突破追高），仓位减半</td></tr>
+        <tr><td><b style="color:var(--down);">防守态</b></td><td>指数跌破 60 日线且 60 日线向下，或广度 &lt; 35%，或出现系统性利空</td><td><b>≤ 15%</b></td><td>原则上空仓等待；仅允许指数 ETF 的极端超跌试错（仓位 ≤ 15%）</td></tr>
+      </tbody>
+    </table>
+    <div class="rule"><b>规则 7.1：</b>环境态每周更新一次，盘中不切换。盘中暴跌触发「指数单日 -3% 且跌破 60 日线」立即降为防守态——这是唯一的盘中例外条款。</div>
+    <div class="rule"><b>规则 7.2：</b>环境态决定的是「上限」不是「义务」。进攻态也可以只开 20% 仓——没有合格的标的与信号时，仓位应该远低于天花板。</div>
+    <div class="warn"><b>避坑：</b>防守态最常见的死法是「抄底抄在半山腰」。记住复杂系统的教训：状态识别优于点位预测——你不知道底在哪，但你知道现在不是底该有的样子（广度、量能、政策底共振出现前，不猜）。</div>
+  </div>
+</section>
+
+<!-- 选标 -->
+<section id="select" class="sec-white anchor">
+  <div class="wrap">
+    <div class="kicker2">第 8 章 · 环 ②</div>
+    <h2 class="sec-title">选标三过滤：主线 × 趋势 × 催化</h2>
+    <p class="sec-lead">一个标的必须连过三关才进入观察名单，任何一关不过直接淘汰。三关分别对应认知库里的周期/激励、动量、边际思维。</p>
+    <div class="grid3">
+      <div class="card"><span class="tag">第一关</span><h4>主线过滤</h4><p class="one">它属于当前市场主线吗？</p><p>主线 = 近 20 日板块涨幅前 20% + 板块内有 ≥ 3 只个股创 60 日新高 + 有持续的产业/政策逻辑支撑（不是单日消息脉冲）。主线内的股票享受资金正反馈，主线外的股票靠孤军奋战。</p><p class="use"><b>对应认知：</b>反身性（资金正反馈）、周期嵌套（主线是产业周期的市场表达）。</p></div>
+      <div class="card"><span class="tag">第二关</span><h4>趋势过滤</h4><p class="one">它处于明确的上升趋势吗？</p><p>量化标准：股价在 60 日线上方，20 日线 &gt; 60 日线，且近 60 日高点距离现价 &lt; 15%（强势股不深度回调）。三条全满足才算「趋势成立」——抄底不在本体系射程内。</p><p class="use"><b>对应认知：</b>动量效应（MKT 03）、正反馈回路（WORLD 02）。</p></div>
+      <div class="card"><span class="tag">第三关</span><h4>催化过滤</h4><p class="one">边际上有新的买入理由吗？</p><p>催化必须满足二阶三问：预期到了吗？定价了吗？谁在边际改变行为？合格的催化：业绩超预期、新订单/政策落地、产业趋势确认（渗透率拐点）。不合格：「跌多了」「听说要重组」「大V 推荐」。</p><p class="use"><b>对应认知：</b>边际思维（ECON 05）、二阶思维（THINK 06）、激励机制（ECON 03）。</p></div>
+    </div>
+    <div class="rule"><b>规则 8.1：</b>能力圈约束——三关全过的标的，还必须在你的熟悉行业清单或指数 ETF 范围内，否则降级为「学习样本」（只观察记录，不买）。</div>
+    <div class="rule"><b>规则 8.2：</b>观察名单上限 10 只，每周清理一次。名单的意义是约束注意力——多巴胺驱动的随手下单，大多发生在名单之外。</div>
+  </div>
+</section>
+
+<!-- 入场 -->
+<section id="entry" class="sec-pale anchor">
+  <div class="wrap">
+    <div class="kicker2">第 9 章 · 环 ③</div>
+    <h2 class="sec-title">入场触发：只有两类信号</h2>
+    <p class="sec-lead">体系的<b>个股趋势入场</b>只认两类形态，各自有明确的确认条件与放弃条件。不在两类信号内的任何个股「机会」，都不是体系的机会——例外只有一个：防守态下指数 ETF 的极端超跌试错（S2 策略，见「两套策略」章），那是指数级的情绪均值回归游戏，信号标准单列、资金隔离，不与本章信号混用。</p>
+    <div class="grid2">
+      <div class="card">
+        <span class="tag">信号 A</span><h4>突破信号</h4>
+        <p class="one">放量突破关键平台 / 前高，新共识形成。</p>
+        <p><b>确认条件（全满足）：</b>① 突破平台整理 ≥ 20 个交易日；② 突破日成交量 ≥ 20 日均量 1.8 倍；③ 收盘站上平台上沿 2% 以上；④ 环境为进攻态；⑤ 板块共振——所属板块指数当日同步上涨，且板块内 ≥ 3 只个股同步走强（A 股强化，见规则 9.3）。<br><b>放弃条件：</b>尾盘偷袭式拉升（14:30 后直线）、突破日留长上影（&gt; 实体 2 倍）、板块内无跟风、高位接力——个股自 60 日低点累计涨幅已 &gt; 80% 后的突破（那里是情绪流的地盘，趋势流不接盘）。</p>
+        <p class="use"><b>止损锚：</b>平台上沿（跌回平台 = 突破证伪）。<b>A 股定位：</b>打折信号——T+1 当日买错无法纠错、假突破比例高于美股，故只在「三重锁」（进攻态 + 放量 + 板块共振）全锁定时才允许执行，且仓位按试错档起步。</p>
+      </div>
+      <div class="card">
+        <span class="tag">信号 B</span><h4>回踩信号</h4>
+        <p class="one">上升趋势中的缩量回踩，抛压衰竭后的二次启动。</p>
+        <p><b>确认条件（全满足）：</b>① 个股处于趋势过滤定义的上升趋势；② 回踩至 20 日线附近（±3%）；③ 回踩过程成交量萎缩至 20 日均量 70% 以下；④ 出现止跌 K 线（下影线 / 阳包阴 / 缩量十字星）次日确认。<br><b>放弃条件：</b>回踩放量（抛压没衰竭）、跌破 20 日线后 3 日内收不回、板块同步走弱。</p>
+        <p class="use"><b>止损锚：</b>回踩低点下方 2%，或 60 日线（取较近者）。<b>A 股定位：</b>主力信号——A 股短期反转效应显著强于动量（中文实证一致结论），「买在回调处」比「买在突破处」天然胜率更高、止损更近；中性态下体系只保留本信号。</p>
+      </div>
+    </div>
+    <div class="diagram">
+      <svg viewBox="0 0 720 280" xmlns="http://www.w3.org/2000/svg">
+        <text x="180" y="22" text-anchor="middle" font-size="13" font-weight="700" fill="#1d1d1f">信号 A · 平台突破</text>
+        <text x="540" y="22" text-anchor="middle" font-size="13" font-weight="700" fill="#1d1d1f">信号 B · 缩量回踩</text>
+        <!-- A: consolidation then breakout -->
+        <g stroke="#1d1d1f" stroke-width="2" fill="none">
+          <path d="M 30 190 L 70 170 L 100 180 L 130 165 L 160 172 L 190 160 L 215 166 L 240 150 L 265 120 L 290 85 L 320 60"/>
+        </g>
+        <line x1="60" y1="158" x2="240" y2="158" stroke="#0071e3" stroke-width="1.2" stroke-dasharray="5 4"/>
+        <text x="148" y="150" text-anchor="middle" font-size="10.5" fill="#0071e3">平台上沿（止损锚）</text>
+        <polygon points="212,141 212,157 224,149" fill="#d32f2f"/>
+        <text x="228" y="136" font-size="10.5" fill="#d32f2f" font-weight="700">突破日放量 ≥1.8×</text>
+        <circle cx="240" cy="150" r="4" fill="#0071e3"/>
+        <text x="248" y="158" font-size="10.5" fill="#1d1d1f" font-weight="600">买点：突破日收盘确认</text>
+        <!-- B: uptrend pullback -->
+        <g stroke="#1d1d1f" stroke-width="2" fill="none">
+          <path d="M 380 210 L 420 170 L 450 150 L 480 160 L 505 185 L 520 190 L 545 175 L 575 140 L 610 105 L 650 80 L 690 62"/>
+        </g>
+        <path d="M 380 242 L 690 112" stroke="#0071e3" stroke-width="1.2" stroke-dasharray="5 4" fill="none"/>
+        <text x="648" y="126" font-size="10.5" fill="#0071e3">20 日线</text>
+        <ellipse cx="516" cy="190" rx="16" ry="12" fill="none" stroke="#d32f2f" stroke-width="1.8"/>
+        <text x="516" y="220" text-anchor="middle" font-size="10.5" fill="#d32f2f" font-weight="700">缩量止跌</text>
+        <circle cx="545" cy="175" r="4" fill="#0071e3"/>
+        <text x="553" y="171" font-size="10.5" fill="#1d1d1f" font-weight="600">买点：次日确认</text>
+        <text x="360" y="268" text-anchor="middle" font-size="11.5" fill="#6e6e73">两信号共用一条铁律：没有量，就没有信号。量是共识的计票器。</text>
+      </svg>
+      <div class="cap">图 8 · 两类入场信号（示意）：突破赚「新共识形成」的钱，回踩赚「旧共识延续」的钱。进攻态两者皆可，中性态只做回踩；信号 A 另需「三重锁」（进攻态 + 放量 + 板块共振，规则 9.3）。</div>
+    </div>
+    <div class="rule"><b>规则 9.1：</b>下单前必须预估盈亏比：目标位（前高/阻力位/测算位）− 买价 ≥ 2 ×（买价 − 止损位）。不足 2:1 放弃——期望值思维告诉你，低盈亏比的交易胜率再高也是坏买卖。</div>
+    <div class="rule"><b>规则 9.2：</b>每周新开仓 ≤ 3 笔（多巴胺的笼子）。同一天出现多个合格信号时，只选主线最强板块里的最强一只。</div>
+
+    <h3 id="ashare">A 股强化条款 <span style="font-size:13px;color:var(--gray);font-weight:400;">2026-10-09 增补：把制度摩擦变成规则，而不是教训</span></h3>
+    <p style="font-size:14.5px;">A 股与美股的四项结构性差异，每一项都对应一条硬性规则。这些不是优化项，是信号 A/B 在 A 股保持正期望的<b>生存条件</b>：</p>
+    <table>
+      <thead><tr><th style="width:20%">A 股结构现实</th><th style="width:40%">对信号的威胁</th><th>体系强化规则</th></tr></thead>
+      <tbody>
+        <tr><td><b>T+1</b></td><td>当日买错无法当日纠错，隔夜风险不可对冲</td><td>① 不做 14:30 后的追高买入（当日无验证时间）；② 突破信号只在收盘确认后次日处理或尾盘竞价参与；③ 压力测试必须含「买入次日跳空低开 -5%」情景</td></tr>
+        <tr><td><b>涨跌停制度</b></td><td>极端日流动性消失，止损单可能无法成交；涨停买不进、跌停卖不出</td><td>① 止损距离的仓位公式预留「一个跌停无法卖出」的扩展情景（规则 10.3）；② 连续一字涨停后的开板不参与（那是情绪流博弈，非趋势信号）；③ 跌停附近不接飞刀，等待缩量企稳</td></tr>
+        <tr><td><b>散户结构 + 量化占比上升</b></td><td>明显技术位（平台上沿、整数关口）被程序化资金反复「猎杀」：假突破诱导跟风后反向收割</td><td>① 突破必须收盘确认，盘中刺破不算；② 量比阈值不妥协（无量突破 = 大概率诱多）；③ 板块共振为硬条件——单一个股的孤立突破在 A 股失败率显著更高</td></tr>
+        <tr><td><b>短期反转 &gt; 动量（实证结论）</b></td><td>追高类信号统计基础弱于美股，利润回撤速度快</td><td>① 信号 B 为体系主力、信号 A 为补充（进攻态才解锁）；② 分批止盈第一网（+1R 收 1/3）不推迟——A 股利润回吐快，先让交易「数学上不亏钱」；③ 月度级持有预期降级：波段目标 2-8 周，不贪季度级</td></tr>
+      </tbody>
+    </table>
+    <div class="rule"><b>规则 9.3（信号 A 三重锁）：</b>信号 A 只在「进攻态 + 放量确认 + 板块共振」三锁全闭时执行，任一缺失自动降级：缺板块共振 → 降为试错仓（正常仓位一半）；环境非进攻态 → 直接放弃。三锁之外无例外。</div>
+    <div class="rule"><b>规则 9.4（周线变体，业余投资者推荐）：</b>无法盯盘者把整套信号上移一档——周线平台突破（平台 ≥ 20 周）与周线回踩 10 周线。A 股日线噪音大、假信号多，周线信号频率降至每月数笔但质量更高；止损锚同步上移（平台周线低点 / 30 周线），止损距离变宽时仓位公式自动缩小仓位，不需要额外规则。</div>
+  </div>
+</section>
+
+<!-- 仓位 -->
+<section id="position" class="sec-white anchor">
+  <div class="wrap">
+    <div class="kicker2">第 10 章 · 环 ④</div>
+    <h2 class="sec-title">仓位计算：风险预算是唯一的分母</h2>
+    <p class="sec-lead">仓位不来自信心，来自算术：单笔可亏多少钱 ÷ 止损距离 = 能买多少股。信心是人性层的噪声，算术是体系层的信号。</p>
+    <div class="diagram">
+      <svg viewBox="0 0 720 200" xmlns="http://www.w3.org/2000/svg">
+        <g font-size="13">
+          <rect x="30" y="60" width="200" height="70" rx="14" fill="#f5f5f7" stroke="#d2d2d7"/>
+          <text x="130" y="88" text-anchor="middle" font-weight="700" fill="#1d1d1f">单笔风险预算</text>
+          <text x="130" y="110" text-anchor="middle" font-size="11.5" fill="#6e6e73">账户 × 1% ~ 1.5%</text>
+          <text x="260" y="102" text-anchor="middle" font-size="22" fill="#86868b">÷</text>
+          <rect x="290" y="60" width="200" height="70" rx="14" fill="#f5f5f7" stroke="#d2d2d7"/>
+          <text x="390" y="88" text-anchor="middle" font-weight="700" fill="#1d1d1f">止损距离</text>
+          <text x="390" y="110" text-anchor="middle" font-size="11.5" fill="#6e6e73">买价 − 止损价（含滑点）</text>
+          <text x="520" y="102" text-anchor="middle" font-size="22" fill="#86868b">=</text>
+          <rect x="550" y="60" width="150" height="70" rx="14" fill="#0071e3"/>
+          <text x="625" y="88" text-anchor="middle" font-weight="700" fill="#fff">可买股数</text>
+          <text x="625" y="110" text-anchor="middle" font-size="11.5" fill="#dbeafe">止损时恰好亏预算</text>
+        </g>
+        <text x="360" y="168" text-anchor="middle" font-size="11.5" fill="#6e6e73">止损距离远 → 仓位自动变小；距离近 → 仓位自动变大。波动率通过止损距离自动进入公式。</text>
+      </svg>
+      <div class="cap">图 9 · 仓位公式：「没有止损位就没有仓位」——先定止损，后算股数，顺序不能反。</div>
+    </div>
+    <h3>分仓路径：三批进场，让市场证明你</h3>
+    <div class="diagram">
+      <svg viewBox="0 0 720 240" xmlns="http://www.w3.org/2000/svg">
+        <line x1="50" y1="200" x2="690" y2="200" stroke="#86868b" stroke-width="1"/>
+        <line x1="50" y1="200" x2="50" y2="30" stroke="#86868b" stroke-width="1"/>
+        <text x="40" y="36" font-size="10.5" fill="#86868b" text-anchor="end">价格</text>
+        <path d="M 60 180 C 140 182 200 170 260 150 C 320 130 400 100 480 70 C 540 50 620 40 680 36" fill="none" stroke="#1d1d1f" stroke-width="2"/>
+        <!-- batch 1 -->
+        <circle cx="150" cy="178" r="5" fill="#0071e3"/>
+        <text x="150" y="160" text-anchor="middle" font-size="11" fill="#0071e3" font-weight="700">试错仓 1/3</text>
+        <text x="150" y="222" text-anchor="middle" font-size="10" fill="#6e6e73">信号首次触发</text>
+        <!-- batch 2 -->
+        <circle cx="340" cy="122" r="5" fill="#0071e3"/>
+        <text x="340" y="104" text-anchor="middle" font-size="11" fill="#0071e3" font-weight="700">确认仓 1/3</text>
+        <text x="340" y="222" text-anchor="middle" font-size="10" fill="#6e6e73">走势符合预期 + 回踩不破</text>
+        <!-- batch 3 -->
+        <circle cx="520" cy="62" r="5" fill="#0071e3"/>
+        <text x="520" y="44" text-anchor="middle" font-size="11" fill="#0071e3" font-weight="700">加强仓 1/3</text>
+        <text x="520" y="222" text-anchor="middle" font-size="10" fill="#6e6e73">强势确认 / 新催化</text>
+        <text x="360" y="238" text-anchor="middle" font-size="10.5" fill="#86868b">每一批仓位独立满足仓位公式；前一批浮盈不构成加仓理由，「走势验证」才是</text>
+      </svg>
+      <div class="cap">图 10 · 三批分仓（示意）：用 1/3 仓位买「我可能错了」的保险，用后续仓位兑换「市场说我对了」的确认。从不一把梭。</div>
+    </div>
+    <div class="rule"><b>规则 10.1（风险预算）：</b>单笔最大风险 = 账户净值 × 1.5%（新手从 1% 起步）；全部持仓同时触发止损的总风险 ≤ 4.5%；同板块持仓 ≤ 总仓位 40%（组合相关性：3 只半导体 = 一笔半导体仓位）。</div>
+    <div class="rule"><b>规则 10.2（加仓纪律）：</b>加仓条件只有两条——走势验证（新高/回踩确认）或逻辑强化（新催化）。浮盈不是加仓理由；「摊低成本」在本体系中是禁语。</div>
+    <div class="rule"><b>规则 10.3（压力测试）：</b>下单前过一遍最坏情景：开盘跳空 -5%（T+1 卖不掉）、连续两日跌停无法止损——这个损失能接受，仓位才算合格；接受不了，当前仓位偏大。</div>
+  </div>
+</section>
+
+<!-- 出场 -->
+<section id="exit" class="sec-pale anchor">
+  <div class="wrap">
+    <div class="kicker2">第 11 章 · 环 ⑤⑥</div>
+    <h2 class="sec-title">出场：三维止损 × 分批止盈</h2>
+    <p class="sec-lead">出场是体系与人性交战最激烈的地方。对策只有一个：出场规则在下单前写完，触发后机械执行——触发后禁止重新评估持有理由（评估应在触发前完成）。</p>
+    <div class="diagram">
+      <svg viewBox="0 0 720 230" xmlns="http://www.w3.org/2000/svg">
+        <text x="360" y="24" text-anchor="middle" font-size="13" font-weight="700" fill="#1d1d1f">三维止损框架：任一维度触发即离场</text>
+        <g font-size="12">
+          <rect x="30" y="50" width="200" height="120" rx="14" fill="#fdecec" stroke="#d32f2f"/>
+          <text x="130" y="76" text-anchor="middle" font-weight="700" fill="#d32f2f">价格止损</text>
+          <text x="130" y="100" text-anchor="middle" font-size="11" fill="#6e6e73">跌破止损锚（平台上沿 /</text>
+          <text x="130" y="116" text-anchor="middle" font-size="11" fill="#6e6e73">回踩低点 / 60 日线）</text>
+          <text x="130" y="140" text-anchor="middle" font-size="11" fill="#6e6e73">或固定幅度 -7%</text>
+          <text x="130" y="158" text-anchor="middle" font-size="10.5" fill="#86868b">确认方式：收盘破位</text>
+          <rect x="260" y="50" width="200" height="120" rx="14" fill="#fdecec" stroke="#d32f2f"/>
+          <text x="360" y="76" text-anchor="middle" font-weight="700" fill="#d32f2f">逻辑止损</text>
+          <text x="360" y="100" text-anchor="middle" font-size="11" fill="#6e6e73">核心催化证伪（订单落空 /</text>
+          <text x="360" y="116" text-anchor="middle" font-size="11" fill="#6e6e73">公告澄清 / 业绩变脸）</text>
+          <text x="360" y="140" text-anchor="middle" font-size="11" fill="#6e6e73">板块龙头跌停、主线退潮</text>
+          <text x="360" y="158" text-anchor="middle" font-size="10.5" fill="#86868b">触发即走，不等价格</text>
+          <rect x="490" y="50" width="200" height="120" rx="14" fill="#fdecec" stroke="#d32f2f"/>
+          <text x="590" y="76" text-anchor="middle" font-weight="700" fill="#d32f2f">时间止损</text>
+          <text x="590" y="100" text-anchor="middle" font-size="11" fill="#6e6e73">短线 10 个交易日、波段</text>
+          <text x="590" y="116" text-anchor="middle" font-size="11" fill="#6e6e73">1 个月内未按预期推进</text>
+          <text x="590" y="140" text-anchor="middle" font-size="11" fill="#6e6e73">→ 降仓或退出</text>
+          <text x="590" y="158" text-anchor="middle" font-size="10.5" fill="#86868b">资金的机会成本也是成本</text>
+        </g>
+        <text x="360" y="205" text-anchor="middle" font-size="11.5" fill="#6e6e73">噪音豁免：盘中快速插针（跌破后 30 分钟内收回）不视为触发；连续两日收盘破位 = 真失效</text>
+      </svg>
+      <div class="cap">图 11 · 三维止损：价格管「走势错了」、逻辑管「理由没了」、时间管「机会成本超支」。三个维度分别对应趋势认知、反身性认知、机会成本认知。</div>
+    </div>
+    <h3>分批止盈：让利润奔跑，但分批收网</h3>
+    <div class="grid3">
+      <div class="card"><span class="tag">第一网</span><h4>+1R 附近卖 1/3</h4><p>浮盈达到 1 倍初始风险（R）时卖出 1/3，剩余仓位止损上移到成本价——此后这笔交易在数学上不可能亏钱（黑天鹅跳空除外）。心理意义：卸下损失厌恶的枷锁。</p></div>
+      <div class="card"><span class="tag">第二网</span><h4>目标位卖 1/3</h4><p>到达下单前测算的目标位（前高/阻力位/2-3R）卖出第二个 1/3。这是「计划内利润」，落袋不犹豫。</p></div>
+      <div class="card"><span class="tag">第三网</span><h4>移动止盈陪跑</h4><p>最后 1/3 交给趋势：跌破 10 日线（波段用 20 日线）收盘确认离场，或出现情绪极点信号（换手率 &gt; 15% + 放量滞涨）提前收网。这 1/3 是幂律分布的捕手——大行情全靠它。</p></div>
+    </div>
+    <div class="warn"><b>纪律红线：</b>① 止损位写完就是写完，禁止事后宽松；② 浮盈回撤到成本不是止损，是另一种退出（保住本金后重新评估）；③ 「再等等说不定回来」是自我合理化的标准话术，出现这个念头 = 立即执行原计划。</div>
+  </div>
+</section>
+
+<!-- 两套策略 -->
+<section id="strategies" class="sec-white anchor">
+  <div class="wrap">
+    <div class="kicker2">第 12 章 · 落地</div>
+    <h2 class="sec-title">两套可执行策略</h2>
+    <p class="sec-lead">把上面所有环组装成两份「操作手册」。S1 是主策略（赚趋势段的钱），S2 是补充策略（赚极端情绪修复的钱），两者资金隔离、信号互不混用。</p>
+
+    <h3><span class="num-badge">S1</span>趋势回踩波段策略 <span style="font-size:14px;color:var(--gray);font-weight:400;">主策略 · 分配 70% 交易资金 · 持仓周期 2-8 周</span></h3>
+    <table>
+      <thead><tr><th style="width:18%">环节</th><th>具体规则</th></tr></thead>
+      <tbody>
+        <tr><td><b>适用环境</b></td><td>进攻态或中性态；防守态停用</td></tr>
+        <tr><td><b>标的来源</b></td><td>三过滤通过的观察名单（主线 + 上升趋势 + 边际催化）</td></tr>
+        <tr><td><b>入场</b></td><td>信号 B（缩量回踩 20 日线 + 止跌确认），分两批：止跌确认日 1/2，次日不创新低再 1/2；进攻态可叠加信号 A（平台突破，须过三重锁：进攻态 + 放量 + 板块共振）作为独立建仓机会</td></tr>
+        <tr><td><b>仓位</b></td><td>单笔风险 ≤ 1.5%，止损锚 = 回踩低点下方 2% 或 60 日线取近；按仓位公式反推股数</td></tr>
+        <tr><td><b>止损</b></td><td>价格：收盘跌破止损锚；逻辑：催化证伪或板块龙头跌停；时间：4 周未创新高且浮亏</td></tr>
+        <tr><td><b>止盈</b></td><td>+1R 卖 1/3 并上移止损到成本；前高/2R 卖 1/3；剩余 1/3 跌破 20 日线收盘离场</td></tr>
+        <tr><td><b>失效条件</b></td><td>环境转防守态（全部头寸减半）、主线退潮（板块跌出前 50% 排名）、连续 2 笔止损（暂停该策略 1 周复盘）</td></tr>
+      </tbody>
+    </table>
+
+    <h3><span class="num-badge">S2</span>极端超跌试错策略 <span style="font-size:14px;color:var(--gray);font-weight:400;">补充策略 · 分配 ≤15% 资金 · 持仓周期 3-10 日</span></h3>
+    <table>
+      <thead><tr><th style="width:18%">环节</th><th>具体规则</th></tr></thead>
+      <tbody>
+        <tr><td><b>设计依据</b></td><td>情绪周期的「绝望」段（图 5）：恐慌超调后的均值回归——赚负反馈的钱，与 S1 的正反馈互补</td></tr>
+        <tr><td><b>适用环境</b></td><td>防守态专用（这是防守态唯一允许的开仓动作）</td></tr>
+        <tr><td><b>触发条件</b></td><td>① 指数 ETF（如沪深300ETF）5 日跌幅 &gt; 8%；② 广度 &lt; 20%（极端冰点）；③ 出现单日长下影或放量止跌阳线</td></tr>
+        <tr><td><b>入场</b></td><td>止跌信号次日开盘买入指数 ETF，一次性建仓（不做个股——超跌段个股有流动性陷阱）</td></tr>
+        <tr><td><b>仓位</b></td><td>≤ 账户 15%，止损 -4%（宽基波动小，距离近故仓位可大）</td></tr>
+        <tr><td><b>退出</b></td><td>反弹 +5% 卖一半；指数收复 5 日线再卖一半；时间上限 10 个交易日，到期无论盈亏清仓——这是「危机阿尔法」，不是抄底建仓</td></tr>
+        <tr><td><b>失效条件</b></td><td>单日再创新低立即止损；系统性利空持续发酵（政策面未见底信号）不参与</td></tr>
+      </tbody>
+    </table>
+    <div class="rule"><b>策略组合逻辑：</b>S1 在顺风期全力运转，S2 在逆风期小仓位保持盘感并收割恐慌溢价。两套策略共用同一套环境判断与风险预算体系——环境态决定哪套策略在线，不存在「两套同时重仓」的状态。</div>
+  </div>
+</section>
+
+<!-- 执行工具 -->
+<section id="execute" class="sec-pale anchor">
+  <div class="wrap">
+    <div class="kicker2">第 13 章 · 执行保障</div>
+    <h2 class="sec-title">三件随身工具</h2>
+    <p class="sec-lead">体系最大的敌人是执行变形。这三件工具直接嵌入本页，可交互使用——仓位计算器、下单前检查清单（勾选状态自动保存在本机）、禁做清单。</p>
+
+    <h3>工具 1 · 仓位计算器</h3>
+    <div class="calc">
+      <div class="calc-row">
+        <div class="calc-field"><label>账户净值（元）</label><input type="number" id="cap" value="500000" min="0"></div>
+        <div class="calc-field"><label>单笔风险预算（%）</label><input type="number" id="risk" value="1.5" step="0.1" min="0" max="5"></div>
+        <div class="calc-field"><label>计划买入价（元）</label><input type="number" id="buy" value="20" step="0.01" min="0"></div>
+        <div class="calc-field"><label>止损价（元）</label><input type="number" id="stop" value="18.6" step="0.01" min="0"></div>
+      </div>
+      <button class="btn" onclick="calcPos()">计算仓位</button>
+      <div class="calc-out" id="calcOut" style="margin-top:14px;display:none;">
+        <div style="display:flex;gap:36px;flex-wrap:wrap;align-items:baseline;">
+          <div>可买股数<br><span class="big" id="outShares">—</span> 股（取整百：<span id="outRound">—</span> 股）</div>
+          <div>占用资金<br><span class="big" id="outAmt">—</span> 元（<span id="outPct">—</span>%）</div>
+          <div>止损实亏<br><span class="big" id="outLoss">—</span> 元</div>
+        </div>
+        <p id="outNote" style="margin-top:10px;font-size:12.5px;color:var(--gray);"></p>
+      </div>
+    </div>
+
+    <h3 style="margin-top:44px;">工具 2 · 下单前十问检查清单 <span style="font-size:13px;color:var(--gray);font-weight:400;">全部打勾才可下单；状态保存在本机浏览器</span></h3>
+    <div class="checklist" id="checklist">
+      <label><input type="checkbox" data-k="q1"><span>① 环境态已更新（本周日收盘后），当前态允许这笔操作吗？</span></label>
+      <label><input type="checkbox" data-k="q2"><span>② 标的三过滤全过（主线 / 趋势 / 催化），且在能力圈标的池内？</span></label>
+      <label><input type="checkbox" data-k="q3"><span>③ 属于两类信号之一（突破 / 回踩），确认条件全部满足？</span></label>
+      <label><input type="checkbox" data-k="q4"><span>④ 预估盈亏比 ≥ 2:1（目标位与止损位都已写下具体数字）？</span></label>
+      <label><input type="checkbox" data-k="q5"><span>⑤ 仓位由公式算出（风险预算 ÷ 止损距离），不是拍脑袋？</span></label>
+      <label><input type="checkbox" data-k="q6"><span>⑥ 三维止损（价格 / 逻辑 / 时间）已全部写进计划？</span></label>
+      <label><input type="checkbox" data-k="q7"><span>⑦ 失效条件已写明——什么情况证明我错了？</span></label>
+      <label><input type="checkbox" data-k="q8"><span>⑧ 压力测试通过：跳空低开 5% 的损失可接受？</span></label>
+      <label><input type="checkbox" data-k="q9"><span>⑨ 本周新开仓未超 3 笔，同板块暴露未超 40%？</span></label>
+      <label><input type="checkbox" data-k="q10"><span>⑩ 现在是交易时间里的「计划执行」，不是盘中刷到消息的「冲动反应」？</span></label>
+      <div class="check-status" id="checkStatus">已完成 0 / 10</div>
+    </div>
+
+    <h3 style="margin-top:44px;">工具 3 · 禁做清单 <span style="font-size:13px;color:var(--gray);font-weight:400;">逆向思维的具体化——触碰任意一条，停手一周只做复盘</span></h3>
+    <div class="warn">
+      ① 单笔仓位超过公式上限；② 亏损后加仓摊平成本；③ 无止损下单（包括「先买了再说」）；④ 追高：信号出现后涨幅已 &gt; 5% 仍追入；⑤ 听消息买名单外的股票；⑥ 使用两融 / 场外杠杆；⑦ 日内反复改止损位；⑧ 报复性交易（止损后立刻重仓翻本）；⑨ 防守态买个股；⑩ 用生活费 / 借款交易；⑪ 尾盘（14:30 后）追高买入；⑫ 接连续一字涨停后的开板（情绪流地盘，趋势流不碰）。
+    </div>
+  </div>
+</section>
+
+<!-- 复盘 -->
+<section id="review" class="sec-white anchor">
+  <div class="wrap">
+    <div class="kicker2">第 14 章 · 环 ⑦</div>
+    <h2 class="sec-title">复盘：体系的耗散结构</h2>
+    <p class="sec-lead">熵增定律（WORLD 06）：不复盘的体系必然腐化。复盘对抗两样东西——记忆重构（后见之明）与市场结构漂移（规则失效）。</p>
+    <h3>交易日志模板（每笔必填，开仓当日写前 7 项）</h3>
+    <table>
+      <thead><tr><th style="width:22%">字段</th><th>填写要求</th></tr></thead>
+      <tbody>
+        <tr><td>日期 / 标的 / 方向</td><td>客观事实</td></tr>
+        <tr><td>环境态</td><td>进攻 / 中性 / 防守（当时的判断，不是事后的）</td></tr>
+        <tr><td>信号类型</td><td>突破 A / 回踩 B / 超跌 S2 / 其他（「其他」连续出现 = 体系外的手痒，重点警惕）</td></tr>
+        <tr><td>入场理由（一句话）</td><td>写不清一句话 = 理由不充分</td></tr>
+        <tr><td>止损 / 目标 / 仓位</td><td>三个具体数字 + 仓位公式计算过程</td></tr>
+        <tr><td>失效条件</td><td>「出现 X 就证明我错了」中的 X 是什么</td></tr>
+        <tr><td>当时情绪</td><td>平静 / 兴奋 / 焦虑 / 恐惧（情绪与结果的相关系数是免费的行为数据）</td></tr>
+        <tr><td>离场日期 / 价格 / 结果</td><td>平仓后补填；R 倍数记录（+2.1R / -0.8R）</td></tr>
+        <tr><td>执行偏差</td><td>计划 vs 实际的差异：提前跑？没止损？加仓冲动？偏差比盈亏更重要</td></tr>
+        <tr><td>一句话教训</td><td>只写一条最有价值的，多写等于没写</td></tr>
+      </tbody>
+    </table>
+    <h3>复盘节奏</h3>
+    <div class="grid3">
+      <div class="card"><span class="tag">每周 · 30 分钟</span><h4>周复盘</h4><p>更新环境态；检查持仓的三维止损是否仍有效；清理观察名单；统计本周执行偏差次数。</p></div>
+      <div class="card"><span class="tag">每月 · 2 小时</span><h4>月复盘</h4><p>统计胜率 / 平均盈亏比 / 期望值（用 R 单位）；按信号类型分组看哪类信号赚钱；持仓按「今日重选」打分，末位 1/5 进观察。</p></div>
+      <div class="card"><span class="tag">每季 · 半天</span><h4>体系审计</h4><p>规则是否还匹配市场结构（制度变化 / 参与者变化）？哪个环节执行变形最严重？只改一条最重要的——同时改多条无法归因。</p></div>
+    </div>
+    <div class="rule"><b>期望值的最低样本：</b>不足 30 笔交易的统计结论不可信（概率思维的礼貌表达：样本太小，运气和实力分不开）。新体系先用小仓位跑满 30 笔再谈调整。</div>
+  </div>
+</section>
+
+<!-- 学习路径 -->
+<section id="path" class="sec-pale anchor">
+  <div class="wrap">
+    <div class="kicker2">第 15 章</div>
+    <h2 class="sec-title">学习路径：90 天建体系</h2>
+    <p class="sec-lead">按「自下而上打地基、自上而下练执行」的顺序推进。每个阶段有明确的毕业标准，不达标不进入下一阶段。</p>
+    <div class="diagram">
+      <svg viewBox="0 0 720 260" xmlns="http://www.w3.org/2000/svg">
+        <g font-size="12">
+          <rect x="30" y="50" width="200" height="150" rx="14" fill="#f5f5f7" stroke="#d2d2d7"/>
+          <text x="130" y="78" text-anchor="middle" font-weight="700" fill="#1d1d1f">第 1-30 天 · 认知</text>
+          <text x="130" y="104" text-anchor="middle" font-size="11" fill="#6e6e73">精读五层知识库 30 概念</text>
+          <text x="130" y="122" text-anchor="middle" font-size="11" fill="#6e6e73">每个概念写一条自己的例子</text>
+          <text x="130" y="140" text-anchor="middle" font-size="11" fill="#6e6e73">搭建标的池与观察名单模板</text>
+          <text x="130" y="168" text-anchor="middle" font-size="11" fill="#0071e3" font-weight="600">毕业：能默写认知→规则映射表</text>
+          <rect x="260" y="50" width="200" height="150" rx="14" fill="#f5f5f7" stroke="#d2d2d7"/>
+          <text x="360" y="78" text-anchor="middle" font-weight="700" fill="#1d1d1f">第 31-60 天 · 模拟</text>
+          <text x="360" y="104" text-anchor="middle" font-size="11" fill="#6e6e73">按完整体系跑模拟盘</text>
+          <text x="360" y="122" text-anchor="middle" font-size="11" fill="#6e6e73">每周环境态 + 日志全要素记录</text>
+          <text x="360" y="140" text-anchor="middle" font-size="11" fill="#6e6e73">重点练：止损不犹豫、十问全过</text>
+          <text x="360" y="168" text-anchor="middle" font-size="11" fill="#0071e3" font-weight="600">毕业：20 笔模拟，执行偏差 &lt; 20%</text>
+          <rect x="490" y="50" width="200" height="150" rx="14" fill="#e8f2fd" stroke="#0071e3"/>
+          <text x="590" y="78" text-anchor="middle" font-weight="700" fill="#0071e3">第 61-90 天 · 实盘</text>
+          <text x="590" y="104" text-anchor="middle" font-size="11" fill="#6e6e73">风险预算减半（0.75%）起步</text>
+          <text x="590" y="122" text-anchor="middle" font-size="11" fill="#6e6e73">只跑 S1 策略，S2 继续模拟</text>
+          <text x="590" y="140" text-anchor="middle" font-size="11" fill="#6e6e73">月复盘出第一份期望值统计</text>
+          <text x="590" y="168" text-anchor="middle" font-size="11" fill="#0071e3" font-weight="600">毕业：30 笔实盘后恢复全额预算</text>
+        </g>
+        <text x="360" y="235" text-anchor="middle" font-size="11.5" fill="#6e6e73">90 天后进入常态循环：周日环境更新 → 信号等待 → 十问下单 → 日志 → 周/月/季复盘</text>
+      </svg>
+      <div class="cap">图 12 · 90 天学习路径：认知 → 模拟 → 实盘三段式，每段有毕业标准——没毕业就升级，等于用真金白银交本可避免的学费。</div>
+    </div>
+    <h3>书单（按五层对应，每层一本代表作）</h3>
+    <table>
+      <thead><tr><th style="width:16%">层</th><th style="width:34%">书目</th><th>为什么是它</th></tr></thead>
+      <tbody>
+        <tr><td>世界观</td><td>《复杂》（梅拉妮·米歇尔）</td><td>复杂系统最友好的入门，涌现/反馈/幂律一次讲透</td></tr>
+        <tr><td>经济学</td><td>《债务危机》（瑞·达利欧）</td><td>信用周期框架的原始文本，配大量历史案例模板</td></tr>
+        <tr><td>人性</td><td>《思考，快与慢》（卡尼曼）</td><td>行为偏差的总纲，前景理论原始出处</td></tr>
+        <tr><td>思维</td><td>《穷查理宝典》（芒格）</td><td>格栅理论、逆向思维、能力圈的原产地</td></tr>
+        <tr><td>市场</td><td>《股票大作手回忆录》（利弗莫尔）</td><td>趋势、人性与纪律的百年经典，每个案例今天仍在重演</td></tr>
+        <tr><td>体系化</td><td>《通向财务自由之路》（范·撒普）</td><td>期望值 / R 倍数 / 仓位管理的系统化教材，本报告仓位章节的理论源头</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- 结尾 -->
+<section class="sec-black">
+  <div class="wrap">
+    <div class="kicker2">结语</div>
+    <h2 class="sec-title" style="color:#f5f5f7;">体系的终极秘密</h2>
+    <p style="max-width:760px;font-size:16px;">五层认知学到最后，会发现它们指向同一件事：<b style="color:#f5f5f7;">承认不可知，然后为不可知做好准备。</b>世界观告诉你未来不可精确预测，经济学告诉你流动性有潮汐，人性告诉你自己一定会动摇，思维告诉你如何用规则对冲动摇，市场认知告诉你这一切在价格上的形态。</p>
+    <p style="max-width:760px;font-size:16px;">所以这套体系的终极形态不是「更聪明的预测」，而是：<b style="color:#f5f5f7;">错误时损失有限，正确时利润无限，并且无论对错都睡得着觉。</b>做到这三条，剩下的交给时间与复利——它们是幂律世界里唯一确定的朋友。</p>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <p>从认知到体系 · 深度研究 | 完稿 2026-10-08 | 五层认知知识库（30 概念 · 12 图解）× 七环交易体系（2 策略 · 3 工具）</p>
+    <p style="margin-top:8px;">2026-10-09 增补：第 9 章新增「A 股强化条款」（信号 A 三重锁、T+1/涨跌停/量化猎杀对策、周线变体、信号 B 主力定位），配套评估见 signal-evidence-report-20261009.html。文中均线参数（20/60 日线）、风险预算（1%-1.5%）、止损幅度（-4% 至 -7%）、广度阈值等为常见经验参数，非回测优化结果，实盘前应结合个人风险承受度与样本测试调整。动量效应等学术结论以原始论文为准。</p>
+    <div class="disclaimer">
+      <b>免责声明</b>：以上内容基于公开数据和量化分析，仅供参考，不构成投资建议。市场有风险，投资需谨慎。任何投资决策应结合个人风险承受能力、资金状况和投资目标独立判断，必要时咨询持牌专业机构。过往表现不预示未来收益。
+    </div>
+  </div>
+</footer>
+
+<script>
+// 仓位计算器
+function calcPos(){
+  var cap=parseFloat(document.getElementById('cap').value);
+  var risk=parseFloat(document.getElementById('risk').value);
+  var buy=parseFloat(document.getElementById('buy').value);
+  var stop=parseFloat(document.getElementById('stop').value);
+  var out=document.getElementById('calcOut');
+  if(!cap||!risk||!buy||!stop||buy<=0){alert('请完整填写四个数字');return;}
+  if(stop>=buy){alert('止损价必须低于买入价（本计算器面向多头）');return;}
+  var budget=cap*risk/100;
+  var dist=buy-stop;
+  var shares=Math.floor(budget/dist);
+  var round=Math.floor(shares/100)*100;
+  var amt=round*buy;
+  var loss=round*dist;
+  document.getElementById('outShares').textContent=shares.toLocaleString();
+  document.getElementById('outRound').textContent=round.toLocaleString();
+  document.getElementById('outAmt').textContent=Math.round(amt).toLocaleString();
+  document.getElementById('outPct').textContent=(amt/cap*100).toFixed(1);
+  document.getElementById('outLoss').textContent=Math.round(loss).toLocaleString();
+  var note='按取整百股计算：触发止损时实际亏损约 '+Math.round(loss).toLocaleString()+' 元（占账户 '+(loss/cap*100).toFixed(2)+'%）。';
+  if(amt>cap*0.5){note+=' 注意：该笔占用资金超过账户 50%，请检查止损距离是否过近，或考虑降低单笔敞口。';}
+  note+=' A股提示：止损距离请预留滑点与一个跌停无法成交的极端情景。';
+  document.getElementById('outNote').textContent=note;
+  out.style.display='block';
+}
+// 检查清单 + localStorage
+(function(){
+  var KEY='cogtrade-checklist-v1';
+  var boxes=document.querySelectorAll('#checklist input[type=checkbox]');
+  var status=document.getElementById('checkStatus');
+  var saved={};
+  try{saved=JSON.parse(localStorage.getItem(KEY)||'{}');}catch(e){saved={};}
+  function refresh(){
+    var done=0;
+    boxes.forEach(function(b){
+      var span=b.parentElement.querySelector('span');
+      if(b.checked){done++;span.classList.add('done-line');}else{span.classList.remove('done-line');}
+    });
+    status.textContent='已完成 '+done+' / '+boxes.length+(done===boxes.length?' —— 可以下单，祝执行顺利':'');
+    status.style.color=(done===boxes.length)?'#0071e3':'#6e6e73';
+  }
+  boxes.forEach(function(b){
+    if(saved[b.getAttribute('data-k')]){b.checked=true;}
+    b.addEventListener('change',function(){
+      saved[b.getAttribute('data-k')]=b.checked;
+      try{localStorage.setItem(KEY,JSON.stringify(saved));}catch(e){}
+      refresh();
+    });
+  });
+  refresh();
+})();
+// 导航 scroll-spy：滚动与点击时标识当前章节
+(function(){
+  var links=Array.prototype.slice.call(document.querySelectorAll('.nav-links a'));
+  var items=links.map(function(a){
+    var id=a.getAttribute('href').slice(1);
+    return {a:a, el:document.getElementById(id)};
+  }).filter(function(it){return it.el;});
+  function setActive(a){
+    links.forEach(function(l){l.classList.toggle('active', l===a);});
+  }
+  function onScroll(){
+    var y=window.scrollY+90; // 固定导航高度补偿
+    var current=items[0];
+    for(var i=0;i<items.length;i++){
+      if(items[i].el.offsetTop<=y){current=items[i];}else{break;}
+    }
+    // 页面滚到底部时，强制点亮最后一项
+    if(window.innerHeight+window.scrollY>=document.body.scrollHeight-4){
+      current=items[items.length-1];
+    }
+    if(current){setActive(current.a);}
+  }
+  var ticking=false;
+  window.addEventListener('scroll',function(){
+    if(!ticking){
+      window.requestAnimationFrame(function(){onScroll();ticking=false;});
+      ticking=true;
+    }
+  },{passive:true});
+  links.forEach(function(a){
+    a.addEventListener('click',function(){setActive(a);});
+  });
+  onScroll();
+})();
+</script>
+</body>
+</html>

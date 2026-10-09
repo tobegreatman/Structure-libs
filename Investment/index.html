@@ -1,0 +1,1227 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>投资知识体系 — Investment OS</title>
+  <meta name="description" content="从第一性原理到执行纪律的完整投资知识体系：分诊台、三层架构、四大分析引擎、资产配置、买入十问与可打印的投资章程。">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="pg-work">
+
+  <!-- 纯 CSS 滚动进度条 -->
+  <div class="progress" aria-hidden="true"></div>
+
+  <!-- 移动端菜单开关（纯 CSS checkbox 方案） -->
+  <input type="checkbox" id="nav-toggle" class="nav-toggle-input">
+
+  <!-- ======================= 导航 ======================= -->
+  <header class="nav">
+    <div class="nav-inner">
+      <a href="#hero" class="brand">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none">
+            <path d="M4 19 L10 12 L14 15 L20 5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M14 5 H20 V11" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span class="brand-name">投资体系<em>OS</em></span>
+      </a>
+      <nav class="nav-links" aria-label="页面导航">
+        <a href="#daily">每日</a>
+        <a href="#triage">分诊</a>
+        <a href="#deck">决策台</a>
+        <a href="#lab">实验室</a>
+        <a href="#gym">训练场</a>
+        <a href="learn.html">理论馆</a>
+      </nav>
+      <label for="nav-toggle" class="nav-burger" aria-label="打开菜单">
+        <span></span><span></span>
+      </label>
+    </div>
+  </header>
+
+  <main>
+
+    <!-- ======================= Hero · 黑色章 ======================= -->
+    <section id="hero" class="hero">
+      <div class="hero-bg" aria-hidden="true"></div>
+      <div class="container hero-inner">
+        <p class="hero-eyebrow">Investment Operating System · 投资操作系统</p>
+        <h1 class="hero-title">让认知，成为<span class="grad">复利</span>。</h1>
+        <p class="hero-sub">
+          一套完整的投资知识体系 —— 从底层认知、分析方法到可执行的交易纪律，<br class="br-lg">
+          构建属于你自己的投资操作系统。
+        </p>
+        <div class="hero-cta">
+          <a href="#triage" class="btn btn-primary">进入分诊台</a>
+          <a href="#daily" class="btn btn-ghost">每日一页</a>
+          <a href="learn.html" class="btn btn-ghost">先看体系全景</a>
+        </div>
+
+        <!-- 复利曲线图（纯 SVG + CSS 描边动画） -->
+        <figure class="hero-chart reveal" aria-label="复利与单利的对比曲线">
+          <svg viewBox="0 0 640 320" role="img" aria-hidden="true">
+            <!-- 网格 -->
+            <g class="grid-lines">
+              <line x1="20" y1="16"   x2="620" y2="16"/>
+              <line x1="20" y1="83"   x2="620" y2="83"/>
+              <line x1="20" y1="150"  x2="620" y2="150"/>
+              <line x1="20" y1="217"  x2="620" y2="217"/>
+              <line x1="20" y1="284"  x2="620" y2="284"/>
+            </g>
+            <!-- 坐标轴 -->
+            <line class="axis" x1="20" y1="284" x2="620" y2="284"/>
+            <line class="axis" x1="20" y1="284" x2="20" y2="10"/>
+            <!-- 单利参照线 -->
+            <line class="line-simple" x1="20" y1="284" x2="620" y2="169"/>
+            <!-- 复利曲线 -->
+            <path class="line-compound" d="M 20 284 C 130 269 240 244 330 206 C 400 176 470 130 520 100 C 560 76 590 44 616 14"/>
+            <!-- 关键节点 -->
+            <g class="dots">
+              <circle cx="220" cy="246" r="4"/>
+              <circle cx="420" cy="169" r="4"/>
+              <circle cx="600" cy="28"  r="4" class="dot-end"/>
+            </g>
+            <g class="dot-labels">
+              <text x="220" y="232">×2 · 10年</text>
+              <text x="420" y="155">×4 · 20年</text>
+              <text x="598" y="14" text-anchor="end">×8 · 30年</text>
+            </g>
+            <text class="label-simple" x="612" y="188" text-anchor="end">单利</text>
+            <text class="label-compound" x="512" y="52">复利 · 年化 7.2%</text>
+          </svg>
+          <figcaption>72 法则：年化 7.2%，本金每 10 年翻一倍。时间的玫瑰，只奖赏不中断的人。</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <!-- ======================= 每日一页 · 浅灰章 ======================= -->
+    <section id="daily" class="chapter chapter--light">
+      <div class="container">
+        <header class="chapter-head reveal">
+          <p class="chapter-eyebrow">每日一页 · Daily</p>
+          <h2 class="chapter-title">这周，只有四件事</h2>
+          <p class="chapter-sub">整套体系投影到日常，不过一屏。老用户从这里开始，其余章节按需再查。</p>
+        </header>
+
+        <div class="daily-grid reveal">
+          <ol class="daily-rhythm">
+            <li class="daily-row">
+              <span class="daily-when">周一</span>
+              <div class="daily-what">
+                <b>持有，不动</b>
+                <span>不开行情也没关系 —— 长期收益的大部分，来自「不操作」。</span>
+              </div>
+            </li>
+            <li class="daily-row">
+              <span class="daily-when">周三</span>
+              <div class="daily-what">
+                <b>查一次再平衡偏离</b>
+                <span>任一资产偏离目标 ±5% 才动手 <span class="tag tag-perm">算术永真</span>，否则等年度窗口 —— 用<a class="inline-link" href="#lab-rb">再平衡计算器</a>，一分钟。</span>
+              </div>
+            </li>
+            <li class="daily-row">
+              <span class="daily-when">周五</span>
+              <div class="daily-what">
+                <b>记一笔决策日志</b>
+                <span>买入理由与卖出条件写清楚 —— 平仓时只对日志负责，不对盘面负责。</span>
+              </div>
+            </li>
+            <li class="daily-row">
+              <span class="daily-when">月底</span>
+              <div class="daily-what">
+                <b>翻卡复习十分钟</b>
+                <span>训练场间隔翻卡过一遍，外加一条<a class="inline-link" href="#gym">案例复盘</a>，保持手感。</span>
+              </div>
+            </li>
+          </ol>
+
+          <div class="daily-actions">
+            <h3>高频动作 · 一键直达</h3>
+            <a class="daily-act" href="#deck-list"><b>走十问</b><span>买入前的最后一道闸门，一票否决</span></a>
+            <a class="daily-act" href="#jr-form"><b>记一笔</b><span>决策日志 · 数据只存本机</span></a>
+            <a class="daily-act" href="#lab-vs"><b>算买价</b><span>估值沙盒 · 三步定价再打七折</span></a>
+            <button type="button" id="print-week-btn" class="daily-print">打印本周行动卡</button>
+            <p class="nojs-note daily-print-note">「打印本周卡」需启用 JavaScript —— 默认打印仍输出《投资章程》。</p>
+          </div>
+        </div>
+
+        <p class="daily-discipline reveal">没有写进日志的操作，都是情绪的操作。</p>
+      </div>
+    </section>
+
+    <!-- ======================= 分诊台 · 白章 ======================= -->
+    <section id="triage" class="chapter chapter--white">
+      <div class="container">
+        <header class="chapter-head reveal">
+          <p class="chapter-eyebrow">分诊台 · 找到你的入口</p>
+          <h2 class="chapter-title">先回答四个问题，再谈投资</h2>
+          <p class="chapter-sub">绝大多数亏损，从"选错游戏"开始。<br class="br-lg">四个问题，为你匹配正确的路线 —— 90 秒，零术语。</p>
+        </header>
+
+        <!-- 纯 CSS 路由：每选一项，下方给出该分支的提示 -->
+        <div class="triage reveal">
+          <fieldset class="tri-q">
+            <legend><b>Q1</b>这笔钱，多久之内用不到？</legend>
+            <input type="radio" name="t1" id="t1a" class="tri-input">
+            <input type="radio" name="t1" id="t1b" class="tri-input">
+            <input type="radio" name="t1" id="t1c" class="tri-input">
+            <div class="tri-opts">
+              <label for="t1a">3 年以内</label>
+              <label for="t1b">3 – 10 年</label>
+              <label for="t1c">10 年以上</label>
+            </div>
+            <div class="tri-notes">
+              <p class="tri-hint">选择一项，这里会给出路由提示。</p>
+              <p class="tri-note t1a">期限太短，承受不了股市波动 —— 货币基金与短债才是主战场。保住本金，就是这三年最大的胜利。</p>
+              <p class="tri-note t1b">可以参与股市，但必须搭配债券缓冲。期限每长一分，股票上限就可以高一分。</p>
+              <p class="tri-note t1c">你握着复利最稀缺的原料：时间。指数路线在你身上威力最大。</p>
+            </div>
+          </fieldset>
+
+          <fieldset class="tri-q">
+            <legend><b>Q2</b>如果账户半年内缩水两成，你会？</legend>
+            <input type="radio" name="t2" id="t2a" class="tri-input">
+            <input type="radio" name="t2" id="t2b" class="tri-input">
+            <input type="radio" name="t2" id="t2c" class="tri-input">
+            <div class="tri-opts">
+              <label for="t2a">卖出，睡不着觉</label>
+              <label for="t2b">难受，但拿得住</label>
+              <label for="t2c">越跌越想买</label>
+            </div>
+            <div class="tri-notes">
+              <p class="tri-hint">选择一项，这里会给出路由提示。</p>
+              <p class="tri-note t2a">你的回撤预算 ≈ 10%：股票上限 ≈ 20%（预算 ÷ 50%），其余放债与现金。这不是胆小，是自知。</p>
+              <p class="tri-note t2b">回撤预算 ≈ 25%：股票上限 ≈ 50%，经典的 60/40 是不错的起点。</p>
+              <p class="tri-note t2c">回撤预算 ≈ 50%：可承受较高股票仓位 —— 但先去认知层做一次偏差自检，确认这是承受力，而非过度自信。</p>
+            </div>
+          </fieldset>
+
+          <fieldset class="tri-q">
+            <legend><b>Q3</b>每周愿意花多少时间研究投资？</legend>
+            <input type="radio" name="t3" id="t3a" class="tri-input">
+            <input type="radio" name="t3" id="t3b" class="tri-input">
+            <input type="radio" name="t3" id="t3c" class="tri-input">
+            <div class="tri-opts">
+              <label for="t3a">1 小时以内</label>
+              <label for="t3b">2 – 5 小时</label>
+              <label for="t3c">10 小时以上</label>
+            </div>
+            <div class="tri-notes">
+              <p class="tri-hint">选择一项，这里会给出路由提示。</p>
+              <p class="tri-note t3a">主动选股对你是负期望游戏。指数 + 定投 + 再平衡，足以跑赢绝大多数人 —— 证据见认知层的 SPIVA 统计。</p>
+              <p class="tri-note t3b">以指数为核心，可用不超过 20% 的仓位实践主动投资 —— 把它当学费，而不是翻身工具。</p>
+              <p class="tri-note t3c">时间条件达标。但主动路线的门票，是完整的方法层训练与买入十问流程，缺一不可。</p>
+            </div>
+          </fieldset>
+
+          <fieldset class="tri-q">
+            <legend><b>Q4</b>可投资本金的量级？</legend>
+            <input type="radio" name="t4" id="t4a" class="tri-input">
+            <input type="radio" name="t4" id="t4b" class="tri-input">
+            <input type="radio" name="t4" id="t4c" class="tri-input">
+            <div class="tri-opts">
+              <label for="t4a">10 万以内</label>
+              <label for="t4b">10 – 100 万</label>
+              <label for="t4c">100 万以上</label>
+            </div>
+            <div class="tri-notes">
+              <p class="tri-hint">选择一项，这里会给出路由提示。</p>
+              <p class="tri-note t4a">此阶段最大的变量是本金增速，而非收益率：定投指数，把主要精力投资于主业的赚钱能力。</p>
+              <p class="tri-note t4b">开始严肃对待配置、费用与税务 —— 从现在起，每一个百分点都是真金白银。</p>
+              <p class="tri-note t4c">纪律的价值指数级上升。任何动作先过流程、再动手；此时最大的敌人，是自己的傲慢。</p>
+            </div>
+          </fieldset>
+        </div>
+
+        <div class="tri-routes cards cards-3 reveal">
+          <article class="card card-route">
+            <span class="card-tag">路线一 · 防守</span>
+            <h3>现金与短债</h3>
+            <p>期限 3 年内，或回撤预算 15% 以下：货基 + 短债 + 定存阶梯。目标是跑赢活期、不被通胀与冲动双杀。</p>
+            <p class="card-rule"><strong>行动</strong>设置自动转存，卸载行情软件 —— 你的优势是"不参与"。</p>
+            <a class="arch-link" href="learn.html#allocation">查看防守型配置 →</a>
+          </article>
+          <article class="card card-route card-route--main">
+            <span class="card-tag">路线二 · 默认答案</span>
+            <h3>指数化投资</h3>
+            <p>宽基指数 + 每月定投 + 每年再平衡。不预测、不盯盘、不选股，长期瞄准市场回报（美股历史年化 7–10%，需年检）。</p>
+            <p class="card-rule"><strong>行动</strong>今天就能开始：选定宽基、设定自动定投，然后回去过日子。</p>
+            <a class="arch-link" href="learn.html#allocation">查看指数化配置 →</a>
+          </article>
+          <article class="card card-route">
+            <span class="card-tag">路线三 · 进阶</span>
+            <h3>核心＋卫星</h3>
+            <p>80% 指数打底 + ≤ 20% 主动仓位。卫星部分每笔必过买入十问、写决策日志、每季复盘。</p>
+            <p class="card-rule"><strong>行动</strong>先跑通指数路线一年，再开卫星 —— 卫星可以失败，核心不许失守。</p>
+            <a class="arch-link" href="#deck">进决策台，先过十问 →</a>
+          </article>
+        </div>
+
+        <!-- 《投资章程》：分诊的落点，可打印的一页纸契约 -->
+        <div class="charter reveal" id="charter">
+          <div class="charter-head">
+            <p class="charter-eyebrow">Investment Charter</p>
+            <h3>《投资章程》</h3>
+            <p class="charter-sub">分诊完成，把答案写进章程。它是你与自己的契约 —— 市场疯狂时，只有它替你守住理智。</p>
+            <span class="charter-print">打印：Ctrl / ⌘ + P，页面将只输出本章程</span>
+          </div>
+          <ul class="charter-fields">
+            <li>我的目标：<span class="blank"></span><span class="field-hint">（例：20 年后积累 300 万退休金）</span></li>
+            <li>我的路线：<span class="blank"></span><span class="field-hint">（防守 / 指数 / 核心＋卫星）</span></li>
+            <li>这笔钱的期限：<span class="blank"></span> 年</li>
+            <li>我的回撤预算：<span class="blank"></span> %，因此股票上限 ≈ 预算 ÷ 50% = <span class="blank"></span> %</li>
+            <li>我承诺每周投入研究：<span class="blank"></span> 小时</li>
+          </ul>
+          <h4 class="charter-law-head">十条铁律</h4>
+          <ol class="charter-laws">
+            <li>只用 3 年内用不到的钱投资。</li>
+            <li>先备好 6 个月生活费的应急金，再谈投资。</li>
+            <li>永远不加杠杆，不买任何讲不明白的产品。</li>
+            <li>单一标的 ≤ 10%，单一行业 ≤ 25%。</li>
+            <li>买入必过十问，一票否决，没有例外。</li>
+            <li>卖出只认四规则 —— 价格本身从来不是理由。</li>
+            <li>每年再平衡一次，或任一资产偏离 ±5% 时。</li>
+            <li>每笔交易先写决策日志，再按确认键。</li>
+            <li>情绪激动时不做任何决定：写下来，睡一觉。</li>
+            <li>违反任何一条，立即停止操作，重读本章程。</li>
+          </ol>
+          <div class="charter-sign">
+            <p>签名 <span class="blank blank-sign"></span>　日期 <span class="blank blank-sign"></span></p>
+            <p class="charter-oath">「我无法控制市场，我只能控制自己的过程。」</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================= 决策台 · 浅灰章（二期） ======================= -->
+    <section id="deck" class="chapter chapter--light">
+      <div class="container">
+        <header class="chapter-head reveal">
+          <p class="chapter-eyebrow">决策台 · 实战流程</p>
+          <h2 class="chapter-title">每笔买入，先过一遍流程</h2>
+          <p class="chapter-sub">研究产出观点，流程守住纪律。<br class="br-lg">买入十问、卖出五问、日志落笔、风暴预案先行 —— 每一道都是闸门。</p>
+        </header>
+
+        <!-- 检查台：交互式买入十问 -->
+        <div class="deck reveal" id="deck-quiz">
+          <div class="deck-head">
+            <div class="deck-head-txt">
+              <h3>买入十问 · 检查台</h3>
+              <p>对每一笔主动买入逐题作答：通过继续，否决终止。</p>
+            </div>
+            <div class="deck-score" aria-live="polite">
+              <b id="deck-pass-count">0</b><span>/ 10 已通过</span>
+            </div>
+          </div>
+
+          <ol class="deck-list" id="deck-list">
+            <li class="deck-q" data-topic="商业模式">
+              <span class="deck-q-num">01</span>
+              <div class="deck-q-body">
+                <strong>商业模式</strong>
+                <span>我能向高中生讲清它怎么赚钱</span>
+              </div>
+              <div class="deck-q-opts">
+                <input type="radio" name="dq1" value="pass" id="dq1p"><label for="dq1p" class="opt-pass">通过</label>
+                <input type="radio" name="dq1" value="veto" id="dq1v"><label for="dq1v" class="opt-veto">否决</label>
+              </div>
+            </li>
+            <li class="deck-q" data-topic="护城河">
+              <span class="deck-q-num">02</span>
+              <div class="deck-q-body">
+                <strong>护城河</strong>
+                <span>对手夺不走它的利润，且能持续十年</span>
+              </div>
+              <div class="deck-q-opts">
+                <input type="radio" name="dq2" value="pass" id="dq2p"><label for="dq2p" class="opt-pass">通过</label>
+                <input type="radio" name="dq2" value="veto" id="dq2v"><label for="dq2v" class="opt-veto">否决</label>
+              </div>
+            </li>
+            <li class="deck-q" data-topic="财务质量">
+              <span class="deck-q-num">03</span>
+              <div class="deck-q-body">
+                <strong>财务质量</strong>
+                <span>近 5 年 ROE 持续 &gt; 15%，净现比 &gt; 80%</span>
+              </div>
+              <div class="deck-q-opts">
+                <input type="radio" name="dq3" value="pass" id="dq3p"><label for="dq3p" class="opt-pass">通过</label>
+                <input type="radio" name="dq3" value="veto" id="dq3v"><label for="dq3v" class="opt-veto">否决</label>
+              </div>
+            </li>
+            <li class="deck-q" data-topic="资产负债表">
+              <span class="deck-q-num">04</span>
+              <div class="deck-q-body">
+                <strong>资产负债表</strong>
+                <span>收入减半、借不到新钱，也能撑过 12 个月</span>
+              </div>
+              <div class="deck-q-opts">
+                <input type="radio" name="dq4" value="pass" id="dq4p"><label for="dq4p" class="opt-pass">通过</label>
+                <input type="radio" name="dq4" value="veto" id="dq4v"><label for="dq4v" class="opt-veto">否决</label>
+              </div>
+            </li>
+            <li class="deck-q" data-topic="管理层与治理">
+              <span class="deck-q-num">05</span>
+              <div class="deck-q-body">
+                <strong>管理层与治理</strong>
+                <span>大小股东利益一致，无质押与关联交易警报</span>
+              </div>
+              <div class="deck-q-opts">
+                <input type="radio" name="dq5" value="pass" id="dq5p"><label for="dq5p" class="opt-pass">通过</label>
+                <input type="radio" name="dq5" value="veto" id="dq5v"><label for="dq5v" class="opt-veto">否决</label>
+              </div>
+            </li>
+            <li class="deck-q" data-topic="成长动力">
+              <span class="deck-q-num">06</span>
+              <div class="deck-q-body">
+                <strong>成长动力</strong>
+                <span>未来 3–5 年的增长驱动，可拆解、可量化</span>
+              </div>
+              <div class="deck-q-opts">
+                <input type="radio" name="dq6" value="pass" id="dq6p"><label for="dq6p" class="opt-pass">通过</label>
+                <input type="radio" name="dq6" value="veto" id="dq6v"><label for="dq6v" class="opt-veto">否决</label>
+              </div>
+            </li>
+            <li class="deck-q" data-topic="估值折价">
+              <span class="deck-q-num">07</span>
+              <div class="deck-q-body">
+                <strong>估值折价</strong>
+                <span>现价 ≤ 中性情景估值的七折</span>
+              </div>
+              <div class="deck-q-opts">
+                <input type="radio" name="dq7" value="pass" id="dq7p"><label for="dq7p" class="opt-pass">通过</label>
+                <input type="radio" name="dq7" value="veto" id="dq7v"><label for="dq7v" class="opt-veto">否决</label>
+              </div>
+            </li>
+            <li class="deck-q" data-topic="悲观情景">
+              <span class="deck-q-num">08</span>
+              <div class="deck-q-body">
+                <strong>悲观情景</strong>
+                <span>最坏亏损 ≤ 总资产 2%，且不加杠杆</span>
+              </div>
+              <div class="deck-q-opts">
+                <input type="radio" name="dq8" value="pass" id="dq8p"><label for="dq8p" class="opt-pass">通过</label>
+                <input type="radio" name="dq8" value="veto" id="dq8v"><label for="dq8v" class="opt-veto">否决</label>
+              </div>
+            </li>
+            <li class="deck-q" data-topic="情绪检查">
+              <span class="deck-q-num">09</span>
+              <div class="deck-q-body">
+                <strong>情绪检查</strong>
+                <span>不是怕错过；停牌三年也庆幸持有</span>
+              </div>
+              <div class="deck-q-opts">
+                <input type="radio" name="dq9" value="pass" id="dq9p"><label for="dq9p" class="opt-pass">通过</label>
+                <input type="radio" name="dq9" value="veto" id="dq9v"><label for="dq9v" class="opt-veto">否决</label>
+              </div>
+            </li>
+            <li class="deck-q" data-topic="时间检验">
+              <span class="deck-q-num">10</span>
+              <div class="deck-q-body">
+                <strong>时间检验</strong>
+                <span>把它从自选中删除三年，我睡得着</span>
+              </div>
+              <div class="deck-q-opts">
+                <input type="radio" name="dq10" value="pass" id="dq10p"><label for="dq10p" class="opt-pass">通过</label>
+                <input type="radio" name="dq10" value="veto" id="dq10v"><label for="dq10v" class="opt-veto">否决</label>
+              </div>
+            </li>
+          </ol>
+
+          <div class="deck-verdict" aria-live="polite">
+            <p class="deck-wait nojs-note">此处为实时判定区：十问全过亮绿灯，任一否决亮红灯 —— 需启用 JavaScript。判定标准与上方题面完全一致，也可对照执行层清单手动执行。</p>
+            <p class="deck-wait js-note">逐题作答。任何一题否决，立即终止 —— 这是"一票否决"的字面意思。</p>
+            <div class="deck-verdict-bar deck-verdict--fail" id="deck-verdict-fail" role="alert">
+              <b aria-hidden="true">✗</b>
+              <div>
+                <strong id="deck-veto-topic">这一问</strong>
+                <p>一票否决 —— 放弃这笔交易，写下放弃理由，去做别的事。纪律的价值，就是让你安全地错过。</p>
+              </div>
+            </div>
+            <div class="deck-verdict-bar deck-verdict--pass" id="deck-verdict-pass">
+              <b aria-hidden="true">✓</b>
+              <div>
+                <strong>十问全过。</strong>
+                <p>最后一道工序：填写六栏决策日志，写完再按买入键。<a href="#deck-log">前往日志 ↓</a></p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 检查台：卖出五问（与买入十问同构） -->
+        <div class="deck reveal" id="deck-sell">
+          <div class="deck-head">
+            <div class="deck-head-txt">
+              <h3>卖出五问 · 检查台</h3>
+              <p>想卖的时候先问自己：是论点变了，还是情绪变了？通过才执行，否决先冷静。</p>
+            </div>
+            <div class="deck-score" aria-live="polite">
+              <b id="sell-pass-count">0</b><span>/ 5 已通过</span>
+            </div>
+          </div>
+
+          <ol class="deck-list" id="sell-list">
+            <li class="deck-q" data-topic="论点核对">
+              <span class="deck-q-num">01</span>
+              <div class="deck-q-body">
+                <strong>论点核对</strong>
+                <span>买入日志里的论点已被证伪 —— 是逻辑没了，不只是价格跌了</span>
+              </div>
+              <div class="deck-q-opts">
+                <input type="radio" name="sq1" value="pass" id="sq1p"><label for="sq1p" class="opt-pass">通过</label>
+                <input type="radio" name="sq1" value="veto" id="sq1v"><label for="sq1v" class="opt-veto">否决</label>
+              </div>
+            </li>
+            <li class="deck-q" data-topic="卖出去处">
+              <span class="deck-q-num">02</span>
+              <div class="deck-q-body">
+                <strong>卖出去处</strong>
+                <span>卖出后的钱有明确去处 —— 更优机会，或预案内的现金比例</span>
+              </div>
+              <div class="deck-q-opts">
+                <input type="radio" name="sq2" value="pass" id="sq2p"><label for="sq2p" class="opt-pass">通过</label>
+                <input type="radio" name="sq2" value="veto" id="sq2v"><label for="sq2v" class="opt-veto">否决</label>
+              </div>
+            </li>
+            <li class="deck-q" data-topic="买回测试">
+              <span class="deck-q-num">03</span>
+              <div class="deck-q-body">
+                <strong>买回测试</strong>
+                <span>如果今天空仓，我不会按现价买回它 —— 否则卖出只是落袋冲动</span>
+              </div>
+              <div class="deck-q-opts">
+                <input type="radio" name="sq3" value="pass" id="sq3p"><label for="sq3p" class="opt-pass">通过</label>
+                <input type="radio" name="sq3" value="veto" id="sq3v"><label for="sq3v" class="opt-veto">否决</label>
+              </div>
+            </li>
+            <li class="deck-q" data-topic="纪律触发">
+              <span class="deck-q-num">04</span>
+              <div class="deck-q-body">
+                <strong>纪律触发</strong>
+                <span>触发的是日志里预设的卖出条件，不是盘中的涨跌感觉</span>
+              </div>
+              <div class="deck-q-opts">
+                <input type="radio" name="sq4" value="pass" id="sq4p"><label for="sq4p" class="opt-pass">通过</label>
+                <input type="radio" name="sq4" value="veto" id="sq4v"><label for="sq4v" class="opt-veto">否决</label>
+              </div>
+            </li>
+            <li class="deck-q" data-topic="事后预演">
+              <span class="deck-q-num">05</span>
+              <div class="deck-q-body">
+                <strong>事后预演</strong>
+                <span>卖出后它再涨 50%，我也能坦然接受 —— 赚认知内的，放掉认知外的</span>
+              </div>
+              <div class="deck-q-opts">
+                <input type="radio" name="sq5" value="pass" id="sq5p"><label for="sq5p" class="opt-pass">通过</label>
+                <input type="radio" name="sq5" value="veto" id="sq5v"><label for="sq5v" class="opt-veto">否决</label>
+              </div>
+            </li>
+          </ol>
+
+          <div class="deck-verdict" aria-live="polite">
+            <p class="deck-wait nojs-note">此处为实时判定区：五问全过才动手，任一否决先停 —— 需启用 JavaScript。判定标准与上方题面完全一致，也可手动对照执行。</p>
+            <p class="deck-wait js-note">卖出比买入更容易被情绪劫持 —— 逐题作答，任何一题否决，今天就不动手。</p>
+            <div class="deck-verdict-bar deck-verdict--fail" id="sell-verdict-fail" role="alert">
+              <b aria-hidden="true">✗</b>
+              <div>
+                <strong id="sell-veto-topic">这一问</strong>
+                <p>否决 —— 这次"想卖"更可能是情绪，不是决策。等 48 小时，或重读一遍买入日志再谈卖出。</p>
+              </div>
+            </div>
+            <div class="deck-verdict-bar deck-verdict--pass" id="sell-verdict-pass">
+              <b aria-hidden="true">✓</b>
+              <div>
+                <strong>五问全过。</strong>
+                <p>这是预案内的卖出，不是恐慌中的逃离 —— 按计划执行，然后把结果记进日志。</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 决策日志 · localStorage -->
+        <div class="deck deck--log reveal" id="deck-log">
+          <h3 class="deck-log-head">决策日志 <span>本地保存 · 不上传任何服务器</span></h3>
+          <p class="deck-log-intro">数据存在这台设备的浏览器（localStorage）里，刷新、关机都不丢。换设备：先「导出 JSON」备份，再到新设备「导入」恢复。</p>
+
+          <div class="js-panel">
+            <form class="jr-form" id="jr-form" autocomplete="off">
+              <label>标的<input name="ticker" required placeholder="例：某消费龙头 / 沪深300ETF"></label>
+              <label>日期<input type="date" name="date" required></label>
+              <label>买入价<input type="number" name="price" step="any" min="0" placeholder="42.8"></label>
+              <label>仓位 %<input type="number" name="size" min="0.1" max="10" step="0.1" required placeholder="铁律 ≤ 10"></label>
+              <label class="jr-form--wide">论点（为什么买，一两句话）<input name="thesis" required placeholder="例：提价权验证 + 周期见底，估值七折"></label>
+              <label class="jr-form--wide">卖出条件（买入前写好）<input name="exit" required placeholder="例：论点破坏 / PE &gt; 35 / 更优机会"></label>
+              <label>当时情绪
+                <select name="mood">
+                  <option value="calm">平静 · 按流程走</option>
+                  <option value="excited">兴奋 · 有点怕错过</option>
+                  <option value="anxious">焦虑 · 被上一笔吓到</option>
+                </select>
+              </label>
+              <div class="jr-form-btn">
+                <button type="submit" class="btn btn-primary">写入日志</button>
+                <span class="jr-form-tip">买入键之前，先写这一笔。</span>
+              </div>
+            </form>
+
+            <div class="jr-stats" id="jr-stats"></div>
+
+            <div class="table-wrap journal jr-wrap">
+              <table>
+                <thead><tr><th>日期</th><th>标的 / 买价</th><th>论点</th><th>仓位</th><th>卖出条件</th><th>情绪</th><th>状态</th><th>操作</th></tr></thead>
+                <tbody id="jr-body"></tbody>
+              </table>
+            </div>
+            <p class="jr-empty" id="jr-empty" hidden>日志为空。第一笔记录可以是"放弃清单"：被十问否决的交易也值得写下 —— 半年后回看，它们大多替你躲过了亏损。</p>
+
+            <div class="jr-actions">
+              <button type="button" class="btn btn-ghost" id="jr-export">导出 JSON 备份</button>
+              <button type="button" class="btn btn-ghost" id="jr-import">导入 JSON 恢复</button>
+              <button type="button" class="btn btn-ghost jr-danger" id="jr-clear">清空全部日志</button>
+              <input type="file" id="jr-import-file" accept=".json,application/json" hidden>
+            </div>
+          </div>
+          <p class="nojs-note">未启用 JavaScript 时，请用纸笔或电子表格按六栏记录：日期 · 标的与价格 · 论点 · 仓位 · 卖出条件 · 当时情绪 —— 执行层有完整示例。</p>
+        </div>
+
+        <!-- 风暴预案 -->
+        <h3 class="block-head reveal">风暴预案 · 恐慌来临前写好</h3>
+        <p class="block-intro reveal">预案的全部价值在于"事前"：风暴中的你没有能力思考，只有能力执行。</p>
+        <div class="storm reveal">
+          <details class="storm-card">
+            <summary><b>A</b><span class="storm-name">大盘暴跌 30%</span><span class="storm-when">系统性危机 · 2008 / 2020 式</span><i class="storm-icon" aria-hidden="true"></i></summary>
+            <ul>
+              <li>重读《投资章程》—— 那是平静的你，写给恐慌的你的信。</li>
+              <li>检查再平衡阈值：股票占比跌破目标 −5% 就按规则买入。这是执行合同，不是"抄底"。</li>
+              <li>动用现金储备分批买：每批 ≤ 1/3，间隔 ≥ 2 周 —— 把冲动摊薄成纪律。</li>
+              <li><strong>绝不做</strong>：加杠杆"摊低成本"、清仓"等企稳"、把债券全换股票"搏一把"。</li>
+            </ul>
+          </details>
+          <details class="storm-card">
+            <summary><b>B</b><span class="storm-name">持仓个股暴跌 30%</span><span class="storm-when">个股危机 · 只有我买的这只跌</span><i class="storm-icon" aria-hidden="true"></i></summary>
+            <ul>
+              <li>重读买入论点，逐条对照现状：是生意变坏了，还是只有股价跌了？</li>
+              <li>论点完好 + 更便宜 → 这正是买入时该想到的波动，按预案分批加仓（不破仓位上限）。</li>
+              <li>论点已破坏 → 执行卖出规则 R1，无条件离场，与成本价无关。</li>
+              <li>分不清？默认动作是"不动" —— 看不懂的时候，任何操作都是赌博。</li>
+            </ul>
+          </details>
+          <details class="storm-card">
+            <summary><b>C</b><span class="storm-name">我先崩溃了</span><span class="storm-when">失眠 · 反复刷行情 · 想清仓</span><i class="storm-icon" aria-hidden="true"></i></summary>
+            <ul>
+              <li>48 小时规则：两天内不做任何操作 —— 情绪的半衰期，比你想的短。</li>
+              <li>把"想做的事"写进日志情绪栏，然后离开屏幕：散步、睡觉、去上班。</li>
+              <li>48 小时后仍想操作，先向一个不懂投资的朋友讲清你的理由 —— 讲不清楚，就是没有理由。</li>
+              <li>记住章程第九条：情绪激动时不做任何决定。</li>
+            </ul>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================= 实验室 · 白章（二期） ======================= -->
+    <section id="lab" class="chapter chapter--white">
+      <div class="container">
+        <header class="chapter-head reveal">
+          <p class="chapter-eyebrow">实验室 · 参数在你手里</p>
+          <h2 class="chapter-title">五个实验台，把抽象变具体</h2>
+          <p class="chapter-sub">复利、回撤、估值、退休、再平衡 —— <br class="br-lg">拖动滑杆，让每个数字变成"你的数字"。</p>
+        </header>
+
+        <div class="lab-grid">
+          <!-- 01 复利实验室 -->
+          <article class="lab reveal">
+            <header class="lab-head">
+              <span class="lab-no">01</span>
+              <div>
+                <h3>复利实验室</h3>
+                <p>三个参数，看清时间的形状。</p>
+              </div>
+            </header>
+            <div class="lab-ctl">
+              <div class="lab-ctl-label"><label for="cp-p">本金</label><output id="cp-p-out" for="cp-p">10 万元</output></div>
+              <input type="range" id="cp-p" min="1" max="100" value="10" step="1">
+            </div>
+            <div class="lab-ctl">
+              <div class="lab-ctl-label"><label for="cp-r">年化收益率</label><output id="cp-r-out" for="cp-r">7.2%</output></div>
+              <input type="range" id="cp-r" min="1" max="15" value="7.2" step="0.1">
+            </div>
+            <div class="lab-ctl">
+              <div class="lab-ctl-label"><label for="cp-n">年数</label><output id="cp-n-out" for="cp-n">30 年</output></div>
+              <input type="range" id="cp-n" min="1" max="50" value="30" step="1">
+            </div>
+            <div class="lab-out">
+              <div class="lab-big"><b id="cp-final">80.5 万</b><span>复利终值</span></div>
+              <div class="lab-sub">
+                <span>单利对照 <b id="cp-simple">31.6 万</b></span>
+                <span>增长 <b id="cp-x">× 8.1</b></span>
+                <span>翻倍耗时 <b id="cp-double">10.0 年</b></span>
+              </div>
+              <p class="lab-note">复利与 72 法则为算术永真 <span class="tag tag-perm">算术永真</span>；能否长期拿到 7% 取决于市场与持有纪律（美股长期年化 7–10% <span class="tag tag-data">需年检</span>）。</p>
+            </div>
+          </article>
+
+          <!-- 02 回撤感受器 -->
+          <article class="lab reveal">
+            <header class="lab-head">
+              <span class="lab-no">02</span>
+              <div>
+                <h3>回撤感受器</h3>
+                <p>百分比是数学，金额是心跳。</p>
+              </div>
+            </header>
+            <div class="lab-ctl">
+              <div class="lab-ctl-label"><label for="dd-a">我的账户总值</label><output id="dd-a-out" for="dd-a">100 万元</output></div>
+              <input type="range" id="dd-a" min="5" max="1000" value="100" step="5">
+            </div>
+            <div class="lab-out dd-out">
+              <div class="dd-row"><b>−10%</b><span>回调：变成 <b id="dd-10">90 万</b><i>正常波动，几乎每年都有</i></span></div>
+              <div class="dd-row"><b>−30%</b><span>熊市：变成 <b id="dd-30">70 万</b><i>常见熊市，每隔几年一次</i></span></div>
+              <div class="dd-row"><b>−50%</b><span>崩盘：变成 <b id="dd-50">50 万</b><i>2008 式极端，一生总会遇到</i></span></div>
+            </div>
+            <p class="lab-note">哪一行的数字会让你夜里睡不着？那就是你真实的回撤预算 —— 股票上限 ≈ 预算 ÷ 50%。<span class="tag tag-perm">算术永真</span></p>
+          </article>
+
+          <!-- 03 估值沙盒 -->
+          <article class="lab reveal" id="lab-vs">
+            <header class="lab-head">
+              <span class="lab-no">03</span>
+              <div>
+                <h3>估值沙盒</h3>
+                <p>三步定价法，手指动一动。</p>
+              </div>
+            </header>
+            <div class="lab-ctl">
+              <div class="lab-ctl-label"><label for="vs-eps">正常每股收益 EPS</label><output id="vs-eps-out" for="vs-eps">5.0 元</output></div>
+              <input type="range" id="vs-eps" min="0.5" max="20" value="5" step="0.5">
+            </div>
+            <div class="lab-ctl">
+              <div class="lab-ctl-label"><label for="vs-pe">合理 PE 倍数</label><output id="vs-pe-out" for="vs-pe">12.5 倍</output></div>
+              <input type="range" id="vs-pe" min="5" max="30" value="12.5" step="0.5">
+            </div>
+            <div class="lab-ctl">
+              <div class="lab-ctl-label"><label for="vs-disc">安全边际折扣</label><output id="vs-disc-out" for="vs-disc">七折（70%）</output></div>
+              <input type="range" id="vs-disc" min="50" max="90" value="70" step="5">
+            </div>
+            <div class="lab-ctl lab-ctl--num">
+              <div class="lab-ctl-label"><label for="vs-price">现价对照</label><output id="vs-verdict" for="vs-price" class="lab-verdict lab-verdict--wait">45 元 &gt; 买价 → 等待</output></div>
+              <input type="number" id="vs-price" min="0" step="any" value="45" placeholder="现价">
+            </div>
+            <div class="lab-out">
+              <div class="lab-big"><b id="vs-buy">43.75 元</b><span>买价 = 内在价值 <em id="vs-iv">62.50</em> 元 × 折扣</span></div>
+              <p class="lab-note">内在价值 = EPS × PE，买价再打折 —— 数学恒等 <span class="tag tag-perm">算术永真</span>；EPS 与 PE 是你的判断，判断必须保守。</p>
+            </div>
+          </article>
+
+          <!-- 04 再平衡计算器 -->
+          <article class="lab reveal" id="lab-rb">
+            <header class="lab-head">
+              <span class="lab-no">04</span>
+              <div>
+                <h3>再平衡计算器</h3>
+                <p>偏离多少，该动多少。</p>
+              </div>
+            </header>
+            <div class="lab-ctl">
+              <div class="lab-ctl-label"><label for="rb-t">股票目标比例</label><output id="rb-t-out" for="rb-t">60%</output></div>
+              <input type="range" id="rb-t" min="10" max="90" value="60" step="5">
+            </div>
+            <div class="lab-ctl lab-ctl--num">
+              <div class="lab-ctl-label"><label for="rb-s">股票现值（万元）</label></div>
+              <input type="number" id="rb-s" min="0" step="any" value="70">
+            </div>
+            <div class="lab-ctl lab-ctl--num">
+              <div class="lab-ctl-label"><label for="rb-b">债券现值（万元）</label></div>
+              <input type="number" id="rb-b" min="0" step="any" value="30">
+            </div>
+            <div class="lab-out">
+              <div class="lab-big"><b id="rb-cur">70%</b><span>当前股票占比 · 偏离 <em id="rb-dev" class="dev-hot">+10%</em></span></div>
+              <div class="lab-sub"><span id="rb-action">卖出股票 <b>10 万</b> → 买入债券</span></div>
+              <p class="lab-note">规则：每年一次，或任一资产偏离目标 ±5% 立即触发。<span class="tag tag-perm">算术永真</span></p>
+            </div>
+          </article>
+
+          <!-- 05 蒙特卡洛退休模拟（宽卡） -->
+          <article class="lab lab--wide reveal">
+            <header class="lab-head">
+              <span class="lab-no">05</span>
+              <div>
+                <h3>退休蒙特卡洛 · 顺序风险演示</h3>
+                <p>同样的平均回报，不同的命运 —— 随机抽取回报顺序，看你的提取计划能否活到最后。</p>
+              </div>
+            </header>
+            <div class="lab-row">
+              <div class="lab-side">
+                <div class="lab-ctl">
+                  <div class="lab-ctl-label"><label for="mc-p">期初资产</label><output id="mc-p-out" for="mc-p">300 万元</output></div>
+                  <input type="range" id="mc-p" min="50" max="1000" value="300" step="10">
+                </div>
+                <div class="lab-ctl">
+                  <div class="lab-ctl-label"><label for="mc-w">每年提取</label><output id="mc-w-out" for="mc-w">12 万元（首年 4.0%）</output></div>
+                  <input type="range" id="mc-w" min="2" max="30" value="12" step="1">
+                </div>
+                <div class="lab-ctl">
+                  <div class="lab-ctl-label"><label for="mc-n">提取年数</label><output id="mc-n-out" for="mc-n">30 年</output></div>
+                  <input type="range" id="mc-n" min="10" max="40" value="30" step="1">
+                </div>
+                <button type="button" class="btn btn-primary mc-btn" id="mc-run">重新模拟 500 次</button>
+                <div class="mc-band" id="mc-band">
+                  <div class="mc-cell mc-cell--main"><b id="mc-rate">—</b><span>成功率<br>（期末资产 &gt; 0）</span></div>
+                  <div class="mc-cell"><b id="mc-p10">—</b><span>最差 5%<br>期末资产</span></div>
+                  <div class="mc-cell"><b id="mc-med">—</b><span>中位数<br>期末资产</span></div>
+                  <div class="mc-cell"><b id="mc-best">—</b><span>最好情况<br>期末资产</span></div>
+                </div>
+                <p class="lab-note">假设年回报 ~ 正态分布（均值 7%、波动 15%），纯算术演示 <span class="tag tag-perm">算术永真</span>；「4% 提取约九成成功」来自美股历史大样本模拟 <span class="tag tag-stat">统计规律</span>。若最差 5% 归零：常备 2–3 年现金，或下调提取额。</p>
+              </div>
+              <figure class="mc-fig">
+                <svg id="mc-svg" viewBox="0 0 560 300" role="img" aria-label="蒙特卡洛模拟路径图：横轴年份，纵轴资产。蓝色细线为随机路径，红色为中途耗尽的路径，粗蓝线为中位数路径。">
+                  <line x1="46" y1="266" x2="548" y2="266" class="mc-axis"/>
+                  <line x1="46" y1="150" x2="548" y2="150" class="mc-base"/>
+                  <path class="mc-path" d="M46,210 C130,196 220,120 320,104 S500,54 548,38"/>
+                  <path class="mc-path mc-path--dead" d="M46,210 C110,196 170,208 220,266 L548,266"/>
+                  <text x="50" y="142" class="mc-label">期初资产</text>
+                  <text x="548" y="288" class="mc-label" text-anchor="end">第 30 年</text>
+                  <text x="297" y="70" class="mc-label mc-label--mid" text-anchor="middle">静态示意 · 启用 JavaScript 后运行 500 次模拟</text>
+                </svg>
+                <figcaption>每条细线是一次随机人生，红色是中途耗尽的路径。决定成败的不是平均回报，而是回报到来的<strong>顺序</strong>。</figcaption>
+              </figure>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================= 训练场 · 浅灰章 ======================= -->
+    <section id="gym" class="chapter chapter--light">
+      <div class="container">
+        <header class="chapter-head reveal">
+          <p class="chapter-eyebrow">训练场 · 练习 · 自测 · 复习</p>
+          <h2 class="chapter-title">知道，不等于做到</h2>
+          <p class="chapter-sub">看懂了整套体系？来这里验收 —— 案例复盘、偏差照妖镜、间隔复习卡、概念地图。<br class="br-lg">知识的最后一公里，只能靠自己走完。</p>
+        </header>
+
+        <!-- ① 案例复盘 -->
+        <h3 class="block-head reveal">案例复盘 · 用别人的学费上课</h3>
+        <p class="block-intro reveal">三个教学案例：情节虚构，逻辑真实。每题作答后立即显示判定，答完展开复盘解析。</p>
+
+        <div class="cases reveal">
+          <!-- 案例 A -->
+          <details class="case-card" open>
+            <summary>
+              <span class="case-no">案例 A</span>
+              <span class="case-name">追高的诱惑<em>借钱买热闹 · 抱团股式教训</em></span>
+              <span class="case-icon" aria-hidden="true"></span>
+            </summary>
+            <div class="case-body">
+              <p class="case-story">某消费白马股三年涨了 4 倍，PE 冲到 70 倍，全网热议"核心资产永涨"。小李不仅押上全部积蓄，还借了 20 万信用贷加仓 —— "这次不一样，跌不了"。随后两年，PE 回落到 25 倍，股价最大回撤 60%。</p>
+              <div class="case-data">
+                <div><b>70 → 25</b><span>PE 倍数回落</span></div>
+                <div><b>−60%</b><span>随后最大回撤</span></div>
+                <div><b>+20 万</b><span>信用贷 · 年息 6%</span></div>
+              </div>
+              <div class="case-q">
+                <p class="case-q-title">Q1 · 买入十问里，哪一问是"一票否决"级红灯？</p>
+                <div class="quiz-opts">
+                  <input type="radio" id="ca1a" name="ca1" value="a">
+                  <label for="ca1a">借钱投资 —— 这不是"问"，是禁令<em class="fb fb--good">✓ 对。杠杆把"暂时波动"变成"永久亏损"，十问第一问就出局。</em></label>
+                  <input type="radio" id="ca1b" name="ca1" value="b">
+                  <label for="ca1b">估值太贵 —— 70 倍 PE 超出合理区间<em class="fb fb--bad">✕ 也是红灯，但排不到第一 —— 只要不用杠杆，贵可以不买；借钱则无论贵贱都是错。</em></label>
+                  <input type="radio" id="ca1c" name="ca1" value="c">
+                  <label for="ca1c">仓位过重 —— 全部积蓄梭哈<em class="fb fb--bad">✕ 同样致命，但先于它触发的是资金性质：借来的钱，仓位 1% 也算违规。</em></label>
+                </div>
+              </div>
+              <div class="case-q">
+                <p class="case-q-title">Q2 · 股价跌 60% 而公司还在赚钱，这属于什么风险？</p>
+                <div class="quiz-opts">
+                  <input type="radio" id="ca2a" name="ca2" value="a">
+                  <label for="ca2a">估值回归 —— 情绪推高的部分总要还<em class="fb fb--good">✓ 对。公司没变坏，变的是出价：70 倍 PE 的"确定性溢价"本身就不确定。<span class="tag tag-stat">统计规律</span></em></label>
+                  <input type="radio" id="ca2b" name="ca2" value="b">
+                  <label for="ca2b">公司造假 —— 基本面恶化<em class="fb fb--bad">✕ 本例公司盈利未变。这是"好公司 ≠ 好股票"：出价过高，好公司也能让你亏十年。</em></label>
+                  <input type="radio" id="ca2c" name="ca2" value="c">
+                  <label for="ca2c">运气不好 —— 黑天鹅事件<em class="fb fb--bad">✕ 不是黑天鹅。高估值均值回归是高概率事件，只是不知道哪天发生 —— 这正是"不可预测但可准备"。</em></label>
+                </div>
+              </div>
+              <details class="case-solution">
+                <summary>复盘解析</summary>
+                <p><b>三个错误叠加：</b>① 借钱投资（十问第一否决）；② 为"故事"支付 70 倍价格（三步定价法里，合理 PE 应基于正常盈利，而非情绪顶点）；③ "这次不一样" —— 历史上最贵的六个词。<b>正确姿势：</b>同样的公司，等估值回到合理区间、用五年不用的闲钱、仓位 ≤ 10%，才是"同一道菜的不同吃法"。<a class="inline-link" href="#deck">去决策台重走十问</a>。</p>
+              </details>
+            </div>
+          </details>
+
+          <!-- 案例 B -->
+          <details class="case-card">
+            <summary>
+              <span class="case-no">案例 B</span>
+              <span class="case-name">恐慌的代价<em>暴跌割肉 · 半年踏平反弹</em></span>
+              <span class="case-icon" aria-hidden="true"></span>
+            </summary>
+            <div class="case-body">
+              <p class="case-story">市场暴跌 30%，新闻全是坏消息。小王持仓的宽基指数浮亏 28%，夜夜失眠，第二天开盘清仓"保住剩下的"。半年后市场反弹 40%，他一路看着，始终不敢追回 —— 账户最终比死扛的人少 30%，还多付了情绪税。</p>
+              <div class="case-data">
+                <div><b>−28%</b><span>清仓时浮亏</span></div>
+                <div><b>+40%</b><span>随后半年反弹</span></div>
+                <div><b>−30%</b><span>vs 持有者的最终差距</span></div>
+              </div>
+              <div class="case-q">
+                <p class="case-q-title">Q1 · 卖出那一刻，小王主要输给了什么？</p>
+                <div class="quiz-opts">
+                  <input type="radio" id="cb1a" name="cb1" value="a">
+                  <label for="cb1a">损失厌恶 —— 亏损的痛感约是盈利快感的 2 倍<em class="fb fb--good">✓ 对。行为金融的基石发现：对损失的过度反应，让人在最不该卖的时刻卖出。<span class="tag tag-stat">统计规律</span></em></label>
+                  <input type="radio" id="cb1b" name="cb1" value="b">
+                  <label for="cb1b">信息不足 —— 他缺乏专业知识<em class="fb fb--bad">✕ 他持有的是指数，不需要更多知识。需要的是预案 —— 知识他其实够用，纪律没跟上。</em></label>
+                  <input type="radio" id="cb1c" name="cb1" value="c">
+                  <label for="cb1c">运气不好 —— 谁也躲不过暴跌<em class="fb fb--bad">✕ 暴跌确实躲不过，但他输在"暴跌中的动作"：浮亏 28% 不等于永久亏损，卖出才坐实。</em></label>
+                </div>
+              </div>
+              <div class="case-q">
+                <p class="case-q-title">Q2 · 按本体系，大盘跌 30% 时持有人该做什么？</p>
+                <div class="quiz-opts">
+                  <input type="radio" id="cb2a" name="cb2" value="a">
+                  <label for="cb2a">翻开风暴预案 A，按预案执行再平衡或继续定投<em class="fb fb--good">✓ 对。预案的全部价值在"事前写好、事中照做" —— 恐慌中的你没有能力思考，只有能力执行。</em></label>
+                  <input type="radio" id="cb2b" name="cb2" value="b">
+                  <label for="cb2b">清仓观望，等右侧信号再回来<em class="fb fb--bad">✕ "等右侧"大概率等来追高：反弹 40% 时你敢买吗？小王就是这么错过的。</em></label>
+                  <input type="radio" id="cb2c" name="cb2" value="c">
+                  <label for="cb2c">加杠杆抄底，跌这么多够便宜了<em class="fb fb--bad">✕ 抄底可以（用预案内的资金），杠杆不行 —— 你不知道底部在哪，杠杆让你等不到黎明。</em></label>
+                </div>
+              </div>
+              <details class="case-solution">
+                <summary>复盘解析</summary>
+                <p><b>核心教训：</b>波动不是风险，被迫的卖出才是。小王的失眠是仓位超出了回撤预算的信号 —— 28% 的浮亏让他崩溃，说明股票仓位可能超过"预算 ÷ 50%"的上限。<b>两个修复：</b>① 事前：用回撤感受器测出真实预算，再定股票上限；② 事中：把风暴预案 A 贴在交易软件旁边。<a class="inline-link" href="#lab">回撤感受器在此</a>。</p>
+              </details>
+            </div>
+          </details>
+
+          <!-- 案例 C -->
+          <details class="case-card">
+            <summary>
+              <span class="case-no">案例 C</span>
+              <span class="case-name">便宜的陷阱<em>低 PE ≠ 低估值</em></span>
+              <span class="case-icon" aria-hidden="true"></span>
+            </summary>
+            <div class="case-body">
+              <p class="case-story">某周期股 PE 只有 4 倍，"便宜到离谱"。小张想起体系说的"七折买入"，重仓杀入。一年后行业周期见顶回落，业绩腰斩，股价再跌 50% —— PE 反而变成了 15 倍。</p>
+              <div class="case-data">
+                <div><b>4 倍</b><span>买入时 PE</span></div>
+                <div><b>−50%</b><span>一年后股价</span></div>
+                <div><b>→ 15 倍</b><span>业绩腰斩后 PE 不降反升</span></div>
+              </div>
+              <div class="case-q">
+                <p class="case-q-title">Q1 · 小张错在哪一步？</p>
+                <div class="quiz-opts">
+                  <input type="radio" id="cc1a" name="cc1" value="a">
+                  <label for="cc1a">把"低 PE"当成了"低估值" —— 周期顶部的峰值利润压低了 PE<em class="fb fb--good">✓ 对。这是经典 PE 陷阱：周期股在利润最高点时最"便宜"，恰恰是风险最高点。</em></label>
+                  <input type="radio" id="cc1b" name="cc1" value="b">
+                  <label for="cc1b">七折买入法本身错了<em class="fb fb--bad">✕ 方法没错，错在输入：七折是对"内在价值"打折，不是对"错误估值"打折。</em></label>
+                  <input type="radio" id="cc1c" name="cc1" value="c">
+                  <label for="cc1c">错在没分散 —— 该买 10 只这样的股票<em class="fb fb--bad">✕ 分散是对的方向，但买 10 只同一个陷阱还是陷阱 —— 错误的估值方法不会因为分散而变对。</em></label>
+                </div>
+              </div>
+              <div class="case-q">
+                <p class="case-q-title">Q2 · 三步定价法怎么正确打开周期股？</p>
+                <div class="quiz-opts">
+                  <input type="radio" id="cc2a" name="cc2" value="a">
+                  <label for="cc2a">用周期中枢的"正常化 EPS"估值，而不是峰值利润<em class="fb fb--good">✓ 对。席勒 CAPE 的思想：用跨周期平均盈利抹平波动，估出来的价值才可信。<span class="tag tag-stat">统计规律</span></em></label>
+                  <input type="radio" id="cc2b" name="cc2" value="b">
+                  <label for="cc2b">直接拿当前 EPS × 当前 PE，数字就是答案<em class="fb fb--bad">✕ 垃圾进垃圾出：峰值利润 × 低倍数 = 看似便宜的假象。估值的第一步是判断"正常"在哪。</em></label>
+                  <input type="radio" id="cc2c" name="cc2" value="c">
+                  <label for="cc2c">看股价历史低点，跌到那里就是便宜<em class="fb fb--bad">✕ 历史低点是锚定，不是价值 —— 基本面变了，历史价格没有义务给你托底。</em></label>
+                </div>
+              </div>
+              <details class="case-solution">
+                <summary>复盘解析</summary>
+                <p><b>一句话：</b>先问"利润正常吗"，再问"价格便宜吗"。三步定价法的每一步都可以在<a class="inline-link" href="#lab">估值沙盒</a>里演练 —— 把 EPS 换成周期中枢值再算一次，你会看到完全不同的买价。周期股的正确姿势：低估区域分批、正常估值兑现，或者干脆用宽基绕开这道题。</p>
+              </details>
+            </div>
+          </details>
+        </div>
+
+        <!-- ② 偏差自测 -->
+        <h3 class="block-head reveal">偏差自测 · 六道照妖镜</h3>
+        <p class="block-intro reveal">六个真实到扎心的场景，每题只有一个理性选项。诚实作答 —— 这份答卷没有旁观者。</p>
+
+        <div class="bias reveal">
+          <div class="js-panel">
+            <div class="bias-meter">
+              <div class="bias-meter-head"><span>理性刻度</span><b id="bias-count">0 / 6</b></div>
+              <div class="bias-bar"><i id="bias-fill"></i></div>
+              <p class="bias-verdict" id="bias-verdict">每答一题更新一次 —— 盘中的你，未必是答题的你。</p>
+            </div>
+          </div>
+          <ol class="bias-list" id="bias-list">
+            <li class="bias-q" data-topic="损失厌恶">
+              <p class="bias-story"><b>场景 1</b>两只股票各投 10 万：A 浮盈 20%，B 浮亏 20%。急用钱，只能卖一只。你卖——</p>
+              <div class="quiz-opts">
+                <input type="radio" id="b1a" name="bq1" value="r">
+                <label for="b1a">重新评估两只的论点与估值，卖出逻辑更弱的<em class="fb fb--good">✓ 理性 —— 向前看，成本与浮盈浮亏都是历史。</em></label>
+                <input type="radio" id="b1b" name="bq1" value="b" data-bias="损失厌恶">
+                <label for="b1b">卖 A 落袋为安，B 等回本<em class="fb fb--bad">✕ 损失厌恶 + 处置效应 —— 市场不知道你的成本价，"回本"不是卖出理由。</em></label>
+                <input type="radio" id="b1c" name="bq1" value="b" data-bias="期限错配">
+                <label for="b1c">都不卖，借钱应急<em class="fb fb--bad">✕ 期限错配 —— 为短期支出动用杠杆，把波动变成强制平仓风险。</em></label>
+              </div>
+            </li>
+            <li class="bias-q" data-topic="过度自信">
+              <p class="bias-story"><b>场景 2</b>你连续三年跑赢指数，年化 15%。朋友要把钱交给你管。你会——</p>
+              <div class="quiz-opts">
+                <input type="radio" id="b2a" name="bq2" value="r">
+                <label for="b2a">先复盘三年里多少是风格与运气（β），多少是能力（α）<em class="fb fb--good">✓ 理性 —— 三年样本太小，先归因再下结论。</em></label>
+                <input type="radio" id="b2b" name="bq2" value="b" data-bias="过度自信">
+                <label for="b2b">加大仓位甚至上杠杆，能力已经验证<em class="fb fb--bad">✕ 过度自信 —— 牛市里的 β 常被误认成 α，幸存者偏差再加一层滤镜。</em></label>
+                <input type="radio" id="b2c" name="bq2" value="b" data-bias="社会认同">
+                <label for="b2c">接下，大家都信任我，不能辜负<em class="fb fb--bad">✕ 社会认同绑架 —— 用别人的期待替代自己的判断，责任会放大每一次波动。</em></label>
+              </div>
+            </li>
+            <li class="bias-q" data-topic="锚定效应">
+              <p class="bias-story"><b>场景 3</b>50 元买入的股票现价 35 元，基本面没变差，但当初买入论点之一已被证伪。你——</p>
+              <div class="quiz-opts">
+                <input type="radio" id="b3a" name="bq3" value="r">
+                <label for="b3a">按今天的论点与估值重新决策，成本价无关<em class="fb fb--good">✓ 理性 —— 每天都是"要不要按现价买入这只股票"的新决策。</em></label>
+                <input type="radio" id="b3b" name="bq3" value="b" data-bias="锚定效应">
+                <label for="b3b">死扛到回本，回本就卖<em class="fb fb--bad">✕ 锚定效应 —— 50 元只是你的成本，不是它的价值；市场不欠你回本。</em></label>
+                <input type="radio" id="b3c" name="bq3" value="b" data-bias="沉没成本">
+                <label for="b3c">补仓摊低成本，跌不到哪去了<em class="fb fb--bad">✕ 沉没成本加倍 —— 论点已破还加注，是"用新错误掩埋旧错误"。</em></label>
+              </div>
+            </li>
+            <li class="bias-q" data-topic="从众效应">
+              <p class="bias-story"><b>场景 4</b>某热门赛道基金三个月涨 40%，办公室人人晒收益。你——</p>
+              <div class="quiz-opts">
+                <input type="radio" id="b4a" name="bq4" value="r">
+                <label for="b4a">查估值分位与自己的配置计划，计划外的不买<em class="fb fb--good">✓ 理性 —— 你的资产配置计划，就是用来对冲"全场燥热"的。</em></label>
+                <input type="radio" id="b4b" name="bq4" value="b" data-bias="从众效应">
+                <label for="b4b">少买一点跟上大部队，反正大家都在赚<em class="fb fb--bad">✕ 从众 + FOMO —— "大家"的成本比你低 40%，你接的是最后一棒的位置。</em></label>
+                <input type="radio" id="b4c" name="bq4" value="b" data-bias="赌徒谬误">
+                <label for="b4c">买没涨的"补涨"品种，总该轮到它了<em class="fb fb--bad">✕ 次生赌博 —— 从众的变种：用"轮动"包装的追涨，比直接追涨更没有依据。</em></label>
+              </div>
+            </li>
+            <li class="bias-q" data-topic="近因效应">
+              <p class="bias-story"><b>场景 5</b>过去三年市场年化 −8%，账户缩水。朋友说"股票就是骗局"，你想全清仓转存款。你——</p>
+              <div class="quiz-opts">
+                <input type="radio" id="b5a" name="bq5" value="r">
+                <label for="b5a">拉长到 20 年滚动窗口看全历史，再决定<em class="fb fb--good">✓ 理性 —— 拉长窗口，股票正收益概率随持有期上升；三年太短，不足以证伪长期。<span class="tag tag-stat">统计规律</span></em></label>
+                <input type="radio" id="b5b" name="bq5" value="b" data-bias="近因效应">
+                <label for="b5b">清仓。趋势变了，这次不一样<em class="fb fb--bad">✕ 近因效应 —— 用最近三年外推未来三十年，"这次不一样"是史上最贵的六个字。</em></label>
+                <input type="radio" id="b5c" name="bq5" value="b" data-bias="择时幻觉">
+                <label for="b5c">清一半，等涨回来再进<em class="fb fb--bad">✕ 择时幻觉 —— 反弹时你大概率不敢买回：卖点精确、买点永远"再等等"。</em></label>
+              </div>
+            </li>
+            <li class="bias-q" data-topic="处置效应">
+              <p class="bias-story"><b>场景 6</b>年终再平衡窗口到了：组合里一只 +30%、一只 −30%，均偏离目标 8%。你——</p>
+              <div class="quiz-opts">
+                <input type="radio" id="b6a" name="bq6" value="r">
+                <label for="b6a">按规则再平衡：卖超配买低配，盈亏无关<em class="fb fb--good">✓ 理性 —— 再平衡的本质是纪律化的高抛低吸，规则替你克服偏好。</em></label>
+                <input type="radio" id="b6b" name="bq6" value="b" data-bias="处置效应">
+                <label for="b6b">只卖盈利的落袋，亏损的留着翻本<em class="fb fb--bad">✕ 处置效应 —— 卖盈保亏是散户落后大盘的主要来源之一，恰好把该做的反过来。</em></label>
+                <input type="radio" id="b6c" name="bq6" value="b" data-bias="不作为偏差">
+                <label for="b6c">今年先不动，亏损的卖了怕反弹<em class="fb fb--bad">✕ 不作为偏差 —— "不动"看似安全，实为把决策权交给情绪；偏离 8% 已超 ±5% 触发线。</em></label>
+              </div>
+            </li>
+          </ol>
+          <p class="nojs-note">未启用 JavaScript 时，逐题作答、对照绿色「理性」与红色「偏差」标记自评 —— 六个偏差的完整解毒剂表在<a class="inline-link" href="learn.html#principles">理论馆 · 认知层</a>。</p>
+        </div>
+
+        <!-- ③ 间隔复习 -->
+        <h3 class="block-head reveal">间隔复习 · 对抗遗忘曲线</h3>
+        <p class="block-intro reveal">遗忘是默认设置，复习是对它的反抗：学完当天 → 次日 → 3 天 → 7 天 → 21 天 → 90 天，各翻一遍这套卡。<span class="tag tag-stat">统计规律</span></p>
+
+        <div class="sr-loop reveal" aria-label="间隔复习周期">
+          <span class="sr-step"><b>当天</b><i>学完即测</i></span>
+          <span class="sr-step"><b>次日</b><i>第 1 次复习</i></span>
+          <span class="sr-step"><b>3 天</b><i>第 2 次</i></span>
+          <span class="sr-step"><b>7 天</b><i>第 3 次</i></span>
+          <span class="sr-step"><b>21 天</b><i>第 4 次</i></span>
+          <span class="sr-step sr-step--last"><b>90 天</b><i>长期巩固</i></span>
+        </div>
+        <p class="js-note">点卡片翻面看答案；背面「标记复习」会记在本机浏览器 —— 当前待复习 <b id="flip-count">0</b> 张。</p>
+        <p class="nojs-note">点卡片翻面即可作答 ——「标记复习」功能需要 JavaScript，其余完整可用。</p>
+
+        <div class="flip-grid reveal" id="flip-grid">
+          <div class="flip" id="f1">
+            <input type="checkbox" id="f1c" class="flip-toggle">
+            <label for="f1c" class="flip-card">
+              <span class="flip-front"><b>01</b>72 法则怎么用？<i>点击翻面 →</i></span>
+              <span class="flip-back"><b>72 ÷ 年化收益率 ≈ 翻倍年数</b>年化 7.2% → 约 10 年翻一倍。<span class="tag tag-perm">算术永真</span><button type="button" class="flip-mark" data-act="mark" data-card="f1">标记复习</button></span>
+            </label>
+          </div>
+          <div class="flip" id="f2">
+            <input type="checkbox" id="f2c" class="flip-toggle">
+            <label for="f2c" class="flip-card">
+              <span class="flip-front"><b>02</b>三步定价法是哪三步？<i>点击翻面 →</i></span>
+              <span class="flip-back"><b>正常 EPS × 合理 PE = 内在价值，再打七折</b>例：5 元 × 12.5 = 62.5 元，七折买价 43.75 元。<span class="tag tag-perm">算术永真</span><button type="button" class="flip-mark" data-act="mark" data-card="f2">标记复习</button></span>
+            </label>
+          </div>
+          <div class="flip" id="f3">
+            <input type="checkbox" id="f3c" class="flip-toggle">
+            <label for="f3c" class="flip-card">
+              <span class="flip-front"><b>03</b>组合回报差异，配置解释多少？<i>点击翻面 →</i></span>
+              <span class="flip-back"><b>约 90% 来自资产配置，而非选股择时</b>先定股债比例，再谈挑什么、何时买。<span class="tag tag-stat">统计规律</span><button type="button" class="flip-mark" data-act="mark" data-card="f3">标记复习</button></span>
+            </label>
+          </div>
+          <div class="flip" id="f4">
+            <input type="checkbox" id="f4c" class="flip-toggle">
+            <label for="f4c" class="flip-card">
+              <span class="flip-front"><b>04</b>凯利公式怎么算、怎么用？<i>点击翻面 →</i></span>
+              <span class="flip-back"><b>f = 2p − 1（胜率 p 的最优仓位）</b>实战再砍半：p=60% → f=20% → 实用 10%。<span class="tag tag-perm">算术永真</span><button type="button" class="flip-mark" data-act="mark" data-card="f4">标记复习</button></span>
+            </label>
+          </div>
+          <div class="flip" id="f5">
+            <input type="checkbox" id="f5c" class="flip-toggle">
+            <label for="f5c" class="flip-card">
+              <span class="flip-front"><b>05</b>4% 法则是什么？<i>点击翻面 →</i></span>
+              <span class="flip-back"><b>年提取率 ≤ 4%，长期耗尽风险较低</b>再留 2–3 年现金缓冲，先花债券、后动股票。<span class="tag tag-stat">统计规律</span><button type="button" class="flip-mark" data-act="mark" data-card="f5">标记复习</button></span>
+            </label>
+          </div>
+          <div class="flip" id="f6">
+            <input type="checkbox" id="f6c" class="flip-toggle">
+            <label for="f6c" class="flip-card">
+              <span class="flip-front"><b>06</b>再平衡什么时候触发？<i>点击翻面 →</i></span>
+              <span class="flip-back"><b>每年一次，或任一资产偏离目标 ±5%</b>偏离 &lt; 5% 时不动 —— 不动本身就是纪律。<span class="tag tag-perm">算术永真</span><button type="button" class="flip-mark" data-act="mark" data-card="f6">标记复习</button></span>
+            </label>
+          </div>
+          <div class="flip" id="f7">
+            <input type="checkbox" id="f7c" class="flip-toggle">
+            <label for="f7c" class="flip-card">
+              <span class="flip-front"><b>07</b>集中度的两条上限？<i>点击翻面 →</i></span>
+              <span class="flip-back"><b>单一标的 ≤ 10%，单行业 ≤ 25%</b>仓位约束先于收益想象 —— 这是章程级铁律。<span class="tag tag-perm">章程铁律</span><button type="button" class="flip-mark" data-act="mark" data-card="f7">标记复习</button></span>
+            </label>
+          </div>
+          <div class="flip" id="f8">
+            <input type="checkbox" id="f8c" class="flip-toggle">
+            <label for="f8c" class="flip-card">
+              <span class="flip-front"><b>08</b>回撤预算怎么换算股票上限？<i>点击翻面 →</i></span>
+              <span class="flip-back"><b>能承受的最大回撤 ÷ 50% = 股票仓位上限</b>只能忍 20% 回撤 → 股票 ≤ 40%。<span class="tag tag-perm">算术永真</span><button type="button" class="flip-mark" data-act="mark" data-card="f8">标记复习</button></span>
+            </label>
+          </div>
+          <div class="flip" id="f9">
+            <input type="checkbox" id="f9c" class="flip-toggle">
+            <label for="f9c" class="flip-card">
+              <span class="flip-front"><b>09</b>市场有效性分哪三种形式？<i>点击翻面 →</i></span>
+              <span class="flip-back"><b>弱式（技术无效）/ 半强式（基本面无效）/ 强式（内幕也无效）</b>个人可长期占优的战场，多半在"行为纪律"而非信息。<span class="tag tag-stat">统计规律</span><button type="button" class="flip-mark" data-act="mark" data-card="f9">标记复习</button></span>
+            </label>
+          </div>
+          <div class="flip" id="f10">
+            <input type="checkbox" id="f10c" class="flip-toggle">
+            <label for="f10c" class="flip-card">
+              <span class="flip-front"><b>10</b>DCF 的三要素？<i>点击翻面 →</i></span>
+              <span class="flip-back"><b>未来自由现金流 × 折现率 × 终值假设</b>三处假设各动一点，结果天差地别 —— 输入垃圾，输出垃圾。<span class="tag tag-perm">算术永真</span><button type="button" class="flip-mark" data-act="mark" data-card="f10">标记复习</button></span>
+            </label>
+          </div>
+          <div class="flip" id="f11">
+            <input type="checkbox" id="f11c" class="flip-toggle">
+            <label for="f11c" class="flip-card">
+              <span class="flip-front"><b>11</b>风暴预案 A / B / C 分别对应什么？<i>点击翻面 →</i></span>
+              <span class="flip-back"><b>A 大盘跌 30% · B 个股跌 30% · C 我先崩溃了</b>预案写在恐慌之前，风暴中只执行、不思考。<span class="tag tag-perm">章程铁律</span><button type="button" class="flip-mark" data-act="mark" data-card="f11">标记复习</button></span>
+            </label>
+          </div>
+          <div class="flip" id="f12">
+            <input type="checkbox" id="f12c" class="flip-toggle">
+            <label for="f12c" class="flip-card">
+              <span class="flip-front"><b>12</b>买入十问的第一问是什么？<i>点击翻面 →</i></span>
+              <span class="flip-back"><b>这笔钱五年不用吗？—— 借钱与生活费一票否决</b>资金性质先于一切分析：杠杆把波动变成永久亏损。<span class="tag tag-perm">章程铁律</span><button type="button" class="flip-mark" data-act="mark" data-card="f12">标记复习</button></span>
+            </label>
+          </div>
+        </div>
+
+        <!-- ④ 概念地图 -->
+        <h3 class="block-head reveal">概念地图 · 一张图看全体系</h3>
+        <p class="block-intro reveal">五层结构、环环相扣：每一层都是下一层的前提。点击节点直达对应章节。</p>
+        <figure class="km reveal">
+          <svg id="km-svg" viewBox="0 0 960 640" role="img" aria-label="投资体系概念地图：目标、认知、方法、执行、风控五层">
+            <g class="km-links">
+              <line x1="580" y1="104" x2="310" y2="170"/>
+              <line x1="580" y1="104" x2="580" y2="170"/>
+              <line x1="580" y1="104" x2="850" y2="170"/>
+              <line x1="310" y1="226" x2="310" y2="300"/>
+              <line x1="580" y1="226" x2="580" y2="300"/>
+              <line x1="850" y1="226" x2="850" y2="300"/>
+              <line x1="310" y1="356" x2="310" y2="430"/>
+              <line x1="580" y1="356" x2="310" y2="430"/>
+              <line x1="850" y1="356" x2="850" y2="430"/>
+              <line x1="310" y1="486" x2="310" y2="560"/>
+              <line x1="580" y1="486" x2="580" y2="560"/>
+              <line x1="850" y1="486" x2="850" y2="560"/>
+            </g>
+            <g class="km-layer-labels">
+              <g><rect x="44" y="61" width="88" height="30" rx="8"/><text x="88" y="81">目标层</text></g>
+              <g><rect x="44" y="183" width="88" height="30" rx="8"/><text x="88" y="203">认知层</text></g>
+              <g><rect x="44" y="313" width="88" height="30" rx="8"/><text x="88" y="333">方法层</text></g>
+              <g><rect x="44" y="443" width="88" height="30" rx="8"/><text x="88" y="463">执行层</text></g>
+              <g><rect x="44" y="573" width="88" height="30" rx="8"/><text x="88" y="593">风控层</text></g>
+            </g>
+            <a class="km-node" href="#triage">
+              <g><rect x="480" y="48" width="200" height="56" rx="14"/><text class="km-t" x="580" y="72">长期财务目标</text><text class="km-s" x="580" y="90">跑赢通胀 · 钱尽其用</text></g>
+            </a>
+            <a class="km-node" href="learn.html#principles">
+              <g><rect x="210" y="170" width="200" height="56" rx="14"/><text class="km-t" x="310" y="194">市场有效性</text><text class="km-s" x="310" y="212">SPIVA 证据</text></g>
+            </a>
+            <a class="km-node" href="learn.html#principles">
+              <g><rect x="480" y="170" width="200" height="56" rx="14"/><text class="km-t" x="580" y="194">行为偏差</text><text class="km-s" x="580" y="212">六大照妖镜</text></g>
+            </a>
+            <a class="km-node" href="learn.html#principles">
+              <g><rect x="750" y="170" width="200" height="56" rx="14"/><text class="km-t" x="850" y="194">概率与期望</text><text class="km-s" x="850" y="212">EV · 贝叶斯更新</text></g>
+            </a>
+            <a class="km-node" href="learn.html#allocation">
+              <g><rect x="210" y="300" width="200" height="56" rx="14"/><text class="km-t" x="310" y="324">资产配置</text><text class="km-s" x="310" y="342">90 / 10 证据</text></g>
+            </a>
+            <a class="km-node" href="learn.html#methods">
+              <g><rect x="480" y="300" width="200" height="56" rx="14"/><text class="km-t" x="580" y="324">估值</text><text class="km-s" x="580" y="342">DCF · 三步定价</text></g>
+            </a>
+            <a class="km-node" href="#lab">
+              <g><rect x="750" y="300" width="200" height="56" rx="14"/><text class="km-t" x="850" y="324">再平衡</text><text class="km-s" x="850" y="342">年度或 ±5%</text></g>
+            </a>
+            <a class="km-node" href="#deck">
+              <g><rect x="210" y="430" width="200" height="56" rx="14"/><text class="km-t" x="310" y="454">买入十问</text><text class="km-s" x="310" y="472">一票否决制</text></g>
+            </a>
+            <a class="km-node" href="#deck">
+              <g><rect x="480" y="430" width="200" height="56" rx="14"/><text class="km-t" x="580" y="454">决策日志</text><text class="km-s" x="580" y="472">六栏 · 复盘</text></g>
+            </a>
+            <a class="km-node" href="learn.html#execution">
+              <g><rect x="750" y="430" width="200" height="56" rx="14"/><text class="km-t" x="850" y="454">SOP 日历</text><text class="km-s" x="850" y="472">例行节奏</text></g>
+            </a>
+            <a class="km-node" href="learn.html#risk">
+              <g><rect x="210" y="560" width="200" height="56" rx="14"/><text class="km-t" x="310" y="584">回撤预算</text><text class="km-s" x="310" y="602">÷50% = 股票上限</text></g>
+            </a>
+            <a class="km-node" href="learn.html#risk">
+              <g><rect x="480" y="560" width="200" height="56" rx="14"/><text class="km-t" x="580" y="584">集中度</text><text class="km-s" x="580" y="602">≤10% · ≤25%</text></g>
+            </a>
+            <a class="km-node" href="#deck">
+              <g><rect x="750" y="560" width="200" height="56" rx="14"/><text class="km-t" x="850" y="584">风暴预案</text><text class="km-s" x="850" y="602">A · B · C</text></g>
+            </a>
+          </svg>
+          <figcaption>上层是下层的前提：没有目标谈不上认知，没有认知方法就是玄学，没有纪律风控形同虚设。</figcaption>
+        </figure>
+
+        <div class="cta-band reveal">
+          <h3>操作之外，还有原理。</h3>
+          <p>三层架构、认知基石、四大引擎与大师智慧 —— 依据与推导，都在理论馆。</p>
+          <a href="learn.html" class="btn btn-primary">进入理论馆</a>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ======================= 页脚 ======================= -->
+  <footer class="footer">
+    <div class="container footer-inner">
+      <div class="footer-brand">
+        <span class="brand-name">投资体系<em>OS</em></span>
+        <p>三层架构 × 四大引擎 × 十项铁律。<br>用认知守护财富，用纪律穿越周期。</p>
+      </div>
+      <nav class="footer-nav" aria-label="页脚导航">
+        <a href="#daily">每日</a>
+        <a href="#triage">分诊</a>
+        <a href="#deck">决策台</a>
+        <a href="#lab">实验室</a>
+        <a href="#gym">训练场</a>
+        <a href="learn.html">理论馆</a>
+      </nav>
+    </div>
+    <div class="container footer-legal">
+      <p>本体系仅供知识学习与研究参考，不构成任何投资建议。市场有风险，投资需谨慎。</p>
+      <p>© 2026 Investment OS</p>
+    </div>
+  </footer>
+
+  <script src="app.js" defer></script>
+</body>
+</html>
