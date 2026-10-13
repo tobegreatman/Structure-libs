@@ -1,0 +1,987 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>市场主线分析报告</title>
+<meta name="description" content="AI 主线分析 JSON 的可视化报告页：粘贴/拖入 JSON，自动生成苹果风格图文报告。">
+<style>
+/* ============ 基础与变量（Apple 风格令牌，与 DESIGN.md 对齐） ============ */
+:root{
+  --black:#000; --ink:#1d1d1f; --canvas:#f5f5f7; --white:#fff;
+  --gray:#6e6e73; --border-soft:#d2d2d7; --border-mid:#86868b;
+  --blue:#0071e3; --blue-hi:#2997ff; --link:#0066cc;
+  --green:#34c759; --amber:#ff9f0a; --red:#ff453a;
+  --radius-card:18px; --radius-btn:980px;
+  --font:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","Segoe UI","PingFang SC","Microsoft YaHei","Helvetica Neue",Arial,sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:var(--font);background:var(--canvas);color:var(--ink);-webkit-font-smoothing:antialiased;line-height:1.5}
+a{color:var(--link);text-decoration:none}
+.wrap{max-width:980px;margin:0 auto;padding:0 22px}
+
+/* ============ 固定导航（深色磨砂 + scroll-spy） ============ */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;height:52px;background:rgba(0,0,0,.78);backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%)}
+nav .wrap{display:flex;align-items:center;justify-content:space-between;height:100%}
+.nav-brand{color:#f5f5f7;font-size:14px;font-weight:600;letter-spacing:.5px;white-space:nowrap}
+.nav-links{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none}
+.nav-links::-webkit-scrollbar{display:none}
+.nav-links a{color:rgba(255,255,255,.72);font-size:12.5px;padding:6px 10px;border-radius:980px;white-space:nowrap;transition:color .25s,background .25s;position:relative}
+.nav-links a:hover{color:#fff;background:rgba(255,255,255,.08)}
+.nav-links a.active{color:var(--blue-hi);background:rgba(41,151,255,.12)}
+
+/* ============ Hero（黑场章节） ============ */
+#hero{background:var(--black);color:#f5f5f7;padding:150px 0 110px;text-align:center;position:relative;overflow:hidden}
+.hero-glow{position:absolute;pointer-events:none;border-radius:50%;filter:blur(90px);opacity:.14;animation:float 12s ease-in-out infinite alternate}
+.hero-glow.g1{width:520px;height:520px;background:#0071e3;top:-200px;left:12%}
+.hero-glow.g2{width:420px;height:420px;background:#2997ff;bottom:-220px;right:8%;animation-delay:-6s}
+@keyframes float{from{transform:translateY(0) scale(1)}to{transform:translateY(46px) scale(1.12)}}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;font-size:12px;padding:6px 14px;border-radius:980px;margin-bottom:26px;border:1px solid;letter-spacing:.5px}
+.hero-badge.sample{color:var(--amber);border-color:rgba(255,159,10,.55);background:rgba(255,159,10,.08)}
+.hero-badge.imported{color:var(--blue-hi);border-color:rgba(41,151,255,.55);background:rgba(41,151,255,.10)}
+.hero-badge .dot{width:7px;height:7px;border-radius:50%;background:currentColor;animation:blink 2.2s ease-in-out infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
+.hero-kicker{font-size:13px;letter-spacing:4px;color:#86868b;text-transform:uppercase;margin-bottom:18px}
+#hero h1{font-size:clamp(42px,7vw,74px);font-weight:600;line-height:1.05;letter-spacing:-.02em;margin-bottom:22px}
+.hero-summary{max-width:660px;margin:0 auto 30px;font-size:19px;line-height:1.5;color:#a1a1a6}
+.hero-chips{display:flex;justify-content:center;flex-wrap:wrap;gap:10px;margin-bottom:42px}
+.hchip{font-size:13.5px;padding:7px 16px;border-radius:980px;border:1px solid rgba(255,255,255,.22);color:#f5f5f7;display:inline-flex;gap:7px;align-items:center}
+.hchip b{font-weight:600}
+.hchip.hl{border-color:transparent;background:var(--blue);color:#fff}
+.hero-actions{display:flex;justify-content:center;gap:14px;flex-wrap:wrap}
+.btn{font-family:var(--font);font-size:15px;font-weight:500;border:none;cursor:pointer;border-radius:980px;padding:13px 26px;transition:transform .2s,opacity .2s,background .2s}
+.btn:active{transform:scale(.97)}
+.btn-primary{background:var(--blue);color:#fff}
+.btn-primary:hover{background:#0077ed}
+.btn-ghost{background:transparent;color:#2997ff;border:1px solid rgba(255,255,255,.25)}
+.btn-ghost:hover{border-color:#2997ff}
+.hero-hint{margin-top:26px;font-size:12.5px;color:#6e6e73}
+
+/* ============ 章节通用 ============ */
+section{padding:92px 0}
+section.light{background:var(--canvas)}
+section.plain{background:var(--white)}
+.sec-kicker{font-size:13px;font-weight:600;color:var(--blue);letter-spacing:2.5px;text-transform:uppercase;margin-bottom:10px}
+section h2{font-size:clamp(30px,4.6vw,42px);font-weight:600;letter-spacing:-.01em;margin-bottom:10px}
+.sec-sub{color:var(--gray);font-size:16.5px;margin-bottom:38px;max-width:720px}
+.reveal{opacity:0;transform:translateY(26px);transition:opacity .8s ease,transform .8s ease}
+.reveal.in{opacity:1;transform:none}
+
+/* 卡片与芯片 */
+.card{background:var(--white);border:1px solid var(--border-soft);border-radius:var(--radius-card);padding:24px}
+.plain .card{background:var(--canvas);border-color:transparent}
+.chip{display:inline-flex;align-items:center;gap:6px;font-size:12px;padding:5px 12px;border-radius:980px;background:#e8e8ed;color:var(--ink)}
+.chip.src{background:transparent;color:var(--gray);border:1px solid var(--border-soft);font-size:11px;padding:3px 9px}
+.chip.gap{background:rgba(255,159,10,.12);color:#b26a00;border:1px dashed rgba(255,159,10,.6)}
+.empty-note{color:var(--gray);font-size:15px;border:1px dashed var(--border-mid);border-radius:14px;padding:22px;text-align:center}
+
+/* 评级胶囊 */
+.lv{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;padding:4px 12px;border-radius:980px}
+.lv i{width:7px;height:7px;border-radius:50%;display:inline-block}
+.lv.strong{color:var(--blue);background:rgba(0,113,227,.10)}.lv.strong i{background:var(--blue)}
+.lv.mid{color:#b26a00;background:rgba(255,159,10,.12)}.lv.mid i{background:var(--amber)}
+.lv.weak{color:var(--gray);background:#e8e8ed}.lv.weak i{background:var(--border-mid)}
+.lv.none{color:var(--gray);background:#e8e8ed}
+
+/* 结论胶囊 */
+.v{display:inline-flex;align-items:center;font-size:13px;font-weight:600;padding:5px 14px;border-radius:980px}
+.v-main{background:var(--blue);color:#fff}
+.v-alt{background:rgba(255,159,10,.14);color:#b26a00}
+.v-rot{background:#e8e8ed;color:var(--gray)}
+
+/* ============ 环境态 ============ */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:16px}
+.stat .stat-label{font-size:13px;color:var(--gray);margin-bottom:10px}
+.stat .stat-value{font-size:42px;font-weight:600;letter-spacing:-.02em;line-height:1;font-variant-numeric:tabular-nums}
+.stat .stat-value small{font-size:20px;font-weight:500;color:var(--gray);margin-left:2px}
+.stat .stat-sub{font-size:13px;margin-top:10px;min-height:18px}
+.stat .stat-src{font-size:11px;color:var(--gray);margin-top:12px;padding-top:10px;border-top:1px solid var(--border-soft)}
+.up{color:var(--red)}.down{color:var(--green)}.flat{color:var(--gray)}
+.index-card{display:flex;flex-wrap:wrap;align-items:center;gap:12px;padding:18px 24px}
+.index-card .idx-name{font-size:17px;font-weight:600;margin-right:6px}
+.gauge-card{margin-top:16px}
+.gauge-title{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+.gauge-title b{font-size:16px}
+.gauge-title span{font-size:12px;color:var(--gray)}
+.gauge{position:relative;height:14px;border-radius:7px;overflow:visible;display:flex}
+.gz{height:100%}
+.gz1{background:#e0e0e5;border-radius:7px 0 0 7px}
+.gz2{background:rgba(255,159,10,.4)}
+.gz3{background:rgba(52,199,89,.45);border-radius:0 7px 7px 0}
+.gmark{position:absolute;top:-7px;width:4px;height:28px;background:var(--ink);border-radius:2px;transform:translateX(-2px);transition:left 1s cubic-bezier(.2,.7,.2,1)}
+.gmark::after{content:attr(data-v);position:absolute;top:-30px;left:50%;transform:translateX(-50%);font-size:13px;font-weight:700;background:var(--ink);color:#fff;padding:3px 10px;border-radius:980px;white-space:nowrap}
+.gauge-zones{display:flex;justify-content:space-between;margin-top:12px;font-size:11.5px;color:var(--gray)}
+
+/* ============ 候选方向 ============ */
+.cand-count{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap}
+.cands-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:16px}
+.cand-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:16px}
+.cand-head h3{font-size:22px;font-weight:600;letter-spacing:-.01em}
+.dim-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-top:1px solid var(--border-soft)}
+.dim-row .dk{font-size:12px;font-weight:700;color:var(--blue);width:26px}
+.dim-row .dn{font-size:13.5px;color:var(--ink);flex:1}
+.cand-note{margin-top:14px;font-size:13.5px;color:var(--gray);background:rgba(0,113,227,.05);border-left:3px solid rgba(0,113,227,.35);padding:10px 12px;border-radius:0 10px 10px 0}
+
+/* ============ 证据链 ============ */
+.evid-grid{display:grid;grid-template-columns:1fr;gap:22px}
+.evid-radar{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:12px 46px;padding:22px 26px}
+.evid-radar svg{width:340px;max-width:100%;height:auto;flex:none}
+.evid-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(400px,1fr));gap:14px;align-content:start}
+.radar-aside{flex:1 1 340px;max-width:600px;text-align:left}
+.ra-title{font-size:16px;font-weight:600;margin-bottom:2px}
+.ra-note{margin-top:12px;font-size:12.5px;color:var(--gray)}
+.rrow{display:flex;align-items:center;gap:12px;padding:10px 0}
+.rrow + .rrow{border-top:1px solid var(--border-soft)}
+.rname{font-size:14.5px;font-weight:500}
+.rbar{flex:1;height:6px;border-radius:3px;background:#e8e8ed;overflow:hidden}
+.rbar i{display:block;height:100%;width:0;border-radius:3px;background:var(--blue);transition:width 1.1s cubic-bezier(.2,.7,.2,1) .2s}
+.rbar.mid i{background:var(--amber)}
+.rbar.weak i{background:var(--border-mid)}
+.reveal.in .rbar i{width:var(--w)}
+.dim-block{border:1px solid var(--border-soft);border-radius:14px;padding:18px 20px;background:var(--white)}
+.dim-head{display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap}
+.dtag{font-size:12px;font-weight:700;color:#fff;background:var(--blue);border-radius:7px;padding:3px 8px}
+.dim-head h3{font-size:17px;font-weight:600}
+.point{display:flex;gap:10px;align-items:baseline;padding:7px 0;font-size:15px;flex-wrap:wrap}
+.point::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--blue);flex:none;position:relative;top:-2px}
+
+/* ============ 相对强度 ============ */
+.rs-box{padding:10px}
+.rs-box svg{width:100%;height:auto;display:block}
+.rs-legend{display:flex;gap:18px;padding:14px 18px 6px;font-size:13px;color:var(--gray);flex-wrap:wrap}
+.rs-legend i{display:inline-block;width:22px;height:3px;border-radius:2px;vertical-align:middle;margin-right:6px}
+
+/* ============ 生命周期 + 梯队 ============ */
+.cycle-box svg{width:100%;height:auto}
+.stage-note{margin-top:8px;font-size:13.5px;color:var(--gray)}
+.ladder-groups{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin-top:26px}
+.lg-title{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.role-pill{font-size:12px;font-weight:600;padding:4px 13px;border-radius:980px;color:#fff}
+.role-pioneer{background:var(--blue)}
+.role-core{background:var(--ink)}
+.role-follower{background:var(--border-mid)}
+.lg-title small{color:var(--gray);font-size:12px}
+.lg-item{padding:12px 0;border-top:1px solid var(--border-soft)}
+.lg-item .lg-name{font-size:16px;font-weight:600;display:flex;justify-content:space-between;gap:10px}
+.lg-item .lg-gain{font-variant-numeric:tabular-nums;white-space:nowrap}
+.lg-item .lg-note{font-size:12.5px;color:var(--gray);margin-top:4px}
+
+/* ============ 预警 ============ */
+.alert-card{display:flex;gap:14px;align-items:flex-start;background:var(--canvas);border-radius:14px;border-left:4px solid var(--amber);padding:18px 20px;margin-bottom:12px}
+.plain .alert-card{background:#fff;border:1px solid var(--border-soft);border-left:4px solid var(--amber)}
+.alert-card svg{flex:none;margin-top:2px}
+.alert-card p{font-size:15.5px}
+
+/* ============ 体系对接 ============ */
+.sys-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}
+.sys-state{font-size:34px;font-weight:600;letter-spacing:.02em}
+.sys-state.env-attack{color:var(--green)}
+.sys-state.env-neutral{color:var(--amber)}
+.sys-state.env-defend{color:var(--border-mid)}
+.sys-desc{font-size:13px;color:var(--gray);margin-top:8px}
+.sys-perm{font-size:17px;font-weight:600;line-height:1.5}
+.res-list{display:flex;flex-wrap:wrap;gap:8px}
+.res-list .chip{font-size:13px;padding:7px 14px;background:rgba(0,113,227,.09);color:var(--blue);border:1px solid rgba(0,113,227,.3)}
+
+/* ============ 附录 ============ */
+.appx-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.appx h4{font-size:14px;color:var(--gray);font-weight:600;margin-bottom:12px}
+.appx .chips{display:flex;flex-wrap:wrap;gap:8px}
+.appx-meta{margin-top:22px;font-size:12.5px;color:var(--gray);display:flex;gap:20px;flex-wrap:wrap}
+.appx-actions{margin-top:20px;display:flex;gap:12px;flex-wrap:wrap}
+.btn-mini{font-size:13.5px;padding:10px 20px;border-radius:980px;cursor:pointer;border:1px solid var(--border-mid);background:transparent;font-family:var(--font);color:var(--ink);transition:all .2s}
+.btn-mini:hover{border-color:var(--blue);color:var(--blue)}
+
+/* ============ 页脚 ============ */
+footer{background:var(--black);color:#86868b;padding:56px 0 64px;font-size:12.5px;line-height:1.7}
+footer .f-title{color:#a1a1a6;font-weight:600;margin-bottom:14px;font-size:13px}
+footer .f-demo{color:var(--amber);margin-bottom:10px;display:none}
+footer.demo footer .f-demo{display:block}
+
+/* ============ 导入弹窗 ============ */
+#modal{position:fixed;inset:0;z-index:200;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(0,0,0,.55);backdrop-filter:blur(8px)}
+#modal.open{display:flex}
+.modal-panel{width:min(680px,94vw);background:var(--ink);border:1px solid #424245;border-radius:18px;padding:28px;color:#f5f5f7;box-shadow:0 24px 60px rgba(0,0,0,.5)}
+.modal-panel h3{font-size:21px;font-weight:600;margin-bottom:6px}
+.modal-panel .m-sub{font-size:13px;color:#a1a1a6;margin-bottom:18px}
+#json-in{width:100%;height:240px;background:#0d0d0d;color:#f5f5f7;border:1px solid #424245;border-radius:12px;padding:14px;font:12.5px/1.6 Consolas,Menlo,monospace;resize:vertical;outline:none}
+#json-in:focus{border-color:var(--blue)}
+.m-tools{display:flex;align-items:center;gap:14px;margin:12px 0 4px;flex-wrap:wrap}
+.m-file{position:relative;overflow:hidden}
+.m-file input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.m-file span{font-size:13px;color:#2997ff;border:1px solid rgba(41,151,255,.4);border-radius:980px;padding:6px 14px;display:inline-block}
+#drop-hint{font-size:12px;color:#6e6e73}
+.m-err{color:var(--red);font-size:12.5px;min-height:18px;margin-top:8px}
+.m-actions{display:flex;gap:12px;margin-top:10px;flex-wrap:wrap}
+.m-actions .btn-ghost{color:#a1a1a6}
+
+/* SVG 动效 */
+.pulse{transform-box:fill-box;transform-origin:center;animation:pulse 2s ease-out infinite}
+@keyframes pulse{0%{opacity:.9;transform:scale(.6)}70%{opacity:0;transform:scale(1.7)}100%{opacity:0;transform:scale(1.7)}}
+
+/* ============ 响应式 ============ */
+@media (max-width:760px){
+  #hero{padding:120px 0 80px}
+  section{padding:64px 0}
+  .appx-grid{grid-template-columns:1fr}
+  .nav-brand{display:none}
+  .stat .stat-value{font-size:34px}
+}
+</style>
+</head>
+<body>
+
+<!-- 导航 -->
+<nav id="nav">
+  <div class="wrap">
+    <div class="nav-brand">市场主线 · 分析报告</div>
+    <div class="nav-links" id="nav-links">
+      <a href="#hero" class="active">结论</a>
+      <a href="#sec-env">环境态</a>
+      <a href="#sec-cand">候选方向</a>
+      <a href="#sec-evid">证据链</a>
+      <a href="#sec-rs">相对强度</a>
+      <a href="#sec-cycle">梯队</a>
+      <a href="#sec-alert">预警</a>
+      <a href="#sec-system">体系对接</a>
+      <a href="#sec-appx">附录</a>
+    </div>
+  </div>
+</nav>
+
+<!-- Hero：一句话结论 -->
+<header id="hero">
+  <div class="hero-glow g1"></div><div class="hero-glow g2"></div>
+  <div class="wrap" id="hero-body"></div>
+</header>
+
+<main>
+  <!-- 1 环境态快照 -->
+  <section id="sec-env" class="light reveal">
+    <div class="wrap">
+      <div class="sec-kicker">01 · Environment</div>
+      <h2>环境态快照</h2>
+      <p class="sec-sub">情绪温度、大盘位置与市场广度——单一交易日的状态数据，只用于更新状态，不用于形成结论。</p>
+      <div id="env-body"></div>
+    </div>
+  </section>
+
+  <!-- 2 候选方向四维评分 -->
+  <section id="sec-cand" class="plain reveal">
+    <div class="wrap">
+      <div class="sec-kicker">02 · Candidates</div>
+      <h2>候选方向 · 四维评分</h2>
+      <p class="sec-sub">每个方向过 D1 价格 / D2 资金 / D3 赚钱效应 / D4 逻辑四道检验；结论三档分级：主线 / 候补 / 轮动。</p>
+      <div id="cand-body"></div>
+    </div>
+  </section>
+
+  <!-- 3 主线证据链 -->
+  <section id="sec-evid" class="light reveal">
+    <div class="wrap">
+      <div class="sec-kicker">03 · Evidence</div>
+      <h2>主线证据链</h2>
+      <p class="sec-sub">先证据、后结论：每个数字都带 [来源｜日期]，四维雷达对应 D1-D4 的强弱结构。</p>
+      <div id="evid-body"></div>
+    </div>
+  </section>
+
+  <!-- 4 相对强度 -->
+  <section id="sec-rs" class="plain reveal">
+    <div class="wrap">
+      <div class="sec-kicker">04 · Relative Strength</div>
+      <h2>相对强度 · 60 日窗口</h2>
+      <p class="sec-sub">主线板块 vs 沪深300 的累计涨幅对比——W2 中窗是主线确认与否决的核心窗口。</p>
+      <div id="rs-body"></div>
+    </div>
+  </section>
+
+  <!-- 5 生命周期与龙头梯队 -->
+  <section id="sec-cycle" class="light reveal">
+    <div class="wrap">
+      <div class="sec-kicker">05 · Lifecycle &amp; Ladder</div>
+      <h2>生命周期 · 龙头梯队</h2>
+      <p class="sec-sub">量能结构、龙头行为、调整后能否再新高——定位主线所处阶段；中军须符合「板块内流通市值前 20% 且成交额前 10%」。</p>
+      <div id="cycle-body"></div>
+    </div>
+  </section>
+
+  <!-- 6 切换预警 -->
+  <section id="sec-alert" class="plain reveal">
+    <div class="wrap">
+      <div class="sec-kicker">06 · Switch Alert</div>
+      <h2>切换预警</h2>
+      <p class="sec-sub">主线不是永恒的：出现以下可观察信号时，本轮主线判断需要重估。</p>
+      <div id="alert-body"></div>
+    </div>
+  </section>
+
+  <!-- 7 体系对接 -->
+  <section id="sec-system" class="light reveal">
+    <div class="wrap">
+      <div class="sec-kicker">07 · System</div>
+      <h2>体系对接</h2>
+      <p class="sec-sub">环境态为初判、供人工终审；信号 A/B 权限与板块共振名单，对接《从认知到体系》第 7 / 9 章。</p>
+      <div id="sys-body"></div>
+    </div>
+  </section>
+
+  <!-- 8 数据附录 -->
+  <section id="sec-appx" class="plain reveal">
+    <div class="wrap">
+      <div class="sec-kicker">08 · Appendix</div>
+      <h2>数据缺口与来源</h2>
+      <p class="sec-sub">缺口是设计内行为（宁缺毋滥）；全部来源去重列示，供人工抽查复核。</p>
+      <div id="appx-body"></div>
+    </div>
+  </section>
+</main>
+
+<!-- 页脚 -->
+<footer id="footer">
+  <div class="wrap">
+    <p class="f-demo" id="f-demo">当前页面展示的是<b>虚构示例数据</b>，非真实行情——导入你的分析 JSON 后自动替换。</p>
+    <p class="f-title">免责声明</p>
+    <p>以上内容基于公开数据和量化分析，仅供参考，不构成投资建议。市场有风险，投资需谨慎。任何投资决策应结合个人风险承受能力、资金状况和投资目标独立判断，必要时咨询持牌专业机构。过往表现不预示未来收益。</p>
+  </div>
+</footer>
+
+<!-- 导入弹窗 -->
+<div id="modal" aria-hidden="true">
+  <div class="modal-panel">
+    <h3>导入 JSON 报告</h3>
+    <p class="m-sub">粘贴 AI 输出的 JSON，或选择 / 拖入 .json 文件。字段规范见模板文档《市场主线判断 · AI 联网分析提示词模板》第五步。</p>
+    <textarea id="json-in" spellcheck="false" placeholder='在此粘贴 JSON，或拖入 .json 文件…'></textarea>
+    <div class="m-tools">
+      <label class="m-file"><input type="file" id="file-in" accept=".json,application/json"><span>选择 .json 文件</span></label>
+      <span id="drop-hint">也可以直接把文件拖进本窗口</span>
+    </div>
+    <div class="m-err" id="m-err"></div>
+    <div class="m-actions">
+      <button class="btn btn-primary" id="btn-render">渲染报告</button>
+      <button class="btn btn-ghost" id="btn-reset">恢复示例</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ================================================================
+   示例数据（虚构演示，非真实行情）——打开页面即预览渲染效果；
+   导入用户 JSON 后被替换。结构 = 模板文档第五步 Schema。
+================================================================ */
+var SAMPLE = {
+  meta: {
+    reportDate: "2026-10-11", mainline: "AI 算力硬件", stage: "发酵期",
+    confidence: "高", environmentState: "中性", verdict: "确认主线",
+    summary: "算力板块 20 日内 13 日跑赢沪深300、成交占比 9%→14%，梯队完整且订单逻辑持续加强，确认主线（示例演示数据）。"
+  },
+  environment: {
+    limitUpCount: {value: 74, prev: 63, source: "财联社复盘｜10-11"},
+    maxConBoards: {value: 6, theme: "算力租赁", source: "财联社复盘｜10-11"},
+    blastRate: {value: 17, source: "同花顺｜10-11"},
+    breadth: {value: 52, source: "东方财富｜10-11"},
+    index: {name: "上证指数", vsMA20: "+0.8%", vsMA60: "+2.3%", volumeTrend: "温和缩量", source: "东方财富｜10-11"}
+  },
+  candidates: [
+    {name: "AI 算力硬件", d1: "强", d2: "强", d3: "中", d4: "强", verdict: "主线", note: "20 日 13 日跑赢沪深300（65%）；成交占比 9%→14%；海外云商 Capex 上修"},
+    {name: "半导体设备", d1: "中", d2: "强", d3: "中", d4: "中", verdict: "候补", note: "20 日 9 日跑赢（45%）；主力净流入转正；国产化订单节奏待业绩验证"},
+    {name: "创新药", d1: "弱", d2: "中", d3: "弱", d4: "中", verdict: "轮动", note: "单日脉冲后消失；消息驱动，未通过 W2 窗口检验"}
+  ],
+  evidence: [
+    {dim: "D1", title: "价格持续性", level: "强", points: [
+      {fact: "近 20 日 13 日跑赢沪深300，占比 65%（≥60% 达标）", source: "东方财富行情中心｜10-11"},
+      {fact: "板块指数站上 MA20 与 MA60，且 MA20 > MA60，均线多头", source: "同花顺｜10-11"}
+    ]},
+    {dim: "D2", title: "资金持续性", level: "强", points: [
+      {fact: "板块成交额占比由 9% 抬升至 14%，趋势连续 3 周向上", source: "东方财富数据中心｜10-11"},
+      {fact: "近 20 日主力资金累计净流入 +212 亿", source: "东方财富资金流向｜10-11"}
+    ]},
+    {dim: "D3", title: "赚钱效应", level: "中", points: [
+      {fact: "梯队完整：先锋 4 连板打开空间，中军创 20 日新高", source: "财联社复盘｜10-10"},
+      {fact: "板块内上涨家数占比 58%，普涨结构", source: "东方财富｜10-11"}
+    ]},
+    {dim: "D4", title: "逻辑驱动", level: "强", points: [
+      {fact: "海外四大云商集体上修 2027 年 Capex，算力订单可见性延长", source: "券商研报摘要｜10-09"},
+      {fact: "国产算力招标落地，产业趋势获政策与订单双重加强", source: "官方网站公告｜10-08"}
+    ]}
+  ],
+  relativeStrength: [
+    {date: "08-18", sector: 0.6, benchmark: 0.3}, {date: "08-22", sector: 1.2, benchmark: 0.5},
+    {date: "08-26", sector: 2.0, benchmark: 0.2}, {date: "08-30", sector: 2.6, benchmark: 0.8},
+    {date: "09-03", sector: 3.4, benchmark: 0.4}, {date: "09-08", sector: 4.2, benchmark: 0.9},
+    {date: "09-12", sector: 5.0, benchmark: 1.2}, {date: "09-16", sector: 6.1, benchmark: 0.7},
+    {date: "09-19", sector: 7.3, benchmark: 1.4}, {date: "09-24", sector: 8.9, benchmark: 1.8},
+    {date: "09-28", sector: 10.4, benchmark: 1.5}, {date: "09-30", sector: 12.0, benchmark: 2.1},
+    {date: "10-08", sector: 13.6, benchmark: 2.6}, {date: "10-09", sector: 15.2, benchmark: 2.2},
+    {date: "10-10", sector: 16.9, benchmark: 3.1}, {date: "10-11", sector: 18.6, benchmark: 4.2}
+  ],
+  ladder: {
+    leaders: [{name: "先锋股份A", role: "先锋", gain20d: "+82%", note: "4 连板 · 空间板打开者"}],
+    core: [
+      {name: "中军科技B", role: "中军", gain20d: "+31%", note: "板块内流通市值前 20% · 成交额前 10% · 趋势中军"},
+      {name: "中军制造C", role: "中军", gain20d: "+24%", note: "成交额前 10% · 机构可参与"}
+    ],
+    followers: [
+      {name: "跟风电子D", role: "跟风", gain20d: "+15%", note: "低位补涨跟随"},
+      {name: "跟风软件E", role: "跟风", gain20d: "+11%", note: "补涨跟随"}
+    ]
+  },
+  alerts: [
+    "板块成交额占比连续 3 日回落至 10% 以下 → 警惕资金撤离，重估 D2",
+    "先锋股断板且中军跌破 20 日线 → 判定进入分歧期，关闭信号 A 权限",
+    "新方向连续 2 日涨停家数与最高连板全面压过算力 → 生成新候选，启动周度四维检验"
+  ],
+  system: {
+    environmentState: "中性",
+    signalPermission: "中性态：本周只做信号 B（缩量回踩），信号 A 仅观察",
+    resonanceSectors: ["AI 算力硬件", "半导体设备"]
+  },
+  dataGaps: ["融资余额近 20 日序列未获取", "炸板率来自二手汇总，未核对原始复盘数据"],
+  sources: ["东方财富行情中心", "东方财富数据中心", "东方财富资金流向", "同花顺", "财联社复盘", "券商研报摘要", "官方网站公告"]
+};
+
+/* ================================================================ 工具函数 ================================================================ */
+var $ = function(s){ return document.querySelector(s); };
+function esc(v){
+  return String(v == null ? '' : v).replace(/[&<>"']/g, function(c){
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+  });
+}
+/* 评级：强 / 中 / 弱 / 缺失 */
+var LV = {'强':{t:'强', k:1, c:'strong'}, '中':{t:'中', k:.6, c:'mid'}, '弱':{t:'弱', k:.25, c:'weak'}};
+function lv(x){ return LV[x] || {t:'—', k:0, c:'none'}; }
+function lvChip(x){ var o = lv(x); return '<span class="lv ' + o.c + '"><i></i>' + esc(o.t) + '</span>'; }
+/* 结论分级 */
+function verdictCls(v){
+  v = String(v || '');
+  if (v.indexOf('主线') >= 0 && v.indexOf('候补') < 0 && v.indexOf('无') < 0) return 'v-main';
+  if (v.indexOf('候补') >= 0) return 'v-alt';
+  return 'v-rot';
+}
+/* 环境态配色 */
+function envCls(s){
+  s = String(s || '');
+  if (s.indexOf('进攻') >= 0) return 'env-attack';
+  if (s.indexOf('中性') >= 0) return 'env-neutral';
+  return 'env-defend';
+}
+/* 涨跌着色（A股：红涨绿跌） */
+function delta(cur, prev){
+  if (cur == null) return '<span class="flat">—</span>';
+  if (prev == null) return '';
+  var d = cur - prev;
+  if (d > 0) return '<span class="up">▲ +' + d + '</span>';
+  if (d < 0) return '<span class="down">▼ ' + d + '</span>';
+  return '<span class="flat">— 持平</span>';
+}
+/* 数字滚动动画 */
+function countUp(el, target, suffix, dur){
+  if (target == null || isNaN(target)) return;
+  suffix = suffix || ''; dur = dur || 750;
+  var t0 = null;
+  function step(ts){
+    if (!t0) t0 = ts;
+    var p = Math.min((ts - t0) / dur, 1);
+    var e = 1 - Math.pow(1 - p, 3);
+    el.textContent = Math.round(target * e) + suffix;
+    if (p < 1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+/* 来源行 / 缺口胶囊 */
+function srcLine(s){ return s ? '<div class="stat-src">来源：' + esc(s) + '</div>' : ''; }
+function gapNote(txt){ return '<span class="chip gap">数据缺口 · ' + esc(txt || '未获取') + '</span>'; }
+
+/* ================================================================ SVG：四维雷达（菱形四轴） ================================================================ */
+function radarSVG(levels){
+  var c = 170, R = 118;
+  var axes = [
+    {label:'D1 价格', x:c, y:c - R},
+    {label:'D2 资金', x:c + R, y:c},
+    {label:'D3 赚钱效应', x:c, y:c + R},
+    {label:'D4 逻辑', x:c - R, y:c}
+  ];
+  var s = '<svg viewBox="0 0 340 340" role="img" aria-label="四维雷达图">';
+  for (var g = 1; g <= 4; g++){
+    var r = R * g / 4;
+    s += '<polygon points="' + c + ',' + (c - r) + ' ' + (c + r) + ',' + c + ' ' + c + ',' + (c + r) + ' ' + (c - r) + ',' + c
+      + '" fill="none" stroke="#d2d2d7" stroke-width="1"/>';
+  }
+  s += '<line x1="' + c + '" y1="' + (c - R) + '" x2="' + c + '" y2="' + (c + R) + '" stroke="#d2d2d7" stroke-width="1"/>';
+  s += '<line x1="' + (c - R) + '" y1="' + c + '" x2="' + (c + R) + '" y2="' + c + '" stroke="#d2d2d7" stroke-width="1"/>';
+  var pts = [];
+  for (var i = 0; i < 4; i++){
+    var k = levels[i], x = c + (axes[i].x - c) * k, y = c + (axes[i].y - c) * k;
+    pts.push(x.toFixed(1) + ',' + y.toFixed(1));
+  }
+  s += '<polygon points="' + pts.join(' ') + '" fill="rgba(0,113,227,.18)" stroke="#0071e3" stroke-width="2.5" stroke-linejoin="round"/>';
+  for (var j = 0; j < 4; j++){
+    var kj = levels[j], xj = c + (axes[j].x - c) * kj, yj = c + (axes[j].y - c) * kj;
+    if (kj > 0) s += '<circle cx="' + xj + '" cy="' + yj + '" r="4.5" fill="#0071e3"/>';
+  }
+  var lab = [
+    {t:axes[0].label, x:c, y:c - R - 16, a:'middle'},
+    {t:axes[1].label, x:c + R + 12, y:c + 5, a:'start'},
+    {t:axes[2].label, x:c, y:c + R + 24, a:'middle'},
+    {t:axes[3].label, x:c - R - 12, y:c + 5, a:'end'}
+  ];
+  for (var m = 0; m < 4; m++){
+    s += '<text x="' + lab[m].x + '" y="' + lab[m].y + '" text-anchor="' + lab[m].a
+      + '" font-size="13" fill="#6e6e73" font-family="inherit">' + esc(lab[m].t) + '</text>';
+  }
+  return s + '</svg>';
+}
+
+/* ================================================================ SVG：生命周期曲线 ================================================================ */
+var STAGES = [
+  {n:'启动期', d:'首波上攻 · 梯队未完整', x:80,  y:192, ly:230},
+  {n:'发酵期', d:'梯队完整 · 龙头新高',   x:230, y:118, ly:230},
+  {n:'高潮期', d:'补涨扩散 · 成交见顶',   x:380, y:74,  ly:230},
+  {n:'分歧期', d:'龙头滞涨 · 跟风大面',   x:530, y:132, ly:230},
+  {n:'退潮期', d:'亏钱效应 · 排名消失',   x:680, y:198, ly:230}
+];
+function cycleSVG(stageIdx){
+  var s = '<svg viewBox="0 0 760 260" role="img" aria-label="主线生命周期">';
+  s += '<path d="M80,192 C140,180 172,140 230,118 C288,96 325,74 380,74 C435,74 476,110 530,132 C584,154 622,192 680,198" '
+    + 'fill="none" stroke="#0071e3" stroke-width="2.5" opacity=".85"/>';
+  for (var i = 0; i < STAGES.length; i++){
+    var st = STAGES[i], cur = (i === stageIdx);
+    if (cur) s += '<circle class="pulse" cx="' + st.x + '" cy="' + st.y + '" r="15" fill="none" stroke="#0071e3" stroke-width="2"/>';
+    s += '<circle cx="' + st.x + '" cy="' + st.y + '" r="' + (cur ? 7 : 5) + '" fill="' + (cur ? '#0071e3' : '#86868b') + '"/>';
+    s += '<text x="' + st.x + '" y="' + st.ly + '" text-anchor="middle" font-size="14.5" font-weight="' + (cur ? 700 : 500)
+      + '" fill="' + (cur ? '#0071e3' : '#1d1d1f') + '" font-family="inherit">' + esc(st.n) + '</text>';
+    s += '<text x="' + st.x + '" y="' + (st.ly + 20) + '" text-anchor="middle" font-size="11" fill="#6e6e73" font-family="inherit">' + esc(st.d) + '</text>';
+  }
+  return s + '</svg>';
+}
+
+/* ================================================================ SVG：相对强度折线 ================================================================ */
+function rsSVG(points){
+  var W = 760, H = 300, L = 52, Rp = 84, T = 26, B = 36;
+  var n = points.length;
+  var vals = [];
+  for (var i = 0; i < n; i++){ vals.push(points[i].sector, points[i].benchmark); }
+  var mn = Math.min.apply(null, vals), mx = Math.max.apply(null, vals);
+  if (mn === mx){ mn -= 1; mx += 1; }
+  var pad = (mx - mn) * .08; mn -= pad; mx += pad;
+  function X(i){ return L + i * (W - L - Rp) / (n - 1); }
+  function Y(v){ return T + (mx - v) * (H - T - B) / (mx - mn); }
+  var s = '<svg viewBox="0 0 760 300" role="img" aria-label="相对强度走势">';
+  s += '<defs><linearGradient id="rsFill" x1="0" y1="0" x2="0" y2="1">'
+    + '<stop offset="0%" stop-color="rgba(0,113,227,.20)"/><stop offset="100%" stop-color="rgba(0,113,227,0)"/></linearGradient></defs>';
+  for (var g = 0; g <= 3; g++){
+    var gv = mn + (mx - mn) * g / 3, gy = Y(gv);
+    s += '<line x1="' + L + '" y1="' + gy + '" x2="' + (W - Rp) + '" y2="' + gy + '" stroke="#e8e8ed" stroke-width="1"/>';
+    s += '<text x="' + (L - 8) + '" y="' + (gy + 4) + '" text-anchor="end" font-size="11" fill="#86868b" font-family="inherit">' + gv.toFixed(0) + '%</text>';
+  }
+  if (mn < 0 && mx > 0){
+    s += '<line x1="' + L + '" y1="' + Y(0) + '" x2="' + (W - Rp) + '" y2="' + Y(0) + '" stroke="#86868b" stroke-width="1" stroke-dasharray="5 5"/>';
+  }
+  function path(key){
+    var d = '';
+    for (var i = 0; i < n; i++){
+      d += (i ? 'L' : 'M') + X(i).toFixed(1) + ',' + Y(points[i][key]).toFixed(1);
+    }
+    return d;
+  }
+  s += '<path d="' + path('sector') + ' L' + X(n - 1).toFixed(1) + ',' + Y(mn).toFixed(1) + ' L' + L + ',' + Y(mn).toFixed(1) + ' Z" fill="url(#rsFill)"/>';
+  s += '<path d="' + path('benchmark') + '" fill="none" stroke="#86868b" stroke-width="1.6" stroke-dasharray="6 5"/>';
+  s += '<path d="' + path('sector') + '" fill="none" stroke="#0071e3" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>';
+  var last = points[n - 1];
+  s += '<circle cx="' + X(n - 1) + '" cy="' + Y(last.sector) + '" r="4.5" fill="#0071e3"/>';
+  s += '<circle cx="' + X(n - 1) + '" cy="' + Y(last.benchmark) + '" r="4" fill="#86868b"/>';
+  s += '<text x="' + (X(n - 1) + 10) + '" y="' + (Y(last.sector) + 4) + '" font-size="13" font-weight="700" fill="#0071e3" font-family="inherit">板块 ' + Number(last.sector).toFixed(1) + '%</text>';
+  s += '<text x="' + (X(n - 1) + 10) + '" y="' + (Y(last.benchmark) + 4) + '" font-size="12" fill="#86868b" font-family="inherit">沪深300 ' + Number(last.benchmark).toFixed(1) + '%</text>';
+  var tickIdx = [0, Math.floor((n - 1) / 2), n - 1];
+  for (var t = 0; t < tickIdx.length; t++){
+    var ti = tickIdx[t];
+    s += '<text x="' + X(ti) + '" y="' + (H - 10) + '" text-anchor="' + (t === 0 ? 'start' : (t === 2 ? 'end' : 'middle'))
+      + '" font-size="11" fill="#86868b" font-family="inherit">' + esc(points[ti].date) + '</text>';
+  }
+  return s + '</svg>';
+}
+
+/* ================================================================ 渲染：各章节 ================================================================ */
+function renderHero(d, mode){
+  var meta = d.meta || {};
+  var isNoMain = String(meta.mainline || '').indexOf('无主线') >= 0;
+  var badge = mode === 'sample'
+    ? '<span class="hero-badge sample"><span class="dot"></span>示例数据 · 非真实行情</span>'
+    : '<span class="hero-badge imported"><span class="dot"></span>导入数据 · ' + esc(meta.reportDate || '未注明日期') + '</span>';
+  function confCls(c){ return c === '高' ? 'var(--green)' : (c === '中' ? 'var(--amber)' : 'var(--red)'); }
+  var chips = '';
+  chips += '<span class="hchip ' + (isNoMain ? '' : 'hl') + '">结论 <b>' + esc(meta.verdict || '—') + '</b></span>';
+  if (!isNoMain && meta.stage) chips += '<span class="hchip">阶段 <b>' + esc(meta.stage) + '</b></span>';
+  chips += '<span class="hchip">置信度 <b style="color:' + confCls(meta.confidence) + '">' + esc(meta.confidence || '—') + '</b></span>';
+  chips += '<span class="hchip">环境态 <b>' + esc(meta.environmentState || '—') + '</b></span>';
+  $('#hero-body').innerHTML =
+    badge +
+    '<div class="hero-kicker">Market Mainline Analysis · ' + esc(meta.reportDate || '') + '</div>' +
+    '<h1>' + esc(meta.mainline || '市场主线分析') + '</h1>' +
+    '<p class="hero-summary">' + esc(meta.summary || '') + '</p>' +
+    '<div class="hero-chips">' + chips + '</div>' +
+    '<div class="hero-actions">' +
+      '<button class="btn btn-primary" id="btn-import">导入 JSON 报告</button>' +
+      '<a class="btn btn-ghost" href="#sec-appx">查看数据附录</a>' +
+    '</div>' +
+    '<p class="hero-hint">由 AI 联网分析生成的 JSON 渲染 · 字段规范见模板文档第五步</p>';
+  $('#btn-import').addEventListener('click', openModal);
+  document.title = '市场主线分析 · ' + (meta.mainline || '') + (meta.reportDate ? '（' + meta.reportDate + '）' : '');
+  $('#f-demo').style.display = mode === 'sample' ? 'block' : 'none';
+}
+
+function renderEnv(d){
+  var e = d.environment || {};
+  var lu = e.limitUpCount || {}, mc = e.maxConBoards || {}, br = e.blastRate || {}, bd = e.breadth || {}, ix = e.index || {};
+  function statVal(v, suffix, id){
+    if (v == null) return gapNote('未获取');
+    return '<div class="stat-value"><span id="' + id + '">0</span><small>' + suffix + '</small></div>';
+  }
+  var html = '<div class="stats-grid">';
+  html += '<div class="card stat"><div class="stat-label">涨停家数</div>' + statVal(lu.value, ' 家', 'num-lu') +
+    '<div class="stat-sub">' + delta(lu.value, lu.prev) + ' 较上日</div>' + srcLine(lu.source) + '</div>';
+  html += '<div class="card stat"><div class="stat-label">最高连板</div>' + statVal(mc.value, ' 连板', 'num-mc') +
+    '<div class="stat-sub">' + (mc.theme ? '题材：' + esc(mc.theme) : '—') + '</div>' + srcLine(mc.source) + '</div>';
+  html += '<div class="card stat"><div class="stat-label">炸板率</div>' + statVal(br.value, '%', 'num-br') +
+    '<div class="stat-sub">尾盘情绪稳定度指标</div>' + srcLine(br.source) + '</div>';
+  html += '<div class="card stat"><div class="stat-label">市场广度</div>' + statVal(bd.value, '%', 'num-bd') +
+    '<div class="stat-sub">上涨家数占比</div>' + srcLine(bd.source) + '</div>';
+  html += '</div>';
+  /* 大盘位置 */
+  html += '<div class="card index-card"><span class="idx-name">' + esc(ix.name || '大盘指数') + '</span>' +
+    (ix.vsMA20 ? '<span class="chip">vs MA20 <b>' + esc(ix.vsMA20) + '</b></span>' : gapNote('MA20 位置')) +
+    (ix.vsMA60 ? '<span class="chip">vs MA60 <b>' + esc(ix.vsMA60) + '</b></span>' : gapNote('MA60 位置')) +
+    (ix.volumeTrend ? '<span class="chip">量能 ' + esc(ix.volumeTrend) + '</span>' : '') +
+    '</div>';
+  /* 广度三区温度计 */
+  html += '<div class="card gauge-card"><div class="gauge-title"><b>市场广度 · 环境态三区</b><span>防守 &lt;35% ／ 中性 35-55% ／ 进攻 &gt;55%（经验参数，与主报告三态表口径一致）</span></div>';
+  if (bd.value != null){
+    var v = Math.max(0, Math.min(100, bd.value));
+    html += '<div class="gauge"><div class="gz gz1" style="width:35%"></div><div class="gz gz2" style="width:20%"></div><div class="gz gz3" style="width:45%"></div>' +
+      '<div class="gmark" id="gmark" data-v="' + esc(bd.value) + '%"></div></div>' +
+      '<div class="gauge-zones"><span>防守态 · 空仓观察</span><span>中性态 · 只做信号 B</span><span>进攻态 · A+B</span></div>';
+  } else {
+    html += '<div style="padding:14px 0">' + gapNote('广度数据未获取，环境态判断请人工复核') + '</div>';
+  }
+  html += '</div>';
+  $('#env-body').innerHTML = html;
+  /* 数字动画（单位由 <small> 承载，此处只滚动数字） */
+  countUp($('#num-lu'), lu.value, '');
+  countUp($('#num-mc'), mc.value, '');
+  countUp($('#num-br'), br.value, '');
+  countUp($('#num-bd'), bd.value, '');
+  /* 温度计指针动画 */
+  var gm = $('#gmark');
+  if (gm){
+    var vv = Math.max(0, Math.min(100, bd.value));
+    setTimeout(function(){ gm.style.left = vv + '%'; }, 80);
+  }
+}
+
+function renderCands(d){
+  var list = (d.candidates || []).slice();
+  var order = {'主线':0, '候补':1, '轮动':2};
+  list.sort(function(a, b){ return (order[a.verdict] != null ? order[a.verdict] : 9) - (order[b.verdict] != null ? order[b.verdict] : 9); });
+  if (!list.length){ $('#cand-body').innerHTML = '<div class="empty-note">candidates 为空——本轮未识别出任何候选方向。</div>'; return; }
+  var nMain = 0, nAlt = 0, nRot = 0;
+  list.forEach(function(c){ if (c.verdict === '主线') nMain++; else if (c.verdict === '候补') nAlt++; else nRot++; });
+  var html = '<div class="cand-count">' +
+    '<span class="v v-main">主线 ' + nMain + '</span><span class="v v-alt">候补 ' + nAlt + '</span><span class="v v-rot">轮动 ' + nRot + '</span></div>';
+  html += '<div class="cands-grid">';
+  list.forEach(function(c){
+    var dims = [['D1','价格持续性', c.d1], ['D2','资金持续性', c.d2], ['D3','赚钱效应', c.d3], ['D4','逻辑驱动', c.d4]];
+    html += '<div class="card cand">' +
+      '<div class="cand-head"><h3>' + esc(c.name) + '</h3><span class="v ' + verdictCls(c.verdict) + '">' + esc(c.verdict || '—') + '</span></div>';
+    dims.forEach(function(dt){
+      html += '<div class="dim-row"><span class="dk">' + esc(dt[0]) + '</span><span class="dn">' + esc(dt[1]) + '</span>' + lvChip(dt[2]) + '</div>';
+    });
+    if (c.note) html += '<div class="cand-note">' + esc(c.note) + '</div>';
+    html += '</div>';
+  });
+  html += '</div>';
+  $('#cand-body').innerHTML = html;
+}
+
+function renderEvid(d){
+  var meta = d.meta || {};
+  var ev = d.evidence || [];
+  var isNoMain = String(meta.mainline || '').indexOf('无主线') >= 0;
+  if (isNoMain && !ev.length){
+    $('#evid-body').innerHTML = '<div class="empty-note">当前为「无主线 · 轮动市」——证据不足以确认任何方向，这是合法且重要的结论。等待新候选出现后按周度四维检验确认。</div>';
+    return;
+  }
+  if (!ev.length){ $('#evid-body').innerHTML = '<div class="empty-note">evidence 为空——主线证据链缺失，请人工复核。</div>'; return; }
+  /* 雷达图取值：优先 evidence.level，回退 candidates 中主线方向 */
+  var levels = [], dimMeta = [], dimNames = ['价格持续性', '资金持续性', '赚钱效应', '逻辑驱动'];
+  for (var i = 0; i < 4; i++){
+    var L = 0;
+    var item = null;
+    for (var j = 0; j < ev.length; j++){ if (String(ev[j].dim) === 'D' + (i + 1)) item = ev[j]; }
+    if (item && lv(item.level).k > 0) L = lv(item.level).k;
+    else {
+      var m = (d.candidates || []).filter(function(c){ return c.verdict === '主线'; })[0];
+      if (m) L = lv(m['d' + (i + 1)]).k;
+    }
+    levels.push(L);
+    dimMeta.push({title: (item && item.title) || dimNames[i], level: item ? item.level : null});
+  }
+  /* 雷达旁总览：D1-D4 标题 + 评级 + 强度条（条宽随章节入场动画生长） */
+  var asideRows = '';
+  for (var r = 0; r < 4; r++){
+    var o = lv(dimMeta[r].level);
+    var barCls = o.c === 'mid' ? ' mid' : (o.c === 'weak' ? ' weak' : '');
+    asideRows += '<div class="rrow"><span class="dtag">D' + (r + 1) + '</span>' +
+      '<span class="rname">' + esc(dimMeta[r].title) + '</span>' +
+      '<div class="rbar' + barCls + '"><i style="--w:' + Math.round(levels[r] * 100) + '%"></i></div>' +
+      lvChip(dimMeta[r].level) + '</div>';
+  }
+  var html = '<div class="evid-grid"><div class="card evid-radar">' + radarSVG(levels) +
+    '<div class="radar-aside"><div class="ra-title">四维强弱总览</div>' + asideRows +
+    '<div class="ra-note">雷达形状即 D1-D4 的强弱结构——各维明细证据见下方块。</div></div></div><div class="evid-list">';
+  ev.forEach(function(item){
+    html += '<div class="dim-block"><div class="dim-head"><span class="dtag">' + esc(item.dim) + '</span><h3>' + esc(item.title || '') + '</h3>' + lvChip(item.level) + '</div>';
+    (item.points || []).forEach(function(p){
+      html += '<div class="point"><span>' + esc(p.fact) + '</span>' + (p.source ? '<span class="chip src">' + esc(p.source) + '</span>' : '') + '</div>';
+    });
+    if (!(item.points || []).length) html += '<div class="point">' + gapNote('本维证据缺失') + '</div>';
+    html += '</div>';
+  });
+  html += '</div></div>';
+  $('#evid-body').innerHTML = html;
+}
+
+function renderRS(d){
+  var rs = d.relativeStrength;
+  if (!rs || rs.length < 4){
+    $('#rs-body').innerHTML = '<div class="card rs-box"><div style="padding:26px;text-align:center">' +
+      gapNote('relativeStrength 序列不足 4 点') +
+      '<p style="margin-top:12px;font-size:13.5px;color:var(--gray)">AI 多数情况只能取到区间快照——序列缺失属设计内降级，不影响其余章节。可要求 AI 按模板第五步补近 5/20/60 日三点快照。</p></div></div>';
+    return;
+  }
+  $('#rs-body').innerHTML = '<div class="card rs-box">' + rsSVG(rs) +
+    '<div class="rs-legend"><span><i style="background:#0071e3"></i>主线板块（累计涨幅）</span><span><i style="background:#86868b;background-image:linear-gradient(90deg,#86868b 60%,transparent 60%)"></i>沪深300 基准</span></div></div>';
+}
+
+function renderCycle(d){
+  var meta = d.meta || {}, lad = d.ladder || {};
+  var stageIdx = -1;
+  var st = String(meta.stage || '');
+  for (var i = 0; i < STAGES.length; i++){ if (st.indexOf(STAGES[i].n.slice(0, 2)) >= 0) stageIdx = i; }
+  var html = '<div class="card cycle-box">' + cycleSVG(stageIdx);
+  if (stageIdx >= 0) html += '<p class="stage-note">当前定位：<b style="color:var(--blue)">' + esc(STAGES[stageIdx].n) + '</b> —— ' + esc(STAGES[stageIdx].d) + '（依据：量能结构、龙头行为、调整后能否再新高）</p>';
+  else html += '<p class="stage-note">' + (st ? '未匹配到标准阶段：' + esc(st) : '未提供生命周期定位——无主线时无阶段定位。') + '</p>';
+  html += '</div>';
+  /* 梯队 */
+  var groups = [
+    {key:'leaders', pill:'先锋', cls:'role-pioneer', desc:'打开空间的攻击者'},
+    {key:'core',     pill:'中军', cls:'role-core', desc:'市值前 20% · 成交前 10%'},
+    {key:'followers', pill:'跟风', cls:'role-follower', desc:'补涨扩散的跟随者'}
+  ];
+  var any = false;
+  var grid = '<div class="ladder-groups">';
+  groups.forEach(function(g){
+    var arr = lad[g.key] || [];
+    if (!arr.length) return;
+    any = true;
+    grid += '<div class="card"><div class="lg-title"><span class="role-pill ' + g.cls + '">' + g.pill + '</span><small>' + esc(g.desc) + '</small></div>';
+    arr.forEach(function(m){
+      var g2 = String(m.gain20d || '');
+      var gc = g2.indexOf('+') === 0 ? 'up' : (g2.indexOf('-') === 0 ? 'down' : 'flat');
+      grid += '<div class="lg-item"><div class="lg-name"><span>' + esc(m.name) + '</span><span class="lg-gain ' + gc + '">' + esc(g2 || '—') + '</span></div>' +
+        (m.note ? '<div class="lg-note">' + esc(m.note) + '</div>' : '') + '</div>';
+    });
+    grid += '</div>';
+  });
+  grid += '</div>';
+  html += any ? grid : '<div class="empty-note" style="margin-top:22px">ladder 为空——龙头梯队名单缺失，供信号 A 第三锁复核的参考需人工补充。</div>';
+  $('#cycle-body').innerHTML = html;
+}
+
+function renderAlerts(d){
+  var arr = d.alerts || [];
+  if (!arr.length){ $('#alert-body').innerHTML = '<div class="empty-note">未提供切换预警——请要求 AI 按模板 alerts 字段补 2-3 条可观察失效信号。</div>'; return; }
+  var html = '';
+  arr.forEach(function(a){
+    html += '<div class="alert-card"><svg width="22" height="22" viewBox="0 0 22 22" fill="none">' +
+      '<path d="M11 2.5 L20 19 H2 Z" fill="rgba(255,159,10,.15)" stroke="#ff9f0a" stroke-width="1.5" stroke-linejoin="round"/>' +
+      '<line x1="11" y1="8.5" x2="11" y2="13.5" stroke="#ff9f0a" stroke-width="2" stroke-linecap="round"/>' +
+      '<circle cx="11" cy="16.4" r="1.2" fill="#ff9f0a"/></svg><p>' + esc(a) + '</p></div>';
+  });
+  $('#alert-body').innerHTML = html;
+}
+
+function renderSystem(d){
+  var sys = d.system || {};
+  var st = sys.environmentState || (d.meta || {}).environmentState || '—';
+  var permMap = {
+    '进攻': '进攻态：信号 A + B 均开放（仍需十问清单）',
+    '中性': '中性态：只做信号 B（缩量回踩）',
+    '防守': '防守态：全部只观察，不开新仓'
+  };
+  var permHint = null;
+  for (var k in permMap){ if (String(st).indexOf(k) >= 0) permHint = permMap[k]; }
+  var res = sys.resonanceSectors || [];
+  var html = '<div class="sys-grid">';
+  html += '<div class="card"><h3 style="font-size:15px;color:var(--gray);font-weight:600;margin-bottom:12px">环境态（初判 · 供人工终审）</h3>' +
+    '<div class="sys-state ' + envCls(st) + '">' + esc(st) + '</div>' +
+    '<div class="sys-desc">广度阈值：进攻 &gt;55% ／ 中性 35-55% ／ 防守 &lt;35%，经验参数。以周日人工终审为准。</div></div>';
+  html += '<div class="card"><h3 style="font-size:15px;color:var(--gray);font-weight:600;margin-bottom:12px">本周信号权限</h3>' +
+    '<div class="sys-perm">' + esc(sys.signalPermission || permHint || '—') + '</div>' +
+    '<div class="sys-desc" style="margin-top:10px">对接第 9 章：进攻态 A+B、中性态只 B、防守态只观察。</div></div>';
+  html += '<div class="card"><h3 style="font-size:15px;color:var(--gray);font-weight:600;margin-bottom:12px">板块共振参考名单</h3>' +
+    (res.length ? '<div class="res-list">' + res.map(function(x){ return '<span class="chip">' + esc(x) + '</span>'; }).join('') + '</div>' +
+    '<div class="sys-desc" style="margin-top:10px">供信号 A 三重锁第三锁「板块共振」人工复核。</div>'
+    : '<div class="sys-desc">未提供——需人工确认主线板块后补充。</div>') + '</div>';
+  html += '</div>';
+  $('#sys-body').innerHTML = html;
+}
+
+function renderAppx(d){
+  var gaps = d.dataGaps || [], srcs = d.sources || [];
+  var meta = d.meta || {};
+  var html = '<div class="appx-grid appx">';
+  html += '<div class="card"><h4>数据缺口（设计内降级）</h4><div class="chips">' +
+    (gaps.length ? gaps.map(function(x){ return '<span class="chip gap">' + esc(x) + '</span>'; }).join('') : '<span class="chip src">无</span>') +
+    '</div></div>';
+  html += '<div class="card"><h4>数据来源（去重）</h4><div class="chips">' +
+    (srcs.length ? srcs.map(function(x){ return '<span class="chip src">' + esc(x) + '</span>'; }).join('') : '<span class="chip src">无</span>') +
+    '</div></div>';
+  html += '</div>';
+  html += '<div class="appx-meta"><span>报告日期：' + esc(meta.reportDate || '—') + '</span><span>结构版本：模板第五步 Schema v2.0</span></div>';
+  html += '<div class="appx-actions"><button class="btn-mini" id="btn-import2">重新导入 JSON</button><button class="btn-mini" id="btn-copy">复制当前 JSON</button></div>';
+  $('#appx-body').innerHTML = html;
+  $('#btn-import2').addEventListener('click', openModal);
+  $('#btn-copy').addEventListener('click', function(){ copyJSON(); });
+}
+
+function renderAll(d, mode){
+  renderHero(d, mode);
+  renderEnv(d);
+  renderCands(d);
+  renderEvid(d);
+  renderRS(d);
+  renderCycle(d);
+  renderAlerts(d);
+  renderSystem(d);
+  renderAppx(d);
+}
+
+/* ================================================================ 导入 / 存储 / 交互 ================================================================ */
+var KEY = 'mlReport.v2';
+var CURRENT = SAMPLE, MODE = 'sample';
+
+function saveLS(d){
+  try{ localStorage.setItem(KEY, JSON.stringify(d)); }catch(err){}
+}
+function loadLS(){
+  try{
+    var s = localStorage.getItem(KEY);
+    if (!s) return null;
+    var d = JSON.parse(s);
+    if (d && d.meta) return d;
+  }catch(err){}
+  return null;
+}
+
+function openModal(){
+  $('#json-in').value = JSON.stringify(CURRENT, null, 2);
+  $('#m-err').textContent = '';
+  $('#modal').classList.add('open');
+  $('#modal').setAttribute('aria-hidden', 'false');
+}
+function closeModal(){
+  $('#modal').classList.remove('open');
+  $('#modal').setAttribute('aria-hidden', 'true');
+}
+
+function applyImport(text){
+  var d;
+  try{ d = JSON.parse(text); }
+  catch(err){ $('#m-err').textContent = 'JSON 解析失败：' + err.message; return; }
+  if (!d || typeof d !== 'object' || !d.meta){ $('#m-err').textContent = '结构校验失败：缺少顶层 meta 字段，请对照模板第五步 Schema。'; return; }
+  CURRENT = d; MODE = 'imported';
+  saveLS(d);
+  renderAll(d, MODE);
+  closeModal();
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+function copyJSON(){
+  var text = JSON.stringify(CURRENT, null, 2);
+  function fallback(){
+    var ta = document.createElement('textarea');
+    ta.value = text; document.body.appendChild(ta); ta.select();
+    try{ document.execCommand('copy'); }catch(err){}
+    document.body.removeChild(ta);
+  }
+  if (navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).catch(fallback);
+  } else fallback();
+}
+
+/* ================================================================ 启动逻辑 ================================================================ */
+(function init(){
+  var saved = loadLS();
+  if (saved){ CURRENT = saved; MODE = 'imported'; }
+  renderAll(CURRENT, MODE);
+
+  /* 导航 scroll-spy（补偿固定导航 52px） */
+  var links = document.querySelectorAll('#nav-links a');
+  var secs = [];
+  document.querySelectorAll('section[id], header#hero').forEach(function(s){ secs.push(s); });
+  function spy(){
+    var pos = window.scrollY + 90, cur = secs[0];
+    for (var i = 0; i < secs.length; i++){ if (secs[i].offsetTop <= pos) cur = secs[i]; }
+    links.forEach(function(a){
+      a.classList.toggle('active', a.getAttribute('href') === '#' + cur.id);
+    });
+  }
+  var ticking = false;
+  window.addEventListener('scroll', function(){
+    if (!ticking){ requestAnimationFrame(function(){ spy(); ticking = false; }); ticking = true; }
+  }, {passive:true});
+  spy();
+
+  /* 章节入场动画 */
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(en){ if (en.isIntersecting){ en.target.classList.add('in'); io.unobserve(en.target); } });
+  }, {threshold:.08});
+  document.querySelectorAll('.reveal').forEach(function(el){ io.observe(el); });
+
+  /* 弹窗交互 */
+  $('#btn-render').addEventListener('click', function(){ applyImport($('#json-in').value); });
+  $('#btn-reset').addEventListener('click', function(){
+    CURRENT = JSON.parse(JSON.stringify(SAMPLE)); MODE = 'sample';
+    try{ localStorage.removeItem(KEY); }catch(err){}
+    renderAll(CURRENT, MODE);
+    closeModal();
+    window.scrollTo({top: 0, behavior: 'smooth'});
+  });
+  $('#file-in').addEventListener('change', function(e){
+    var f = e.target.files[0];
+    if (!f) return;
+    var r = new FileReader();
+    r.onload = function(){ $('#json-in').value = r.result; };
+    r.readAsText(f);
+  });
+  var panel = document.querySelector('.modal-panel');
+  ['dragover', 'dragenter'].forEach(function(ev){
+    window.addEventListener(ev, function(e){ e.preventDefault(); panel.style.borderColor = '#0071e3'; });
+  });
+  ['dragleave', 'drop'].forEach(function(ev){
+    window.addEventListener(ev, function(e){ e.preventDefault(); panel.style.borderColor = '#424245'; });
+  });
+  window.addEventListener('drop', function(e){
+    var f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+    if (!f) return;
+    var r = new FileReader();
+    r.onload = function(){ $('#json-in').value = r.result; applyImport(r.result); };
+    r.readAsText(f);
+  });
+  $('#modal').addEventListener('click', function(e){ if (e.target === this) closeModal(); });
+  document.addEventListener('keydown', function(e){ if (e.key === 'Escape') closeModal(); });
+})();
+</script>
+</body>
+</html>
