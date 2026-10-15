@@ -149,8 +149,19 @@ section h2{font-size:clamp(30px,4.6vw,42px);font-weight:600;letter-spacing:-.01e
 /* ============ 相对强度 ============ */
 .rs-box{padding:10px}
 .rs-box svg{width:100%;height:auto;display:block}
-.rs-legend{display:flex;gap:18px;padding:14px 18px 6px;font-size:13px;color:var(--gray);flex-wrap:wrap}
+.rs-legend{display:flex;gap:18px;padding:14px 18px 6px;font-size:13px;color:var(--gray);flex-wrap:wrap;align-items:center}
 .rs-legend i{display:inline-block;width:22px;height:3px;border-radius:2px;vertical-align:middle;margin-right:6px}
+.rs-legend i.sq{width:12px;height:12px;border-radius:3px}
+.rs-mode{font-size:12px;color:var(--amber);background:rgba(255,159,10,.1);border-radius:8px;padding:3px 10px;font-weight:600}
+.rs-scraps{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:12px}
+.rs-scraps span{font-size:12.5px;color:var(--gray);background:var(--canvas);border:1px solid var(--border-soft);border-radius:8px;padding:4px 10px}
+/* 快照柱状图入场动画（跟随章节 reveal 级联触发，纯 CSS） */
+.rs-box .bar{transform-box:fill-box;transform:scaleY(0);transition:transform .8s cubic-bezier(.2,.7,.2,1)}
+.rs-box .bar-up{transform-origin:50% 100%}
+.rs-box .bar-dn{transform-origin:50% 0%}
+.rs-box .bar-lbl{opacity:0;transition:opacity .5s ease}
+.reveal.in .rs-box .bar{transform:scaleY(1)}
+.reveal.in .rs-box .bar-lbl{opacity:1}
 
 /* ============ 生命周期 + 梯队 ============ */
 .cycle-box svg{width:100%;height:auto}
@@ -441,6 +452,140 @@ var SAMPLE = {
   sources: ["东方财富行情中心", "东方财富数据中心", "东方财富资金流向", "同花顺", "财联社复盘", "券商研报摘要", "官方网站公告"]
 };
 
+/* ================================================================
+   主提示词 · 周度完整版（一键复制）
+   与《市场主线判断 · AI 联网分析提示词模板》第三节（v3.2）保持同步，
+   模板更新时须同步修改此处。
+================================================================ */
+var WEEKLY_PROMPT = `你是专业的 A 股市场主线分析师，具备联网搜索与网页阅读能力。你的任务：获取真实市场数据，用多时间窗口交叉验证与量化评分卡，判断当前市场主线，输出结构化报告。严格按以下五步执行。
+
+输入附带：用户可能在提示词末尾附上「上期完整版 JSON 台账」。若附带，输出前必须执行第四步附的对账；若未附带，在 dataGaps 登记「无上期台账，对账跳过（首期或用户未提供）」。
+
+▍第一步 · 数据获取（全部联网完成，禁止用训练记忆里的行情填充）
+
+按清单取数，每个数字必须标注 [来源｜日期]；关键数字（涨停家数、主力资金流向、炸板率）须尽量双源交叉验证，两源差异大时以行情软件原始数据为准并注明分歧；取不到的项目写入「数据缺口」，禁止编造：
+
+| 优先级 | 数据 | 窗口 | 推荐来源 |
+|---|---|---|---|
+| P0 | 行业与概念板块涨跌幅排名（逐日序列，不是只有当日快照） | 近 60 交易日 | 东方财富行情中心·板块排名、同花顺 |
+| P0 | 大盘指数日线（上证指数、沪深300，含成交额） | 近 60 交易日 | 东方财富、新浪财经 |
+| P1 | 板块成交额及其占全市场比重的变化 | 近 20 交易日 | 东方财富数据中心 |
+| P1 | 板块主力资金净流入（累计值） | 近 20 交易日 | 东方财富·资金流向、同花顺资金 |
+| P1 | 涨停家数、连板梯队（最高连板/晋级率）、炸板率 | 近 10 交易日 | 财联社复盘、证券时报、同花顺、开盘啦 |
+| P2 | 候选板块龙头股：板块内流通市值前 20% 且日均成交额前 10% 的标的，近 20 日涨幅、是否创新高 | 近 20 交易日 | 行情网站 |
+| P2 | 政策文件、产业事件、券商策略观点（取标题与核心逻辑） | 近 2 周 | 官方网站、财联社、券商研报摘要 |
+| P3 | 市场融资余额变化 | 近 20 交易日 | 可得时 |
+
+数据截止时点（强制）：周度完整版必须使用收盘后数据；盘中快照只能标注「盘中」字样使用，且 meta.confidence 降一档、summary 注明「基于盘中数据，收盘后需复核」。禁止用盘中数据产出定调结论而不标注。
+
+数据质量分级（每项数据取数后自行定级，写入 dataGaps 或来源说明）：
+- A 级：逐日序列完整 → 正常参与评分；
+- B 级：只有「近5日/近20日/近60日」区间快照 → 可用，注明「序列降级」；
+- C 级：二手汇总（自媒体转引、截图数据） → 只作旁证，不能单独支撑强评分；
+- D 级：取不到 → 记缺口，对应维度评分上限锁 1 分。
+整体降级规则：P0/P1 中出现 2 项及以上 C/D 级 → 总结论置信度自动降一档，并在 meta.summary 注明。
+
+▍第二步 · 三窗口分析（时间粒度纪律）
+
+- W1 短窗（近 5-10 交易日，日线粒度）：识别「新爆发方向」，只产生候选，不下结论。
+- W2 中窗（近 20-60 交易日，周线粒度）：主线确认与否决的核心窗口，所有结论在此产生。
+- W3 长窗（近 60-250 交易日，月线粒度）：判断产业趋势位置——趋势初段、中段，还是已演绎许久。
+
+对每个候选方向依次回答：W1 谁在涨？→ W2 谁在持续吸金？→ W3 它走到哪一步了？
+
+冷却规则（防单日冲动，强制适用）：仅在 W1 内首次爆发、此前 20 日涨幅榜从未出现的方向，无论当日多强，首日一律标「候选观察」；需在 W1 窗口内连续 2 个交易日以上保持强势（板块涨幅前列 + 有涨停跟随），且 D1/D2 至少各得 1 分，才允许升级为「候补」。冷却期内禁止写入 verdict=主线。
+
+▍第三步 · 四维证据评分卡（对每个候选方向逐项打分，每维 0-2 分，标准如下）
+
+D1 价格持续性
+- 2 分：W2 窗口内跑赢沪深300 的天数占比 ≥60%，且板块指数位于 MA20 与 MA60 之上、MA20 > MA60
+- 1 分：跑赢占比 40%-60%，或均线多头未完全形成
+- 0 分：占比 <40%，或板块指数跌破 MA60
+- 辅助特征：近 20 日中 ≥1/3 交易日进涨幅前 10 = 反复上榜（加分旁证）；单日脉冲后消失 = 直接 0 分
+
+D2 资金持续性
+- 2 分：W2 窗口主力资金累计净流入为正，且板块成交额占全市场比重趋势抬升
+- 1 分：净流入为正但占比持平或回落
+- 0 分：累计净流出
+- 结构质量：缩量回调后放量再攻 = 健康（旁证加分）；天量滞涨 = 警惕（评分不超过 1）
+
+D3 赚钱效应（情绪结构）
+- 2 分：涨停梯队先锋—中军—跟风三层完整，且板块内存在 20 日涨幅 >50% 的标杆股
+- 1 分：有涨停、有龙头，但梯队残缺（缺中军或跟风断层）
+- 0 分：无持续涨停与赚钱效应
+- 广度校验：板块内上涨家数占比过半为有效普涨；仅 1-2 只权重股拉指数 = 评分不超过 1
+
+D4 逻辑驱动
+- 2 分：政策驱动 / 产业趋势 / 业绩兑现至少占其一，能指出具体事件或数据，且近 2 周被新事件加强
+- 1 分：有逻辑支撑但近 2 周无新增催化
+- 0 分：纯资金博弈、一次性消息刺激、或逻辑已被证伪
+
+▍第四步 · 主线确认标准（分数线判定，在 W2 窗口内执行）
+
+先算总分（D1+D2+D3+D4，满分 8），再按分数线定档：
+- 确认主线：总分 ≥6 且 D1+D2 ≥3（价格与资金必须双强），且不在冷却期；
+- 候补主线：总分 4-5，或总分 ≥6 但 D1+D2 = 2（缺哪条注明），进入观察名单；
+- 轮动题材：总分 ≤3，不纳入主线，报告中一句话带过。
+
+对确认的主线做生命周期定位（判断依据：量能结构、龙头行为、调整后能否再创新高）：
+启动期（首波上攻、梯队未完整）→ 发酵期（梯队完整、龙头新高）→ 高潮期（补涨扩散、成交占比见顶）→ 分歧期（龙头滞涨、跟风大面）→ 退潮期（亏钱效应、排名消失）。
+
+▍第四步附 · 上期对账（附带上期台账时强制执行，未附带则跳过并在 dataGaps 登记）
+
+1. environment 各项 prev 值优先引用上期台账同字段；与其他来源数字不一致时，注明「与上期台账口径差异」及以哪个为准；
+2. 输出 meta 前，对照上期 meta 写一句差异说明（纳入 summary）：结论延续还是变化；
+3. 距上期完整版不足 5 个交易日、且结论发生档位变化（确认主线 ↔ 候补观察 ↔ 无主线·轮动市）时，必须逐条列出推翻依据——每条依据必须是窗口级证据变化（资金转向、梯队瓦解、逻辑证伪），**单日情绪冲击不构成推翻依据，只能标注「分歧信号，待周末确认」**。
+
+▍第五步 · 输出 JSON（严格遵循，供可视化报告页直接渲染）
+
+输出分两部分，缺一不可：
+① 一行人类可读结论：主线：__｜阶段：__｜置信度：__｜环境态：__
+② 一个 JSON 代码块，内容为严格符合下述 Schema 的单个 JSON 对象；除这两部分外禁止输出任何其他正文。
+
+字段规范（未获取的数据填 null 并写入 dataGaps；所有 value 字段必须带 source）：
+
+| 键 | 类型 | 内容 |
+|---|---|---|
+| meta | object | reportDate、mainline（无主线时填「无主线 · 轮动市」）、stage（生命周期阶段，无主线填 null）、confidence（高/中/低）、environmentState（进攻/中性/防守）、verdict（确认主线 / 候补观察 / 无主线·轮动市）、summary（≤60 字结论逻辑） |
+| environment | object | limitUpCount{value,prev,source}（涨停家数与上日值；**prev 优先引用上期台账同字段值**，与其他来源不一致时须注明）；maxConBoards{value,theme,source}（最高连板与所属题材）；blastRate{value,source}（炸板率%）；breadth{value,source}（市场广度=上涨家数占比%）；index{name,vsMA20,vsMA60,volumeTrend,source}——**vsMA20/vsMA60 仅限填「上方 / 下方 / 附近」，取不到填 null 并登记 dataGaps，禁止「需进一步确认」类模糊词** |
+| candidates | array | 每项：name、d1/d2/d3/d4（各为 强/中/弱，对应 2/1/0 分）、score（四项总分 0-8）、verdict（主线/候补/候选观察/轮动）、note（一句话证据摘要，含关键数字；处于冷却期的方向注明「冷却期第 N 日」） |
+| evidence | array | 主线证据链，每项：dim（D1-D4）、title、level（强/中/弱）、points[{fact, source}]——每个数字带 [来源｜日期] |
+| relativeStrength | array | 可选：每项 {date, sector, benchmark}，跟踪板块与沪深300 的近 60 日累计涨幅%，用于相对强度曲线；**必须在 dataGaps 注明跟踪对象与计算口径；无 score ≥4 候选时置空数组 []**；取不到逐日序列时给近 5/20/60 日三点快照并在 dataGaps 注明 |
+| ladder | object | **单方向梯队**——取 score 最高候选方向：leaders[]（先锋）、core[]（中军）、followers[]（跟风），每项 {name, role, gain20d, note}；其余方向个股禁止混入，在其 candidate 的 note 中说明；中军须符合「板块内流通市值前 20% 且成交额前 10%」；gain20d 限 20 日口径，口径不符（如「9 月以来」累计涨幅）填 null 并把实际口径写进 note |
+| alerts | array | 2-3 条可观察的失效信号，每条写明触发后应重估什么 |
+| system | object | environmentState、signalPermission（本周信号 A/B 权限建议）、resonanceSectors[]（板块共振参考名单，供信号 A 第三锁复核） |
+| selfCheck | array | **强制演算记录**：逐 candidate 写「名称: d1+d2+d3+d4=score（强=2/中=1/弱=0）」算式，最后一条写 verdict 联动校验结论（见红线 9） |
+| dataGaps | array | 取数失败项、降级说明与数据质量定级（A/B/C/D） |
+| sources | array | 全部来源去重列表 |
+
+JSON 骨架（结构参考，禁止照抄数字）：
+
+  {
+    "meta": {"reportDate": "", "mainline": "", "stage": "", "confidence": "", "environmentState": "", "verdict": "", "summary": ""},
+    "environment": {"limitUpCount": {"value": 0, "prev": 0, "source": ""}, "maxConBoards": {"value": 0, "theme": "", "source": ""}, "blastRate": {"value": 0, "source": ""}, "breadth": {"value": 0, "source": ""}, "index": {"name": "", "vsMA20": "", "vsMA60": "", "volumeTrend": "", "source": ""}},
+    "candidates": [{"name": "", "d1": "", "d2": "", "d3": "", "d4": "", "score": 0, "verdict": "", "note": ""}],
+    "evidence": [{"dim": "", "title": "", "level": "", "points": [{"fact": "", "source": ""}]}],
+    "relativeStrength": [{"date": "", "sector": 0, "benchmark": 0}],
+    "ladder": {"leaders": [], "core": [], "followers": []},
+    "alerts": [""],
+    "system": {"environmentState": "", "signalPermission": "", "resonanceSectors": []},
+    "selfCheck": ["候选A: 1+1+1+2=5", "verdict联动校验: 存在score≥4候选 → 禁止无主线·轮动市，verdict=候补观察"],
+    "dataGaps": [""],
+    "sources": [""]
+  }
+
+▍红线纪律
+1. 任何具体数字必须有本次联网来源，禁止凭记忆填充行情与涨停数据。
+2. 情绪数据（涨停家数/连板/炸板率）缺失 → 置信度自动降一档，并在结论处注明。
+3. 先证据后结论：证据不足时结论写「存疑」，禁止为了给出主线而倒推证据、倒打分数。
+4. 板块名称以行情网站当前分类为准，跨来源时注意东财与同花顺概念口径差异。
+5. 所有方向均不达标时，结论写「当前无主线，轮动市」，禁止硬凑。
+6. JSON 中每个 source 不可为空——取不到一手来源时写明「二手汇总」等降级说明，并计入 dataGaps。
+7. 冷却规则不可豁免：首次爆发方向即使分数达标，冷却期内也只能标「候选观察」。
+8. 输出 JSON 前必须完成强制演算并写入 selfCheck 字段：逐 candidate 列出「d1+d2+d3+d4=score」算式（强=2/中=1/弱=0），加总不等于 score 的必须修正其一，禁止带病输出。
+9. verdict 联动校验（写入 selfCheck 最后一条）：verdict=确认主线 → 必须存在 score ≥6 且 D1+D2 ≥3 且不在冷却期的候选，且其 evidence 有强级支撑；存在 score ≥4 的候选 → 禁止 verdict=无主线·轮动市（应填候补观察）；全部候选 score ≤3 → 才可填无主线·轮动市。
+10. 字段不齐全时宁可填 null 并登记 dataGaps，禁止凑数；枚举字段（vsMA20/vsMA60 等）禁止填枚举值外的模糊词。`;
+
 /* ================================================================ 工具函数 ================================================================ */
 var $ = function(s){ return document.querySelector(s); };
 function esc(v){
@@ -602,6 +747,50 @@ function rsSVG(points){
   return s + '</svg>';
 }
 
+/* ================================================================ SVG：相对强度 · 区间快照柱状（降级模式） ================================================================ */
+function rsBars(points){
+  var W = 760, H = 300, L = 52, Rp = 20, T = 34, B = 40;
+  var n = points.length;
+  var vals = [0];
+  points.forEach(function(p){
+    if (p.sector != null) vals.push(p.sector);
+    if (p.benchmark != null) vals.push(p.benchmark);
+  });
+  var mn = Math.min.apply(null, vals), mx = Math.max.apply(null, vals);
+  if (mn === mx){ mn -= 1; mx += 1; }
+  var pad = (mx - mn) * .12; mn -= pad; mx += pad;
+  function Y(v){ return T + (mx - v) * (H - T - B) / (mx - mn); }
+  var y0 = Y(0);
+  var s = '<svg viewBox="0 0 760 300" role="img" aria-label="相对强度区间快照对比">';
+  for (var g = 0; g <= 3; g++){
+    var gv = mn + (mx - mn) * g / 3, gy = Y(gv);
+    s += '<line x1="' + L + '" y1="' + gy + '" x2="' + (W - Rp) + '" y2="' + gy + '" stroke="#e8e8ed" stroke-width="1"/>';
+    s += '<text x="' + (L - 8) + '" y="' + (gy + 4) + '" text-anchor="end" font-size="11" fill="#86868b" font-family="inherit">' + gv.toFixed(0) + '%</text>';
+  }
+  if (mn < 0 && mx > 0){
+    s += '<line x1="' + L + '" y1="' + y0 + '" x2="' + (W - Rp) + '" y2="' + y0 + '" stroke="#c7c7cc" stroke-width="1.2" stroke-dasharray="5 5"/>';
+  }
+  var gw = (W - L - Rp) / n, bw = Math.min(46, gw * .26), igap = 10, k = 0;
+  function bar(cx, v, color, bold){
+    if (v == null){
+      s += '<text x="' + cx + '" y="' + (y0 - 8) + '" text-anchor="middle" font-size="10.5" fill="#c7c7cc" font-family="inherit">缺失</text>';
+      return;
+    }
+    var yv = Y(v), top = Math.min(y0, yv), h = Math.abs(yv - y0);
+    var up = v >= 0, dly = (.15 + k * .12).toFixed(2); k++;
+    s += '<rect class="bar ' + (up ? 'bar-up' : 'bar-dn') + '" x="' + (cx - bw / 2).toFixed(1) + '" y="' + top.toFixed(1) + '" width="' + bw.toFixed(1) + '" height="' + Math.max(h, 2).toFixed(1) + '" rx="4" fill="' + color + '" style="transition-delay:' + dly + 's"/>';
+    var ly = up ? top - 8 : top + h + 15;
+    s += '<text class="bar-lbl" x="' + cx + '" y="' + ly.toFixed(1) + '" text-anchor="middle" font-size="' + (bold ? 12.5 : 11.5) + '" font-weight="' + (bold ? 700 : 400) + '" fill="' + (bold ? '#0071e3' : '#86868b') + '" font-family="inherit" style="transition-delay:' + dly + 's">' + (v > 0 ? '+' : '') + v.toFixed(1) + '%</text>';
+  }
+  points.forEach(function(p, i){
+    var cx = L + gw * i + gw / 2;
+    bar(cx - (bw + igap) / 2, p.sector, '#0071e3', true);
+    bar(cx + (bw + igap) / 2, p.benchmark, '#aeaeb2', false);
+    s += '<text x="' + cx + '" y="' + (H - 12) + '" text-anchor="middle" font-size="11.5" fill="#6e6e73" font-family="inherit">' + esc(p.date || ('点' + (i + 1))) + '</text>';
+  });
+  return s + '</svg>';
+}
+
 /* ================================================================ 渲染：各章节 ================================================================ */
 function renderHero(d, mode){
   var meta = d.meta || {};
@@ -623,10 +812,12 @@ function renderHero(d, mode){
     '<div class="hero-chips">' + chips + '</div>' +
     '<div class="hero-actions">' +
       '<button class="btn btn-primary" id="btn-import">导入 JSON 报告</button>' +
+      '<button class="btn btn-ghost" id="btn-copy-prompt">复制主提示词 · 周度完整版</button>' +
       '<a class="btn btn-ghost" href="#sec-appx">查看数据附录</a>' +
     '</div>' +
-    '<p class="hero-hint">由 AI 联网分析生成的 JSON 渲染 · 字段规范见模板文档第五步</p>';
+    '<p class="hero-hint">由 AI 联网分析生成的 JSON 渲染 · 字段规范见模板文档第五步 · 主提示词与模板文档第三节保持同步</p>';
   $('#btn-import').addEventListener('click', openModal);
+  $('#btn-copy-prompt').addEventListener('click', function(){ copyText(WEEKLY_PROMPT, this); });
   document.title = '市场主线分析 · ' + (meta.mainline || '') + (meta.reportDate ? '（' + meta.reportDate + '）' : '');
   $('#f-demo').style.display = mode === 'sample' ? 'block' : 'none';
 }
@@ -752,15 +943,35 @@ function renderEvid(d){
 }
 
 function renderRS(d){
-  var rs = d.relativeStrength;
-  if (!rs || rs.length < 4){
-    $('#rs-body').innerHTML = '<div class="card rs-box"><div style="padding:26px;text-align:center">' +
-      gapNote('relativeStrength 序列不足 4 点') +
-      '<p style="margin-top:12px;font-size:13.5px;color:var(--gray)">AI 多数情况只能取到区间快照——序列缺失属设计内降级，不影响其余章节。可要求 AI 按模板第五步补近 5/20/60 日三点快照。</p></div></div>';
-    return;
+  var rs = d.relativeStrength || [];
+  function toNum(v){
+    if (typeof v === 'number' && isFinite(v)) return v;
+    if (typeof v === 'string'){ var x = parseFloat(v.replace(/%/g, '').trim()); return isFinite(x) ? x : null; }
+    return null;
   }
-  $('#rs-body').innerHTML = '<div class="card rs-box">' + rsSVG(rs) +
-    '<div class="rs-legend"><span><i style="background:#0071e3"></i>主线板块（累计涨幅）</span><span><i style="background:#86868b;background-image:linear-gradient(90deg,#86868b 60%,transparent 60%)"></i>沪深300 基准</span></div></div>';
+  var full = [], partial = [], scraps = [];
+  (Array.isArray(rs) ? rs : []).forEach(function(p){
+    if (!p) return;
+    var sv = toNum(p.sector), bv = toNum(p.benchmark);
+    if (sv != null && bv != null) full.push({date: p.date, sector: sv, benchmark: bv});
+    if (sv != null || bv != null){
+      partial.push({date: p.date, sector: sv, benchmark: bv});
+      scraps.push(esc(p.date || '未注明区间') + '：板块 ' + (sv != null ? (sv > 0 ? '+' : '') + sv.toFixed(1) + '%' : '缺失')
+        + ' ｜ 沪深300 ' + (bv != null ? (bv > 0 ? '+' : '') + bv.toFixed(1) + '%' : '缺失'));
+    }
+  });
+  var legendLine = '<div class="rs-legend"><span><i style="background:#0071e3"></i>主线板块（累计涨幅）</span><span><i style="background:#86868b;background-image:linear-gradient(90deg,#86868b 60%,transparent 60%)"></i>沪深300 基准</span></div>';
+  if (full.length >= 4){
+    $('#rs-body').innerHTML = '<div class="card rs-box">' + rsSVG(full) + legendLine + '</div>';
+  } else if (partial.length >= 2){
+    $('#rs-body').innerHTML = '<div class="card rs-box">' + rsBars(partial) +
+      '<div class="rs-legend"><span><i class="sq" style="background:#0071e3"></i>主线板块</span><span><i class="sq" style="background:#aeaeb2"></i>沪深300</span><span class="rs-mode">快照模式 · 区间累计涨幅对比（非逐日曲线）</span></div></div>';
+  } else {
+    var scrapHtml = scraps.length ? '<div class="rs-scraps"><span>' + scraps.join('</span><span>') + '</span></div>' : '';
+    $('#rs-body').innerHTML = '<div class="card rs-box"><div style="padding:26px;text-align:center">' +
+      gapNote('relativeStrength 有效数据点不足 2 个') + scrapHtml +
+      '<p style="margin-top:12px;font-size:13.5px;color:var(--gray)">AI 多数情况只能取到区间快照——序列缺失属设计内降级，不影响其余章节。可要求 AI 按模板第五步输出近 5/10/20/60 日四点区间快照（板块与沪深300 均须为具体数值）。</p></div></div>';
+  }
 }
 
 function renderCycle(d){
@@ -849,10 +1060,11 @@ function renderAppx(d){
     '</div></div>';
   html += '</div>';
   html += '<div class="appx-meta"><span>报告日期：' + esc(meta.reportDate || '—') + '</span><span>结构版本：模板第五步 Schema v2.0</span></div>';
-  html += '<div class="appx-actions"><button class="btn-mini" id="btn-import2">重新导入 JSON</button><button class="btn-mini" id="btn-copy">复制当前 JSON</button></div>';
+  html += '<div class="appx-actions"><button class="btn-mini" id="btn-import2">重新导入 JSON</button><button class="btn-mini" id="btn-copy">复制当前 JSON</button><button class="btn-mini" id="btn-copy-prompt2">复制主提示词 · 周度完整版</button></div>';
   $('#appx-body').innerHTML = html;
   $('#btn-import2').addEventListener('click', openModal);
-  $('#btn-copy').addEventListener('click', function(){ copyJSON(); });
+  $('#btn-copy').addEventListener('click', function(){ copyText(JSON.stringify(CURRENT, null, 2), this); });
+  $('#btn-copy-prompt2').addEventListener('click', function(){ copyText(WEEKLY_PROMPT, this); });
 }
 
 function renderAll(d, mode){
@@ -907,16 +1119,22 @@ function applyImport(text){
   window.scrollTo({top: 0, behavior: 'smooth'});
 }
 
-function copyJSON(){
-  var text = JSON.stringify(CURRENT, null, 2);
+/* 通用复制：clipboard API 优先，降级 execCommand；成功后按钮文案短暂反馈 */
+function copyText(text, btn){
+  function feedback(){
+    if (!btn) return;
+    var old = btn.textContent;
+    btn.textContent = '已复制 ✓';
+    setTimeout(function(){ btn.textContent = old; }, 1800);
+  }
   function fallback(){
     var ta = document.createElement('textarea');
     ta.value = text; document.body.appendChild(ta); ta.select();
-    try{ document.execCommand('copy'); }catch(err){}
+    try{ document.execCommand('copy'); feedback(); }catch(err){}
     document.body.removeChild(ta);
   }
   if (navigator.clipboard && navigator.clipboard.writeText){
-    navigator.clipboard.writeText(text).catch(fallback);
+    navigator.clipboard.writeText(text).then(feedback, fallback);
   } else fallback();
 }
 
