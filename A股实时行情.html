@@ -90,7 +90,9 @@ main{max-width:1280px;margin:0 auto;padding:22px 24px 10px;display:flex;flex-dir
 .panel-head h2{font-size:15.5px;font-weight:700;letter-spacing:-.01em}
 .sector-head{flex-direction:column;align-items:flex-start;gap:10px;padding-bottom:10px}
 .head-row{display:flex;align-items:center;justify-content:space-between;width:100%;gap:8px}
+.seg-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .muted{font-size:12px;color:var(--text2)}
+.zoom-8{zoom:0.8}
 
 /* ================= 指数卡 ================= */
 .index-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
@@ -136,6 +138,10 @@ main{max-width:1280px;margin:0 auto;padding:22px 24px 10px;display:flex;flex-dir
 .minibar i.up{left:50%;background:linear-gradient(90deg,#ff6b60,#ff3b30)}
 .minibar i.down{right:50%;background:linear-gradient(270deg,#6dd58c,#34c759)}
 .s-breadth{width:52px;flex:none;font-size:10px;color:var(--text3);font-variant-numeric:tabular-nums;line-height:1.5;text-align:right}
+.s-fund-v i{font-style:normal;font-size:9.5px;color:var(--text3);margin-left:3px;font-weight:600}
+.s-tag{display:inline-block;font-size:9px;font-weight:700;padding:1px 5px;border-radius:5px;margin-left:5px;vertical-align:1px;letter-spacing:.02em}
+.s-tag.in{color:#007aff;background:var(--blue-soft)}
+.s-tag.out{color:#ff9500;background:rgba(255,149,0,.13)}
 .flash{animation:flashUp .7s ease-out}
 .flash.up{animation-name:flashUp}.flash.down{animation-name:flashDown}
 @keyframes flashUp{0%{background:var(--red-soft)}100%{background:transparent}}
@@ -203,6 +209,11 @@ main{max-width:1280px;margin:0 auto;padding:22px 24px 10px;display:flex;flex-dir
 .mf-card:first-child{background:linear-gradient(135deg,rgba(255,59,48,.06),rgba(255,59,48,.02));border-color:rgba(255,59,48,.12)}
 .breadth-pill{display:inline-flex;align-items:center;gap:8px;font-size:12px;color:var(--text2);font-variant-numeric:tabular-nums}
 .breadth-pill b{font-weight:750}
+.mkt-temp{display:flex;align-items:center;gap:14px;padding:14px 22px 0}
+.mt-bar{flex:1;height:6px;border-radius:4px;overflow:hidden;display:flex;background:rgba(0,0,0,.05)}
+.mt-bar .up{background:linear-gradient(90deg,#ff6b60,#ff3b30);transition:width .6s cubic-bezier(.2,.7,.3,1)}
+.mt-bar .down{background:linear-gradient(270deg,#6dd58c,#34c759);transition:width .6s cubic-bezier(.2,.7,.3,1)}
+.mt-label{font-size:11.5px;color:var(--text2);white-space:nowrap;font-variant-numeric:tabular-nums}
 
 /* ================= 热力图 ================= */
 .heatmap{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:10px;padding:14px 22px 22px}
@@ -214,6 +225,9 @@ main{max-width:1280px;margin:0 auto;padding:22px 24px 10px;display:flex;flex-dir
 .hm-name{display:block;font-size:12px;font-weight:700;color:rgba(0,0,0,.82);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .hm-pct{display:block;font-size:15.5px;font-weight:800;margin-top:3px;font-variant-numeric:tabular-nums}
 .hm-pct.up{color:#d70015}.hm-pct.down{color:#04744a}.hm-pct.flat{color:var(--text2)}
+.hm-dot{position:absolute;top:6px;right:6px;width:6px;height:6px;border-radius:50%;display:none}
+.hm-dot.in{display:block;background:#007aff;box-shadow:0 0 0 2px rgba(0,122,255,.25)}
+.hm-dot.out{display:block;background:#ff9500;box-shadow:0 0 0 2px rgba(255,149,0,.25)}
 
 /* ================= 空态 / 骨架 ================= */
 .skeleton{background:linear-gradient(100deg,rgba(0,0,0,.05) 40%,rgba(0,0,0,.09) 50%,rgba(0,0,0,.05) 60%);
@@ -294,9 +308,17 @@ footer{max-width:1280px;margin:0 auto;padding:6px 24px 34px;text-align:center;fo
             <button data-lv="3">三级</button>
           </div>
         </div>
-        <div class="seg" id="sortSeg">
-          <button data-sort="f3" class="active">按涨跌幅</button>
-          <button data-sort="f62">按主力净流入</button>
+        <div class="seg-row zoom-8">
+          <div class="seg" id="periodSeg">
+            <button data-p="today" class="active">今日</button>
+            <button data-p="d5">5日</button>
+            <button data-p="d10">10日</button>
+          </div>
+          <div class="seg" id="sortSeg">
+            <button data-sort="f3" class="active">按涨跌幅</button>
+            <button data-sort="f62">按主力净流入</button>
+            <button data-sort="rate">按净流入率</button>
+          </div>
         </div>
       </div>
       <div class="sector-list" id="sectorList">
@@ -337,6 +359,10 @@ footer{max-width:1280px;margin:0 auto;padding:6px 24px 34px;text-align:center;fo
       <h2>全市场资金速览</h2>
       <span class="breadth-pill" id="breadth">--</span>
     </div>
+    <div class="mkt-temp" id="mktTemp" hidden>
+      <div class="mt-bar"><i class="up"></i><i class="down"></i></div>
+      <span class="mt-label">--</span>
+    </div>
     <div class="market-funds" id="marketFunds">
       <div class="mf-card skeleton" style="height:64px"></div><div class="mf-card skeleton" style="height:64px"></div><div class="mf-card skeleton" style="height:64px"></div><div class="mf-card skeleton" style="height:64px"></div><div class="mf-card skeleton" style="height:64px"></div>
     </div>
@@ -376,7 +402,7 @@ const INDEXES = [
   { secid:'0.399006', name:'创业板指', code:'399006' },
   { secid:'1.000688', name:'科创50',  code:'000688' },
 ];
-const SECTOR_FIELDS = 'f12,f14,f2,f3,f62,f66,f72,f78,f84,f104,f105,f128,f140';
+const SECTOR_FIELDS = 'f12,f14,f2,f3,f6,f62,f66,f72,f78,f84,f104,f105,f128,f140,f164,f174';
 const SPARK_EVERY = 3;           // 指数迷你分时每 3 轮刷新一次
 const FLOW_EVERY = 2;            // 两市资金分时每 2 轮刷新一次
 const MKT_FLOW = ['1.000001', '0.399106'];   // 两市资金口径：上证指数（沪全样本）+ 深证综指（深全样本）
@@ -417,6 +443,7 @@ const state = {
   mflowScale: null,              // 两市资金分时 Y 轴全天口径 {lo,hi}：数据自适应、0 仅作边界锚，全天固定
   sparkScales: {},               // 指数卡迷你分时的 Y 轴全天口径（按 secid 独立记忆）
   sort: 'f3',                    // 板块排序字段
+  period: 'today',               // 资金周期口径：today 当日 / d5 五日累计 / d10 十日累计
   level: 2,                      // 当前行业层级（1/2/3），默认二级
   sectors: [],
   sectorMap: {},
@@ -650,12 +677,25 @@ function drawSpark(svg, pts, raw, key) {
 }
 
 /* ---------- 行业板块 ---------- */
+/* 资金周期口径：今日 f62 / 5日累计 f164 / 10日累计 f174（切换周期时榜单、宽度条、排序同步联动） */
+const fundOf = s => state.period === 'd5' ? (s.f164 ?? 0) : state.period === 'd10' ? (s.f174 ?? 0) : (s.f62 ?? 0);
+/* 净流入率 = 主力净流入 / 成交额：消除板块规模偏差（仅今日口径——多日周期无对应成交额） */
+const fundRate = s => (state.period === 'today' && s.amt > 1e6 && s.f62 !== null) ? s.f62 / s.amt : null;
+/* 量价背离判定（仅今日口径）：方向相反且量级双显著（率≥2.5% 且 额≥1亿），返回 'in'（吸筹：跌+大额流入）/'out'（出货：涨+大额流出）/'' */
+const divergence = s => {
+  if (state.period !== 'today' || s.pct === null || s.f62 === null || !(s.amt > 1e6)) return '';
+  const rt = s.f62 / s.amt;
+  if (s.pct <= -0.3 && s.f62 >= 1e8 && rt >= 0.025) return 'in';
+  if (s.pct >= 0.3 && s.f62 <= -1e8 && rt <= -0.025) return 'out';
+  return '';
+};
 function renderSectorsData(diff) {
   state.sectorRaw = diff || [];   /* 保留原始数据，供层级切换时重新映射 */
   const list = (diff || []).map(d => ({
     code: String(d.f12 || ''), name: d.f14 || d.f12,
-    price: num(d.f2), pct: num(d.f3),
+    price: num(d.f2), pct: num(d.f3), amt: num(d.f6),
     f62: num(d.f62), f66: num(d.f66), f72: num(d.f72), f78: num(d.f78), f84: num(d.f84),
+    f164: num(d.f164), f174: num(d.f174),
     up: num(d.f104), down: num(d.f105),
     leadName: d.f128 || '', leadPct: num(d.f140),
   })).filter(x => x.code);
@@ -671,7 +711,7 @@ function renderSectorsData(diff) {
   }
   const vis = list.filter(s => LEVEL_OF(s.code) === state.level);
   const visSet = new Set(vis.map(s => s.code));
-  const maxAbs = Math.max(1e8, ...vis.map(s => Math.abs(s.f62 || 0)));
+  const maxAbs = Math.max(1e8, ...vis.map(s => Math.abs(fundOf(s) || 0)));   /* 宽度条基准随周期联动 */
   list.forEach(s => {
     let row = state.rows[s.code];
     if (!row) {
@@ -688,7 +728,8 @@ function renderSectorsData(diff) {
     state.prevSectorVals[s.code] = { pct: s.pct, f62: s.f62 };
     /* 排序（DOM 移动不重建，动画不重播） */
     row.dataset.sortPct = -(s.pct ?? -999);
-    row.dataset.sortF62 = -(s.f62 ?? -9e12);
+    row.dataset.sortF62 = -(fundOf(s) ?? -9e12);   /* 「按主力净流入」排序随周期联动 */
+    row.dataset.sortRate = -((fundRate(s) ?? -9));   /* 净流入率排序键（仅今日口径） */
   });
   resortRows();
   renderMarketFunds(vis);
@@ -714,17 +755,22 @@ function buildSectorRow(s, visSet, maxAbs) {
   return row;
 }
 function updateSectorRow(row, s, visSet, maxAbs) {
-  row.querySelector('.s-name').textContent = s.name;
+  const dv = divergence(s);
+  row.querySelector('.s-name').innerHTML = esc(s.name) +
+    (dv === 'in' ? '<b class="s-tag in" title="价跌但主力大额净流入 · 率≥2.5%且≥1亿（吸筹特征）">吸筹</b>'
+     : dv === 'out' ? '<b class="s-tag out" title="价涨但主力大额净流出 · 率≥2.5%且≥1亿（出货特征）">出货</b>' : '');
   row.querySelector('.s-code').textContent = s.code;
   const pctEl = row.querySelector('.s-pct');
   pctEl.textContent = fmtPct(s.pct);
   pctEl.className = 's-pct ' + cls3(s.pct);
+  const rt = fundRate(s);
+  const fv = fundOf(s);
   const fundEl = row.querySelector('.s-fund-v');
-  fundEl.textContent = fmtYi(s.f62);
-  fundEl.className = 's-fund-v ' + cls3(s.f62);
+  fundEl.innerHTML = fmtYi(fv) + (rt !== null ? `<i>${(rt * 100).toFixed(1)}%</i>` : '');
+  fundEl.className = 's-fund-v ' + cls3(fv);
   const bar = row.querySelector('.minibar i');
-  const w = Math.max(1.5, Math.min(100, Math.abs(s.f62 || 0) / (maxAbs || 1e8) * 100));
-  bar.className = (s.f62 >= 0 ? 'up' : 'down');
+  const w = Math.max(1.5, Math.min(100, Math.abs(fv || 0) / (maxAbs || 1e8) * 100));
+  bar.className = (fv >= 0 ? 'up' : 'down');
   bar.style.width = w + '%';
   row.querySelector('.s-breadth').innerHTML = (s.up !== null ? `↑${s.up}` : '') + (s.down !== null ? ` ↓${s.down}` : '');
   row.classList.toggle('selected', state.selected.isSector && state.selected.code === s.code);
@@ -732,7 +778,7 @@ function updateSectorRow(row, s, visSet, maxAbs) {
 }
 function resortRows() {
   const wrap = $('#sectorList');
-  const key = state.sort === 'f62' ? 'sortF62' : 'sortPct';
+  const key = state.sort === 'f62' ? 'sortF62' : state.sort === 'rate' ? 'sortRate' : 'sortPct';
   const visCodes = new Set(state.sectors.filter(s => LEVEL_OF(s.code) === state.level).map(s => s.code));
   const rows = Object.values(state.rows)
     .filter(r => visCodes.has(r.dataset.code))
@@ -765,6 +811,18 @@ function renderMarketFunds(list) {
   const flat = list.length - up - down;
   const lvName = LEVEL_NAMES[state.level] || '全部';
   $('#breadth').innerHTML = `${lvName} · ${list.length} 个行业：<b class="up">${up} 上涨</b> · <b class="down">${down} 下跌</b> · <b class="flat">${flat} 平</b>`;
+  /* 全市场个股情绪温度条：当前层级板块互斥全覆盖，成分股涨跌家数求和即为全市场口径（零新增请求） */
+  const upSum = list.reduce((a, s) => a + (s.up > 0 ? s.up : 0), 0);
+  const downSum = list.reduce((a, s) => a + (s.down > 0 ? s.down : 0), 0);
+  const temp = $('#mktTemp');
+  if (upSum + downSum > 0) {
+    temp.hidden = false;
+    const upW = (upSum / (upSum + downSum) * 100);
+    temp.querySelector('.mt-bar .up').style.width = upW.toFixed(1) + '%';
+    temp.querySelector('.mt-bar .down').style.width = (100 - upW).toFixed(1) + '%';
+    temp.querySelector('.mt-label').innerHTML =
+      `全市场个股 · <b class="up">涨 ${upSum}</b> · <b class="down">跌 ${downSum}</b> · 红绿比 ${upW.toFixed(0)}:${(100 - upW).toFixed(0)}`;
+  }
   $('#heatHint').textContent = `申万${lvName}体系 · 按涨跌幅着色 · 点击查看分时走势`;
 }
 
@@ -825,19 +883,30 @@ function heatColor(pct) {
 function renderHeatmap(list) {
   const box = $('#heatmap');
   const sorted = [...list].sort((a, b) => (b.pct ?? -99) - (a.pct ?? -99));
-  if (!box.dataset.built) box.dataset.built = '1';
-  box.innerHTML = '';
+  /* 增量复用（对齐行业列表模式）：同层级刷新静默更新（cell 复用、动画不重播），层级切换/首次才重建入场播动画 */
+  const rebuild = box.dataset.level !== String(state.level);
+  if (rebuild) { box.innerHTML = ''; state.hmCells = {}; box.dataset.level = state.level; }
   const frag = document.createDocumentFragment();
   sorted.forEach((s, i) => {
-    const cell = document.createElement('button');
-    cell.className = 'hm-cell';
+    let cell = state.hmCells[s.code];
+    if (!cell) {
+      cell = document.createElement('button');
+      cell.className = 'hm-cell';
+      cell.dataset.code = s.code;
+      cell.style.animationDelay = Math.min(i * 12, 500) + 'ms';
+      cell.addEventListener('click', () => selectTarget({ secid: '90.' + s.code, name: s.name, isSector: true, code: s.code }));
+      const nameEl = document.createElement('span'); nameEl.className = 'hm-name';
+      const pctEl = document.createElement('span'); pctEl.className = 'hm-pct';
+      const dotEl = document.createElement('i'); dotEl.className = 'hm-dot';
+      cell.append(nameEl, pctEl, dotEl);
+      state.hmCells[s.code] = cell;
+    }
     cell.style.background = heatColor(s.pct);
-    cell.style.animationDelay = Math.min(i * 12, 500) + 'ms';
-    cell.dataset.code = s.code;
-    cell.innerHTML = `<span class="hm-name">${esc(s.name)}</span><span class="hm-pct ${cls3(s.pct)}">${fmtPct(s.pct)}</span>`;
-    cell.addEventListener('click', () => selectTarget({ secid: '90.' + s.code, name: s.name, isSector: true, code: s.code }));
-    state.hmCells[s.code] = cell;
-    frag.appendChild(cell);
+    cell.children[0].textContent = s.name;
+    cell.children[1].textContent = fmtPct(s.pct);
+    cell.children[1].className = 'hm-pct ' + cls3(s.pct);
+    cell.children[2].className = 'hm-dot ' + divergence(s);   /* 量价背离角标：吸筹蓝点 / 出货橙点 */
+    frag.appendChild(cell);   /* 按新排序重排（appendChild 移动已有节点不重建、不触发重播） */
   });
   box.appendChild(frag);
   syncSelectedUI();
@@ -1132,10 +1201,25 @@ $('#intervalSeg').addEventListener('click', e => {
 });
 $('#sortSeg').addEventListener('click', e => {
   const b = e.target.closest('button'); if (!b) return;
+  if (b.dataset.sort === 'rate' && state.period !== 'today') return;   /* 净流入率仅今日口径可用 */
   $('#sortSeg').querySelectorAll('button').forEach(x => x.classList.remove('active'));
   b.classList.add('active');
   state.sort = b.dataset.sort;
   resortRows();
+});
+$('#periodSeg').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  $('#periodSeg').querySelectorAll('button').forEach(x => x.classList.remove('active'));
+  b.classList.add('active');
+  state.period = b.dataset.p;
+  /* 净流入率仅今日口径（多日周期无对应成交额）：非今日禁用并回落到按额排序 */
+  const rateBtn = $('#sortSeg button[data-sort="rate"]');
+  rateBtn.style.opacity = state.period === 'today' ? '' : '.4';
+  if (state.period !== 'today' && state.sort === 'rate') {
+    state.sort = 'f62';
+    $('#sortSeg').querySelectorAll('button').forEach(x => x.classList.toggle('active', x.dataset.sort === 'f62'));
+  }
+  if (state.sectorRaw && state.sectorRaw.length) renderSectorsData(state.sectorRaw);   /* 榜单/宽度条/排序随周期联动重渲染 */
 });
 $('#levelSeg').addEventListener('click', e => {
   const b = e.target.closest('button'); if (!b) return;

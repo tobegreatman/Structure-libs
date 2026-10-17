@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>每日复盘快报</title>
-<meta name="description" content="AI 每日复盘 JSON 的可视化日报页：粘贴/拖入 JSON，自动生成苹果风格图文快报（情绪温度、主线健康、四象限执行复盘、if-then 计划）。">
+<title>主线日报</title>
+<meta name="description" content="AI 主线日报 JSON 的可视化快报页：粘贴/拖入 JSON，自动生成苹果风格图文快报（情绪温度、指数状态、主线健康、状态台账）。">
 <style>
 /* ============ 基础与变量（Apple 风格令牌，与 DESIGN.md 对齐） ============ */
 :root{
@@ -120,6 +120,15 @@ section h2{font-size:clamp(30px,4.6vw,42px);font-weight:600;letter-spacing:-.01e
 .hl-分歧{background:rgba(255,159,10,.14);color:#b26a00}
 .hl-退潮信号{background:rgba(255,69,58,.12);color:#c4342b}
 .ml-evi{width:100%;font-size:14.5px;color:var(--gray);border-left:3px solid rgba(0,113,227,.35);background:rgba(0,113,227,.05);padding:12px 14px;border-radius:0 10px 10px 0}
+
+/* ============ 今日最强方向 ============ */
+.strong-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:14px 18px;margin-bottom:14px;background:#e9e9ee;border-radius:14px}
+.strong-row .s-k{font-size:12px;color:var(--gray);letter-spacing:1px}
+.strong-row b{font-size:16px;letter-spacing:-.01em}
+.s-attr{font-size:12.5px;font-weight:600;padding:5px 12px;border-radius:980px}
+.attr-延续{background:rgba(52,199,89,.14);color:#1e7f3c}
+.attr-补涨{background:rgba(255,159,10,.14);color:#b26a00}
+.attr-新候选{background:rgba(0,113,227,.12);color:var(--blue)}
 .alert-card{border:1px solid rgba(255,159,10,.5);background:rgba(255,159,10,.07);border-radius:var(--radius-card);padding:20px 24px;margin-bottom:16px}
 .alert-card .a-title{display:flex;align-items:center;gap:8px;font-weight:600;color:#b26a00;font-size:15px;margin-bottom:8px}
 .alert-card .a-title::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--amber);flex:none}
@@ -129,52 +138,19 @@ section h2{font-size:clamp(30px,4.6vw,42px);font-weight:600;letter-spacing:-.01e
 .cand-item b{font-size:15.5px}
 .cand-item p{font-size:13px;color:var(--gray);margin-top:5px}
 
-/* ============ 四象限 ============ */
-.qgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:26px}
-@media (max-width:640px){.qgrid{grid-template-columns:1fr}}
-.qaxis{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:6px;text-align:center;font-size:12px;color:var(--gray);font-weight:600}
-.qcell{border-radius:var(--radius-card);padding:18px 20px;border:1px solid transparent;transition:transform .3s ease}
-.qcell:hover{transform:translateY(-3px)}
-.qcell .q-tag{font-size:14px;font-weight:600;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.qcell .q-n{font-size:12px;font-weight:600;color:#fff;background:var(--ink);border-radius:980px;padding:2px 10px}
-.qcell .q-desc{font-size:12.5px;margin-top:6px}
-.q-copy{background:rgba(52,199,89,.10);border-color:rgba(52,199,89,.4)}
-.q-copy .q-tag{color:#1e7f3c}.q-copy .q-desc{color:#4a8a5d}
-.q-cost{background:#e8e8ed;border-color:transparent}
-.q-cost .q-tag{color:var(--ink)}.q-cost .q-desc{color:var(--gray)}
-.q-lucky{background:rgba(255,69,58,.09);border-color:rgba(255,69,58,.45)}
-.q-lucky .q-tag{color:#c4342b}.q-lucky .q-desc{color:#a3574f}
-.q-lucky .q-n{background:var(--red)}
-.q-wrong{background:rgba(255,159,10,.10);border-color:rgba(255,159,10,.45)}
-.q-wrong .q-tag{color:#b26a00}.q-wrong .q-desc{color:#96743a}
-.trade-row{display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding:14px 4px;border-top:1px solid var(--border-soft)}
-.trade-row:first-of-type{border-top:none}
-.t-sym{font-size:15.5px;font-weight:600;min-width:76px}
-.t-act{font-size:12.5px;color:var(--gray);min-width:92px}
-.t-res{font-size:12.5px;font-weight:600}
-.t-quad{font-size:12px;font-weight:600;padding:3px 12px;border-radius:980px}
-.t-quad.复制{background:rgba(52,199,89,.16);color:#1e7f3c}
-.t-quad.正常成本{background:#e8e8ed;color:var(--gray)}
-.t-quad.运气单{background:rgba(255,69,58,.14);color:#c4342b}
-.t-quad.真错误{background:rgba(255,159,10,.16);color:#b26a00}
-.t-dev{flex-basis:100%;font-size:13px;color:var(--gray)}
-.t-dev b{color:#b26a00;font-weight:600}
-.no-trade{color:var(--gray);font-size:15px;border:1px dashed var(--border-mid);border-radius:14px;padding:26px;text-align:center}
-
-/* ============ if-then 计划 ============ */
-.plan-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
-.plan-card{background:#fff;border:1px solid var(--border-soft);border-radius:var(--radius-card);padding:22px 24px;display:flex;flex-direction:column;gap:12px}
-.plain .plan-card{background:var(--canvas);border-color:transparent}
-.p-tag{font-size:12px;font-weight:700;color:#fff;background:var(--blue);border-radius:7px;padding:3px 9px;display:inline-flex;flex:none}
-.p-row{display:flex;gap:10px;align-items:flex-start;font-size:15px;line-height:1.55}
-.p-arrow{width:11px;height:11px;border-right:2.5px solid var(--blue);border-bottom:2.5px solid var(--blue);transform:rotate(45deg);margin:0 auto;opacity:.55}
-.p-row.then .p-tag{background:var(--ink)}
+/* ============ 环境态阈值提示 ============ */
+.env-alert{display:inline-flex;align-items:center;gap:9px;font-size:13px;font-weight:600;color:#b26a00;background:rgba(255,159,10,.12);border:1px solid rgba(255,159,10,.5);border-radius:980px;padding:8px 16px;margin-top:16px}
+.env-alert .dot{width:7px;height:7px;border-radius:50%;background:var(--amber);animation:blink 2.2s ease-in-out infinite}
 
 /* ============ 台账 ============ */
 .status-card{background:#fff;border:1px solid var(--border-soft);border-radius:var(--radius-card);padding:22px 24px;font-size:15.5px;line-height:1.6;margin-bottom:16px}
 .plain .status-card{background:var(--canvas);border-color:transparent}
 .status-card .k{font-size:12px;font-weight:700;color:var(--blue);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px}
 .gap-list,.src-list{display:flex;flex-wrap:wrap;gap:8px}
+
+/* ============ 缺口列表（左竖线引述，适配长文本） ============ */
+.gap-vlist{display:flex;flex-direction:column;gap:10px}
+.gap-item{font-size:13.5px;line-height:1.6;color:var(--ink);padding:10px 14px;border-left:3px solid rgba(255,159,10,.55);background:rgba(255,159,10,.05);border-radius:0 10px 10px 0}
 
 /* ============ 页脚 ============ */
 footer{background:var(--black);color:#a1a1a6;padding:64px 0 72px;font-size:13px}
@@ -204,13 +180,11 @@ footer p{max-width:720px}
 <!-- 导航 -->
 <nav>
   <div class="wrap">
-    <span class="nav-brand">每日复盘快报</span>
+    <span class="nav-brand">主线日报</span>
     <div class="nav-links" id="nav-links">
       <a href="#sentiment">情绪温度</a>
       <a href="#index">指数状态</a>
       <a href="#mainline">主线健康</a>
-      <a href="#trades">执行复盘</a>
-      <a href="#plan">明日计划</a>
       <a href="#ledger">状态台账</a>
     </div>
   </div>
@@ -222,17 +196,16 @@ footer p{max-width:720px}
   <div class="hero-glow g2"></div>
   <div class="wrap">
     <div class="hero-badge sample" id="hero-badge"><span class="dot"></span><span id="badge-text">示例数据 · 虚构演示</span></div>
-    <div class="hero-kicker" id="hero-kicker">DAILY REVIEW</div>
-    <h1 id="hero-title">每日复盘<small id="hero-sub">状态层 · 只更新状态，不下结论</small></h1>
+    <div class="hero-kicker" id="hero-kicker">MARKET DAILY</div>
+    <h1 id="hero-title">主线日报<small id="hero-sub">状态层 · 只更新状态，不下结论</small></h1>
     <p class="hero-summary" id="hero-summary"></p>
     <div class="hero-chips" id="hero-chips"></div>
     <div class="hero-actions">
       <button class="btn btn-primary" id="btn-import">导入今日 JSON</button>
       <button class="btn btn-ghost" id="btn-copy">复制当前 JSON</button>
-      <button class="btn btn-ghost" id="btn-copy-daily">复制提示词 · 每日复盘</button>
       <button class="btn btn-ghost" id="btn-copy-lite">复制提示词 · 每日快检</button>
     </div>
-    <p class="hero-hint">JSON 字段规范见《每日复盘 · AI 辅助提示词模板》第六步 ｜ 兼容《市场主线判断 · AI 联网分析提示词模板》第四节轻量快检台账 ｜ 页内提示词与模板文档保持同步 ｜ 数据保存在浏览器本地</p>
+    <p class="hero-hint">JSON 字段规范见《市场主线判断 · AI 联网分析提示词模板》第四节 · 轻量快检 ｜ 页内提示词与模板文档保持同步 ｜ 数据保存在浏览器本地</p>
   </div>
 </header>
 
@@ -256,6 +229,7 @@ footer p{max-width:720px}
       <div class="gauge-zones"><span>防守 &lt;35%</span><span>中性 35–55%</span><span>进攻 &gt;55%</span></div>
       <div class="stat-src" id="gauge-src"></div>
     </div>
+    <div class="env-alert reveal" id="env-alert" style="display:none"></div>
   </div>
 </section>
 
@@ -281,28 +255,6 @@ footer p{max-width:720px}
   </div>
 </section>
 
-<!-- 执行复盘 -->
-<section id="trades" class="plain">
-  <div class="wrap">
-    <div class="sec-kicker reveal">Trades</div>
-    <h2 class="reveal">执行复盘 · 四象限</h2>
-    <p class="sec-sub reveal">只评价「是否按昨日计划执行」，不评价盈亏；「正常成本」是规则内样本，不附赠建议。</p>
-    <div class="qaxis reveal"><span>过程正确（按计划）</span><span>过程错误（偏离计划）</span></div>
-    <div class="qgrid reveal" id="qgrid"></div>
-    <div class="card reveal" id="trade-list"></div>
-  </div>
-</section>
-
-<!-- 明日计划 -->
-<section id="plan" class="light">
-  <div class="wrap">
-    <div class="sec-kicker reveal">Plan</div>
-    <h2 class="reveal">明日 if-then 计划</h2>
-    <p class="sec-sub reveal">复盘影响次日行为的唯一出口。条件不触发就不动——空计划日是设计内行为。</p>
-    <div class="plan-grid reveal" id="plan-grid"></div>
-  </div>
-</section>
-
 <!-- 状态台账 -->
 <section id="ledger" class="plain">
   <div class="wrap">
@@ -324,7 +276,7 @@ footer p{max-width:720px}
 <!-- 页脚 -->
 <footer id="footer">
   <div class="wrap">
-    <p class="f-demo" id="f-demo">当前页面展示的是<b>虚构示例数据</b>，非真实行情与持仓——导入你的日报 JSON 后自动替换。</p>
+    <p class="f-demo" id="f-demo">当前页面展示的是<b>虚构示例数据</b>，非真实行情——导入你的日报 JSON 后自动替换。</p>
     <p class="f-title">免责声明</p>
     <p>以上内容基于公开数据和结构化复盘方法，仅供参考，不构成投资建议。市场有风险，投资需谨慎。任何投资决策应结合个人风险承受能力、资金状况和投资目标独立判断，必要时咨询持牌专业机构。过往表现不预示未来收益。</p>
   </div>
@@ -334,7 +286,7 @@ footer p{max-width:720px}
 <div id="modal" aria-hidden="true">
   <div class="modal-panel">
     <h3>导入日报 JSON</h3>
-    <p class="m-sub">粘贴 AI 输出的 JSON，或选择 / 拖入 .json 文件。字段规范见《每日复盘 · AI 辅助提示词模板》第六步；轻量快检版（市场主线模板第四节）台账字段兼容，同样可导入。</p>
+    <p class="m-sub">粘贴 AI 输出的 JSON，或选择 / 拖入 .json 文件。字段规范见《市场主线判断 · AI 联网分析提示词模板》第四节（轻量快检）。</p>
     <textarea id="json-in" spellcheck="false" placeholder='在此粘贴 JSON，或拖入 .json 文件…'></textarea>
     <div class="m-tools">
       <label class="m-file"><input type="file" id="file-in" accept=".json,application/json"><span>选择 .json 文件</span></label>
@@ -350,27 +302,17 @@ footer p{max-width:720px}
 
 <script>
 /* ================================================================
-   示例数据（虚构演示，非真实行情与持仓）——打开页面即预览渲染效果；
-   导入后自动替换。结构严格对应《每日复盘模板》第六步 JSON Schema。
+   示例数据（虚构演示，非真实行情）——打开页面即预览渲染效果；
+   导入后自动替换。结构严格对应《市场主线判断模板》第四节（轻量快检）JSON Schema。
    ================================================================ */
 var SAMPLE = {
   "date": "2026-10-14",
   "sentiment": {"limitUpCount": {"value": 58, "prev": 72, "source": "财联社复盘｜2026-10-14"}, "limitDownCount": {"value": 6, "source": "财联社复盘｜2026-10-14"}, "maxConBoards": {"value": 5, "theme": "液冷服务器（虚构示例题材）", "source": "同花顺｜2026-10-14"}, "blastRate": {"value": 31, "source": "开盘啦口径·示例｜2026-10-14"}, "breadth": {"value": 46, "source": "东方财富｜2026-10-14"}, "phase": "分歧"},
-  "index": {"name": "上证指数", "close": 3284, "vsMA20": "上方 +1.2%", "vsMA60": "上方 +3.4%", "volumeTrend": "缩量 -8%", "source": "东方财富｜2026-10-14"},
+  "index": {"name": "上证指数", "close": 3284, "vsMA20": "上方", "vsMA60": "附近", "volumeTrend": "缩量 -8%", "source": "东方财富｜2026-10-14"},
+  "strongest": {"name": "液冷服务器（虚构示例题材）", "attr": "高潮补涨"},
   "mainline": {"name": "算力基建（虚构示例主线）", "health": "分歧", "evidence": "龙头冲高回落未创新高，二线跟风分化，量能萎缩——分歧信号。"},
   "switchAlert": "「固态电池（虚构示例）」连续第 2 日全面强于主线，板块涨停 14 家——新候选，待周度四维检验。",
   "newCandidates": [{"name": "固态电池（虚构示例）", "note": "板块涨幅前 3，连续第 2 日上榜；仅标记新候选，不建仓。"}],
-  "trades": [
-    {"symbol": "示例股A", "action": "按计划卖出", "processOk": true, "result": "盈利", "quadrant": "复制", "deviation": null},
-    {"symbol": "示例股B", "action": "按计划买入", "processOk": true, "result": "亏损", "quadrant": "正常成本", "deviation": null},
-    {"symbol": "示例股C", "action": "计划外买入", "processOk": false, "result": "盈利", "quadrant": "运气单", "deviation": "临场追高，违反「等待回踩」计划条件"},
-    {"symbol": "示例股D", "action": "止损卖出", "processOk": false, "result": "亏损", "quadrant": "真错误", "deviation": "止损位下移 2%，未按计划价位执行（择时/止损）"}
-  ],
-  "plan": [
-    {"if": "主线龙头开盘 30 分钟收复分时均线，且板块涨停 ≥ 8 家", "then": "恢复标准仓位跟随；否则维持半仓观察"},
-    {"if": "示例股B 跌破 24.5 元计划止损位", "then": "无条件离场，不等反弹"},
-    {"if": "固态电池板块出现 ≥ 20 只涨停 + 龙头封板", "then": "记录新候选证据，本周信号权限不足，不建仓"}
-  ],
   "statusUpdate": "情绪由「发酵」转入「分歧」：涨停家数较上日减少 14 家，主线龙头冲高回落；广度 46% 仍处中性区，环境态维持周度结论。固态电池列为新候选，待周度检验。",
   "dataGaps": ["融资余额数据未获取（示例缺口）"],
   "sources": ["东方财富｜2026-10-14", "财联社复盘｜2026-10-14", "同花顺｜2026-10-14", "开盘啦口径·示例｜2026-10-14"]
@@ -378,100 +320,9 @@ var SAMPLE = {
 
 /* ================================================================
    提示词模板（一键复制）
-   DAILY_PROMPT 与《每日复盘 · AI 辅助提示词模板》第三节（主提示词）同步；
    LITE_PROMPT 与《市场主线判断 · AI 联网分析提示词模板》第四节（轻量快检）同步。
    模板文档更新时须同步修改此处。
    ================================================================ */
-var DAILY_PROMPT = `你是 A 股每日复盘助手，具备联网搜索与网页阅读能力。你的任务分两部分：① 联网获取最近一个交易日数据，更新市场状态；② 基于用户填写的操作记录，做执行复盘并生成次日 if-then 计划。你处于「状态层」，全程禁止下周度层的结论。严格按以下六步执行。
-
-▍纪律红线（优先级最高，先于一切步骤）
-1. 单日数据只更新状态：禁止形成、推翻或质疑「主线 / 环境态 / 信号权限」——以用户输入区的周度结论为准，你只能标注「待周度检验」。
-2. 所有市场数字必须带 [来源｜日期]；取不到的项目写「缺口」，禁止用训练记忆填充行情。
-3. 执行复盘只评价「是否按昨日计划执行」，禁止以单笔盈亏评价操作好坏，禁止建议修改交易体系规则。
-4. 输入区为空或写「无」的项目，跳过对应判断，禁止脑补用户操作。
-
-▍第一步 · 联网取数（市场状态，全部标注来源）
-① 今日涨停家数、跌停家数、最高连板及所属题材、炸板率（较上日变化）
-② 今日涨跌家数比（市场广度 = 上涨家数占比%）
-③ 上证指数与沪深300：收盘位置相对 MA20/MA60、量能较昨日放/缩
-④ 用户提供的既定主线方向今日表现：板块涨幅、龙头股是否新高、梯队是否完整
-⑤ 行业与概念板块涨幅前 5、跌幅前 3；涨幅前列是否有连续第 2 日上榜的新面孔
-
-▍第二步 · 情绪周期定位
-基于第一步 ①② 给今日情绪一个周期标签（六选一）：冰点 / 回暖 / 发酵 / 高潮 / 分歧 / 退潮，一句话依据。此标签只描述今日位置，禁止外推明日。
-
-▍第三步 · 主线健康度（对照输入区的周度结论，三选一）
-从龙头行为、梯队完整性、量能结构三方面给既定主线打标签：延续 / 分歧 / 退潮信号，一句话依据。
-- 若市场广度跌破 35% 或升破 55%（体系环境态阈值），在状态更新中标注「环境态或变，待周度确认」；
-- 若出现新方向连续第 2 日全面强于旧主线，写入切换预警并注明「新候选，待周度四维检验」，禁止宣布切换。
-
-▍第四步 · 执行复盘（四象限，只用输入区事实）
-对输入区「今日操作记录」的每一笔：
-1. 判过程：昨日计划中有对应条目且照做 = 过程正确；计划外临场操作、漏执行计划、偏离既定仓位/止损 = 过程错误（与盈亏无关）；
-2. 判结果：以输入区自报为准（盈 / 亏 / 持），未标注的按「持」处理；
-3. 归象限：复制（对+盈）｜正常成本（对+亏）｜运气单（错+盈）｜真错误（错+亏）；
-4. 运气单必须写明错在哪；真错误必须定位偏差环节（选股 / 择时 / 仓位 / 止损）；
-5. 正常成本只记录，禁止附赠任何「优化建议」——它是规则内的统计样本，裁决权在月度层。
-无操作时输出「今日无操作」，跳过本步。
-
-▍第五步 · 明日 if-then 计划（2-4 条）
-基于今日状态 + 当前持仓 + 输入区信号权限生成：
-- 格式：若 [具体可观察触发条件]，则 [动作与仓位]；否则 [默认动作]；
-- 触发条件必须可验证（价位、量能阈值、板块涨停家数、龙头行为），禁止「走势良好」「情绪转暖」类模糊表述；
-- 计划不得超出当前环境态的信号权限；权限不足时输出「空仓等待，本周无信号权限」类计划。
-
-▍第六步 · 输出（严格遵循，两部分缺一不可，除此之外禁止任何正文）
-
-① 人类可读快报（固定格式）：
-
-# 每日复盘快报 · [今日日期]
-1. 情绪温度：[周期标签] —— [一句依据]
-2. 主线健康：[延续/分歧/退潮信号] —— [一句依据]
-3. 新方向：[名称 + 一句话；无则写「无」]
-4. 执行复盘：[标的 | 动作 | 象限 | 偏差点]（逐笔一行；无操作写「今日无操作」）
-5. 明日计划：if-then 逐条列出
-6. 状态更新：对照周度台账，今日哪些状态发生变化（含环境态阈值提示）
-
-② JSON 台账记录（单个 JSON 对象，未获取的数据填 null 并计入 dataGaps；所有 value 字段必须带 source）：
-
-{
-  "date": "",
-  "sentiment": {"limitUpCount": {"value": 0, "prev": 0, "source": ""}, "limitDownCount": {"value": 0, "source": ""}, "maxConBoards": {"value": 0, "theme": "", "source": ""}, "blastRate": {"value": 0, "source": ""}, "breadth": {"value": 0, "source": ""}, "phase": ""},
-  "index": {"name": "", "close": null, "vsMA20": "", "vsMA60": "", "volumeTrend": "", "source": ""},
-  "mainline": {"name": "", "health": "", "evidence": ""},
-  "switchAlert": "",
-  "newCandidates": [{"name": "", "note": ""}],
-  "trades": [{"symbol": "", "action": "", "processOk": true, "result": "", "quadrant": "", "deviation": ""}],
-  "plan": [{"if": "", "then": ""}],
-  "statusUpdate": "",
-  "dataGaps": [""],
-  "sources": [""]
-}
-
-字段说明：
-- sentiment.phase：情绪周期标签（冰点/回暖/发酵/高潮/分歧/退潮）
-- mainline.health：延续 / 分歧 / 退潮信号；evidence 一句话依据
-- trades.quadrant：复制 / 正常成本 / 运气单 / 真错误；processOk 为过程是否按计划；deviation 写偏差环节，无偏差填 null
-- plan：次日 if-then 条件句，if 必须具体可触发
-- statusUpdate：对照周度台账的状态变化，含「环境态或变，待周度确认」类提示
-
-▍输出前自查
-没有无来源的数字？没有用单日数据宣布周度层结论？没有因盈亏评价过程？每条 if-then 都具体可触发？「正常成本」单没有被附赠建议？
-
-【输入区 · 只填四项（约 1 分钟；提示词粘贴后补全）】
-
-▍1 周度结论（从周度台账复制一行）
-主线：____ ｜ 环境态：____ ｜ 信号权限：____
-
-▍2 昨日 if-then 计划（逐条粘贴，无则写「无」）
-____
-
-▍3 今日操作（无操作写「无」；计划外的临场操作也要如实记）
-标的 ｜ 买/卖 ｜ 盈/亏（未平仓写「持」） ｜ 对应昨日计划（或写「计划外」）
-
-▍4 当前持仓（空仓写「空仓」）
-标的 ｜ 仓位`;
-
 var LITE_PROMPT = `你是 A 股市场情绪与主线跟踪员。联网获取最近一个交易日收盘数据，输出 5 分钟快报 + JSON 台账。所有数字必须带 [来源｜日期]，取不到写「缺口」，禁止编造；盘中数据须标注「盘中」。
 
 输入附带：用户可能在提示词末尾附上「昨日快报 JSON」。若附上，所有「较上日」对比与冷却期计数（第 N 日）以昨日台账同字段为准，与其他来源不一致时注明；若未附带，冷却期从第 1 日起算，并在 dataGaps 登记「无昨日台账，跨日判断（连续第 2 日 / 冷却计数）降级为当日口径」。
@@ -489,12 +340,13 @@ var LITE_PROMPT = `你是 A 股市场情绪与主线跟踪员。联网获取最�
 5. 环境态提示：广度跌破 35% 或升破 55% 时标「环境态或变，待周度确认」，否则写「无」
 6. 一句话操作提示（对照当前环境态与信号权限）
 
-② JSON 台账（与每日复盘模板 v1.1 口径一致的精简对象，逐日追加归档，供周度完整版作 W1 证据）：
+② JSON 台账（与每日复盘模板 v2.0 口径一致的精简对象，逐日追加归档，供周度完整版作 W1 证据）：
 
 {
   "date": "",
   "sentiment": {"limitUpCount": {"value": 0, "prev": 0, "source": ""}, "limitDownCount": {"value": 0, "source": ""}, "maxConBoards": {"value": 0, "theme": "", "source": ""}, "blastRate": {"value": 0, "source": ""}, "breadth": {"value": 0, "source": ""}, "phase": ""},
   "index": {"name": "", "vsMA20": "", "vsMA60": "", "volumeTrend": "", "source": ""},
+  "strongest": {"name": "", "attr": ""},
   "mainline": {"name": "", "health": "", "evidence": ""},
   "switchAlert": "",
   "newCandidates": [{"name": "", "note": ""}],
@@ -503,7 +355,7 @@ var LITE_PROMPT = `你是 A 股市场情绪与主线跟踪员。联网获取最�
   "sources": [""]
 }
 
-字段说明：sentiment.phase 为六选一周期标签；mainline.health 为 延续/分歧/退潮信号；switchAlert 无预警填 null；newCandidates 的 note 写「冷却期第 N 日」；statusUpdate 写环境态阈值提示与对照周度台账的状态变化，无则填 null。
+字段说明：sentiment.phase 为六选一周期标签；strongest 为今日最强方向 {name, attr}——attr 限「既有主线延续 / 高潮补涨 / 新候选」三选一，取不到填 null；mainline.health 为 延续/分歧/退潮信号 三选一（禁止组合填法）；switchAlert 无预警填 null，无昨日台账、无法执行切换判定时填「无法判定：无昨日台账」；newCandidates 的 note 写「冷却期第 N 日」；statusUpdate 写环境态阈值提示与对照周度台账的状态变化，无则填 null。
 
 纪律：单日数据只更新状态，不推翻周度主线结论；新爆发方向一律适用冷却规则——首日只标「新候选 · 冷却期第 1 日」，连续 2 日强势后标「待周度四维评分」，禁止当日宣布切换主线。`;
 
@@ -543,12 +395,6 @@ function cntUp(el){
 }
 
 var PHASES = ['冰点', '回暖', '发酵', '高潮', '分歧', '退潮'];
-var QUADS = [
-  {key: '复制',      cls: 'q-copy',  tag: '复制 · 体系生效',   desc: '结果验证流程，按既有规则继续执行'},
-  {key: '运气单',    cls: 'q-lucky', tag: '最危险 · 运气单',   desc: '盈利强化坏习惯——按真实亏损记入台账'},
-  {key: '正常成本',  cls: 'q-cost',  tag: '正常成本 · 不动规则', desc: '规则内统计样本，裁决权在月度层'},
-  {key: '真错误',    cls: 'q-wrong', tag: '真错误 · 修执行',   desc: '定位偏差环节（选股/择时/仓位/止损）'}
-];
 
 /* ================================================================
    渲染
@@ -557,9 +403,9 @@ function renderHero(d, mode){
   var badge = $('#hero-badge'), btext = $('#badge-text');
   badge.className = 'hero-badge ' + (mode === 'imported' ? 'imported' : 'sample');
   btext.textContent = mode === 'imported' ? '已导入你的日报数据' : '示例数据 · 虚构演示';
-  $('#hero-kicker').textContent = 'DAILY REVIEW · ' + (d.date || '——');
+  $('#hero-kicker').textContent = 'MARKET DAILY · ' + (d.date || '——');
   var phase = (d.sentiment && d.sentiment.phase) || '';
-  $('#hero-title').innerHTML = esc(phase || '每日复盘') + '<small id="hero-sub">' + (phase ? '今日情绪周期位置 · ' : '') + '状态层 · 只更新状态，不下结论</small>';
+  $('#hero-title').innerHTML = esc(phase || '主线日报') + '<small id="hero-sub">' + (phase ? '今日情绪周期位置 · ' : '') + '状态层 · 只更新状态，不下结论</small>';
   $('#hero-summary').textContent = d.statusUpdate || (mode === 'imported' ? '今日无状态更新。' : '导入日报 JSON 后，这里显示今日状态更新摘要。');
   var chips = [];
   var s = d.sentiment || {};
@@ -584,8 +430,9 @@ function renderSentiment(d){
     ? '今日情绪位于：' + phase + '（六选一周期标签，只描述今日位置）'
     : '情绪周期标签缺失——导入后自动标注。';
 
+  var luPrev = s.limitUpCount ? s.limitUpCount.prev : null;
   var items = [
-    {label: '涨停家数', o: s.limitUpCount, unit: ' 家', sub: fmtDelta(val(s.limitUpCount), s.limitUpCount && s.limitUpCount.prev)},
+    {label: '涨停家数', o: s.limitUpCount, unit: ' 家', sub: luPrev != null ? fmtDelta(val(s.limitUpCount), luPrev) : (val(s.limitUpCount) != null ? '无昨日台账，「较上日」缺口' : '')},
     {label: '跌停家数', o: s.limitDownCount, unit: ' 家'},
     {label: '最高连板', o: s.maxConBoards, unit: ' 板', sub: s.maxConBoards && s.maxConBoards.theme ? esc(s.maxConBoards.theme) : ''},
     {label: '炸板率', o: s.blastRate, unit: '%'}
@@ -596,7 +443,7 @@ function renderSentiment(d){
       ? '<div class="stat-value"><span data-cnt="' + v + '" data-dec="' + (String(v).indexOf('.') > -1 ? 1 : 0) + '">0</span><small>' + it.unit + '</small></div>'
       : '<div class="stat-value">—</div>';
     return '<div class="card stat"><div class="stat-label">' + it.label + '</div>' + num +
-      '<div class="stat-sub">' + (it.sub || '单日快照，较上日变化') + '</div>' +
+      '<div class="stat-sub">' + (it.sub || (v != null ? '单日快照' : '数据缺口')) + '</div>' +
       (so ? '<div class="stat-src">' + esc(so) + '</div>' : '') + '</div>';
   }).join('');
 
@@ -612,11 +459,23 @@ function renderSentiment(d){
     $('#gmark').style.left = '0%';
   }
   $('#gauge-src').textContent = bv != null && src(s.breadth) ? '来源：' + src(s.breadth) : '广度数据缺失——显示为默认分区';
+  var envEl = $('#env-alert');
+  if (bv != null && (bv <= 35 || bv >= 55)){
+    envEl.style.display = 'inline-flex';
+    envEl.innerHTML = '<span class="dot"></span>广度 ' + bv + '% ' + (bv <= 35 ? '跌破 35%（进入防守区）' : '升破 55%（进入进攻区）') + ' —— 环境态或变，待周度确认';
+  } else {
+    envEl.style.display = 'none';
+  }
 }
 
 function renderIndex(d){
   var ix = d.index || {};
   var close = (ix.close != null) ? ix.close : null;
+  /* 快检 Schema 无 close：主展示位降级为 MA20 位置（限填值），均缺失时标缺口 */
+  var posTxt = (ix.vsMA20 && String(ix.vsMA20).length <= 4) ? ('MA20 ' + ix.vsMA20) : null;
+  var big = close != null
+    ? '<span class="idx-close" data-cnt="' + close + '" data-dec="' + (String(close).indexOf('.') > -1 ? String(close).split('.')[1].length : 0) + '">0</span>'
+    : '<span class="idx-close"' + (posTxt ? '' : ' style="color:#86868b"') + '>' + (posTxt ? esc(posTxt) : '缺口') + '</span>';
   var cells = [
     {k: '相对 MA20', v: ix.vsMA20},
     {k: '相对 MA60', v: ix.vsMA60},
@@ -624,18 +483,33 @@ function renderIndex(d){
   ];
   $('#idx-card').innerHTML =
     '<div class="index-card"><span class="idx-name">' + esc(ix.name || '大盘指数') + '</span>' +
-    (close != null ? '<span class="idx-close" data-cnt="' + close + '" data-dec="0">0</span>' : '<span class="idx-close">—</span>') +
+    big +
     '</div><div class="idx-rows">' +
     cells.map(function(c){
-      return '<div class="idx-cell"><div class="k">' + c.k + '</div><div class="v">' + esc(c.v || '—') + '</div></div>';
+      return '<div class="idx-cell"><div class="k">' + c.k + '</div><div class="v">' + (c.v ? esc(c.v) : '缺口') + '</div></div>';
     }).join('') + '</div>' +
     (src(ix) ? '<div class="stat-src">' + esc(src(ix)) + '</div>' : '');
 }
 
 function renderMainline(d){
   var m = d.mainline || {};
-  var hl = m.health ? '<span class="ml-hl hl-' + esc(m.health) + '">' + esc(m.health) + '</span>' : '<span class="ml-hl" style="background:#e8e8ed;color:var(--gray)">未标注</span>';
-  $('#ml-card').innerHTML =
+  /* health 理论三选一，实战出现「分歧/退潮信号」组合填法：按最重信号兜底映射，避免徽标丢样式 */
+  var hTxt = String(m.health || '');
+  var hCls = /退潮/.test(hTxt) ? 'hl-退潮信号' : (/分歧/.test(hTxt) ? 'hl-分歧' : (/延续/.test(hTxt) ? 'hl-延续' : ''));
+  var hl = m.health
+    ? '<span class="ml-hl' + (hCls ? ' ' + hCls : '') + '"' + (hCls ? '' : ' style="background:#e8e8ed;color:var(--gray)"') + '>' + esc(m.health) + '</span>'
+    : '<span class="ml-hl" style="background:#e8e8ed;color:var(--gray)">未标注</span>';
+  /* 快报第 2 项「今日最强方向」：Schema 可选字段，旧台账缺失时整行跳过 */
+  var st = d.strongest || {};
+  var stHtml = '';
+  if (st.name){
+    var aTxt = String(st.attr || '');
+    var aCls = /补涨/.test(aTxt) ? 'attr-补涨' : (/候选/.test(aTxt) ? 'attr-新候选' : (/延续/.test(aTxt) ? 'attr-延续' : ''));
+    stHtml = '<div class="strong-row"><span class="s-k">今日最强</span><b>' + esc(st.name) + '</b>' +
+      (st.attr ? '<span class="s-attr' + (aCls ? ' ' + aCls : '') + '"' + (aCls ? '' : ' style="background:#fff;color:var(--gray)"') + '>' + esc(st.attr) + '</span>' : '') +
+      '</div>';
+  }
+  $('#ml-card').innerHTML = stHtml +
     '<div class="ml-card"><span class="ml-name">' + esc(m.name || '无主线（轮动市）') + '</span>' + hl +
     (m.evidence ? '<div class="ml-evi">' + esc(m.evidence) + '</div>' : '') + '</div>';
 
@@ -652,51 +526,12 @@ function renderMainline(d){
     : '';
 }
 
-function renderTrades(d){
-  var trades = (Array.isArray(d.trades) && d.trades.length)
-    ? d.trades
-    : [{symbol: null}];
-  var noTrade = (trades.length === 1 && !trades[0].symbol) || !Array.isArray(d.trades) || d.trades.length === 0;
-  if (!Array.isArray(d.trades)) trades = [];
-
-  $('#qgrid').innerHTML = QUADS.map(function(q){
-    var list = trades.filter(function(t){ return t.quadrant === q.key; });
-    return '<div class="qcell ' + q.cls + '"><div class="q-tag"><span class="q-n">' + list.length + '</span>' + q.tag + '</div><div class="q-desc">' + q.desc + '</div></div>';
-  }).join('');
-
-  if (noTrade){
-    $('#trade-list').innerHTML = '<div class="no-trade">今日无操作——空仓日 / 未触发计划条件，是设计内行为。</div>';
-    return;
-  }
-  $('#trade-list').innerHTML = trades.map(function(t){
-    var resCls = t.result === '盈利' ? 'up' : (t.result === '亏损' ? 'down' : 'flat');
-    return '<div class="trade-row">' +
-      '<span class="t-sym">' + esc(t.symbol || '—') + '</span>' +
-      '<span class="t-act">' + esc(t.action || '—') + '</span>' +
-      '<span class="t-res ' + resCls + '">' + esc(t.result || '未平仓') + '</span>' +
-      '<span class="t-quad ' + esc(t.quadrant || '') + '">' + esc(t.quadrant || '未归类') + '</span>' +
-      (t.deviation ? '<span class="t-dev"><b>偏差：</b>' + esc(t.deviation) + '</span>' : '') +
-      '</div>';
-  }).join('');
-}
-
-function renderPlan(d){
-  $('#plan-grid').innerHTML = hasArr(d.plan) && d.plan.length
-    ? d.plan.map(function(p){
-        return '<div class="plan-card">' +
-          '<div class="p-row"><span class="p-tag">若</span><span>' + esc(p.if || '—') + '</span></div>' +
-          '<div class="p-arrow"></div>' +
-          '<div class="p-row then"><span class="p-tag">则</span><span>' + esc(p.then || '—') + '</span></div>' +
-          '</div>';
-      }).join('')
-    : '<div class="empty-note" style="grid-column:1/-1">本周信号权限不足或条件未定——空计划日是设计内行为。</div>';
-}
-
 function renderLedger(d){
   $('#status-card').innerHTML = '<div class="k">Status Update</div>' +
     (d.statusUpdate ? esc(d.statusUpdate) : '今日无状态更新（无变化时填 null，为合法空值）。');
+  /* 长文本缺口用左竖线引述列表，替代胶囊芯片（多条 40+ 字时芯片撑成大块） */
   $('#gap-list').innerHTML = hasArr(d.dataGaps) && d.dataGaps.filter(Boolean).length
-    ? d.dataGaps.filter(Boolean).map(function(g){ return '<span class="chip gap">' + esc(g) + '</span>'; }).join('')
+    ? '<div class="gap-vlist">' + d.dataGaps.filter(Boolean).map(function(g){ return '<div class="gap-item">' + esc(g) + '</div>'; }).join('') + '</div>'
     : '<span class="chip">无数据缺口</span>';
   $('#src-list').innerHTML = hasArr(d.sources) && d.sources.filter(Boolean).length
     ? d.sources.filter(Boolean).map(function(s){ return '<span class="chip src">' + esc(s) + '</span>'; }).join('')
@@ -708,9 +543,10 @@ function renderAll(d, mode){
   renderSentiment(d);
   renderIndex(d);
   renderMainline(d);
-  renderTrades(d);
-  renderPlan(d);
   renderLedger(d);
+  /* 导入真实数据后隐藏「虚构示例」声明，仅示例态显示 */
+  var fd = $('#f-demo');
+  if (fd) fd.style.display = (mode === 'imported') ? 'none' : '';
   refreshReveal();
 }
 
@@ -825,7 +661,6 @@ function copyText(text, btn){
   /* 按钮 */
   $('#btn-import').addEventListener('click', openModal);
   $('#btn-copy').addEventListener('click', function(){ copyText(JSON.stringify(CURRENT, null, 2), this); });
-  $('#btn-copy-daily').addEventListener('click', function(){ copyText(DAILY_PROMPT, this); });
   $('#btn-copy-lite').addEventListener('click', function(){ copyText(LITE_PROMPT, this); });
   $('#btn-render').addEventListener('click', function(){ applyImport($('#json-in').value); });
   $('#btn-reset').addEventListener('click', function(){

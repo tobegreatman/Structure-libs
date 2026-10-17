@@ -19,7 +19,7 @@
 html{scroll-behavior:smooth}
 body{font-family:var(--font);background:var(--canvas);color:var(--ink);-webkit-font-smoothing:antialiased;line-height:1.5}
 a{color:var(--link);text-decoration:none}
-.wrap{max-width:980px;margin:0 auto;padding:0 22px}
+.wrap{max-width:1200px;margin:0 auto;padding:0 22px}
 
 /* ============ 固定导航（深色磨砂 + scroll-spy） ============ */
 nav{position:fixed;top:0;left:0;right:0;z-index:100;height:52px;background:rgba(0,0,0,.78);backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%)}
@@ -44,7 +44,7 @@ nav .wrap{display:flex;align-items:center;justify-content:space-between;height:1
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
 .hero-kicker{font-size:13px;letter-spacing:4px;color:#86868b;text-transform:uppercase;margin-bottom:18px}
 #hero h1{font-size:clamp(42px,7vw,74px);font-weight:600;line-height:1.05;letter-spacing:-.02em;margin-bottom:22px}
-.hero-summary{max-width:660px;margin:0 auto 30px;font-size:19px;line-height:1.5;color:#a1a1a6}
+.hero-summary{max-width:680px;margin:0 auto 30px;font-size:19px;line-height:1.5;color:#a1a1a6}
 .hero-chips{display:flex;justify-content:center;flex-wrap:wrap;gap:10px;margin-bottom:42px}
 .hchip{font-size:13.5px;padding:7px 16px;border-radius:980px;border:1px solid rgba(255,255,255,.22);color:#f5f5f7;display:inline-flex;gap:7px;align-items:center}
 .hchip b{font-weight:600}
@@ -85,10 +85,20 @@ section h2{font-size:clamp(30px,4.6vw,42px);font-weight:600;letter-spacing:-.01e
 .lv.none{color:var(--gray);background:#e8e8ed}
 
 /* 结论胶囊 */
-.v{display:inline-flex;align-items:center;font-size:13px;font-weight:600;padding:5px 14px;border-radius:980px}
+.v{display:inline-flex;align-items:center;font-size:13px;font-weight:600;padding:5px 14px;border-radius:980px;white-space:nowrap;}
 .v-main{background:var(--blue);color:#fff}
 .v-alt{background:rgba(255,159,10,.14);color:#b26a00}
 .v-rot{background:#e8e8ed;color:var(--gray)}
+.v-watch{background:rgba(0,113,227,.12);color:var(--blue)}
+
+/* ============ 自查演算 / 缺口列表 ============ */
+.selfcheck{margin-top:16px;padding:18px 22px}
+.sc-title{font-size:12px;font-weight:700;color:var(--blue);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px}
+.sc-line{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px;color:var(--ink);padding:7px 0;border-bottom:1px dashed var(--border-soft)}
+.sc-line:last-child{border-bottom:none}
+.sc-note{font-size:12px;color:var(--gray);margin-top:10px}
+.gap-vlist{display:flex;flex-direction:column;gap:10px}
+.gap-item{font-size:13px;line-height:1.6;color:var(--ink);padding:9px 13px;border-left:3px solid rgba(255,159,10,.55);background:rgba(255,159,10,.05);border-radius:0 10px 10px 0}
 
 /* ============ 环境态 ============ */
 .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:16px}
@@ -115,9 +125,9 @@ section h2{font-size:clamp(30px,4.6vw,42px);font-weight:600;letter-spacing:-.01e
 
 /* ============ 候选方向 ============ */
 .cand-count{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap}
-.cands-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:16px}
+.cands-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:10px}
 .cand-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:16px}
-.cand-head h3{font-size:22px;font-weight:600;letter-spacing:-.01em}
+.cand-head h3{font-size:20px;font-weight:600;letter-spacing:-.01em}
 .dim-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-top:1px solid var(--border-soft)}
 .dim-row .dk{font-size:12px;font-weight:700;color:var(--blue);width:26px}
 .dim-row .dn{font-size:13.5px;color:var(--ink);flex:1}
@@ -392,7 +402,7 @@ var SAMPLE = {
     maxConBoards: {value: 6, theme: "算力租赁", source: "财联社复盘｜10-11"},
     blastRate: {value: 17, source: "同花顺｜10-11"},
     breadth: {value: 52, source: "东方财富｜10-11"},
-    index: {name: "上证指数", vsMA20: "+0.8%", vsMA60: "+2.3%", volumeTrend: "温和缩量", source: "东方财富｜10-11"}
+    index: {name: "上证指数", vsMA20: "上方", vsMA60: "上方", volumeTrend: "温和缩量", source: "东方财富｜10-11"}
   },
   candidates: [
     {name: "AI 算力硬件", d1: "强", d2: "强", d3: "中", d4: "强", verdict: "主线", note: "20 日 13 日跑赢沪深300（65%）；成交占比 9%→14%；海外云商 Capex 上修"},
@@ -448,13 +458,19 @@ var SAMPLE = {
     signalPermission: "中性态：本周只做信号 B（缩量回踩），信号 A 仅观察",
     resonanceSectors: ["AI 算力硬件", "半导体设备"]
   },
+  selfCheck: [
+    "AI 算力硬件: 2+2+1+2=7（强+强+中+强=7）",
+    "半导体设备: 1+2+1+1=5（中+强+中+中=5）",
+    "创新药: 0+1+0+1=2（弱+中+弱+中=2）",
+    "verdict联动校验: 存在 score≥6 且 D1+D2≥3 的候选（算力硬件 7，D1+D2=4）→ verdict=确认主线，联动合规。"
+  ],
   dataGaps: ["融资余额近 20 日序列未获取", "炸板率来自二手汇总，未核对原始复盘数据"],
   sources: ["东方财富行情中心", "东方财富数据中心", "东方财富资金流向", "同花顺", "财联社复盘", "券商研报摘要", "官方网站公告"]
 };
 
 /* ================================================================
    主提示词 · 周度完整版（一键复制）
-   与《市场主线判断 · AI 联网分析提示词模板》第三节（v3.2）保持同步，
+   与《市场主线判断 · AI 联网分析提示词模板》第三节（v3.x）保持同步，
    模板更新时须同步修改此处。
 ================================================================ */
 var WEEKLY_PROMPT = `你是专业的 A 股市场主线分析师，具备联网搜索与网页阅读能力。你的任务：获取真实市场数据，用多时间窗口交叉验证与量化评分卡，判断当前市场主线，输出结构化报告。严格按以下五步执行。
@@ -489,7 +505,7 @@ var WEEKLY_PROMPT = `你是专业的 A 股市场主线分析师，具备联网�
 
 - W1 短窗（近 5-10 交易日，日线粒度）：识别「新爆发方向」，只产生候选，不下结论。
 - W2 中窗（近 20-60 交易日，周线粒度）：主线确认与否决的核心窗口，所有结论在此产生。
-- W3 长窗（近 60-250 交易日，月线粒度）：判断产业趋势位置——趋势初段、中段，还是已演绎许久。
+- W3 长窗（近 60-250 交易日，月线粒度）：判断产业趋势位置——趋势初段、中段，还是已演绎已久。
 
 对每个候选方向依次回答：W1 谁在涨？→ W2 谁在持续吸金？→ W3 它走到哪一步了？
 
@@ -602,6 +618,7 @@ function verdictCls(v){
   v = String(v || '');
   if (v.indexOf('主线') >= 0 && v.indexOf('候补') < 0 && v.indexOf('无') < 0) return 'v-main';
   if (v.indexOf('候补') >= 0) return 'v-alt';
+  if (v.indexOf('候选') >= 0) return 'v-watch';
   return 'v-rot';
 }
 /* 环境态配色 */
@@ -624,13 +641,16 @@ function delta(cur, prev){
 function countUp(el, target, suffix, dur){
   if (target == null || isNaN(target)) return;
   suffix = suffix || ''; dur = dur || 750;
+  /* 小数位按目标值推导：44.5 滚动终止于 44.5，而非 Math.round 的 45 */
+  var dec = (String(target).indexOf('.') > -1 ? String(target).split('.')[1].length : 0);
   var t0 = null;
   function step(ts){
     if (!t0) t0 = ts;
     var p = Math.min((ts - t0) / dur, 1);
     var e = 1 - Math.pow(1 - p, 3);
-    el.textContent = Math.round(target * e) + suffix;
+    el.textContent = (target * e).toFixed(dec) + suffix;
     if (p < 1) requestAnimationFrame(step);
+    else el.textContent = target.toFixed(dec) + suffix;
   }
   requestAnimationFrame(step);
 }
@@ -830,8 +850,9 @@ function renderEnv(d){
     return '<div class="stat-value"><span id="' + id + '">0</span><small>' + suffix + '</small></div>';
   }
   var html = '<div class="stats-grid">';
+  var luDelta = lu.value != null ? delta(lu.value, lu.prev) : '';
   html += '<div class="card stat"><div class="stat-label">涨停家数</div>' + statVal(lu.value, ' 家', 'num-lu') +
-    '<div class="stat-sub">' + delta(lu.value, lu.prev) + ' 较上日</div>' + srcLine(lu.source) + '</div>';
+    '<div class="stat-sub">' + (luDelta ? luDelta + ' 较上日' : (lu.value != null ? '无上期台账，单周快照' : '未获取')) + '</div>' + srcLine(lu.source) + '</div>';
   html += '<div class="card stat"><div class="stat-label">最高连板</div>' + statVal(mc.value, ' 连板', 'num-mc') +
     '<div class="stat-sub">' + (mc.theme ? '题材：' + esc(mc.theme) : '—') + '</div>' + srcLine(mc.source) + '</div>';
   html += '<div class="card stat"><div class="stat-label">炸板率</div>' + statVal(br.value, '%', 'num-br') +
@@ -872,13 +893,14 @@ function renderEnv(d){
 
 function renderCands(d){
   var list = (d.candidates || []).slice();
-  var order = {'主线':0, '候补':1, '轮动':2};
+  /* 框架排序：主线 > 候补 > 候选观察 > 轮动；未知 verdict 殿后 */
+  var order = {'主线':0, '候补':1, '候选观察':2, '轮动':3};
   list.sort(function(a, b){ return (order[a.verdict] != null ? order[a.verdict] : 9) - (order[b.verdict] != null ? order[b.verdict] : 9); });
   if (!list.length){ $('#cand-body').innerHTML = '<div class="empty-note">candidates 为空——本轮未识别出任何候选方向。</div>'; return; }
-  var nMain = 0, nAlt = 0, nRot = 0;
-  list.forEach(function(c){ if (c.verdict === '主线') nMain++; else if (c.verdict === '候补') nAlt++; else nRot++; });
+  var nMain = 0, nAlt = 0, nWatch = 0, nRot = 0;
+  list.forEach(function(c){ if (c.verdict === '主线') nMain++; else if (c.verdict === '候补') nAlt++; else if (c.verdict === '候选观察') nWatch++; else nRot++; });
   var html = '<div class="cand-count">' +
-    '<span class="v v-main">主线 ' + nMain + '</span><span class="v v-alt">候补 ' + nAlt + '</span><span class="v v-rot">轮动 ' + nRot + '</span></div>';
+    '<span class="v v-main">主线 ' + nMain + '</span><span class="v v-alt">候补 ' + nAlt + '</span><span class="v v-watch">候选观察 ' + nWatch + '</span><span class="v v-rot">轮动 ' + nRot + '</span></div>';
   html += '<div class="cands-grid">';
   list.forEach(function(c){
     var dims = [['D1','价格持续性', c.d1], ['D2','资金持续性', c.d2], ['D3','赚钱效应', c.d3], ['D4','逻辑驱动', c.d4]];
@@ -891,6 +913,13 @@ function renderCands(d){
     html += '</div>';
   });
   html += '</div>';
+  /* v3.1 强制自查演算：逐候选分数算式 + verdict 联动校验；旧 JSON 无此字段时跳过 */
+  var sc = (d.selfCheck || []).filter(Boolean);
+  if (sc.length){
+    html += '<div class="card selfcheck"><div class="sc-title">Self-Check · 强制演算自查</div>' +
+      sc.map(function(x){ return '<div class="sc-line">' + esc(x) + '</div>'; }).join('') +
+      '<div class="sc-note">校验口径：d1+d2+d3+d4=score（强=2/中=1/弱=0）；人工复核时抽一个候选重算一遍（检查单第 8 项）。</div></div>';
+  }
   $('#cand-body').innerHTML = html;
 }
 
@@ -980,7 +1009,11 @@ function renderCycle(d){
   var st = String(meta.stage || '');
   for (var i = 0; i < STAGES.length; i++){ if (st.indexOf(STAGES[i].n.slice(0, 2)) >= 0) stageIdx = i; }
   var html = '<div class="card cycle-box">' + cycleSVG(stageIdx);
-  if (stageIdx >= 0) html += '<p class="stage-note">当前定位：<b style="color:var(--blue)">' + esc(STAGES[stageIdx].n) + '</b> —— ' + esc(STAGES[stageIdx].d) + '（依据：量能结构、龙头行为、调整后能否再新高）</p>';
+  if (stageIdx >= 0){
+    /* 组合填法（如「高潮期→分歧期过渡」）时保留原文标注，定位取最重（最后命中）阶段 */
+    var rawSt = (st && st !== STAGES[stageIdx].n) ? '（原文标注：' + esc(st) + '）' : '';
+    html += '<p class="stage-note">当前定位：<b style="color:var(--blue)">' + esc(STAGES[stageIdx].n) + '</b>' + rawSt + ' —— ' + esc(STAGES[stageIdx].d) + '（依据：量能结构、龙头行为、调整后能否再新高）</p>';
+  }
   else html += '<p class="stage-note">' + (st ? '未匹配到标准阶段：' + esc(st) : '未提供生命周期定位——无主线时无阶段定位。') + '</p>';
   html += '</div>';
   /* 梯队 */
@@ -1052,14 +1085,14 @@ function renderAppx(d){
   var gaps = d.dataGaps || [], srcs = d.sources || [];
   var meta = d.meta || {};
   var html = '<div class="appx-grid appx">';
-  html += '<div class="card"><h4>数据缺口（设计内降级）</h4><div class="chips">' +
-    (gaps.length ? gaps.map(function(x){ return '<span class="chip gap">' + esc(x) + '</span>'; }).join('') : '<span class="chip src">无</span>') +
-    '</div></div>';
+  html += '<div class="card"><h4>数据缺口（设计内降级）</h4>' +
+    (gaps.filter(Boolean).length ? '<div class="gap-vlist">' + gaps.filter(Boolean).map(function(x){ return '<div class="gap-item">' + esc(x) + '</div>'; }).join('') + '</div>' : '<span class="chip src">无</span>') +
+    '</div>';
   html += '<div class="card"><h4>数据来源（去重）</h4><div class="chips">' +
     (srcs.length ? srcs.map(function(x){ return '<span class="chip src">' + esc(x) + '</span>'; }).join('') : '<span class="chip src">无</span>') +
     '</div></div>';
   html += '</div>';
-  html += '<div class="appx-meta"><span>报告日期：' + esc(meta.reportDate || '—') + '</span><span>结构版本：模板第五步 Schema v2.0</span></div>';
+  html += '<div class="appx-meta"><span>报告日期：' + esc(meta.reportDate || '—') + '</span><span>结构版本：模板第五步 Schema（v3.x）</span></div>';
   html += '<div class="appx-actions"><button class="btn-mini" id="btn-import2">重新导入 JSON</button><button class="btn-mini" id="btn-copy">复制当前 JSON</button><button class="btn-mini" id="btn-copy-prompt2">复制主提示词 · 周度完整版</button></div>';
   $('#appx-body').innerHTML = html;
   $('#btn-import2').addEventListener('click', openModal);
