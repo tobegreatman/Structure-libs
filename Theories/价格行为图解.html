@@ -89,7 +89,7 @@ nav{
   -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
 }
 .hero .sub{
-  margin-top:30px;font-size:clamp(17px,2.4vw,21px);color:var(--sub);max-width:640px;
+  margin-top:30px;font-size:clamp(17px,2.4vw,21px);color:var(--sub);max-width:710px;
   font-weight:400;
 }
 .hero .quote{
@@ -120,10 +120,10 @@ h2{
   margin-bottom:18px;
 }
 h2 .grad{background:linear-gradient(92deg,var(--cyan),var(--purple));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
-.lead{font-size:17.5px;color:var(--sub);max-width:760px}
+.lead{font-size:17.5px;color:var(--sub);max-width:990px}
 .lead strong,.card strong{color:#fff;font-weight:600}
 /* ============ CARDS & GRIDS ============ */
-.grid{display:grid;gap:18px;margin-top:36px}
+.grid{display:grid;gap:10px;margin-top:36px}
 .g2{grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
 .g3{grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
 .g4{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
@@ -381,10 +381,10 @@ footer h3{font-size:20px;font-weight:650;margin-bottom:26px}
       <line class="s-dash" x1="255" y1="185" x2="470" y2="185" stroke="rgba(48,209,88,.5)"/>
       <text class="s-lab up" x="262" y="176" font-size="11.5">前高 HH2 水平延伸</text>
       <!-- CHoCH 虚线：HL3 高度 -->
-      <line class="s-dash" x1="452" y1="252" x2="700" y2="252" stroke="rgba(255,69,58,.55)"/>
-      <text class="s-lab dn" x="590" y="243" font-size="11.5">前低 HL3 水平延伸</text>
+      <line class="s-dash" x1="452" y1="215" x2="700" y2="215" stroke="rgba(255,69,58,.55)"/>
+      <text class="s-lab dn" x="505" y="233" font-size="11.5">前低 HL3 水平延伸</text>
       <!-- 价格路径 -->
-      <path class="s-line" d="M 50 345 L 120 235 L 172 283 L 250 185 L 305 232 L 390 118 L 452 252 L 532 82 L 592 205 L 642 152 L 702 275"/>
+      <path class="s-line" d="M 50 345 L 120 235 L 172 283 L 250 185 L 305 232 L 390 118 L 452 215 L 532 82 L 592 205 L 642 152 L 702 275"/>
       <!-- BOS 打破点 -->
       <circle class="s-dot" cx="390" cy="118" r="5"/>
       <path d="M 390 108 L 390 96" stroke="#30d158" stroke-width="2" stroke-linecap="round"/>
@@ -393,13 +393,13 @@ footer h3{font-size:20px;font-weight:650;margin-bottom:26px}
         <rect x="404" y="112" width="98" height="24" rx="12" fill="rgba(48,209,88,.14)" stroke="rgba(48,209,88,.55)"/>
         <text class="s-btext g" x="453" y="128" text-anchor="middle">BOS 突破结构</text>
       </g>
-      <!-- CHoCH 打破点 -->
-      <circle class="s-dot" cx="592" cy="205" r="5"/>
-      <path d="M 592 216 L 592 228" stroke="#ff453a" stroke-width="2" stroke-linecap="round"/>
-      <path d="M 586 223 L 592 231 L 598 223" stroke="#ff453a" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+      <!-- CHoCH 打破点：价格穿越 HL3 水平处 -->
+      <circle class="s-dot" cx="673" cy="215" r="5"/>
+      <path d="M 673 225 L 673 237" stroke="#ff453a" stroke-width="2" stroke-linecap="round"/>
+      <path d="M 667 232 L 673 240 L 679 232" stroke="#ff453a" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
       <g>
-        <rect x="606" y="222" width="118" height="24" rx="12" fill="rgba(255,69,58,.13)" stroke="rgba(255,69,58,.55)"/>
-        <text class="s-btext r" x="665" y="238" text-anchor="middle">CHoCH 性质转变</text>
+        <rect x="560" y="240" width="118" height="24" rx="12" fill="rgba(255,69,58,.13)" stroke="rgba(255,69,58,.55)"/>
+        <text class="s-btext r" x="619" y="256" text-anchor="middle">CHoCH 性质转变</text>
       </g>
       <!-- 摆动点标签 -->
       <circle class="s-dot" cx="120" cy="235" r="5"/><text class="s-lab" x="112" y="222" font-size="12">HH1</text>
@@ -408,8 +408,9 @@ footer h3{font-size:20px;font-weight:650;margin-bottom:26px}
       <circle class="s-dot" cx="305" cy="232" r="5"/><text class="s-lab" x="292" y="252" font-size="12">HL2</text>
       <circle class="s-dot" cx="390" cy="118" r="0"/>
       <text class="s-lab" x="372" y="96" font-size="12" fill="#30d158">HH3</text>
-      <circle class="s-dot" cx="452" cy="252" r="5"/><text class="s-lab" x="430" y="272" font-size="12">HL3</text>
+      <circle class="s-dot" cx="452" cy="215" r="5"/><text class="s-lab" x="430" y="237" font-size="12">HL3</text>
       <circle class="s-dot" cx="532" cy="82" r="5"/><text class="s-lab" x="516" y="70" font-size="12">HH4</text>
+      <circle class="s-dot" cx="592" cy="205" r="5"/>
       <circle class="s-dot" cx="642" cy="152" r="5"/><text class="s-lab dn" x="630" y="140" font-size="12">LH</text>
       <circle class="s-dot" cx="702" cy="275" r="5"/><text class="s-lab dn" x="688" y="296" font-size="12">LL</text>
       <!-- 注释 -->
@@ -466,9 +467,9 @@ footer h3{font-size:20px;font-weight:650;margin-bottom:26px}
       <text class="s-lab dn" x="60" y="102" font-size="13">阻力 Resistance</text>
       <text class="s-lab up" x="615" y="102" font-size="13">→ 支撑 Support</text>
       <!-- 价格路径 -->
-      <path class="s-line" d="M 60 295 L 140 132 L 200 248 L 278 128 L 338 252 L 418 120 L 448 78 L 505 128 L 575 45 L 665 90"/>
+      <path class="s-line" d="M 60 295 L 140 124 L 200 248 L 278 124 L 338 252 L 418 120 L 448 78 L 505 124 L 575 45 L 665 90"/>
       <!-- 触点 -->
-      <circle class="s-dot" cx="140" cy="132" r="5"/><circle class="s-dot" cx="278" cy="128" r="5"/>
+      <circle class="s-dot" cx="140" cy="124" r="5"/><circle class="s-dot" cx="278" cy="124" r="5"/>
       <!-- 突破点 -->
       <circle class="s-dot" cx="418" cy="120" r="6"/>
       <g>
@@ -476,7 +477,7 @@ footer h3{font-size:20px;font-weight:650;margin-bottom:26px}
         <text class="s-btext" x="438" y="316" text-anchor="middle" fill="#64d2ff">实体收盘突破 = 有效</text>
       </g>
       <!-- 回踩点 -->
-      <circle class="s-dot" cx="505" cy="128" r="6"/>
+      <circle class="s-dot" cx="505" cy="124" r="6"/>
       <g>
         <rect x="480" y="180" width="180" height="24" rx="12" fill="rgba(48,209,88,.1)" stroke="rgba(48,209,88,.5)"/>
         <text class="s-btext g" x="570" y="196" text-anchor="middle">回踩旧阻力 = 入场点</text>
@@ -542,9 +543,7 @@ footer h3{font-size:20px;font-weight:650;margin-bottom:26px}
           <!-- pin bar -->
           <line x1="128" y1="38" x2="128" y2="128" stroke="#30d158" stroke-width="2"/>
           <rect x="119" y="38" width="18" height="22" rx="3" fill="#30d158"/>
-          <line x1="128" y1="38" x2="128" y2="38" stroke="#30d158" stroke-width="2"/>
-          <rect x="119" y="38" width="18" height="22" rx="3" fill="#30d158"/>
-          <path class="s-line g" d="M 158 92 L 188 46" stroke-width="1.8"/>
+          <path class="s-line g" d="M 146 58 L 188 42" stroke-width="1.8"/>
           <text class="s-lab up" x="86" y="30" font-size="10">小实体在上</text>
           <text class="s-lab up" x="138" y="86" font-size="10">影线≥2/3</text>
         </svg>
@@ -557,7 +556,7 @@ footer h3{font-size:20px;font-weight:650;margin-bottom:26px}
           <path class="s-line" d="M 12 118 L 40 96 L 64 108 L 86 92" stroke="rgba(255,255,255,.3)" stroke-width="1.6"/>
           <rect x="100" y="42" width="26" height="38" rx="3" fill="#30d158"/>
           <rect x="136" y="34" width="30" height="56" rx="3" fill="#ff453a"/>
-          <text class="s-lab dn" x="120" y="108" font-size="10">实体完全覆盖前根</text>
+          <text class="s-lab dn" x="100" y="108" font-size="10">实体完全覆盖前根</text>
         </svg>
         <p>出现在上涨末端关键位：空头以更大力度夺回全部失地。</p>
       </div>
@@ -593,9 +592,9 @@ footer h3{font-size:20px;font-weight:650;margin-bottom:26px}
           <rect x="76" y="56" width="16" height="28" rx="2" fill="#ffd60a"/>
           <line x1="92" y1="56" x2="128" y2="18" stroke="#30d158" stroke-width="2.4" stroke-linecap="round"/>
           <rect x="128" y="16" width="14" height="16" rx="3" fill="#30d158"/>
-          <path class="s-line" d="M 142 34 L 174 70" stroke="#30d158" stroke-width="1.8"/>
+          <path class="s-line" d="M 142 34 L 176 98" stroke="#ff453a" stroke-width="1.8"/>
           <text class="s-lab up" x="112" y="12" font-size="10">假突破收回</text>
-          <text class="s-lab dim" x="40" y="128" font-size="10">母线+内包线 → 向上假破 → 反向跌</text>
+          <text class="s-lab dim" x="20" y="128" font-size="10">母线+内包线 → 向上假破 → 反向跌</text>
         </svg>
         <p>散户追突破被套 → 大资金反向清洗。反向穿越内包线触发入场。</p>
       </div>
@@ -661,19 +660,19 @@ footer h3{font-size:20px;font-weight:650;margin-bottom:26px}
       <div class="mini-fig">
         <h4>头肩顶 <span class="en">Head & Shoulders</span></h4>
         <svg viewBox="0 0 340 210" xmlns="http://www.w3.org/2000/svg">
-          <path class="s-line" d="M 18 178 L 76 92 L 112 140 L 170 58 L 226 138 L 288 96 L 316 128" stroke="#e8e8ed"/>
+          <path class="s-line" d="M 18 130 L 76 76 L 112 106 L 170 50 L 226 108 L 288 82 L 316 168" stroke="#e8e8ed"/>
           <!-- 颈线 -->
-          <line class="s-dash" x1="100" y1="140" x2="316" y2="152" stroke="rgba(255,69,58,.6)"/>
-          <text class="s-lab dn" x="222" y="172" font-size="11">颈线</text>
-          <circle class="s-dot" cx="76" cy="92" r="4"/><text class="s-lab dim" x="58" y="80" font-size="11">左肩</text>
-          <circle class="s-dot" cx="170" cy="58" r="4"/><text class="s-lab dim" x="158" y="44" font-size="11">头</text>
-          <circle class="s-dot" cx="288" cy="96" r="4"/><text class="s-lab dim" x="272" y="84" font-size="11">右肩</text>
+          <line class="s-dash" x1="105" y1="106" x2="320" y2="110" stroke="rgba(255,69,58,.6)"/>
+          <text class="s-lab dn" x="230" y="130" font-size="11">颈线</text>
+          <circle class="s-dot" cx="76" cy="76" r="4"/><text class="s-lab dim" x="58" y="64" font-size="11">左肩</text>
+          <circle class="s-dot" cx="170" cy="50" r="4"/><text class="s-lab dim" x="158" y="36" font-size="11">头</text>
+          <circle class="s-dot" cx="288" cy="82" r="4"/><text class="s-lab dim" x="272" y="70" font-size="11">右肩</text>
           <!-- 量度目标 -->
-          <line x1="196" y1="62" x2="196" y2="140" stroke="#64d2ff" stroke-width="1.4"/>
-          <path d="M 316 152 L 316 200" stroke="#ff453a" stroke-width="2" stroke-dasharray="4 4"/>
-          <text class="s-lab ac" x="202" y="98" font-size="10.5">头部高度</text>
-          <text class="s-lab dn" x="252" y="196" font-size="10.5">同距离下投影 = 目标</text>
-          <text class="s-lab dim" x="18" y="205" font-size="10.5">确认：放量收盘破颈线；回抽颈线常给二次入场，颈线翻转为阻力</text>
+          <line x1="196" y1="52" x2="196" y2="107" stroke="#64d2ff" stroke-width="1.4"/>
+          <path d="M 322 110 L 322 167" stroke="#ff453a" stroke-width="2" stroke-dasharray="4 4"/>
+          <text class="s-lab ac" x="202" y="85" font-size="10.5">头部高度</text>
+          <text class="s-lab dn" x="226" y="188" font-size="10.5">同距离下投影 = 目标</text>
+          <text class="s-lab dim" x="0" y="205" font-size="9">确认：放量收盘破颈线；回抽颈线常给二次入场，颈线翻转为阻力</text>
         </svg>
         <p>右肩缩量、低于头——买方三次冲高一次比一次弱。Brooks 视角：头肩即"三推衰竭"变体，右肩是新趋势的 H2 回调。</p>
       </div>
@@ -687,7 +686,9 @@ footer h3{font-size:20px;font-weight:650;margin-bottom:26px}
           <text class="s-lab dim" x="70" y="60" font-size="11">顶1</text>
           <text class="s-lab dim" x="180" y="60" font-size="11">顶2</text>
           <text class="s-lab dn" x="120" y="150" font-size="11">颈线 = 中间谷底</text>
-          <text class="s-lab dim" x="20" y="205" font-size="10.5">第二峰本身不是信号——很多双顶直接创新高；收盘破颈线才是确认</text>
+          <path d="M 304 128 L 304 182" stroke="#ff453a" stroke-width="2" stroke-dasharray="4 4"/>
+          <text class="s-lab dn" x="280" y="152" font-size="10.5">同距下投影</text>
+          <text class="s-lab dim" x="0" y="205" font-size="9">第二峰本身不是信号——很多双顶直接创新高；收盘破颈线才是确认</text>
         </svg>
         <p>对极值的二次测试失败。目标位 = 极值至颈线的距离，自破位点投影。</p>
       </div>
@@ -695,12 +696,12 @@ footer h3{font-size:20px;font-weight:650;margin-bottom:26px}
       <div class="mini-fig">
         <h4>牛旗 <span class="en">Bull Flag</span></h4>
         <svg viewBox="0 0 340 210" xmlns="http://www.w3.org/2000/svg">
-          <path class="s-line" d="M 20 190 L 96 88 L 128 112 L 166 130 L 200 142 L 236 150 L 268 84" stroke="#e8e8ed"/>
-          <rect x="126" y="98" width="118" height="58" rx="8" fill="rgba(255,159,10,.12)" stroke="rgba(255,159,10,.45)" stroke-dasharray="5 4"/>
-          <text class="s-lab dim" x="146" y="92" font-size="11">缩量回调的小通道</text>
-          <path d="M 268 84 L 268 40" stroke="#30d158" stroke-width="2" stroke-dasharray="4 4"/>
-          <text class="s-lab up" x="274" y="56" font-size="10.5">旗杆等长投影</text>
-          <text class="s-lab dim" x="20" y="205" font-size="10.5">强脉冲后的获利回吐未改变供需主导——最常用的趋势延续形态</text>
+          <path class="s-line" d="M 20 190 L 96 110 L 128 134 L 166 150 L 200 160 L 236 166 L 268 100" stroke="#e8e8ed"/>
+          <rect x="126" y="126" width="118" height="48" rx="8" fill="rgba(255,159,10,.12)" stroke="rgba(255,159,10,.45)" stroke-dasharray="5 4"/>
+          <text class="s-lab dim" x="146" y="118" font-size="11">缩量回调的小通道</text>
+          <path d="M 268 100 L 268 20" stroke="#30d158" stroke-width="2" stroke-dasharray="4 4"/>
+          <text class="s-lab up" x="266" y="50" font-size="10.5">旗杆等长投影</text>
+          <text class="s-lab dim" x="0" y="205" font-size="9">强脉冲后的获利回吐未改变供需主导——最常用的趋势延续形态</text>
         </svg>
         <p>旗杆（脉冲）+ 旗面（逆势微倾通道 / 小三角）。量能萎缩后放量突破，目标 = 旗杆长度。</p>
       </div>
@@ -708,12 +709,12 @@ footer h3{font-size:20px;font-weight:650;margin-bottom:26px}
       <div class="mini-fig">
         <h4>上升楔形 <span class="en">Rising Wedge（看跌）</span></h4>
         <svg viewBox="0 0 340 210" xmlns="http://www.w3.org/2000/svg">
-          <path class="s-line" d="M 20 176 L 70 150 L 96 168 L 146 122 L 170 140 L 210 104 L 228 118 L 258 96" stroke="#e8e8ed"/>
-          <line x1="20" y1="182" x2="262" y2="102" stroke="rgba(255,69,58,.55)" stroke-width="1.5" stroke-dasharray="5 4"/>
-          <line x1="48" y1="160" x2="268" y2="88" stroke="rgba(255,69,58,.55)" stroke-width="1.5" stroke-dasharray="5 4"/>
-          <path d="M 258 96 L 262 150 L 286 168" stroke="#ff453a" stroke-width="2" stroke-dasharray="4 4" fill="none"/>
-          <text class="s-lab dn" x="212" y="192" font-size="10.5">收敛处失衡一触即发</text>
-          <text class="s-lab dim" x="20" y="205" font-size="10.5">买方仍愿出更高价，但每次推进越来越少——动能衰竭</text>
+          <path class="s-line" d="M 20 172 L 72 144 L 98 152 L 140 122 L 168 127 L 204 105 L 230 104 L 258 91" stroke="#e8e8ed"/>
+          <line x1="56" y1="148" x2="284" y2="84" stroke="rgba(255,69,58,.55)" stroke-width="1.5" stroke-dasharray="5 4"/>
+          <line x1="60" y1="166" x2="276" y2="90" stroke="rgba(255,69,58,.55)" stroke-width="1.5" stroke-dasharray="5 4"/>
+          <path d="M 258 91 L 262 140 L 288 160" stroke="#ff453a" stroke-width="2" stroke-dasharray="4 4" fill="none"/>
+          <text class="s-lab dn" x="212" y="188" font-size="10.5">收敛处失衡一触即发</text>
+          <text class="s-lab dim" x="0" y="205" font-size="9">买方仍愿出更高价，但每次推进越来越少——动能衰竭</text>
         </svg>
         <p>两条同向收敛线，推升递减、斜率放缓。下降楔形看涨为其镜像。本质即"三推衰竭"。</p>
       </div>
@@ -725,7 +726,7 @@ footer h3{font-size:20px;font-weight:650;margin-bottom:26px}
           <line x1="40" y1="88" x2="300" y2="88" stroke="rgba(48,209,88,.55)" stroke-width="1.5" stroke-dasharray="5 4"/>
           <text class="s-lab up" x="46" y="74" font-size="11">水平阻力 · 买方每次更高价承接</text>
           <path d="M 268 88 L 268 44" stroke="#30d158" stroke-width="2" stroke-dasharray="4 4"/>
-          <text class="s-lab dim" x="20" y="205" font-size="10.5">约 75% 向上突破（下降三角镜像看跌）；目标 = 最宽处高度</text>
+          <text class="s-lab dim" x="0" y="205" font-size="9">约 75% 向上突破（下降三角镜像看跌）；目标 = 最宽处高度</text>
         </svg>
         <p>低点持续抬升、顶线水平——买方紧迫性递增。突破多发生在走向顶点前 50–75% 处。</p>
       </div>
@@ -737,8 +738,8 @@ footer h3{font-size:20px;font-weight:650;margin-bottom:26px}
           <line x1="20" y1="76" x2="320" y2="76" stroke="rgba(255,255,255,.3)" stroke-width="1.2" stroke-dasharray="4 4"/>
           <text class="s-lab dim" x="96" y="186" font-size="11">U形杯：机构缓慢吸筹（数周）</text>
           <text class="s-lab dim" x="188" y="166" font-size="11">柄：缩量回撤清洗弱手</text>
-          <text class="s-lab up" x="268" y="42" font-size="10.5">放量突破 = 确认</text>
-          <text class="s-lab dim" x="20" y="205" font-size="10.5">O'Neil 体系：杯深 15–50%、柄回撤 10–15%；目标 = 杯深度投影</text>
+          <text class="s-lab up" x="248" y="42" font-size="10.5">放量突破 = 确认</text>
+          <text class="s-lab dim" x="0" y="205" font-size="9">O'Neil 体系：杯深 15–50%、柄回撤 10–15%；目标 = 杯深度投影</text>
         </svg>
         <p>圆底 + 小旗柄的经典见底形态，突破柄部阻力即确认。</p>
       </div>
@@ -863,6 +864,64 @@ footer h3{font-size:20px;font-weight:650;margin-bottom:26px}
   </div>
 
   <figure class="reveal">
+    <svg viewBox="0 0 760 356" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="BSL与SSL两类流动性池示意图">
+      <!-- BSL 带 -->
+      <rect x="46" y="48" width="668" height="36" rx="6" fill="rgba(255,69,58,.10)" stroke="rgba(255,69,58,.45)" stroke-dasharray="5 4"/>
+      <text class="s-lab" x="62" y="66" font-size="12" fill="#ff453a">BSL · 买方流动性池（旧高点上方）</text>
+      <text class="s-lab dim" x="62" y="79" font-size="10.5">空头止损单 + 突破追买单，在这里堆积</text>
+      <!-- SSL 带 -->
+      <rect x="46" y="286" width="668" height="36" rx="6" fill="rgba(10,132,255,.10)" stroke="rgba(10,132,255,.45)" stroke-dasharray="5 4"/>
+      <text class="s-lab" x="62" y="304" font-size="12" fill="#409cff">SSL · 卖方流动性池（旧低点下方）</text>
+      <text class="s-lab dim" x="62" y="317" font-size="10.5">多头止损单 + 突破追卖单，在这里堆积</text>
+      <!-- 等高 / 等低 -->
+      <line class="s-dash" x1="140" y1="124" x2="500" y2="124" stroke="rgba(235,235,245,.35)"/>
+      <text class="s-lab dim" x="144" y="115" font-size="10.5">等高点（双触）</text>
+      <line class="s-dash" x1="140" y1="248" x2="660" y2="248" stroke="rgba(235,235,245,.35)"/>
+      <text class="s-lab dim" x="144" y="241" font-size="10.5">等低点</text>
+      <!-- 价格路径 -->
+      <path class="s-line" d="M 60 180 L 150 126 L 210 172 L 280 126 L 340 66 L 392 136 L 455 212 L 500 178 L 565 250 L 640 300" stroke="#e8e8ed"/>
+      <circle class="s-dot" cx="340" cy="66" r="5"/>
+      <circle class="s-dot" cx="455" cy="212" r="5"/>
+      <circle class="s-dot" cx="500" cy="178" r="5"/>
+      <circle class="s-dot" cx="640" cy="300" r="5"/>
+      <g font-size="12.5" font-weight="700">
+        <text x="358" y="64" fill="#ff453a">① 冲高扫荡</text>
+        <text x="448" y="238" text-anchor="end" fill="#64d2ff">② 收回 = CHoCH</text>
+        <text x="512" y="166" fill="rgba(235,235,245,.75)">③ 反弹 LH</text>
+        <text x="540" y="316" fill="#409cff">④ 奔向对侧 SSL</text>
+      </g>
+    </svg>
+    <figcaption><b>图 6 · 两类流动性池</b>：散户的止损单堆在哪，机构就能在哪拿到成交——价格不是被"阻力墙"弹回去的，是被订单池<b>吸过去</b>的。旧高上方 = BSL，旧低下方 = SSL；等高点（EQH）看似"明确阻力"，实为密度最高的磁铁。</figcaption>
+  </figure>
+
+  <figure class="reveal">
+    <svg viewBox="0 0 760 344" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="IDM 诱因机制示意图">
+      <!-- BSL 带 -->
+      <rect x="46" y="44" width="668" height="32" rx="6" fill="rgba(255,69,58,.10)" stroke="rgba(255,69,58,.45)" stroke-dasharray="5 4"/>
+      <text class="s-lab" x="62" y="64" font-size="12" fill="#ff453a">BSL 池 · 旧高上方：空头止损 + 追买单</text>
+      <!-- 旧高线 -->
+      <line class="s-dash" x1="220" y1="148" x2="660" y2="148" stroke="rgba(235,235,245,.35)"/>
+      <text class="s-lab dim" x="224" y="139" font-size="10.5">旧高</text>
+      <!-- IDM 止损线 -->
+      <line x1="265" y1="268" x2="475" y2="268" stroke="rgba(255,159,10,.6)" stroke-width="1.4" stroke-dasharray="4 4"/>
+      <text class="s-lab" x="480" y="278" font-size="10.5" fill="#ff9f0a">追多者的止损，全挂在 IDM 下方</text>
+      <!-- 价格路径 -->
+      <path class="s-line" d="M 60 262 L 126 204 L 172 240 L 240 166 L 296 236 L 362 148 L 420 276 L 465 204 L 588 66" stroke="#e8e8ed"/>
+      <circle class="s-dot" cx="296" cy="236" r="5"/>
+      <circle class="s-dot" cx="420" cy="276" r="5"/>
+      <circle class="s-dot" cx="588" cy="66" r="5"/>
+      <text class="s-lab" x="248" y="260" font-size="10.5" fill="#ff9f0a">IDM 诱因</text>
+      <g font-size="12.5" font-weight="700">
+        <text x="368" y="128" fill="rgba(235,235,245,.75)">① 突破新高，散户追多</text>
+        <text x="426" y="304" fill="#ff9f0a">② 掉头击穿 IDM</text>
+        <text x="470" y="230" fill="rgba(235,235,245,.75)">③ 收回，燃料到手</text>
+        <text x="484" y="64" fill="#ff453a">④ 奔向 BSL 池</text>
+      </g>
+    </svg>
+    <figcaption><b>图 7 · IDM 诱因（Inducement）</b>：趋势延续路径上"看似最安全"的次级低点，实为止损采集点——追势者的止损被集中收割后，恰是机构建仓的燃料。<b>不交易 IDM，交易它之后</b>：等它被扫、价格收回、结构确认，才是真实方向的入场窗口。</figcaption>
+  </figure>
+
+  <figure class="reveal">
     <svg viewBox="0 0 760 400" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="流动性扫荡图解">
       <g stroke="rgba(255,255,255,.05)" stroke-width="1">
         <line x1="0" y1="80" x2="760" y2="80"/><line x1="0" y1="150" x2="760" y2="150"/><line x1="0" y1="220" x2="760" y2="220"/><line x1="0" y1="290" x2="760" y2="290"/><line x1="0" y1="360" x2="760" y2="360"/>
@@ -879,7 +938,7 @@ footer h3{font-size:20px;font-weight:650;margin-bottom:26px}
         <text class="s-lab dn" x="252" y="118" font-size="11">✕ 空头止损 + 突破买单（BSL 池）</text>
       </g>
       <!-- 价格路径 -->
-      <path class="s-line" d="M 70 300 L 160 210 L 240 152 L 320 212 L 398 150 L 452 84 L 506 196 L 566 156 L 680 345"/>
+      <path class="s-line" d="M 70 300 L 160 210 L 240 152 L 320 212 L 398 150 L 452 84 L 540 230 L 600 190 L 680 345"/>
       <!-- 触等高点 -->
       <circle class="s-dot" cx="240" cy="152" r="5"/><circle class="s-dot" cx="398" cy="150" r="5"/>
       <!-- 扫荡顶点 -->
@@ -891,10 +950,10 @@ footer h3{font-size:20px;font-weight:650;margin-bottom:26px}
       <path d="M 452 74 L 452 60" stroke="#ff453a" stroke-width="2" stroke-linecap="round"/>
       <text class="s-lab dim" x="458" y="46" font-size="11">长上影刺穿后收回</text>
       <!-- CHoCH -->
-      <circle class="s-dot" cx="506" cy="196" r="5"/>
+      <circle class="s-dot" cx="529" cy="212" r="5"/>
       <g>
-        <rect x="520" y="204" width="182" height="24" rx="12" fill="rgba(100,210,255,.1)" stroke="rgba(100,210,255,.5)"/>
-        <text class="s-btext" x="611" y="220" text-anchor="middle">跌回区间 = CHoCH 确认</text>
+        <rect x="440" y="240" width="182" height="24" rx="12" fill="rgba(100,210,255,.1)" stroke="rgba(100,210,255,.5)"/>
+        <text class="s-btext" x="531" y="256" text-anchor="middle">跌回区间 = CHoCH 确认</text>
       </g>
       <!-- 下跌目标 -->
       <path d="M 680 355 L 680 380" stroke="#ff453a" stroke-width="2" stroke-dasharray="3 3"/>
@@ -902,7 +961,7 @@ footer h3{font-size:20px;font-weight:650;margin-bottom:26px}
       <!-- 底部总结 -->
       <text class="s-lab dim" x="70" y="392" font-size="12.5">三要素：实质越过水平 + 尖锐拒绝影线 + 位于散户显而易见处 → 1–5 根K线内收回原区间</text>
     </svg>
-    <figcaption><b>图 6 · 流动性扫荡（Stop Hunt）</b>：正确做法不是在等高点直接做空，而是<b>等扫荡发生、CHoCH 确认后做反转</b>——被扫掉的止损单，正是机构建仓的对手盘。</figcaption>
+    <figcaption><b>图 8 · 流动性扫荡（Stop Hunt）</b>：正确做法不是在等高点直接做空，而是<b>等扫荡发生、CHoCH 确认后做反转</b>——被扫掉的止损单，正是机构建仓的对手盘。</figcaption>
   </figure>
 
   <div class="callout reveal">
@@ -970,10 +1029,10 @@ footer h3{font-size:20px;font-weight:650;margin-bottom:26px}
       <!-- 后续下跌 -->
       <path class="s-line" d="M 430 340 L 470 372" stroke="rgba(255,69,58,.8)"/>
       <!-- 回抽 -->
-      <path class="s-line" d="M 470 372 L 560 216" stroke="rgba(255,214,10,.85)" stroke-dasharray="2 5"/>
-      <path class="s-line" d="M 560 216 L 660 250 L 700 392" stroke="rgba(255,69,58,.85)"/>
+      <path class="s-line" d="M 470 372 L 560 205" stroke="rgba(255,214,10,.85)" stroke-dasharray="2 5"/>
+      <path class="s-line" d="M 560 205 L 660 250 L 700 392" stroke="rgba(255,69,58,.85)"/>
       <!-- 入场点 -->
-      <circle class="s-dot" cx="560" cy="216" r="6"/>
+      <circle class="s-dot" cx="560" cy="205" r="6"/>
       <g>
         <rect x="500" y="160" width="230" height="24" rx="12" fill="rgba(48,209,88,.12)" stroke="rgba(48,209,88,.55)"/>
         <text class="s-btext g" x="615" y="176" text-anchor="middle">回踩 FVG+OB 重叠区 · 做空入场</text>
@@ -984,9 +1043,9 @@ footer h3{font-size:20px;font-weight:650;margin-bottom:26px}
         <text class="s-btext r" x="505" y="76" text-anchor="middle">BOS：跌破前结构低点</text>
       </g>
       <!-- SSL -->
-      <text class="s-lab dn" x="640" y="416" font-size="11.5">目标：下方 SSL 流动性</text>
+      <text class="s-lab dn" x="630" y="416" font-size="11.5">目标：下方 SSL 流动性</text>
     </svg>
-    <figcaption><b>图 7 · OB + FVG 联合图解</b>：最强序列 = 扫荡 → 带位移的结构突破（displacement）→ 突破源点为 OB 且途中留下 FVG；回踩至 <b>OB 与 FVG 的重叠区</b>时概率最高。</figcaption>
+    <figcaption><b>图 9 · OB + FVG 联合图解</b>：最强序列 = 扫荡 → 带位移的结构突破（displacement）→ 突破源点为 OB 且途中留下 FVG；回踩至 <b>OB 与 FVG 的重叠区</b>时概率最高。</figcaption>
   </figure>
 
   <div class="grid g3 reveal">
@@ -1080,11 +1139,11 @@ footer h3{font-size:20px;font-weight:650;margin-bottom:26px}
       <!-- 入场线 -->
       <line x1="60" y1="200" x2="700" y2="200" stroke="#f5f5f7" stroke-width="2"/>
       <circle class="s-dot" cx="120" cy="200" r="6"/>
-      <text class="s-lab" x="104" y="228" font-size="12.5">入场 Entry</text>
+      <text class="s-lab" x="104" y="188" font-size="12.5">入场 Entry</text>
       <!-- 止损区 -->
-      <rect x="60" y="212" width="640" height="42" fill="rgba(255,69,58,.10)" stroke="rgba(255,69,58,.35)" stroke-dasharray="4 4"/>
-      <line x1="60" y1="254" x2="700" y2="254" stroke="#ff453a" stroke-width="1.6" stroke-dasharray="6 4"/>
-      <text class="s-lab dn" x="600" y="282" font-size="12">止损 = 结构点外 + 缓冲（1R 风险）</text>
+      <rect x="60" y="212" width="640" height="30" fill="rgba(255,69,58,.10)" stroke="rgba(255,69,58,.35)" stroke-dasharray="4 4"/>
+      <line x1="60" y1="242" x2="700" y2="242" stroke="#ff453a" stroke-width="1.6" stroke-dasharray="6 4"/>
+      <text class="s-lab dn" x="560" y="270" font-size="12">止损 = 结构点外 + 缓冲（1R 风险）</text>
       <!-- 目标线 -->
       <line x1="60" y1="158" x2="700" y2="158" stroke="rgba(48,209,88,.4)" stroke-width="1.2" stroke-dasharray="4 4"/>
       <text class="s-lab up" x="632" y="150" font-size="11.5">1R</text>
@@ -1097,14 +1156,14 @@ footer h3{font-size:20px;font-weight:650;margin-bottom:26px}
       <circle class="s-dot" cx="660" cy="78" r="5"/>
       <path d="M 660 68 L 660 52" stroke="#30d158" stroke-width="2" stroke-linecap="round"/>
       <!-- R 距离标注 -->
-      <line x1="176" y1="200" x2="176" y2="254" stroke="rgba(255,69,58,.5)" stroke-width="1.2"/>
+      <line x1="176" y1="200" x2="176" y2="242" stroke="rgba(255,69,58,.5)" stroke-width="1.2"/>
       <line x1="176" y1="74" x2="176" y2="200" stroke="rgba(48,209,88,.35)" stroke-width="1.2"/>
-      <text class="s-lab dim" x="42" y="202" font-size="10.5" text-anchor="end">风险 1R</text>
-      <text class="s-lab dim" x="30" y="76" font-size="10.5" text-anchor="end">回报 3R</text>
+      <text class="s-lab dim" x="168" y="232" font-size="10.5" text-anchor="end">风险 1R</text>
+      <text class="s-lab dim" x="168" y="64" font-size="10.5" text-anchor="end">回报 3R</text>
       <text class="s-lab dim" x="60" y="326" font-size="12.5">止损放结构失效点（OB 极值 / 扫荡极值 / 信号K外侧）+ 缓冲（数点或 ATR 分数）；由止损距离反推仓位，美元风险恒定</text>
       <text class="s-lab dim" x="60" y="348" font-size="12.5">Brooks 原则：先问"什么价格证明我错了"，再谈仓位——而不是反过来</text>
     </svg>
-    <figcaption><b>图 8 · 盈亏比（R）几何</b>：1R 是你投入的风险单位。高 R 允许低胜率仍盈利——这是趋势跟踪者胜率不足 50% 却长期赚钱的全部数学。</figcaption>
+    <figcaption><b>图 10 · 盈亏比（R）几何</b>：1R 是你投入的风险单位。高 R 允许低胜率仍盈利——这是趋势跟踪者胜率不足 50% 却长期赚钱的全部数学。</figcaption>
   </figure>
 
   <div class="tbl-wrap reveal">
@@ -1112,8 +1171,8 @@ footer h3{font-size:20px;font-weight:650;margin-bottom:26px}
       <tr><th>盈亏比</th><th>盈亏平衡胜率</th><th>实际胜率 40% 的期望</th><th>实际胜率 50% 的期望</th></tr>
       <tr><td><b>1 : 1</b></td><td>50%</td><td class="dn-t">−0.20R / 笔</td><td class="ac-t">0.00R / 笔</td></tr>
       <tr><td><b>1 : 2</b></td><td>33%</td><td class="up-t">+0.20R / 笔</td><td class="up-t">+0.50R / 笔</td></tr>
-      <tr><td><b>1 : 3</b></td><td>25%</td><td class="up-t">+0.40R / 笔</td><td class="up-t">+1.00R / 笔</td></tr>
-      <tr><td><b>1 : 5</b></td><td>17%</td><td class="up-t">+0.80R / 笔</td><td class="up-t">+2.00R / 笔</td></tr>
+      <tr><td><b>1 : 3</b></td><td>25%</td><td class="up-t">+0.60R / 笔</td><td class="up-t">+1.00R / 笔</td></tr>
+      <tr><td><b>1 : 5</b></td><td>17%</td><td class="up-t">+1.40R / 笔</td><td class="up-t">+2.00R / 笔</td></tr>
     </table>
   </div>
   <p class="lead reveal" style="margin-top:20px;font-size:14px">盈亏平衡胜率 = 1 ÷ (1+R)。期望 = 胜率 × R − 败率 × 1。<strong>这意味着：与其提高胜率，不如提高 R、筛选 A+ 设置。</strong></p>
@@ -1213,7 +1272,7 @@ footer h3{font-size:20px;font-weight:650;margin-bottom:26px}
     <a href="https://liquidityscan.io/blog/ict-top-down-analysis-multi-timeframe-alignment" target="_blank" rel="noopener">ICT Top-Down Analysis 多时间框架<span class="src">liquidityscan.io</span></a>
   </div>
   <p class="footer-note">
-    本指南为价格行为交易理论的教学性精炼总结，仅供学习研究，不构成任何投资建议。杠杆交易风险极高，历史形态的统计倾向不代表未来表现；文中"80% 突破失败""扫荡胜率 60–70%"等数值为交易者从业经验估计，应作概率参考而非定律。<br><br>
+    本指南为价格行为交易理论的教学性精炼总结，仅供学习研究，不构成任何投资建议。杠杆交易风险极高，历史形态的统计倾向不代表未来表现；文中"80% 突破失败"等数值为交易者从业经验估计，应作概率参考而非定律。<br><br>
     价格行为 · Price Action 图解精要 · 深度研究报告 · 2026
   </p>
 </footer>

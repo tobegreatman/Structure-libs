@@ -353,10 +353,10 @@
       <svg viewBox="0 0 1000 380" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'PingFang SC','Microsoft YaHei',sans-serif">
         <!-- 价格路径 -->
         <path d="M60,310 L150,230 L230,282 L330,180 L420,232 L520,132 L620,184 L720,86 L820,138 L900,58" fill="none" stroke="#1d1d1f" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-        <!-- 趋势线（连接低点） -->
-        <line x1="150" y1="252" x2="860" y2="126" stroke="#0071e3" stroke-width="2" stroke-dasharray="8,5"/>
-        <!-- 通道上轨（平行过高点） -->
-        <line x1="150" y1="208" x2="860" y2="82" stroke="#0071e3" stroke-width="1.4" stroke-dasharray="3,4" opacity="0.6"/>
+        <!-- 趋势线：连接 L1(230,282) 与 L4(820,138) 并向右延长 -->
+        <line x1="230" y1="282" x2="900" y2="118" stroke="#0071e3" stroke-width="2" stroke-dasharray="8,5"/>
+        <!-- 通道上轨：过 H4(720,86) 且与趋势线平行 -->
+        <line x1="230" y1="206" x2="900" y2="42" stroke="#0071e3" stroke-width="1.4" stroke-dasharray="3,4" opacity="0.6"/>
         <!-- HH/HL 标注 -->
         <g font-size="12.5" font-weight="700">
           <circle cx="150" cy="230" r="4.5" fill="#e03131"/><text x="138" y="214" fill="#e03131">H1</text>
@@ -368,8 +368,8 @@
           <circle cx="720" cy="86" r="4.5" fill="#e03131"/><text x="708" y="70" fill="#e03131">H4 HH</text>
           <circle cx="820" cy="138" r="4.5" fill="#0ca678"/><text x="808" y="160" fill="#0ca678">L4 HL</text>
         </g>
-        <text x="870" y="116" font-size="12" font-weight="600" fill="#0071e3">上升趋势线</text>
-        <text x="870" y="72" font-size="12" fill="#0071e3" opacity="0.8">通道上轨</text>
+        <text x="870" y="145" font-size="12" font-weight="600" fill="#0071e3">上升趋势线</text>
+        <text x="870" y="66" font-size="12" fill="#0071e3" opacity="0.8">通道上轨</text>
         <!-- 说明框 -->
         <rect x="60" y="30" width="392" height="58" rx="12" fill="rgba(224,49,49,.06)" stroke="rgba(224,49,49,.22)"/>
         <text x="76" y="54" font-size="13" font-weight="600" fill="#e03131">成立条件：每个新高高于前高，每个回调低点高于前低。</text>
@@ -387,25 +387,26 @@
     <figure class="reveal">
       <div class="fig-title">趋势反转的客观判定：1-2-3 结构</div>
       <svg viewBox="0 0 1000 380" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'PingFang SC','Microsoft YaHei',sans-serif">
-        <!-- 价格路径：升势 → 跌破趋势线 → 不再创新高 → 跌破前低 -->
+        <!-- 价格路径 -->
         <path d="M60,300 L150,220 L230,272 L330,170 L430,222 L540,178 L640,236 L760,300 L900,338" fill="none" stroke="#1d1d1f" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-        <!-- 趋势线被跌破 -->
-        <line x1="150" y1="240" x2="700" y2="118" stroke="#0071e3" stroke-width="2" stroke-dasharray="8,5"/>
-        <circle cx="576" cy="170" r="5" fill="none" stroke="#0071e3" stroke-width="2"/>
-        <text x="586" y="158" font-size="12.5" font-weight="700" fill="#0071e3">① 跌破上升趋势线</text>
+        <!-- 趋势线：连接 L1(230,272) 与 L2(430,222) 并向右延长 -->
+        <line x1="230" y1="272" x2="700" y2="154" stroke="#0071e3" stroke-width="2" stroke-dasharray="8,5"/>
+        <!-- ① 真实跌破趋势线位置 -->
+        <circle cx="560" cy="190" r="5" fill="none" stroke="#0071e3" stroke-width="2"/>
+        <text x="572" y="182" font-size="12.5" font-weight="700" fill="#0071e3">① 跌破上升趋势线</text>
         <!-- 前高 -->
         <circle cx="330" cy="170" r="4.5" fill="#e03131"/>
         <text x="318" y="152" font-size="12.5" font-weight="700" fill="#e03131">前高 H</text>
         <line x1="330" y1="170" x2="640" y2="170" stroke="#d2d2d7" stroke-width="1.2" stroke-dasharray="4,3"/>
-        <!-- 反弹不创新高 -->
+        <!-- ② 反弹不创新高 -->
         <circle cx="540" cy="178" r="4.5" fill="#e03131"/>
         <text x="530" y="158" font-size="12.5" font-weight="700" fill="#e03131">② 反弹不创新高（LH）</text>
-        <!-- 前低被跌破 -->
+        <!-- 前低与 ③ 真实跌破前低位置 -->
         <circle cx="430" cy="222" r="4.5" fill="#0ca678"/>
         <text x="418" y="246" font-size="12.5" font-weight="700" fill="#0ca678">前低 L</text>
         <line x1="430" y1="222" x2="820" y2="222" stroke="#0ca678" stroke-width="1.6" stroke-dasharray="6,4"/>
-        <circle cx="720" cy="288" r="5" fill="none" stroke="#0ca678" stroke-width="2"/>
-        <text x="730" y="306" font-size="12.5" font-weight="700" fill="#0ca678">③ 跌破前低 → 反转确认，离场</text>
+        <circle cx="616" cy="222" r="5" fill="none" stroke="#0ca678" stroke-width="2"/>
+        <text x="628" y="244" font-size="12.5" font-weight="700" fill="#0ca678">③ 跌破前低 → 反转确认，离场</text>
         <!-- 底部提示 -->
         <rect x="60" y="30" width="430" height="58" rx="12" fill="rgba(12,166,120,.07)" stroke="rgba(12,166,120,.25)"/>
         <text x="76" y="54" font-size="13" font-weight="600" fill="#0ca678">三步齐备才算「明确的反转信号」（道氏原则 6）。</text>

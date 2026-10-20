@@ -461,12 +461,63 @@ footer h3{font-size:20px;font-weight:650;margin-bottom:26px}
   <!-- 因果法则：点数图计数 -->
   <div class="split reveal">
     <figure style="margin-top:0">
-      <svg viewBox="0 0 760 400" xmlns="http://www.w3.org/2000/svg">
+      <svg viewBox="0 -140 760 580" xmlns="http://www.w3.org/2000/svg">
         <defs>
           <marker id="arrP" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
             <path d="M 0 0 L 10 5 L 0 10 z" fill="#ff453a"/>
           </marker>
         </defs>
+        <!-- ① 价格路径辅助面板（与下方 14 列逐列对齐） -->
+        <text x="40" y="-126" class="s-lab dim s-lab sm"><tspan fill="#e8e8ed">① 价格路径（含时间）→ ② 点数图（抹去时间）：</tspan><tspan dx="10" fill="#ff6b61">X = 上涨列（红）</tspan><tspan dx="10" fill="#30d158">O = 下跌列（绿）</tspan><tspan dx="10">· 折返满 3 格（$3）才新开一列</tspan></text>
+        <g stroke="rgba(255,255,255,.07)" stroke-width="1">
+          <line x1="40" y1="-120" x2="500" y2="-120"/><line x1="40" y1="-80" x2="500" y2="-80"/><line x1="40" y1="-40" x2="500" y2="-40"/>
+        </g>
+        <g class="s-lab dim" font-size="11" text-anchor="end">
+          <text x="36" y="-116">58</text><text x="36" y="-76">54</text><text x="36" y="-36">50</text>
+        </g>
+        <!-- 折返点 → 列 对应虚线 -->
+        <g stroke="rgba(255,255,255,.10)" stroke-width="1" stroke-dasharray="3 4">
+          <line x1="70" y1="-40" x2="70" y2="48"/><line x1="100" y1="-80" x2="100" y2="48"/>
+          <line x1="130" y1="-50" x2="130" y2="48"/><line x1="160" y1="-90" x2="160" y2="48"/>
+          <line x1="190" y1="-60" x2="190" y2="48"/><line x1="220" y1="-100" x2="220" y2="48"/>
+          <line x1="250" y1="-70" x2="250" y2="48"/><line x1="280" y1="-100" x2="280" y2="48"/>
+          <line x1="310" y1="-50" x2="310" y2="48"/><line x1="340" y1="-90" x2="340" y2="48"/>
+          <line x1="370" y1="-40" x2="370" y2="48"/><line x1="400" y1="-80" x2="400" y2="48"/>
+          <line x1="430" y1="-40" x2="430" y2="48"/>
+        </g>
+        <!-- 价格路径折线（红涨绿跌） -->
+        <g fill="none" stroke-width="1.8" stroke-linejoin="round">
+          <line x1="45" y1="-90" x2="70" y2="-40" stroke="#30d158"/>
+          <line x1="70" y1="-40" x2="100" y2="-80" stroke="#ff6b61"/>
+          <line x1="100" y1="-80" x2="130" y2="-50" stroke="#30d158"/>
+          <line x1="130" y1="-50" x2="160" y2="-90" stroke="#ff6b61"/>
+          <line x1="160" y1="-90" x2="190" y2="-60" stroke="#30d158"/>
+          <line x1="190" y1="-60" x2="220" y2="-100" stroke="#ff6b61"/>
+          <line x1="220" y1="-100" x2="250" y2="-70" stroke="#30d158"/>
+          <line x1="250" y1="-70" x2="280" y2="-100" stroke="#ff6b61"/>
+          <line x1="280" y1="-100" x2="310" y2="-50" stroke="#30d158"/>
+          <line x1="310" y1="-50" x2="340" y2="-90" stroke="#ff6b61"/>
+          <line x1="340" y1="-90" x2="370" y2="-40" stroke="#30d158"/>
+          <line x1="370" y1="-40" x2="400" y2="-80" stroke="#ff6b61"/>
+          <line x1="400" y1="-80" x2="430" y2="-40" stroke="#30d158"/>
+          <line x1="430" y1="-40" x2="495" y2="-120" stroke="#ff6b61" stroke-width="2.4"/>
+        </g>
+        <g fill="rgba(255,255,255,.55)">
+          <circle cx="45" cy="-90" r="2"/><circle cx="70" cy="-40" r="2"/><circle cx="100" cy="-80" r="2"/>
+          <circle cx="130" cy="-50" r="2"/><circle cx="160" cy="-90" r="2"/><circle cx="190" cy="-60" r="2"/>
+          <circle cx="220" cy="-100" r="2"/><circle cx="250" cy="-70" r="2"/><circle cx="280" cy="-100" r="2"/>
+          <circle cx="310" cy="-50" r="2"/><circle cx="340" cy="-90" r="2"/><circle cx="370" cy="-40" r="2"/>
+          <circle cx="400" cy="-80" r="2"/><circle cx="430" cy="-40" r="2"/><circle cx="495" cy="-120" r="2.4"/>
+        </g>
+        <text x="505" y="-114" class="s-lab up s-lab sm">突破上行 → 果</text>
+        <!-- 列序号 -->
+        <g class="s-lab dim" font-size="11" text-anchor="middle">
+          <text x="70" y="44">1</text><text x="100" y="44">2</text><text x="130" y="44">3</text>
+          <text x="160" y="44">4</text><text x="190" y="44">5</text><text x="220" y="44">6</text>
+          <text x="250" y="44">7</text><text x="280" y="44">8</text><text x="310" y="44">9</text>
+          <text x="340" y="44">10</text><text x="370" y="44">11</text><text x="400" y="44">12</text>
+          <text x="430" y="44">13</text><text x="460" y="44">14</text>
+        </g>
         <!-- 网格 -->
         <g stroke="rgba(255,255,255,.07)" stroke-width="1">
           <line x1="40" y1="60" x2="475" y2="60"/><line x1="40" y1="84" x2="475" y2="84"/>
@@ -517,14 +568,29 @@ footer h3{font-size:20px;font-weight:650;margin-bottom:26px}
         <path d="M 480 252 L 680 74" stroke="#ff453a" stroke-width="2.6" stroke-dasharray="7 6" fill="none" marker-end="url(#arrP)"/>
         <text x="560" y="118" class="s-lab up">果：投影目标 92</text>
         <text x="560" y="138" class="s-lab dim s-lab sm">+42 = 14 列 × 1 × 3</text>
+        <!-- 参数可视化：每格值 / 转向格数 -->
+        <g stroke="rgba(255,255,255,.25)" stroke-width="1">
+          <line x1="540" y1="280" x2="620" y2="280"/><line x1="540" y1="304" x2="620" y2="304"/>
+          <line x1="640" y1="280" x2="700" y2="280"/><line x1="640" y1="304" x2="700" y2="304"/>
+          <line x1="640" y1="328" x2="700" y2="328"/><line x1="640" y1="352" x2="700" y2="352"/>
+        </g>
+        <g stroke="#ffd60a" stroke-width="1.4">
+          <line x1="580" y1="280" x2="580" y2="304"/>
+          <line x1="574" y1="280" x2="586" y2="280"/><line x1="574" y1="304" x2="586" y2="304"/>
+          <line x1="670" y1="280" x2="670" y2="352"/>
+          <line x1="664" y1="280" x2="676" y2="280"/><line x1="664" y1="352" x2="676" y2="352"/>
+        </g>
+        <text x="580" y="326" text-anchor="middle" class="s-lab yl s-lab sm">每格 $1</text>
+        <text x="670" y="378" text-anchor="middle" class="s-lab yl s-lab sm">3 格转向</text>
         <!-- 计数括线 -->
         <line x1="55" y1="330" x2="475" y2="330" stroke="rgba(255,255,255,.4)" stroke-width="1.4"/>
         <line x1="55" y1="322" x2="55" y2="338" stroke="rgba(255,255,255,.4)" stroke-width="1.4"/>
         <line x1="475" y1="322" x2="475" y2="338" stroke="rgba(255,255,255,.4)" stroke-width="1.4"/>
         <text x="265" y="358" text-anchor="middle" class="s-lab ac">横向计数 = 14 列（"因"的规模）</text>
         <text x="265" y="384" text-anchor="middle" class="s-lab dim s-lab sm">1×3 点数图 · 每格 $1 · 3 格转向</text>
+        <text x="40" y="420" class="s-lab dim s-lab sm">参数释义：每格 $1 = 波动不足 $1 不画（滤噪）· 3 格转向 = 反向走满 3 格（$3）才另起一列 · 列数 = 区间内 X/O 总列数 ≈ 主力换手回合数</text>
       </svg>
-      <figcaption><b>点数图横向计数</b>（因果法则的落地）：在交易区间内数出横向列数，按 <b>列数 × 每格值 × 转向格数</b> 投射目标——<b>50 + 14×1×3 = 92</b></figcaption>
+      <figcaption><b>点数图横向计数</b>（因果法则的落地）：上方价格路径的每一次折返（满 3 格）对应下方点数图新的一列（虚线逐列对应，共 14 列）——点数图不看时间，只按价格格子记录：<b>每格值 $1</b>（波动不足 $1 不画）、<b>转向 3 格</b>（反向走满 $3 才换列），每一列 X/O ≈ 一次完整的多空换手。沿计数线（区间低点所在行，= 50）数出 <b>14 列</b>，即"因"的规模；按 <b>列数 × 每格值 × 转向格数</b> 把横向的"因"投射成纵向的"果"：<b>50 + 14×1×3 = 92</b>（×3 是 1×3 点数图的经验投射系数）</figcaption>
     </figure>
     <div>
       <div class="card" style="margin-top:0">

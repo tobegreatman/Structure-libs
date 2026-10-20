@@ -301,7 +301,7 @@ footer{max-width:1280px;margin:0 auto;padding:6px 24px 34px;text-align:center;fo
     <div class="panel sector-panel" style="animation-delay:.18s">
       <div class="panel-head sector-head">
         <div class="head-row">
-          <h2>行业板块</h2>
+          <h2>行业板块 <span class="muted" id="sectorHint" style="font-size:11.5px;font-weight:500"></span></h2>
           <div class="seg" id="levelSeg">
             <button data-lv="1">一级</button>
             <button data-lv="2" class="active">二级</button>
@@ -405,6 +405,7 @@ const INDEXES = [
 const SECTOR_FIELDS = 'f12,f14,f2,f3,f6,f62,f66,f72,f78,f84,f104,f105,f128,f140,f164,f174';
 const SPARK_EVERY = 3;           // 指数迷你分时每 3 轮刷新一次
 const FLOW_EVERY = 2;            // 两市资金分时每 2 轮刷新一次
+const INDUSTRY_GAP = 180;         // 行业板块数据固定 180 秒（3 分钟）更新一次：与页面刷新周期（15/30/60 秒）解耦，数据不完整时下轮强制补拉
 const MKT_FLOW = ['1.000001', '0.399106'];   // 两市资金口径：上证指数（沪全样本）+ 深证综指（深全样本）
 
 /* 行业层级映射（申万体系 1=一级 2=二级 3=三级，key=板块代码）
@@ -428,6 +429,9 @@ const LEVELS = {
   "BK1580":3, "BK1581":3, "BK1582":3, "BK1583":3, "BK1584":3, "BK1585":3, "BK1586":3, "BK1587":3, "BK1588":3, "BK1589":3, "BK1590":3, "BK1591":3, "BK1592":3, "BK1593":3, "BK1594":3, "BK1595":3, "BK1596":3, "BK1597":3, "BK1598":3, "BK1599":3, "BK1600":3, "BK1601":3, "BK1602":3, "BK1603":3, "BK1604":3, "BK1605":3, "BK1606":3, "BK1607":3, "BK1608":3, "BK1609":3, "BK1610":3, "BK1611":3, "BK1612":3, "BK1613":3, "BK1614":3, "BK1615":3, "BK1616":3, "BK1617":3, "BK1618":3, "BK1619":3, "BK1620":3, "BK1621":3, "BK1622":3, "BK1623":3, "BK1624":3, "BK1625":3, "BK1626":3, "BK1627":3
 };
 const LEVEL_OF = (code) => LEVELS[code] || 3;
+/* 按层级预生成板块 secid 清单：行业数据走 ulist 批量单请求（取代 clist 5 页分页连发——分页指纹是 WAF 封禁的主要触发源） */
+const LEVEL_SECIDS = { 1: [], 2: [], 3: [] };
+Object.keys(LEVELS).forEach(code => LEVEL_SECIDS[LEVELS[code]].push('90.' + code));
 const LEVEL_NAMES = {1:'一级', 2:'二级', 3:'三级'};
 /* 分时时间 → 全天横向位置（9:30-11:30 / 13:00-15:00 各占半程，刻度全天固定） */
 const POS_OF_DAY = t => { const [h, m] = String(t).split(':').map(Number); const mm = h * 60 + m;
@@ -436,8 +440,10 @@ const POS_OF_DAY = t => { const [h, m] = String(t).split(':').map(Number); const
 const state = {
   interval: 60,                  // 刷新间隔（秒），0=关闭
   countdown: 60,
-  failStreak: 0,                 // 行业数据连续失败轮数（失败退避用）
-  nextDelay: 0,                  // 退避等待秒数（>0 时下轮到点不刷新，改为轻探）
+  failStreak: 0,                 // 核心接口（指数+分时）连续失败轮数（全局退避用，行业失败不计入）
+  nextDelay: 0,                  // 全局退避等待秒数（>0 时下轮到点不刷新，改为轻探；仅核心接口全挂时触发）
+  indFailStreak: 0,              // 行业数据连续失败次数（独立退避账，不影响其他刷新节奏）
+  indNextAt: 0,                  // 行业退避解除时间戳（退避期内不拉行业，指数/分时/资金照常刷新）
   trendScale: null,              // 分时图 Y 轴全天口径 {key,mid,half}：刻度一天固定，切换标的时重建
   flowScale: null,               // 资金分时 Y 轴全天口径 {key,half}：以 0 为锚对称，切换标的时重建
   mflowScale: null,              // 两市资金分时 Y 轴全天口径 {lo,hi}：数据自适应、0 仅作边界锚，全天固定
@@ -449,6 +455,9 @@ const state = {
   sectorMap: {},
   selected: { secid:'1.000001', name:'上证指数', isSector:false, code:'000001' },
   prevSectorVals: {},            // 上一轮数值，用于闪烁对比
+  loadStamp: 0,                  // 本轮刷新起始时间戳（loading 超时保险丝用）
+  indMiss: false,                // 行业数据上轮不完整/失败 → 下轮无视节流强制补拉
+  indSnap: { 1:null, 2:null, 3:null },   // 各层级快照 {rows, at}：层级切换即时渲染 + 3 分钟节流锚点（按层级独立记账）
   round: 0,
   tradingDate: null,
   rows: {},                      // 板块行 DOM 池
@@ -487,8 +496,9 @@ function jsonp(url, timeout = 9000) {
 }
 const apiIndexList = () =>
   jsonp(`${API}/ulist.np/get?ut=${UT}&fltt=2&invt=2&fields=f12,f14,f2,f3,f4,f6&secids=${INDEXES.map(i => i.secid).join(',')}`);
-const apiSectorPage = (pn) =>
-  jsonp(`${API}/clist/get?pn=${pn}&pz=100&po=1&np=1&ut=${UT}&fltt=2&invt=2&fid=f3&fs=m:90+t:2+f:!50&fields=${SECTOR_FIELDS}`);
+/* 行业数据：按层级 secid 清单 ulist 单请求批量拉取（单请求原子性，无分页缺页中间态） */
+const apiSectorBySecids = (secids) =>
+  jsonp(`${API}/ulist.np/get?ut=${UT}&fltt=2&invt=2&fields=${SECTOR_FIELDS}&secids=${secids}`);
 const apiTrend = (secid) =>
   jsonp(`${API}/stock/trends2/get?secid=${secid}&ut=${UT}&fields1=f1,f2,f3,f8,f9,f10,f11,f12,f13&fields2=f51,f53,f56,f58&iscr=0&ndays=1`);
 /* 板块级分钟资金流：klines=「时间,主力,小单,中单,大单,超大单」当日累计净流入（元），仅 90.BK 板块有数据 */
@@ -508,41 +518,90 @@ function marketPhase() {
 }
 function localDateStr() { const n = new Date(); return `${n.getFullYear()}-${pad(n.getMonth()+1)}-${pad(n.getDate())}`; }
 
+/* ---------- 行业数据结算（主刷新与层级切换定向拉取共用） ----------
+   单请求原子性：完整 → 记层级快照（节流锚点+切换即时渲染源）；部分返回 → 渲染已有+缺的保留旧值，下轮强制补拉；空 → 记独立退避账 */
+function settleIndustry(lv, rows) {
+  const expected = LEVEL_SECIDS[lv].length;
+  const isCur = lv === state.level;   /* 异步期间已切走层级：数据仍入快照，但不渲染不动当前视图 */
+  if (rows.length && isCur) renderSectorsData(rows);
+  if (rows.length >= expected) {
+    state.indSnap[lv] = { rows, at: Date.now() };
+    state.indFailStreak = 0; state.indNextAt = 0; state.indMiss = false;
+    if (isCur) { const n2 = new Date(); $('#sectorHint').textContent = `· 行业数据 ${pad(n2.getHours())}:${pad(n2.getMinutes())} 更新`; }
+  } else if (rows.length > 0) {
+    state.indMiss = true;   /* 部分返回：缺的板块本轮已保留旧值参与排序，下轮无视节流补拉 */
+    if (isCur) $('#sectorHint').textContent = `· 行业数据不完整（${rows.length}/${expected}）· 下轮补拉`;
+  } else {
+    state.indMiss = true;
+    if (++state.indFailStreak >= 2) { state.indNextAt = Date.now() + 240000; if (isCur) $('#sectorHint').textContent = '· 行业接口异常 · 4 分钟后自动重试'; }
+    else if (isCur) $('#sectorHint').textContent = '· 行业拉取失败 · 下轮重试';
+  }
+}
+/* 层级切换触发的定向拉取：快照缺失/过期时立即拉取该层级（不等 3 分钟节拍）；退避闸门 + 800ms 防抖（防快速切换连发请求） */
+let indPullAt = 0;
+async function fetchIndustryNow() {
+  if (Date.now() - indPullAt < 800 || Date.now() < (state.indNextAt || 0)) return;
+  indPullAt = Date.now();
+  const lv = state.level;
+  try {
+    const res = await apiSectorBySecids(LEVEL_SECIDS[lv].join(','));
+    settleIndustry(lv, (res && res.data && Array.isArray(res.data.diff)) ? res.data.diff : []);
+  } catch (e) {
+    settleIndustry(lv, []);
+  }
+}
+
 /* ---------- 主刷新 ---------- */
 async function refresh(manual = false) {
   if (state.loading) return;
   state.loading = true;
+  state.loadStamp = Date.now();   /* 保险丝起点：一轮超 45 秒未归（挂起叠加后台节流等异常环境）由 tick 强制复位 */
   const btn = $('#refreshBtn');
   btn.classList.add('spinning');
   try {
-    /* 全部请求统一错峰发出（300ms 间隔，瞬时并发=1），规避突发并发触发的限流断连 */
+    /* 全部请求统一错峰发出（瞬时并发=1），规避突发并发触发的限流断连 */
+    /* 行业数据独立节流：固定 3 分钟拉一次当前层级（板块资金异动慢于指数）——按层级快照锚点判定；数据不完整下轮强制补拉 */
     const tasks = [];
-    const queue = (fn) => tasks.push(new Promise(res => setTimeout(() => res(fn().catch(() => null)), tasks.length * 300)));
+    let queueT = 0;
+    const queue = (fn, gap = 300) => { queueT += gap; tasks.push(new Promise(res => setTimeout(() => res(fn().catch(() => null)), queueT))); };
     queue(() => apiIndexList());
     queue(() => apiTrend(state.selected.secid));
-    for (let pn = 1; pn <= 5; pn++) queue(() => apiSectorPage(pn));
-    if (state.round % SPARK_EVERY === 0) INDEXES.forEach(i => queue(() => apiTrend(i.secid)));
-    const sparkEnd = tasks.length;   /* spark 段结束位（其后为行业/两市资金分时，切片上界恒定） */
+    const snap = state.indSnap[state.level];
+    const doInd = (Date.now() - (snap ? snap.at : 0) >= INDUSTRY_GAP * 1000 || state.indMiss) && Date.now() >= (state.indNextAt || 0);   /* 3 分钟节流（层级快照锚点）+ 行业独立退避闸门（退避期内一律不拉行业） */
+    const indLv = state.level;   /* 拉取时层级快照：异步期间切层级防串账 */
+    let indIdx = -1;
+    if (doInd) { indIdx = tasks.length; queue(() => apiSectorBySecids(LEVEL_SECIDS[indLv].join(','))); }
+    let sparkStart = -1;
+    if (state.round % SPARK_EVERY === 0) { sparkStart = tasks.length; INDEXES.forEach(i => queue(() => apiTrend(i.secid))); }
     let flowIdx = -1;
     if (state.selected.isSector) { flowIdx = tasks.length; queue(() => apiFlow(state.selected.secid)); }   /* 行业资金分时：仅行业选中时请求 */
     let mflowIdx = -1;
     if (state.round % FLOW_EVERY === 0) { mflowIdx = tasks.length; MKT_FLOW.forEach(s => queue(() => apiFlow(s))); }   /* 两市资金分时：降频拉取（沪+深综） */
     const results = await Promise.all(tasks);
     const idxRes = results[0], trendRes = results[1];
-    const sectorRows = results.slice(2, 7)
-      .filter(Boolean)
-      .map(p => (p.data && p.data.diff) ? p.data.diff : [])
-      .flat();
-    const sparkRes = results.slice(7, sparkEnd);
+    /* 行业单请求解析（仅本轮实际拉取时）：失败/超时 → null → 空数组走独立退避记账 */
+    const indRes = indIdx >= 0 ? results[indIdx] : null;
+    const sectorRows = (indRes && indRes.data && Array.isArray(indRes.data.diff)) ? indRes.data.diff : [];
+    const sparkRes = sparkStart >= 0 ? results.slice(sparkStart, sparkStart + 4) : [];
     const flowRes = flowIdx >= 0 ? results[flowIdx] : null;
     const mflowA = mflowIdx >= 0 ? results[mflowIdx] : null;
     const mflowB = mflowIdx >= 0 ? results[mflowIdx + 1] : null;
     let failed = 0;
 
-    if (idxRes && idxRes.data && idxRes.data.diff) renderIndexes(idxRes.data.diff, sparkRes);
-    else failed++;
+    /* 跨天预检（先于指数卡 spark 绘制）：交易日切换时重置全部分时 Y 轴口径——
+       昨收价/当日累计资金均已换代，沿用旧口径会导致曲线偏侧/压扁 */
+    if (trendRes && trendRes.data && trendRes.data.trends) {
+      const d0 = String(trendRes.data.trends[0]).split(' ')[0];
+      if (state.tradingDate !== d0) {
+        state.sparkScales = {};
+        state.trendScale = null;
+        state.flowScale = null;
+        state.mflowScale = null;
+        state.tradingDate = d0;
+      }
+    }
 
-    if (sectorRows.length) renderSectorsData(sectorRows);
+    if (idxRes && idxRes.data && idxRes.data.diff) renderIndexes(idxRes.data.diff, sparkRes);
     else failed++;
 
     if (trendRes && trendRes.data && trendRes.data.trends) renderTrend(trendRes.data, state.round === 0 || manual ? true : false);
@@ -556,11 +615,13 @@ async function refresh(manual = false) {
     if (mflowA && mflowA.data && mflowA.data.klines && mflowB && mflowB.data && mflowB.data.klines)
       renderMarketFlow(mflowA.data, mflowB.data);
 
-    /* 统一失败退避：clist 数据空，或一轮≥2个接口失败 → 计为异常轮累计；连续2轮异常→退避5分钟轻探；全部正常→立即复位 */
-    if (!sectorRows.length || failed >= 2) { if (++state.failStreak >= 2) state.nextDelay = 240; }
-    else { state.failStreak = 0; state.nextDelay = 0; }
+    /* 行业结算（与其他刷新解耦）：渲染+快照锚点+独立退避账全在 settleIndustry 内，失败不拖累全局 failed */
+    if (indIdx >= 0) settleIndustry(indLv, sectorRows);
+    /* 全局退避：仅核心接口（指数+分时）同轮全挂才限制整体刷新节奏（行业失败已独立记账，不再拖累全局） */
+    if (failed >= 2) { if (++state.failStreak >= 2) state.nextDelay = 240; }
+    else if (failed === 0) { state.failStreak = 0; state.nextDelay = 0; }
 
-    updateStatus(failed >= 3 ? 'err' : (failed > 0 ? 'degraded' : 'ok'));
+    updateStatus(failed >= 2 ? 'err' : (failed > 0 ? 'degraded' : 'ok'));   /* 行业失败已独立记账，failed 仅含核心接口 */
     const n = new Date();
     $('#lastUpdate').textContent = `${pad(n.getHours())}:${pad(n.getMinutes())}:${pad(n.getSeconds())}`;
   } catch (e) {
@@ -652,10 +713,13 @@ function drawSpark(svg, pts, raw, key) {
   if (!svg || !pts.length) return;
   const pre = num(raw.preClose ?? raw.prePrice) ?? pts[0].p;
   const mn = Math.min(pre, ...pts.map(x => x.p)), mx = Math.max(pre, ...pts.map(x => x.p));
-  /* Y 轴全天口径：以昨收为锚对称展开，日内只扩不缩（各指数卡独立记忆） */
-  const sc = state.sparkScales[key] || (state.sparkScales[key] = { mid: pre, half: 0 });
-  sc.half = Math.max(sc.half, Math.max(sc.mid - mn, mx - sc.mid) * 1.12, mx * 0.001 || 1e-6);
-  const yMin = sc.mid - sc.half, yMax = sc.mid + sc.half;
+  /* Y 轴全天口径：以昨收为锚对称展开，日内只扩不缩（各指数卡独立记忆）；
+     昨收变化（跨天）→ 该卡整卡重锚（防主图数据失败时 spark 沿用旧口径画偏） */
+  const sc = state.sparkScales[key];
+  if (!sc || sc.pre !== pre) state.sparkScales[key] = { pre, mid: pre, half: 0 };
+  const s2 = state.sparkScales[key];
+  s2.half = Math.max(s2.half, Math.max(s2.mid - mn, mx - s2.mid) * 1.12, mx * 0.001 || 1e-6);
+  const yMin = s2.mid - s2.half, yMax = s2.mid + s2.half;
   const step = Math.max(1, Math.floor(pts.length / 60));
   const pts2 = pts.filter((_, i) => i % step === 0);
   const last = pts[pts.length - 1].p;
@@ -779,41 +843,55 @@ function updateSectorRow(row, s, visSet, maxAbs) {
 function resortRows() {
   const wrap = $('#sectorList');
   const key = state.sort === 'f62' ? 'sortF62' : state.sort === 'rate' ? 'sortRate' : 'sortPct';
-  const visCodes = new Set(state.sectors.filter(s => LEVEL_OF(s.code) === state.level).map(s => s.code));
+  /* 全量统一重排（对齐热力图修复模式）：按静态层级映射取 row 池中当前层级全部行（含本轮未更新、
+     保留旧键的缺页行）参与排序，杜绝部分渲染时「缺页行被隐藏、列表残缺、rank 编号错乱」 */
   const rows = Object.values(state.rows)
-    .filter(r => visCodes.has(r.dataset.code))
+    .filter(r => LEVEL_OF(r.dataset.code) === state.level)
     .sort((a, b) => (+a.dataset[key] || 0) - (+b.dataset[key] || 0));
   let r = 1;
   rows.forEach(row => {
     wrap.appendChild(row);
+    row.style.display = '';
     const rk = row.querySelector('.rank');
     rk.textContent = r;
     rk.classList.toggle('top', r <= 3 && (+row.dataset[key] < 900));
     r++;
   });
   Object.values(state.rows).forEach(row => {
-    if (!visCodes.has(row.dataset.code)) row.style.display = 'none';
+    if (LEVEL_OF(row.dataset.code) !== state.level) row.style.display = 'none';
   });
 }
 
 /* ---------- 全市场资金 ---------- */
 const FUND_LABELS = [['f62','主力净流入'],['f66','超大单'],['f72','大单'],['f78','中单'],['f84','小单']];
+/* 最新已知全量快照（按层级）：部分渲染（缺页补拉期间）时缺页板块沿用快照旧值参与计算，
+   杜绝涨跌家数/资金合计基于残缺集失真——对齐列表/热力图的「缺页保留旧值」模式 */
+const mfSnaps = {};
 function renderMarketFunds(list) {
+  const fullCount = Object.values(LEVELS).filter(l => l === state.level).length;
+  let calc = list;
+  if (list.length < fullCount && mfSnaps[state.level] && mfSnaps[state.level].length) {
+    const has = new Set(list.map(s => s.code));
+    calc = list.concat(mfSnaps[state.level].filter(s => !has.has(s.code)));
+  }
+  /* 快照记账：发生过合并 → calc 为每板块最新已知全集（必更新）；无快照时仅完整才建立（首次部分渲染显示残缺，待补拉闭环） */
+  if (calc.length > list.length || list.length >= fullCount)
+    mfSnaps[state.level] = calc.map(s => ({ code: s.code, pct: s.pct, up: s.up, down: s.down, f62: s.f62, f66: s.f66, f72: s.f72, f78: s.f78, f84: s.f84 }));
   const sums = {};
-  FUND_LABELS.forEach(([k]) => sums[k] = list.reduce((a, s) => a + (s[k] || 0), 0));
+  FUND_LABELS.forEach(([k]) => sums[k] = calc.reduce((a, s) => a + (s[k] || 0), 0));
   const box = $('#marketFunds');
   box.innerHTML = FUND_LABELS.map(([k, label]) => `
     <div class="mf-card">
       <span class="mf-label">${label}</span>
       <span class="mf-val ${cls3(sums[k])}">${yiShort(sums[k])}亿</span>
     </div>`).join('');
-  const up = list.filter(s => s.pct > 0).length, down = list.filter(s => s.pct < 0).length;
-  const flat = list.length - up - down;
+  const up = calc.filter(s => s.pct > 0).length, down = calc.filter(s => s.pct < 0).length;
+  const flat = calc.length - up - down;
   const lvName = LEVEL_NAMES[state.level] || '全部';
-  $('#breadth').innerHTML = `${lvName} · ${list.length} 个行业：<b class="up">${up} 上涨</b> · <b class="down">${down} 下跌</b> · <b class="flat">${flat} 平</b>`;
+  $('#breadth').innerHTML = `${lvName} · ${calc.length} 个行业：<b class="up">${up} 上涨</b> · <b class="down">${down} 下跌</b> · <b class="flat">${flat} 平</b>`;
   /* 全市场个股情绪温度条：当前层级板块互斥全覆盖，成分股涨跌家数求和即为全市场口径（零新增请求） */
-  const upSum = list.reduce((a, s) => a + (s.up > 0 ? s.up : 0), 0);
-  const downSum = list.reduce((a, s) => a + (s.down > 0 ? s.down : 0), 0);
+  const upSum = calc.reduce((a, s) => a + (s.up > 0 ? s.up : 0), 0);
+  const downSum = calc.reduce((a, s) => a + (s.down > 0 ? s.down : 0), 0);
   const temp = $('#mktTemp');
   if (upSum + downSum > 0) {
     temp.hidden = false;
@@ -902,6 +980,7 @@ function renderHeatmap(list) {
       state.hmCells[s.code] = cell;
     }
     cell.style.background = heatColor(s.pct);
+    cell.dataset.sortPct = -(s.pct ?? -99);   /* 排序键：供下方全量统一重排（含本轮未更新、保留旧值的 cell） */
     cell.children[0].textContent = s.name;
     cell.children[1].textContent = fmtPct(s.pct);
     cell.children[1].className = 'hm-pct ' + cls3(s.pct);
@@ -909,6 +988,11 @@ function renderHeatmap(list) {
     frag.appendChild(cell);   /* 按新排序重排（appendChild 移动已有节点不重建、不触发重播） */
   });
   box.appendChild(frag);
+  /* 全 cell 统一重排（对齐列表 resortRows 模式）：缺页补拉等部分渲染场景下，未在本次数据中的 cell
+     保留旧值也参与排序，杜绝「已更新 cell 堆叠尾部、未更新 cell 滞留原位」的排序错乱 */
+  Array.from(box.children)
+    .sort((a, b) => (parseFloat(a.dataset.sortPct) ?? 999) - (parseFloat(b.dataset.sortPct) ?? 999))
+    .forEach(c => box.appendChild(c));
   syncSelectedUI();
 }
 
@@ -943,10 +1027,16 @@ function renderTrend(data, animate) {
     setChartQuote(last.p, pct, pct !== null ? last.p - trendPre : null, null);
     renderFundBars(null);
   }
-  drawTrendSvg(pts, trendPre, animate);
-  /* 交易日校准 */
+  /* 交易日校准：跨天时重置全部分时 Y 轴口径（refresh 侧已有同款预检先行，此处覆盖 selectTarget 等独立入口） */
   const d0 = String(data.trends[0]).split(' ')[0];
-  state.tradingDate = d0;
+  if (state.tradingDate !== d0) {
+    state.sparkScales = {};
+    state.trendScale = null;
+    state.flowScale = null;
+    state.mflowScale = null;
+    state.tradingDate = d0;
+  }
+  drawTrendSvg(pts, trendPre, animate);
 }
 function drawTrendSvg(pts, pre, animate) {
   const svg = $('#trendSvg');
@@ -1174,6 +1264,8 @@ function syncSelectedUI() {
 /* ---------- 定时器 ---------- */
 function tick() {
   if (state.interval > 0) {
+    /* loading 保险丝：一轮超 45 秒未结束（请求挂起超时叠加重度节流等异常）→ 强制复位，保证刷新循环不永久停摆 */
+    if (state.loading && Date.now() - (state.loadStamp || 0) > 45000) { state.loading = false; state.loadStamp = 0; }
     state.countdown--;
     const ring = $('#cdRing');
     const p = Math.min(1, Math.max(0, state.countdown / state.interval));
@@ -1226,8 +1318,13 @@ $('#levelSeg').addEventListener('click', e => {
   $('#levelSeg').querySelectorAll('button').forEach(x => x.classList.remove('active'));
   b.classList.add('active');
   state.level = +b.dataset.lv;
-  if (state.sectorRaw && state.sectorRaw.length) renderSectorsData(state.sectorRaw);
+  /* 有快照先即时渲染（不等网络）；无快照渲染空态，视图随定向拉取到位 */
+  const snap = state.indSnap[state.level];
+  if (snap && snap.rows.length) renderSectorsData(snap.rows);
+  else { renderSectorsData([]); $('#sectorHint').textContent = '· 行业数据拉取中…'; }
   syncSelectedUI();
+  /* 快照缺失/过期 → 立即定向拉取该层级（不等 3 分钟节拍）；退避闸门与防抖由 fetchIndustryNow 自理 */
+  if (!snap || Date.now() - snap.at >= INDUSTRY_GAP * 1000) fetchIndustryNow();
 });
 $('#refreshBtn').addEventListener('click', () => {
   state.countdown = state.interval;
