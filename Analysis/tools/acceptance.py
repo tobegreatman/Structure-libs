@@ -1,0 +1,830 @@
+"""验收脚本：一键跑完 docs/03_acceptance.md 中的机检项。
+
+用法：
+    PYTHONPATH=src python tools/acceptance.py
+
+返回码 0 = 全部通过；1 = 有失败项（逐条打印失败原因）。
+"""
+
+from __future__ import annotations
+
+import copy
+import json
+import os
+import re
+import subprocess
+import sys
+import tempfile
+from datetime import date
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT / "src"))
+
+from stockframe.datadict import FIELD_SPECS  # noqa: E402
+from stockframe.engine import run  # noqa: E402
+from stockframe.pit import LookAheadError, ProvenanceError  # noqa: E402
+from stockframe.specs import DIMENSIONS  # noqa: E402
+from stockframe.validate import validate_report  # noqa: E402
+
+sys.path.insert(0, str(ROOT / "tests"))
+from test_autobuild import raw_fixture  # noqa: E402  （离线夹具，不访问网络）
+
+BANNED = ("买入", "卖出", "加仓", "减仓", "目标价", "止损", "止盈", "建仓", "清仓")
+
+results: list[tuple[str, str, bool, str]] = []
+
+
+def check(cid: str, title: str, fn) -> None:
+    try:
+        detail = fn() or ""
+        results.append((cid, title, True, detail))
+    except AssertionError as exc:
+        results.append((cid, title, False, str(exc)))
+    except Exception as exc:  # noqa: BLE001
+        results.append((cid, title, False, f"{type(exc).__name__}: {exc}"))
+
+
+def load_sample() -> dict:
+    with open(ROOT / "examples" / "sample_input.json", encoding="utf-8") as fh:
+        return json.load(fh)
+
+
+# ---------------------------------------------------------------- 机检项
+
+def a1_unit_tests() -> str:
+    proc = subprocess.run(
+        [sys.executable, "-m", "pytest", "tests/", "-q"],
+        cwd=ROOT, capture_output=True, text=True,
+        env={**os.environ, "PYTHONPATH": str(ROOT / "src")},
+    )
+    assert proc.returncode == 0, "单元测试未通过：\n" + proc.stdout[-2000:]
+    return proc.stdout.strip().splitlines()[-1]
+
+
+def a2_pipeline_and_schema() -> str:
+    report = run(load_sample())
+    ok, errors = validate_report(report)
+    assert ok, "schema 校验失败：" + "; ".join(errors[:5])
+    return f"schema 校验通过，risk={len(report['risk_matrix']['risks'])} 条，维度={len(report['scorecard']['dimensions'])}"
+
+
+def a3_deterministic_rerun() -> str:
+    r1 = run(load_sample())
+    r2 = run(load_sample())
+    assert json.dumps(r1, sort_keys=True, ensure_ascii=False) == json.dumps(r2, sort_keys=True, ensure_ascii=False), \
+        "同一输入两次运行结果不一致（存在非确定性）"
+    with open(ROOT / "examples" / "sample_report.json", encoding="utf-8") as fh:
+        committed = json.load(fh)
+    assert json.dumps(committed, sort_keys=True, ensure_ascii=False) == json.dumps(r1, sort_keys=True, ensure_ascii=False), \
+        "样例报告与代码输出不一致：请重跑 CLI 更新 examples/sample_report.json"
+    return "重复运行一致，且与仓库内样例报告一致"
+
+
+def a4_no_banned_language() -> str:
+    report = run(load_sample())
+    text = json.dumps(report, ensure_ascii=False)
+    hits = [w for w in BANNED if w in text]
+    assert not hits, f"报告出现违禁措辞：{hits}"
+    md_path = ROOT / "examples" / "sample_report.md"
+    if md_path.exists():
+        md = md_path.read_text(encoding="utf-8")
+        md_hits = [w for w in BANNED if w in md]
+        assert not md_hits, f"Markdown 报告出现违禁措辞：{md_hits}"
+    return f"JSON/Markdown 均无 {len(BANNED)} 类违禁措辞"
+
+
+def a5_pit_guard() -> str:
+    inp = load_sample()
+    inp["data"]["financial"]["roe_ttm"]["available_at"] = "2099-01-01"
+    try:
+        run(inp)
+        raise AssertionError("未来函数未被拦截：available_at > analysis_date 仍可出报告")
+    except LookAheadError:
+        pass
+    # 来源纪律：L4 不得进入评分路径
+    inp_l4 = load_sample()
+    inp_l4["data"]["financial"]["roe_ttm"]["source_tier"] = "L4"
+    try:
+        run(inp_l4)
+        raise AssertionError("L4 来源字段进入了评分路径")
+    except ProvenanceError:
+        pass
+    # 报告内全部证据时点必须 <= 分析时点
+    report = run(load_sample())
+    ad = report["meta"]["analysis_date"]
+    bad = [e for e in report["evidence_log"] if e["available_at"] and e["available_at"] > ad]
+    assert not bad, f"evidence_log 存在晚于分析时点的字段：{[b['field_id'] for b in bad]}"
+    bad_inds = []
+    for d in report["scorecard"]["dimensions"]:
+        for f in d["factors"]:
+            for i in f["indicators"]:
+                if not i["missing"] and i["evidence"]["available_at"] > ad:
+                    bad_inds.append(i["id"])
+    assert not bad_inds, f"评分证据存在未来时点：{bad_inds}"
+    return f"未来函数/ L4 来源均被拦截；{len(report['evidence_log'])} 条证据全部 <= {ad}"
+
+
+def a6_traceability() -> str:
+    report = run(load_sample())
+    missing_ev, no_rationale = [], []
+    for d in report["scorecard"]["dimensions"]:
+        for f in d["factors"]:
+            for i in f["indicators"]:
+                if not i["rationale"] or len(i["rationale"]) < 10:
+                    no_rationale.append(i["id"])
+                if i["missing"]:
+                    continue
+                ev = i["evidence"]
+                if not ev.get("source") or not ev.get("as_of") or not ev.get("available_at"):
+                    missing_ev.append(i["id"])
+                if i["score"] is None or i["band"] is None:
+                    missing_ev.append(i["id"] + "(缺分或档)")
+    assert not no_rationale, f"指标缺 rationale：{no_rationale}"
+    assert not missing_ev, f"可用指标证据链不完整：{missing_ev}"
+    total = sum(len(f["indicators"]) for d in report["scorecard"]["dimensions"] for f in d["factors"])
+    return f"{total} 个指标全部带 rationale 与证据四要素"
+
+
+def a7_anti_piling() -> str:
+    counts = []
+    for d in DIMENSIONS:
+        assert len(d.factors) <= 3, f"{d.id} 因子数 {len(d.factors)} > 3（指标堆砌）"
+        for f in d.factors:
+            assert len(f.indicators) <= 4, f"{d.id}.{f.id} 指标数 {len(f.indicators)} > 4（指标堆砌）"
+            for i in f.indicators:
+                if i.anchors is None and i.computed is None:
+                    assert len(i.bands) >= 4, f"{i.id} 量规仅 {len(i.bands)} 档（无法区分中间态）"
+                counts.append(i.id)
+    return f"{len(DIMENSIONS)} 维度 / {len(counts)} 指标，均在反堆砌上限内"
+
+
+def a8_conditional_conclusion() -> str:
+    report = run(load_sample())
+    c = report["conclusion"]
+    assert c["bucket_mid"] in ("入池", "观察", "回避", "人工复核"), "分桶不在四值域内"
+    assert c["decision"]["rule_id"].startswith("R"), "缺决策规则编号（不可溯源）"
+    assert c["decision"]["reasons"], "缺分桶理由"
+    assert len(c["maintain_conditions"]) >= 3, "维持条件少于 3 条"
+    assert len(c["falsification"]) >= 3, "证伪条件少于 3 条"
+    for item in c["maintain_conditions"] + c["falsification"]:
+        assert item["metric"] and item["threshold"], f"条件 {item['id']} 缺可观测指标/阈值"
+    assert c["valid_until"], "缺结论有效期"
+    return f"维持 {len(c['maintain_conditions'])} 条 / 证伪 {len(c['falsification'])} 条，均含指标+阈值"
+
+
+def a9_decision_gates() -> str:
+    base = load_sample()
+
+    def bucket(mutator) -> str:
+        inp = copy.deepcopy(base)
+        mutator(inp)
+        return run(inp)["conclusion"]["bucket_mid"]
+
+    assert bucket(lambda i: i["meta"]["flags"].__setitem__("st", True)) == "回避", "ST 未触发回避"
+    assert bucket(lambda i: i["data"]["market"].pop("pe_ttm")) == "人工复核", "必填缺失未触发人工复核"
+    assert bucket(lambda i: i["meta"].__setitem__("flags", {"restructuring": True})) == "人工复核", "重组未触发人工复核"
+    return "硬红旗→回避；必填缺失→人工复核；特殊状态→人工复核"
+
+
+def a10_probability_gate() -> str:
+    inp = load_sample()
+    inp["assumptions"]["scenario_probabilities"]["optimistic"] = 0.5
+    try:
+        run(inp)
+        raise AssertionError("三情景概率合计≠1 仍出报告")
+    except ValueError as exc:
+        assert "概率" in str(exc)
+    return "概率不自洽被拒绝出报告"
+
+
+def a11_doc_code_consistency() -> str:
+    sys.path.insert(0, str(ROOT / "tools"))
+    proc = subprocess.run(
+        [sys.executable, str(ROOT / "tools" / "build_scoring_doc.py")],
+        capture_output=True, text=True, cwd=ROOT,
+        env={**os.environ, "PYTHONPATH": str(ROOT / "src")},
+    )
+    assert proc.returncode == 0, "评分说明生成失败：" + proc.stderr[-800:]
+    doc = (ROOT / "docs" / "02_scoring_guide.md").read_text(encoding="utf-8")
+    for d in DIMENSIONS:
+        for f in d.factors:
+            for i in f.indicators:
+                assert i.id in doc, f"评分说明缺少指标 {i.id}（文档/代码漂移）"
+    return f"文档含全部 {sum(len(f.indicators) for d in DIMENSIONS for f in d.factors)} 个指标量规"
+
+
+def a12_data_dictionary_complete() -> str:
+    report = run(load_sample())
+    ids = {s.field_id for s in FIELD_SPECS}
+    unknown = [e["field_id"] for e in report["evidence_log"] if e["field_id"] not in ids]
+    assert not unknown, f"evidence_log 出现未登记字段：{unknown}"
+    return f"数据字典 {len(ids)} 字段，evidence_log {len(report['evidence_log'])} 条全部登记"
+
+
+def a13_ui_synced() -> str:
+    """界面产物必须与样例报告同步，防止"界面展示过期结论"。"""
+    proc = subprocess.run(
+        [sys.executable, str(ROOT / "tools" / "build_ui.py"), "--check"],
+        capture_output=True, text=True, cwd=ROOT,
+        env={**os.environ, "PYTHONPATH": str(ROOT / "src")},
+    )
+    assert proc.returncode == 0, (proc.stdout + proc.stderr)[-800:]
+    html = (ROOT / "web" / "index.html").read_text(encoding="utf-8")
+    assert "/*__SNAPSHOT__*/" not in html, "模板占位符未替换"
+    assert "window.__SNAPSHOT__ =" in html, "缺少内联快照，离线打开会空白"
+    assert "fetch(\"/api/analyze\"" in html or "fetch('/api/analyze'" in html, "界面未接实时分析接口"
+    assert "byGroup" in html and 'data-group="' in html, \
+        "缺口面板未按维度归并：同一维度（如公司判断）会并排出现两张同名卡"
+    return f"web/index.html 与样例报告同步（{len(html) / 1024:.0f} KB）"
+
+
+def a14_api_parity() -> str:
+    """服务端薄壳不复制逻辑：接口结果必须等于引擎直算结果，异常输入必须可读降级。"""
+    import threading
+    import urllib.error
+    import urllib.request
+    from http.server import ThreadingHTTPServer
+
+    from stockframe.server import Handler
+
+    httpd = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+    threading.Thread(target=httpd.serve_forever, daemon=True).start()
+    base = f"http://127.0.0.1:{httpd.server_address[1]}"
+
+    def post(payload):
+        req = urllib.request.Request(
+            base + "/api/analyze", data=json.dumps(payload).encode("utf-8"),
+            headers={"Content-Type": "application/json"},
+        )
+        try:
+            with urllib.request.urlopen(req) as resp:
+                return resp.status, json.loads(resp.read())
+        except urllib.error.HTTPError as exc:
+            return exc.code, json.loads(exc.read() or b"{}")
+
+    try:
+        status, data = post({"input": load_sample()})
+        assert status == 200 and data["ok"], f"正常输入失败：{data}"
+        direct = run(load_sample())["conclusion"]
+        got = data["report"]["conclusion"]
+        assert (got["bucket_mid"], got["composite_score_mid"]) == \
+               (direct["bucket_mid"], direct["composite_score_mid"]), "接口与引擎结果不一致（出现两套口径）"
+        assert data["validation"]["valid"], "接口返回的报告未通过 schema 校验"
+
+        bad = load_sample()
+        bad["data"]["financial"]["roe_ttm"]["available_at"] = "2099-01-01"
+        status, data = post({"input": bad})
+        assert status == 400 and data["error"]["code"] == "LookAheadError", "接口未把未来函数转为 400 可读错误"
+        with urllib.request.urlopen(base + "/") as resp:
+            assert "stockframe" in resp.read().decode("utf-8")
+    finally:
+        httpd.shutdown()
+        httpd.server_close()
+    return "接口=引擎（同分桶同分），未来函数→400，页面可服务"
+
+
+def a15_autofetch_pit() -> str:
+    """自动取数同样受 PIT 约束：未披露的报告不得使用。"""
+    from stockframe import autobuild
+
+    raw = raw_fixture()
+    # 2026-08-10 时点，中报（2026-08-15 披露）尚未公告
+    out = autobuild.build(raw, "2026-08-10")
+    asof = out["fill"]["as_of"]
+    assert asof["latest_report_period"] == "2026-03-31", f"越权使用了未披露报告：{asof}"
+    assert asof["latest_report_notice"] <= "2026-08-10", asof
+
+    # 全部字段的 available_at 不得晚于分析时点
+    late = []
+    for group, fields in out["input"]["data"].items():
+        for key, val in fields.items():
+            if isinstance(val, dict) and val.get("available_at", "") > "2026-08-10":
+                late.append(f"{group}.{key}={val['available_at']}")
+    assert not late, f"存在未来字段：{late[:5]}"
+
+    # 时点前无已披露报告 → 必须报错，而不是"用最近的"
+    blank = raw_fixture()
+    for r in blank["reports"]:
+        r["notice_date"] = "2027-06-01"
+    try:
+        autobuild.build(blank, "2026-10-23")
+        raise AssertionError("无已披露报告时仍生成了报告（PIT 失效）")
+    except Exception as exc:  # noqa: BLE001
+        assert getattr(exc, "code", "") == "NO_PIT_DATA", exc
+    return f"2026-08-10 时点回退至 {asof['latest_report_period']}（披露 {asof['latest_report_notice']}）；无披露数据时报 NO_PIT_DATA"
+
+
+def a16_coverage_gate() -> str:
+    """证据覆盖不足不得给正式分桶；补齐判断后必须能恢复。"""
+    from stockframe import autobuild
+
+    out = autobuild.build(raw_fixture(), "2026-10-23")
+    report = run(out["input"])
+    cov = report["scorecard"]["evidence_coverage"]
+    assert cov["ratio"] < cov["threshold"], f"夹具应低于阈值：{cov}"
+    assert report["conclusion"]["decision"]["rule_id"] == "R7_COVERAGE", report["conclusion"]["decision"]
+    assert report["conclusion"]["bucket_mid"] == "人工复核"
+
+    inp = copy.deepcopy(out["input"])
+    fill = {
+        "macro": {"m1_yoy": 4.0, "rate_10y_chg_yoy": -10, "pmi": 50.2, "policy_stance": 3},
+        "industry": {"industry_growth": 6.0, "price_trend": 1, "stage": 4,
+                     "concentration": 4, "penetration_space": 3},
+        "company": {"moat": 4, "mgmt_record": 4, "logic_strength": 3, "logic_essence": "测试",
+                    "pledge_pct": 0.0, "customer_concentration": 10.0},
+    }
+    for group, fields in fill.items():
+        inp["data"].setdefault(group, {})
+        for key, val in fields.items():
+            inp["data"][group][key] = {"value": val, "as_of": "2026-10-23",
+                                       "available_at": "2026-10-23",
+                                       "source": "验收夹具", "source_tier": "L3"}
+    after = run(inp)
+    assert after["scorecard"]["evidence_coverage"]["ratio"] >= cov["threshold"]
+    assert after["conclusion"]["decision"]["rule_id"] != "R7_COVERAGE", "补齐判断后仍被判覆盖不足"
+    return (f"判断层覆盖 {cov['ratio']:.0%} < {cov['threshold']:.0%} → R7_COVERAGE（全维度 {cov['total_ratio']:.0%} 仅供参考）；"
+            f"补齐三层判断后覆盖 {after['scorecard']['evidence_coverage']['ratio']:.0%} → {after['conclusion']['decision']['rule_id']}")
+
+
+def a17_infeasible_returns_partial() -> str:
+    """自动假设跑不出正股权价值时：必须明确拒绝，且把可编辑的半成品交还给使用者。
+
+    最坏的做法是"调参直到能出数"——那会得到一条看似成立、实则被参数操纵的估值区间。
+    次坏的做法是只报错不给料——使用者对着错误无从下手。这两者都在本项被排除。
+    """
+    from stockframe import autobuild
+    from stockframe.sources import SourceError
+
+    raw = raw_fixture()
+    raw["balance"]["short_loan"] = 2.0e13  # 净债务远高于机械 FCFF 现值
+
+    try:
+        autobuild.build(raw, "2026-10-23")
+        raise AssertionError("DCF 股权价值为负时仍生成了完整分析（应拒绝而非硬凑）")
+    except SourceError as exc:
+        assert exc.code == "DCF_INFEASIBLE", f"错误码不对：{exc.code}"
+        assert "调参硬凑" in str(exc), "拒绝理由未告知使用者该怎么做"
+        code = exc.code
+        payload = getattr(exc, "payload", {})
+        assert payload.get("input") and payload.get("fill"), "未交还半成品输入/缺口清单"
+        assert payload["fill"]["filled_count"] > 10, payload["fill"]["filled_count"]
+
+    # 接口层必须把半成品带出去（否则界面拿不到可编辑的输入）
+    assert _partial_payload_shape_ok(payload), "payload 结构不完整"
+
+    # 反向验证：假设可修正 → 正常分析应当恢复（说明拒绝是"这一组假设不行"，不是"这只票打死"）
+    fixed = copy.deepcopy(payload["input"])
+    for sc in fixed["assumptions"]["dcf"].values():
+        sc["net_debt"] = -50.0  # 净现金
+        sc["ebit_margin_path"] = [0.20] * 5
+    report = run(fixed)
+    assert report["conclusion"]["bucket_mid"], "修正假设后仍未产出结论"
+    return (f"净债务过高 → {code}（不调参）；半成品含 {payload['fill']['filled_count']}/"
+            f"{payload['fill']['total_fields']} 字段；修正 DCF 假设后可正常出报告（{report['conclusion']['bucket_mid']}）")
+
+
+def a18_proxy_traceable_and_overridable() -> str:
+    """判断层代理：每个都必须有公式、有误差方向、在证据链里标 proxy，且能被人工结论覆盖。
+
+    这条是"禁止黑箱评分"在自动模式下的落点：代理值不是研究结论，
+    既要可复算，也要能被一眼认出来，还不能顶替人工判断。
+    """
+    from stockframe import autobuild
+
+    raw = raw_fixture()
+    raw["macro"] = {
+        "m1": {"value": 3.2, "period": "2026-09", "period_label": "2026年09月份",
+               "available_at": "2026-10-15", "lag_days_assumed": 15},
+        "pmi": {"value": 50.1, "period": "2026-09", "period_label": "2026年09月份",
+                "available_at": "2026-10-02", "lag_days_assumed": 2},
+    }
+    raw["industry"] = {
+        "code": "1277", "name": "白酒Ⅱ", "period": "2026-06-30", "deadline": "2026-08-31",
+        "members": 11, "samples": 11, "rev_yoy_med": -15.34, "rev_yoy_prev_med": -11.24,
+        "gm_med": 73.35, "gm_yoy_med": -1.67, "gm_samples": 11,
+        "company_revenue": 9.23e10, "total_revenue": 1.80e11, "company_share": 0.514,
+    }
+    raw["pledge"] = {"ratio": 0.06, "trade_date": "2026-10-16", "pay_year": "2026-10",
+                     "industry": "白酒Ⅱ", "industry_code": "1277"}
+    raw["dividends"] = [{"report_date": f"{y}-12-31", "notice_date": f"{y + 1}-06-20",
+                         "status": "实施分配", "cash_per_10": 200.0, "profile": "10派200元"}
+                        for y in (2021, 2022, 2023, 2024, 2025)]
+
+    out = autobuild.build(raw, "2026-10-23")
+    proxied = out["fill"]["proxied"]
+    assert proxied["proxy"], "判断层可代理项一个都没生成"
+    assert proxied["observed"], "M1/PMI/质押属直接观测，应与代理分开统计"
+
+    deriv = {d["field_id"]: d for d in out["fill"]["derivations"]}
+    for fid in proxied["proxy"]:
+        assert deriv[fid]["method"] == "proxy", f"{fid} 未标注为 proxy"
+        assert len(deriv[fid]["formula"]) > 10, f"{fid} 缺可复算公式"
+        assert deriv[fid]["note"], f"{fid} 缺误差方向说明"
+        grp, key = fid.split(".", 1)
+        assert out["input"]["data"][grp][key]["proxy"] is True, f"{fid} 字段未打 proxy 标记"
+
+    rep = run(out["input"])
+    log = {r["field_id"]: r for r in rep["evidence_log"]}
+    assert all(log[f].get("proxy") is True for f in proxied["proxy"]), "证据链未标出代理字段"
+    assert not log["macro.m1_yoy"].get("proxy"), "直接观测值不应被标成代理"
+
+    cov_auto = rep["scorecard"]["evidence_coverage"]["ratio"]
+
+    # 人工结论必须能覆盖代理，且覆盖后 proxy 标记消失（它现在是研究结论）
+    out2 = autobuild.build(raw, "2026-10-23", overrides={"data": {"company": {"moat": {
+        "value": 1, "as_of": "2026-10-23", "available_at": "2026-10-23",
+        "source": "人工研究判断", "source_tier": "L3"}}}})
+    moat = out2["input"]["data"]["company"]["moat"]
+    assert moat["value"] == 1 and not moat.get("proxy"), "人工判断未能覆盖代理"
+    rep2 = run(out2["input"])
+    log2 = {r["field_id"]: r for r in rep2["evidence_log"]}
+    assert not log2["company.moat"].get("proxy")
+
+    return (f"代理 {len(proxied['proxy'])} 项全部带公式/误差方向/证据链标记，"
+            f"观测 {len(proxied['observed'])} 项不标代理；判断层覆盖 {cov_auto:.0%}；"
+            f"人工可覆盖且覆盖后 proxy 标记消失")
+
+
+def a19_field_ledger_reconciles() -> str:
+    """字段清单必须能对账：已填 + 待补 = 数据字典字段数，且互斥无重复。
+
+    取数降级（行情主机限流丢 K 线）时，丢掉的字段若既不进 filled 也不进 pending，
+    界面上 "N/39 + 待补" 就对不上，缺口会被藏起来——这属于"数据质量说明"失真。
+    同时验证字典外字段（如总市值）不混进账本。
+    """
+    from stockframe import autobuild
+    from stockframe.datadict import FIELD_REGISTRY
+
+    total = len(list(FIELD_REGISTRY))
+    rows = []
+    for name, mutate in (
+        ("完整", lambda r: r),
+        ("缺K线", lambda r: {k: v for k, v in r.items() if k != "kline"}),
+        ("缺宏观", lambda r: {**r, "macro": None}),
+    ):
+        f = autobuild.build(mutate(raw_fixture()), "2026-10-23")["fill"]
+        pend = [x for g in f["pending"] for x in g["fields"]]
+        assert not set(f["filled"]) & set(pend), f"{name}: 同一字段既已填又待补"
+        assert len(pend) == len(set(pend)), f"{name}: 待补清单有重复"
+        assert set(f["filled"]) <= set(FIELD_REGISTRY), f"{name}: 账本里出现字典外字段"
+        assert f["filled_count"] + len(pend) == f["total_fields"] == total, \
+            f"{name}: 对账不平（{f['filled_count']} + {len(pend)} ≠ {f['total_fields']}）"
+        rows.append(f"{name} {f['filled_count']}+{len(pend)}")
+
+    # 缺 K 线时，交易面字段必须显式落到 kind=source 的待补分组，而不是凭空消失
+    f = autobuild.build({k: v for k, v in raw_fixture().items() if k != "kline"}, "2026-10-23")["fill"]
+    source_gaps = {x for g in f["pending"] if g["kind"] == "source" for x in g["fields"]}
+    assert {"market.turnover_pct", "market.vol_ratio_20d"} <= source_gaps, "取数失败字段未进待补清单"
+
+    return f"{total} 字段在 {len(rows)} 种取数情形下均可对账（{'、'.join(rows)}）；取数降级字段显式列为 source 缺口"
+
+
+def a20_fallback_traceable_and_peer_anchor_gated() -> str:
+    """兜底源必须留痕；同业锚不可比时不得折算成单点价位。
+
+    两条都是"不许装作有数据"的延伸：
+    - 数据来自兜底源（新浪）时，字段来源必须写出来，不能仍标东财；
+    - 同业中位数只在 0.5–2 倍可比区间内才折价，否则等于用一个不同生意的锚定价格。
+    """
+    from stockframe import autobuild
+    from stockframe.valuation import run_relative
+
+    # 1) K 线来自新浪 → 来源留痕、换手率用流通股本现算
+    raw = raw_fixture()
+    raw["kline"] = [{**k, "vendor": "sina", "turnover": None} for k in raw["kline"]]
+    raw["valuation_hist"][-1]["free_shares"] = 4.0e8
+    out = autobuild.build(raw, "2026-10-23")
+    turn = out["input"]["data"]["market"].get("turnover_pct", {})
+    assert "新浪" in turn.get("source", ""), f"兜底源未留痕：{turn.get('source')}"
+    deriv = {x["field_id"]: x for x in out["fill"]["derivations"]}
+    assert "流通 A 股" in deriv["market.turnover_pct"]["formula"], "换手率分母必须是流通股"
+
+    # 2) 同业锚：可比时给价位，不可比时必须为 null
+    near = run_relative("PE", current=28.5, pctile=42, hist_p25=22, hist_p75=35,
+                        eps_ttm=1.14, peer_median=31, fwd_growth_pct=None)["peer_anchor"]
+    assert near["comparable"] and near["implied_price"], "可比区间内应给出折算价位"
+    far = run_relative("PE", current=11.6, pctile=0, hist_p25=22, hist_p75=35,
+                       eps_ttm=1.14, peer_median=31.75, fwd_growth_pct=None)["peer_anchor"]
+    assert not far["comparable"] and far["implied_price"] is None, "倍数不可比却折算了价位"
+
+    return (f"兜底源留痕（{turn.get('source', '')[:24]}…）、换手率按流通股计算；"
+            f"同业锚 28.5/31 倍可比→{near['implied_price']}，11.6/31.8 倍不可比→不给点位")
+
+
+def a21_rate_10y_pit_and_no_extrapolation() -> str:
+    """10Y 利率同比必须走中债日频序列：只看已发布的点、缺一年前锚点就留空。
+
+    三个容易翻车的点各钉一条：
+    - 当日曲线是日终估值，asof 当天不可用（宁可晚一天，也不能用未来数据）；
+    - 一年前锚点找不到时必须留空，不能拿半年前的点冒充"一年前"；
+    - 时间戳按北京时间解析，否则整条序列错一天。
+    """
+    from datetime import date, datetime, timedelta, timezone
+
+    from stockframe import autobuild
+    from stockframe.sources.chinabond import ChinaBondProvider
+
+    cn = timezone(timedelta(hours=8))
+    ms = lambda d: int(datetime(d.year, d.month, d.day, tzinfo=cn).timestamp() * 1000)
+
+    def serve(points):
+        series = [[ms(d), v] for d, v in points]
+        return lambda url: [{"ycDefName": "10年", "worktime": "2026-10-22",
+                             "seriesData": series}]
+
+    pts = [(date(2025, 10, 22), 1.8293), (date(2026, 10, 21), 1.6412),
+           (date(2026, 10, 22), 1.6414)]
+    p = ChinaBondProvider(http=serve(pts))
+
+    # 1) 时点：asof=10-22 只能看到 10-21（10-22 的曲线次日才可用）
+    d22 = p.yield_10y("2026-10-22")
+    assert d22["date"] == "2026-10-21", f"用了当日尚未发布的曲线：{d22['date']}"
+    assert d22["available_at"] > d22["date"], "available_at 必须晚于数据日"
+    d23 = p.yield_10y("2026-10-23")
+    assert d23["date"] == "2026-10-22" and d23["value"] == 1.6414, "次日应能看到最新曲线"
+
+    # 2) 同比可复算，且一年前锚点确实来自一年前
+    assert abs(d23["chg_bp"] - (d23["value"] - d23["prev_value"]) * 100) < 0.05, "chg_bp 与两点之差不等"
+    assert d23["prev_date"] == "2025-10-22", f"一年前锚点错位：{d23['prev_date']}"
+
+    # 3) 缺锚点 → 留空，不许插值
+    lonely = ChinaBondProvider(http=serve([(date(2025, 3, 3), 1.9), (date(2026, 10, 21), 1.64)]))
+    assert lonely.yield_10y("2026-10-23") is None, "缺一年前锚点却给了值（插值/外推）"
+
+    # 4) 落到报告：来源为中债、归为观测值而非代理
+    raw = raw_fixture()
+    raw["rate_10y"] = d23
+    out = autobuild.build(raw, "2026-10-23")
+    assert out["input"]["data"]["macro"]["rate_10y_chg_yoy"]["value"] == d23["chg_bp"]
+    assert "中债" in out["input"]["data"]["macro"]["rate_10y_chg_yoy"]["source"]
+    assert "macro.rate_10y_chg_yoy" not in out["fill"]["proxied"]["proxy"], "观测值不得标为代理"
+
+    return (f"10-22 时点只见 10-21（次日可用）；同比 {d23['chg_bp']:+.1f}bp 可复算；"
+            f"缺锚点返回空不插值；报告中来源为中债、性质为观测值")
+
+
+def a22_customer_annual_channel() -> str:
+    """客户集中度：走年报原文，能取到什么程度、取不到怎么办，三条边界都钉住。
+
+    这一项换过三次形态，最后落在年报通道上，所以要防的是三种回退：
+    1. 又去接要付费令牌的商用 API（那是"配个环境变量就能用"的死代码，会让人以为
+       已经自动化了，于是不再读年报）；
+    2. 把"前五名合计"当"最大一家"填进去（宁德 38.96% vs 13.73%，会直接把风险档顶上去）；
+    3. 顺手把公告日晚于分析时点的年报拿来用（PIT 直接失效）。
+    """
+    from stockframe import autobuild
+    from stockframe.sources.cninfo import CninfoProvider
+    from stockframe.sources.eastmoney import EastmoneyProvider
+
+    FID = "company.customer_concentration"
+    ASOF = "2026-10-23"
+
+    # 1) 通道是年报原文，不是令牌接口；离线时能整体关掉
+    p = EastmoneyProvider(http=lambda url: {}, bond=False, cninfo=False)
+    assert getattr(p, "_cninfo", None) is None
+    assert hasattr(CninfoProvider(), "annual_customer")
+
+    def block(**kw):
+        raw = raw_fixture()
+        base = {"form": "table", "top_ratio": 13.73, "five_ratio": 38.96,
+                "period": "2025-12-31", "notice_date": "2026-03-10",
+                "title": "宁德时代 2025 年年度报告", "page": 28, "rows": 5,
+                "denominator": "年度销售总额", "top_name": "第一名",
+                "cross_check": {"sum_ratio": 38.96, "total_ratio": 38.96, "ok": True}}
+        base.update(kw)
+        raw["customer"] = base
+        return raw
+
+    # 2) 有单客户占比 → 观测值 L1，且不再出现在待补清单
+    out = autobuild.build(block(), ASOF)
+    f = out["input"]["data"]["company"]["customer_concentration"]
+    assert f["value"] == 13.73 and f["source_tier"] == "L1", f"应为 L1 观测值：{f}"
+    assert f["as_of"] == "2025-12-31" and f["available_at"] == "2026-03-10", \
+        "数据期取年报期末、可用时点取年报公告日，不能记成分析当日"
+    assert "巨潮" in f["source"]
+    assert [g for g in out["fill"]["pending"] if FID in g["fields"]] == []
+    deriv = next(d for d in out["fill"]["derivations"] if d["field_id"] == FID)
+    assert "第 28 页" in deriv["formula"] and "交叉校验" in deriv["note"]
+
+    # 3) 只有前五合计 → 不填值，把上界写进缺口说明
+    out2 = autobuild.build(block(form="total_only", top_ratio=None, five_ratio=10.10,
+                                 rows=0, page=11, cross_check=None), ASOF)
+    assert "customer_concentration" not in out2["input"]["data"]["company"], \
+        "前五合计不是最大客户，不许当值填进去"
+    g2 = next(g for g in out2["fill"]["pending"] if FID in g["fields"])
+    assert g2["kind"] == "judgement" and "10.1" in g2["why"] and "不超过" in g2["why"]
+
+    # 4) 年报里根本没这项（银行/保险）→ 仍然是一条普通判断项，不是报错
+    out3 = autobuild.build(block(form="absent", top_ratio=None, five_ratio=None,
+                                 rows=0, page=None, reason="年报正文无该项披露"), ASOF)
+    g3 = next(g for g in out3["fill"]["pending"] if FID in g["fields"])
+    assert g3["kind"] == "judgement" and "没有这项披露" in g3["why"]
+
+    # 5) PIT：公告日晚于分析时点的年报一个字都不能用
+    out4 = autobuild.build(block(notice_date="2027-03-10"), ASOF)
+    assert "customer_concentration" not in out4["input"]["data"]["company"]
+    assert any(FID in g["fields"] for g in out4["fill"]["pending"])
+
+    return ("通道=巨潮年报原文（无令牌）；单客户占比→L1、退出待补清单、推导带页码与校验；"
+            "只有前五合计→不填值、缺口写上界；无披露→回落判断项；公告日晚于时点→不用")
+
+
+def a24_annual_parser_discipline() -> str:
+    """年报解析的纪律：宁可判"不认"，也不许把错的数填进评分。
+
+    四种披露形态实测覆盖 9 家（表 5 / 文字段 1 / 只有合计 2 / 无此表 1），这里各钉一例。
+    最容易出事的两处是**金额列被当成占比列**（错位）和**把前五合计当最大一家**：
+    前者靠交叉校验挡，后者靠 usable 挡。
+    """
+    from stockframe.sources.cninfo import parse_customer_section
+
+    table = ("公司前 5大客户资料 序号 客户名称 销售额（千元） 占年度销售总额比例 "
+             "1 第一名 58,159,202 13.73% 2 第二名 47,127,609 11.12% "
+             "3 第三名 30,201,701 7.13% 4 第四名 15,419,319 3.64% "
+             "5 第五名 14,153,702 3.34% 合计 -- 165,061,533 38.96%")
+    d = parse_customer_section(table)
+    assert d and d.form == "table" and d.top_ratio == 13.73 and d.rows == 5
+    assert d.cross_check["ok"] and abs(d.cross_check["sum_ratio"] - 38.96) < 0.06
+
+    # 单位换成元/万元，占比不能跟着变（这是当初差十倍的老坑）
+    for unit in ("元", "万元"):
+        alt = table.replace("（千元）", "（%s）" % unit)
+        assert parse_customer_section(alt).top_ratio == 13.73, "单位 %s 影响了占比" % unit
+
+    # 表格跨页断成 4 行：最大客户仍在第 1 行，不许因为"不齐"就整张丢掉
+    partial = ("公司前 5大客户资料 序号 客户名称 销售额（元） 占年度销售总额比例 "
+               "1 第一名 10,119,088,327.50 5.91% 2 第二名 5,922,757,391.80 3.46% "
+               "3 第三名 3,999,596,480.24 2.34% 4 第四名 2,478,843,997.90 1.45% "
+               "合计 -- 24,647,540,609.21 14.40%")
+    dp = parse_customer_section(partial)
+    assert dp.form == "table" and dp.top_ratio == 5.91 and dp.rows == 4
+    assert dp.cross_check["rule"] == "partial_rows"
+
+    # 列错位（合计对不上）→ 判不一致，值为空
+    broken = table.replace("合计 -- 165,061,533 38.96%", "合计 -- 165,061,533 83.96%")
+    db = parse_customer_section(broken)
+    assert db.form == "table_inconsistent" and db.top_ratio is None and not db.usable
+
+    # 文字段：给"第一名 X%"但分母是主营业务收入，口径必须跟着走
+    sent = ("本报告期内，第一名和前五名客户销售额分别占年度主营业务收入的 8.0%和 35.8%；"
+            "其中前五名客户交易中无关联方销售。")
+    ds = parse_customer_section(sent)
+    assert ds.form == "sentence" and ds.top_ratio == 8.0 and "主营业务收入" in ds.denominator
+
+    # 只有前五合计 → usable=False，谁都不许拿它当最大客户
+    only = ("前五名客户销售额1,704,578.78万元，占年度销售总额10.10%；"
+            "其中前五名客户销售额中关联方销售额0万元。")
+    do = parse_customer_section(only)
+    assert do.form == "total_only" and do.five_ratio == 10.1 and not do.usable
+
+    # 只是附注里顺带提到"前五名客户"，不是集中度表 → 什么都不给
+    assert parse_customer_section(
+        "财务报表附注 本行前五名客户存款余额合计占各项存款的比例不重大。") is None
+
+    return ("表→13.73%（五行之和=合计 38.96，校验通过）；元/万元不改占比；跨页 4 行仍取第 1 名 5.91%；"
+            "列错位→判不一致不填；文字段保留主营业务收入口径 8.0%；只有合计→usable=False；无关页→None")
+
+
+def a23_cadence_matches_disclosure_rhythm() -> str:
+    """披露节奏与统计口径必须分开：季度更新的字段 vs 一年只披露一次的字段。
+
+    为什么单列一条：把年报口径的字段按季频衡量，会得出"年报公布三个月后就超期"的结论，
+    于是这个字段一年里只有几个月算"新鲜"——看起来像"取不到"，其实是尺子用错了。
+    同理，EPS(TTM) 的分子来自定期报告，不能用日频去卡。
+    """
+    from stockframe import autobuild
+    from stockframe.datadict import FIELD_SPECS
+    from stockframe.engine import run
+
+    specs = {s.field_id: s for s in FIELD_SPECS}
+    FID = "company.customer_concentration"
+    ASOF = "2026-10-23"
+
+    annual = [s.field_id for s in FIELD_SPECS if s.annual]
+    assert annual == [FID], f"年报口径字段登记有变，需同步本条验收：{annual}"
+    assert specs[FID].update_days >= 365, \
+        f"年报口径字段的周期是 {specs[FID].update_days} 天，应是 ≥365"
+    for fid in ("valuation.eps_ttm", "financial.roe_ttm"):
+        assert specs[fid].update_days >= 90, f"{fid} 按日频衡量会误判超期"
+    assert specs["market.price_close"].update_days == 1, "行情才是真日频"
+
+    out = autobuild.build(raw_fixture(), ASOF)
+    f = out["fill"]
+    ao = f["as_of"]
+    assert ao["latest_report_period"] != ao["latest_annual_period"], \
+        "两把尺子必须分开给：最新报告期(季) ≠ 最近一期已公告年报"
+    assert ao["latest_annual_period"].endswith("12-31")
+    assert ao["latest_annual_notice"] <= ASOF, "年报公告日不得晚于分析时点（前视）"
+    assert f["annual_fields"] == [FID]
+
+    warn = next(w for w in f["warnings"] if "非完整年度" in w)
+    assert ao["latest_annual_period"] in warn and "滞后一年内属正常" in warn, \
+        f"告警要说清年报口径字段不随季报前移：{warn[:100]}"
+
+    inp = out["input"]
+    inp["data"].setdefault("company", {})["customer_concentration"] = {
+        "value": 18.5, "as_of": ao["latest_annual_period"],
+        "available_at": ao["latest_annual_notice"], "period_end": ao["latest_annual_period"],
+        "source": "人工研究判断（界面录入）", "source_tier": "L3",
+    }
+    dq = run(inp)["data_quality"]
+    stale = next((n for n in dq["notes"] if n.startswith("数据超期项")), "")
+    assert FID not in stale, f"年报口径被判超期：{stale[:120]}"
+    assert any("只在年报披露" in n for n in dq["notes"]), "数据质量说明要标注该字段的年报口径"
+
+    return (f"最新报告期 {ao['latest_report_period']}（季）与最近年报 {ao['latest_annual_period']} "
+            f"（{ao['latest_annual_notice']} 公告）分开给；年报口径周期 {specs[FID].update_days} 天，"
+            "填报后不进超期项；EPS(TTM) 92 天不再按日频误判")
+
+
+def _partial_payload_shape_ok(payload: dict) -> bool:
+    return all(k in payload for k in ("stock", "analysis_date", "input", "fill")) and bool(payload["stock"].get("code"))
+def a25_text_judgement_roundtrip() -> str:
+    """文本型判断项（一句话本质）的录入通路必须完整。
+
+    曾经的 bug：该字段被渲染成数字输入框、提交时 Number("一句话")=NaN 被静默跳过，
+    用户填了内容却收到"尚未填写任何判断项"。要守三件事：
+    1. 字段登记为"文本"（前端区分文本/数值输入的唯一依据）；
+    2. 界面代码有文本分支（type=text 的输入框 + 提交时不做数字转换）；
+    3. engine 端字符串 value 畅通：结论首句输出原话，空串仍算未填。
+    """
+    from stockframe import autobuild
+    from stockframe.datadict import FIELD_SPECS
+    from stockframe.engine import run
+
+    spec = next(s for s in FIELD_SPECS if s.field_id == "company.logic_essence")
+    assert spec.unit == "文本", f"应为文本字段：unit={spec.unit!r}"
+
+    html = (ROOT / "web" / "index.html").read_text(encoding="utf-8")
+    assert 'unit==="文本"' in html, "judgeRow 缺文本分支：文本字段会被渲染成数字输入框"
+    assert 'data-text="1"' in html, "文本输入框缺 data-text 标记"
+    assert 'dataset.text==="1"' in html, "applyJudgement 缺文本识别：文字会被 Number() 吞掉"
+    assert "文本）" in html, "录入来源应标注文本形态"
+
+    out = autobuild.build(raw_fixture(), "2026-10-23")
+    inp = out["input"]
+    sentence = "全球动力电池龙头，量增与储能第二曲线撑住龙头溢价"
+    inp["data"].setdefault("company", {})["logic_essence"] = {
+        "value": sentence, "as_of": "2026-10-23", "available_at": "2026-10-23",
+        "source": "人工研究判断（界面录入·文本）", "source_tier": "L3",
+    }
+    rep = run(inp)
+    assert sentence in rep["conclusion"]["summary"], "录入的一句话必须进结论首句"
+    assert "未填：需人工补一句逻辑内核" not in rep["conclusion"]["summary"]
+
+    # 空串不是有效录入：不能把空串当已填
+    inp["data"]["company"]["logic_essence"]["value"] = ""
+    rep2 = run(inp)
+    assert "未填：需人工补一句逻辑内核" in rep2["conclusion"]["summary"], \
+        "空串应视为未填"
+
+    return ("logic_essence 登记为文本；界面渲染 type=text 并按字符串提交；"
+            "录入后结论首句即原话；空串仍判未填")
+
+
+def main() -> int:
+    check("A1", "单元测试全绿", a1_unit_tests)
+    check("A2", "样例管线跑通且通过 schema", a2_pipeline_and_schema)
+    check("A3", "确定性重跑 & 样例报告同步", a3_deterministic_rerun)
+    check("A4", "无买卖/点位措辞", a4_no_banned_language)
+    check("A5", "PIT 时点与来源纪律", a5_pit_guard)
+    check("A6", "评分可追溯（rationale+证据四要素）", a6_traceability)
+    check("A7", "反指标堆砌（因子≤3/指标≤4/量规≥4档）", a7_anti_piling)
+    check("A8", "结论条件化（维持≥3/证伪≥3）", a8_conditional_conclusion)
+    check("A9", "决策门槛（红旗/必填/特殊状态）", a9_decision_gates)
+    check("A10", "情景概率自洽", a10_probability_gate)
+    check("A11", "文档与代码同源（评分说明）", a11_doc_code_consistency)
+    check("A12", "数据字典登记完整", a12_data_dictionary_complete)
+    check("A13", "界面与样例同源（无界面漂移）", a13_ui_synced)
+    check("A14", "接口与引擎同口径（薄壳）", a14_api_parity)
+    check("A15", "自动取数受 PIT 约束（不用未披露报告）", a15_autofetch_pit)
+    check("A16", "证据覆盖闸门（缺维度不出正式分桶）", a16_coverage_gate)
+    check("A17", "自动假设不可行时拒绝并交还半成品", a17_infeasible_returns_partial)
+    check("A18", "判断层代理可复算且可被人工覆盖", a18_proxy_traceable_and_overridable)
+    check("A19", "字段清单可对账（已填+待补=字典）", a19_field_ledger_reconciles)
+    check("A20", "兜底源留痕 + 同业锚可比性闸门", a20_fallback_traceable_and_peer_anchor_gated)
+    check("A21", "10Y 利率同比的时点与不可插值", a21_rate_10y_pit_and_no_extrapolation)
+    check("A22", "客户集中度：年报原文自动取，取不到回落判断项", a22_customer_annual_channel)
+    check("A23", "披露节奏与统计口径分离（年报字段不按季频衡量）", a23_cadence_matches_disclosure_rhythm)
+    check("A24", "年报解析纪律（错位/跨页/单位/分母/只有合计）", a24_annual_parser_discipline)
+    check("A25", "文本判断项录入通路（一句话本质不被当数字吞掉）", a25_text_judgement_roundtrip)
+
+    width = max(len(t) for _, t, _, _ in results) + 2
+    print("=" * 78)
+    print(f"{'ID':<5}{'检查项'.ljust(width)}结果")
+    print("-" * 78)
+    failed = 0
+    for cid, title, ok, detail in results:
+        print(f"{cid:<5}{title.ljust(width)}{'PASS' if ok else 'FAIL'}")
+        if detail:
+            print(f"     └─ {detail}")
+        if not ok:
+            failed += 1
+    print("=" * 78)
+    print(f"合计 {len(results)} 项，通过 {len(results) - failed}，失败 {failed}")
+    return 0 if failed == 0 else 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

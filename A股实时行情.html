@@ -403,9 +403,9 @@ const INDEXES = [
   { secid:'1.000688', name:'科创50',  code:'000688' },
 ];
 const SECTOR_FIELDS = 'f12,f14,f2,f3,f6,f62,f66,f72,f78,f84,f104,f105,f128,f140,f164,f174';
-const SPARK_EVERY = 3;           // 指数迷你分时每 3 轮刷新一次
+const SPARK_EVERY = 2;           // 指数迷你分时每 2 轮刷新一次
 const FLOW_EVERY = 2;            // 两市资金分时每 2 轮刷新一次
-const INDUSTRY_GAP = 180;         // 行业板块数据固定 180 秒（3 分钟）更新一次：与页面刷新周期（15/30/60 秒）解耦，数据不完整时下轮强制补拉
+const INDUSTRY_GAP = 120;         // 行业板块数据固定 120 秒（2 分钟）更新一次：与页面刷新周期（15/30/60 秒）解耦，数据不完整时下轮强制补拉
 const MKT_FLOW = ['1.000001', '0.399106'];   // 两市资金口径：上证指数（沪全样本）+ 深证综指（深全样本）
 
 /* 行业层级映射（申万体系 1=一级 2=二级 3=三级，key=板块代码）
@@ -1014,6 +1014,13 @@ function renderTrend(data, animate) {
   trendPts = pts;
   trendPre = num(data.preClose ?? data.prePrice) ?? (pts.length ? pts[0].p : null);
   if (!pts.length) return;
+  /* 指数修正：trends2 第 4 字段（f58）对指数为累计成交额而非均价（单调递增、半日可偏离价格 40+ 点），
+     直接当均价画线会飞出图顶形成「被拉高」视觉；指数改用逐分钟 Σ(p×v)/Σ(v) 自算均价线。
+     行业/个股 f58 为交易所真实均价，紧贴价格曲线，直接沿用 */
+  if (!state.selected.isSector) {
+    let cpv = 0, cv = 0;
+    pts.forEach(pt => { const v = pt.v || 0; cpv += pt.p * v; cv += v; pt.avg = cv > 0 ? cpv / cv : pt.p; });
+  }
   const s = state.selected;
   $('#chartTitle').childNodes[0].textContent = s.name + (s.isSector ? '' : '');
   $('#chartTag').hidden = !s.isSector;
@@ -1140,13 +1147,15 @@ function bindCross(svg, tip, pts, pre) {
     const pct = pre ? (pt.p / pre - 1) * 100 : null;
     tip.innerHTML = `<b>${esc(pt.t)}</b><br>价格 <b class="${cls3(pct)}">${fmt2(pt.p)}</b> <span class="${cls3(pct)}">${fmtPct(pct)}</span><br>均价 <span style="color:#8e8e93">${fmt2(pt.avg)}</span><br>成交量 ${(pt.v ?? 0).toLocaleString()} 手`;
     tip.classList.add('on');
-    const tw = tip.offsetWidth, th = tip.offsetHeight;
-    let left = px + 14;
-    if (left + tw > rect.width - 6) left = px - tw - 14;
-    let top = (y * rect.height / 430) - th / 2;
-    top = Math.max(4, Math.min(rect.height - th - 4, top));
-    tip.style.left = left + 'px';
-    tip.style.top = top + 'px';
+    /* 面板固定于绘图区顶部、永远让位于十字线：鼠标左半区→面板贴绘图区右缘，右半区→贴左缘
+       （十字线全高贯穿，跟随光标的同侧面板必然遮住位置线；固定顶部避免随价格点跳动） */
+    const sc = rect.width / 920, wr = wrapEl.getBoundingClientRect(), offX = rect.left - wr.left;
+    const tw = tip.offsetWidth;
+    const plotMid = offX + (trendGeom.L + trendGeom.plotW / 2) * sc;
+    tip.style.left = (offX + gx * sc < plotMid
+      ? offX + (trendGeom.L + trendGeom.plotW) * sc - tw - 6      /* 左半区 → 贴右缘 */
+      : offX + trendGeom.L * sc + 6) + 'px';                       /* 右半区 → 贴左缘 */
+    tip.style.top = (rect.top - wr.top + trendGeom.T * sc) + 'px'; /* 与绘图区上缘对齐 */
   }
   function onLeave() { svg.querySelector('#crossG').style.display = 'none'; tip.classList.remove('on'); }
   wrapEl.onmousemove = onMove;

@@ -1,0 +1,210 @@
+{
+  "_note": "演示输入：标的公司为虚构（XX0000.DEMO），全部数据为演示数据，仅用于展示框架管线与报告格式，不对应任何真实公司。真实使用时按数据字典替换 data/risks/catalysts，并保证全部字段带 as_of/available_at/source/source_tier。",
+  "meta": {
+    "stock": {
+      "name": "华晟精工（示例·虚构演示标的）",
+      "code": "XX0000.DEMO",
+      "exchange": "SH（演示）",
+      "currency": "CNY"
+    },
+    "analysis_date": "2026-10-22",
+    "company_type": "steady_growth",
+    "relative_valuation_metric": "PE",
+    "generated_at": "2026-10-23T06:30:00+08:00",
+    "flags": {
+      "st": false,
+      "audit_qualified": false,
+      "regulatory_investigation": false,
+      "major_fraud_red_flag": false,
+      "suspended": false,
+      "restructuring": false,
+      "new_listing_under_1y": false
+    },
+    "red_flags": []
+  },
+  "data": {
+    "market": {
+      "price_close": {"value": 32.5, "as_of": "2026-10-22", "available_at": "2026-10-22", "source": "演示行情库（收盘价）", "source_tier": "L2"},
+      "pe_ttm": {"value": 28.5, "as_of": "2026-10-22", "available_at": "2026-10-22", "source": "演示行情库（PE-TTM）", "source_tier": "L2"},
+      "pb": {"value": 3.8, "as_of": "2026-10-22", "available_at": "2026-10-22", "source": "演示行情库（PB）", "source_tier": "L2"},
+      "pctile_pe_10y": {"value": 42, "as_of": "2026-10-22", "available_at": "2026-10-22", "source": "演示估值数据库（近10年，窗口 2016-10 至 2026-10）", "source_tier": "L2"},
+      "pctile_pb_10y": {"value": 55, "as_of": "2026-10-22", "available_at": "2026-10-22", "source": "演示估值数据库（近10年，窗口 2016-10 至 2026-10）", "source_tier": "L2"},
+      "turnover_pct": {"value": 3.2, "as_of": "2026-10-22", "available_at": "2026-10-22", "source": "演示行情库（日换手率）", "source_tier": "L2"},
+      "vol_ratio_20d": {"value": 1.25, "as_of": "2026-10-22", "available_at": "2026-10-22", "source": "演示行情库（20日均量比）", "source_tier": "L2"},
+      "dist_ma250": {"value": 8.5, "as_of": "2026-10-22", "available_at": "2026-10-22", "source": "演示行情库（收盘价/MA250-1）", "source_tier": "L2"},
+      "drawdown_52w": {"value": 12.0, "as_of": "2026-10-22", "available_at": "2026-10-22", "source": "演示行情库（距52周高点回撤）", "source_tier": "L2"},
+      "inst_hold_chg_pct": {"value": 3.5, "as_of": "2026-09-30", "available_at": "2026-10-22", "period_end": "2026-09-30", "source": "演示基金持仓数据库（基金三季报披露）", "source_tier": "L2"}
+    },
+    "macro": {
+      "m1_yoy": {"value": 6.2, "as_of": "2026-09-30", "available_at": "2026-10-15", "period_end": "2026-09-30", "source": "演示央行金融统计（M1 同比）", "source_tier": "L1"},
+      "rate_10y_chg_yoy": {"value": -25, "as_of": "2026-10-20", "available_at": "2026-10-20", "source": "演示债券数据库（10Y 国债收益率同比变化，bp）", "source_tier": "L2"},
+      "pmi": {"value": 50.6, "as_of": "2026-09-30", "available_at": "2026-09-30", "source": "演示统计局制造业 PMI", "source_tier": "L1"},
+      "policy_stance": {"value": 4, "as_of": "2026-10-01", "available_at": "2026-10-01", "source": "演示政策取向评估底稿（政策→行业→公司传导核对）", "source_tier": "L3"}
+    },
+    "industry": {
+      "industry_growth": {"value": 14, "as_of": "2026-09-30", "available_at": "2026-10-10", "source": "演示行业研究（精密零部件行业营收增速）", "source_tier": "L3"},
+      "price_trend": {"value": 4, "as_of": "2026-09-30", "available_at": "2026-10-10", "source": "演示行业研究（量价趋势档，1-5 档对应 -2..+2）", "source_tier": "L3"},
+      "stage": {"value": 4, "as_of": "2026-09-30", "available_at": "2026-10-10", "source": "演示行业研究（生命周期档）", "source_tier": "L3"},
+      "concentration": {"value": 4, "as_of": "2026-09-30", "available_at": "2026-10-10", "source": "演示行业研究（格局与公司卡位档）", "source_tier": "L3"},
+      "penetration_space": {"value": 4, "as_of": "2026-09-30", "available_at": "2026-10-10", "source": "演示行业研究（渗透空间档）", "source_tier": "L3"}
+    },
+    "company": {
+      "moat": {"value": 4, "as_of": "2026-10-20", "available_at": "2026-10-20", "source": "演示研究底稿（护城河锚定量表评档：技术专利+客户认证）", "source_tier": "L3"},
+      "mgmt_record": {"value": 4, "as_of": "2026-10-20", "available_at": "2026-10-20", "source": "演示研究底稿（管理层记录锚定量表）", "source_tier": "L3"},
+      "pledge_pct": {"value": 12, "as_of": "2026-10-18", "available_at": "2026-10-18", "source": "演示交易所披露（大股东质押比例）", "source_tier": "L1"},
+      "logic_strength": {"value": 4, "as_of": "2026-10-20", "available_at": "2026-10-20", "source": "演示研究底稿（核心逻辑与预期差评档）", "source_tier": "L3"},
+      "logic_essence": {"value": "买的是人形机器人零部件从 0 到 1 的份额兑现，叠加产能爬坡带来的毛利率中枢抬升", "as_of": "2026-10-20", "available_at": "2026-10-20", "source": "演示研究底稿（一句话本质）", "source_tier": "L3"},
+      "customer_concentration": {"value": 22, "as_of": "2026-06-30", "available_at": "2026-08-28", "period_end": "2026-06-30", "source": "演示公司 2026 年中报（最大客户收入占比）", "source_tier": "L1"}
+    },
+    "financial": {
+      "roe_ttm": {"value": 16.5, "as_of": "2026-06-30", "available_at": "2026-08-28", "period_end": "2026-06-30", "source": "演示公司 2026 年中报（ROE-TTM）", "source_tier": "L1"},
+      "roic": {"value": 13.5, "as_of": "2026-06-30", "available_at": "2026-08-28", "period_end": "2026-06-30", "source": "演示公司 2026 年中报（ROIC-TTM，计算口径见底稿）", "source_tier": "L1"},
+      "wacc_assumed": {"value": 9.5, "as_of": "2026-10-20", "available_at": "2026-10-20", "source": "演示研究假设（WACC，与 DCF 假设一致性核对）", "source_tier": "L3"},
+      "ocf_np_ratio": {"value": 0.95, "as_of": "2026-06-30", "available_at": "2026-08-28", "period_end": "2026-06-30", "source": "演示公司 2026 年中报（经营现金流净额/归母净利，TTM）", "source_tier": "L1"},
+      "wc_growth_gap": {"value": 3.5, "as_of": "2026-06-30", "available_at": "2026-08-28", "period_end": "2026-06-30", "source": "演示公司 2026 年中报（(应收+存货)增速-营收增速，pp）", "source_tier": "L1"},
+      "rev_growth": {"value": 22, "as_of": "2026-06-30", "available_at": "2026-08-28", "period_end": "2026-06-30", "source": "演示公司 2026 年中报（营收同比）", "source_tier": "L1"},
+      "np_growth": {"value": 26, "as_of": "2026-06-30", "available_at": "2026-08-28", "period_end": "2026-06-30", "source": "演示公司 2026 年中报（归母净利同比）", "source_tier": "L1"},
+      "gm_trend": {"value": 1.2, "as_of": "2026-06-30", "available_at": "2026-08-28", "period_end": "2026-06-30", "source": "演示公司 2026 年中报（毛利率同比变化，pp）", "source_tier": "L1"},
+      "int_debt_ratio": {"value": 28, "as_of": "2026-06-30", "available_at": "2026-08-28", "period_end": "2026-06-30", "source": "演示公司 2026 年中报（有息负债/总资产）", "source_tier": "L1"},
+      "goodwill_pct": {"value": 8, "as_of": "2026-06-30", "available_at": "2026-08-28", "period_end": "2026-06-30", "source": "演示公司 2026 年中报（商誉/净资产）", "source_tier": "L1"}
+    },
+    "valuation": {
+      "eps_ttm": {"value": 1.14, "as_of": "2026-10-22", "available_at": "2026-10-22", "source": "演示行情库（EPS-TTM）", "source_tier": "L2"},
+      "peer_pe_median": {"value": 31, "as_of": "2026-10-20", "available_at": "2026-10-20", "source": "演示同业研究（可比公司 PE-TTM 中位数，自然年口径对齐）", "source_tier": "L3"},
+      "pe_hist_p25": {"value": 22, "as_of": "2026-10-22", "available_at": "2026-10-22", "source": "演示估值数据库（近10年 PE P25，窗口 2016-10 至 2026-10）", "source_tier": "L2"},
+      "pe_hist_p75": {"value": 35, "as_of": "2026-10-22", "available_at": "2026-10-22", "source": "演示估值数据库（近10年 PE P75，窗口 2016-10 至 2026-10）", "source_tier": "L2"}
+    }
+  },
+  "assumptions": {
+    "_kind": "assumption（预测/假设数据，与实际数据严格隔离；报告中标注为假设）",
+    "eps_fwd": {"base": 1.38, "optimistic": 1.55, "pessimistic": 1.10},
+    "scenario_probabilities": {"optimistic": 0.25, "base": 0.5, "pessimistic": 0.25},
+    "dcf": {
+      "base": {
+        "wacc": 0.095, "terminal_growth": 0.025,
+        "revenue_growth_path": [0.22, 0.18, 0.15, 0.12, 0.10],
+        "ebit_margin_path": [0.16, 0.17, 0.18, 0.185, 0.19],
+        "tax_rate": 0.15, "dep_amort_pct_rev": 0.045, "capex_pct_rev": 0.065, "nwc_pct_rev_delta": 0.012,
+        "revenue_base": 18.5, "net_debt": -2.5, "shares": 1.62
+      },
+      "optimistic": {
+        "wacc": 0.09, "terminal_growth": 0.03,
+        "revenue_growth_path": [0.30, 0.25, 0.22, 0.18, 0.15],
+        "ebit_margin_path": [0.17, 0.185, 0.20, 0.21, 0.22],
+        "tax_rate": 0.15, "dep_amort_pct_rev": 0.045, "capex_pct_rev": 0.07, "nwc_pct_rev_delta": 0.012,
+        "revenue_base": 18.5, "net_debt": -2.5, "shares": 1.62
+      },
+      "pessimistic": {
+        "wacc": 0.105, "terminal_growth": 0.02,
+        "revenue_growth_path": [0.12, 0.08, 0.06, 0.05, 0.04],
+        "ebit_margin_path": [0.15, 0.145, 0.14, 0.135, 0.13],
+        "tax_rate": 0.15, "dep_amort_pct_rev": 0.045, "capex_pct_rev": 0.06, "nwc_pct_rev_delta": 0.01,
+        "revenue_base": 18.5, "net_debt": -2.5, "shares": 1.62
+      }
+    },
+    "scenario_notes": {
+      "optimistic": {
+        "key_assumptions": ["机器人客户量产爬坡超预期，公司份额提升至 35%+", "毛利率中枢上移至 20% 以上"],
+        "drivers": ["人形机器人产业链 0→1", "产能利用率与规模效应"],
+        "falsification": "头部客户量产计划推迟或砍单 → 乐观情景失效"
+      },
+      "base": {
+        "key_assumptions": ["机器人业务按客户指引放量，公司份额维持 30% 附近", "毛利率每年中枢改善约 1pp"],
+        "drivers": ["机器人零部件放量", "规模效应+良率提升"],
+        "falsification": "季度机器人业务收入增速连续两季低于 50% → 基准情景失效"
+      },
+      "pessimistic": {
+        "key_assumptions": ["行业量产节奏不及预期，价格年降超过 5%", "产能爬坡缓慢拖累毛利率回落至 13%"],
+        "drivers": ["行业 β 不足", "价格竞争"],
+        "falsification": "行业排产数据重回高增长 → 悲观情景失效"
+      }
+    }
+  },
+  "risks": [
+    {
+      "id": "R1", "name": "大客户资本开支放缓", "category": "customer_concentration",
+      "probability": 3, "impact": 4,
+      "trigger": {"metric": "大客户季报资本开支指引/排产数据", "threshold": "同比转负"},
+      "mitigation": "跟踪大客户指引与在手订单；新客户导入分散",
+      "evidence": "演示客户公告与排产数据（L1/L3）"
+    },
+    {
+      "id": "R2", "name": "机器人量产进度不及预期", "category": "demand",
+      "probability": 3, "impact": 3,
+      "trigger": {"metric": "季度机器人业务收入增速", "threshold": "< 50%"},
+      "mitigation": "跟踪行业排产与客户上量节点",
+      "evidence": "演示行业研究（L3）"
+    },
+    {
+      "id": "R3", "name": "行业价格竞争加剧", "category": "competition",
+      "probability": 2, "impact": 3,
+      "trigger": {"metric": "核心产品单价年降幅度", "threshold": "> 5%"},
+      "mitigation": "高壁垒产品占比提升；长协锁定",
+      "evidence": "演示行业研究（L3）"
+    },
+    {
+      "id": "R4", "name": "汇率波动影响出口毛利", "category": "macro",
+      "probability": 2, "impact": 2,
+      "trigger": {"metric": "USD/CNY 季度波动", "threshold": "±3% 以上"},
+      "mitigation": "远期锁汇比例 >60%",
+      "evidence": "演示公司中报外汇敞口披露（L1）"
+    },
+    {
+      "id": "R5", "name": "限售解禁后股东减持", "category": "governance",
+      "probability": 3, "impact": 3,
+      "trigger": {"metric": "解禁公告与股东减持计划", "threshold": "解禁后 30 日内出现减持计划公告"},
+      "mitigation": "跟踪解禁日历与减持预披露",
+      "evidence": "演示交易所解禁日历（L1）"
+    }
+  ],
+  "catalysts": [
+    {
+      "date": "2026-10-30", "event": "三季报披露（机器人业务收入与毛利率验证）", "type": "earnings",
+      "direction": "+", "strength": "强", "expected_impact": "核心逻辑 F1 的首次季度验证点",
+      "priced_in": "部分定价", "verify_method": "对照 F1/C1 阈值核验机器人业务收入增速",
+      "source": "演示公司公告", "source_tier": "L1"
+    },
+    {
+      "date": "2026-11-20", "event": "人形机器人行业峰会（新品与订单密集窗口）", "type": "industry",
+      "direction": "+", "strength": "中", "expected_impact": "板块情绪与订单预期催化",
+      "priced_in": "未定价", "verify_method": "会后 2 周内跟踪订单公告密度",
+      "source": "演示行业会议日历", "source_tier": "L3"
+    },
+    {
+      "date": "2026-12-15", "event": "竞对新品发布会（参数与报价对比）", "type": "industry",
+      "direction": "-", "strength": "弱", "expected_impact": "竞争格局边际扰动",
+      "priced_in": "未定价", "verify_method": "对照竞品参数与报价",
+      "source": "演示行业会议日历", "source_tier": "L3"
+    },
+    {
+      "date": "2027-03-25", "event": "年报披露+新一代执行器部件发布", "type": "company",
+      "direction": "+", "strength": "强", "expected_impact": "新品毛利结构与全年指引",
+      "priced_in": "未定价", "verify_method": "新品毛利率与订单指引核验",
+      "source": "演示公司公告", "source_tier": "L1"
+    },
+    {
+      "date": "2027-06-30", "event": "大客户订单续签窗口", "type": "company",
+      "direction": "+", "strength": "中", "expected_impact": "份额与年降条款确认",
+      "priced_in": "未定价", "verify_method": "订单金额与年降幅度核验",
+      "source": "演示行业研究", "source_tier": "L3"
+    }
+  ],
+  "logic_items": [
+    {
+      "statement": "机器人零部件放量：人形机器人量产 → 公司作为核心供应商份额 >30% → 收入弹性释放",
+      "transmission": "行业量产(β) × 公司份额(α) → 机器人业务收入增速中枢上移",
+      "priced_in": "部分定价",
+      "verify_metric": "季度机器人业务收入增速",
+      "verify_threshold": "≥ 50%",
+      "source": "演示研究底稿（L3）"
+    },
+    {
+      "statement": "产能爬坡+规模效应驱动毛利率中枢上移",
+      "transmission": "产能利用率提升 → 单位折旧摊薄 + 良率提升 → 毛利率年改善约 1pp",
+      "priced_in": "未充分定价",
+      "verify_metric": "毛利率环比变化",
+      "verify_threshold": "环比 +0.3pp 以上",
+      "source": "演示研究底稿（L3）"
+    }
+  ]
+}
