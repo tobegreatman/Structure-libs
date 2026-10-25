@@ -62,39 +62,62 @@ def render_markdown(report: Dict[str, Any]) -> str:
     v = report["valuation"]
     L.append("## 三、估值（两法区间，非价格点位预测）\n")
     dcf = v["dcf"]
-    L.append("### 方法一：FCFF DCF（假设均为 assumption）\n")
-    L.append(_tbl(["情景", "WACC", "永续g", "每股价值低/中枢/高", "终值占比"],
-                  [[k.upper(), f"{s['wacc']:.1%}", f"{s['terminal_growth']:.1%}",
-                    f"{s['value_per_share_low']} / {s['value_per_share_central']} / {s['value_per_share_high']}",
-                    f"{s['terminal_value_share']:.0%}"] for k, s in dcf["scenario_results"].items()]))
-    if dcf["warnings"]:
-        L.append("\n⚠️ " + "\n\n⚠️ ".join(dcf["warnings"]))
-    g = dcf["sensitivity_grid_base"]
-    L.append("\n基准情景敏感性（每股价值，行=WACC，列=永续g）：\n")
-    L.append(_tbl(["WACC\\g"] + [f"{x:.2%}" for x in g["g_values"]],
-                  [[f"{w:.2%}"] + [f"{val}" for val in row] for w, row in zip(g["wacc_values"], g["values"])]))
-    rel = v["relative"]
-    anchor = rel["peer_anchor"]
-    peer_txt = (f"同业锚 {anchor['peer_median']} 倍（{anchor['note']}）"
-                if anchor.get("peer_median") is not None else f"同业锚：{anchor['note']}")
-    L.append(f"\n### 方法二：相对估值（{rel['metric']} 分位带）\n")
-    L.append(f"当前 {rel['current']} 倍，十年分位 {rel['percentile_10y']}%（{rel['band']}）；"
-             f"隐含区间 {rel['implied_price_range']['low']}-{rel['implied_price_range']['high']} 元"
-             f"（EPS {rel['implied_price_range']['eps_kind']}）；{peer_txt}\n")
-    L.append(f"> {rel['priced_in_narrative']}\n")
-    syn = v["synthesis"]
-    L.append(f"### 合成\n- DCF 基准区间 [{syn['dcf_base_range']['low']}, {syn['dcf_base_range']['high']}]；相对法区间 [{syn['relative_range']['low']}, {syn['relative_range']['high']}]")
-    L.append(f"- 合成区间 [{syn['combined_range']['low']}, {syn['combined_range']['high']}]（{syn['mode']}），"
-             f"安全边际 {syn['safety_margin_pct']:+.1f}%，置信 {syn['confidence_level']}")
-    L.append(f"- {syn['note']}\n")
+    if not dcf.get("applicable", True):
+        gate = v.get("gate", {})
+        L.append(f"**本报告不出估值区间。** 前门判定：`{gate.get('code')}`（{gate.get('type_label')}）——{gate.get('reason')}\n")
+        rel = v["relative"]
+        # 不能直接引用 relative 的 narrative：它默认 DCF 还在算（"结论仅依赖 DCF 单法"），
+        # 而这里 DCF 恰恰不适用——两句话会互相打脸。
+        L.append(f"相对估值口径 {rel['metric']}："
+                 f"{'价位折算可用' if rel.get('available') else '价位折算不可用'}"
+                 f"（分位本身仍用于定位，见评分卡「相对位置」）。\n")
+        syn = v["synthesis"]
+        L.append(f"### 合成\n- {syn['note']}\n")
+    else:
+        L.append("### 方法一：FCFF DCF（假设均为 assumption）\n")
+        L.append(_tbl(["情景", "WACC", "永续g", "每股价值低/中枢/高", "终值占比"],
+                      [[k.upper(), f"{s['wacc']:.1%}", f"{s['terminal_growth']:.1%}",
+                        f"{s['value_per_share_low']} / {s['value_per_share_central']} / {s['value_per_share_high']}",
+                        f"{s['terminal_value_share']:.0%}"] for k, s in dcf["scenario_results"].items()]))
+        if dcf["warnings"]:
+            L.append("\n⚠️ " + "\n\n⚠️ ".join(dcf["warnings"]))
+        g = dcf["sensitivity_grid_base"]
+        L.append("\n基准情景敏感性（每股价值，行=WACC，列=永续g）：\n")
+        L.append(_tbl(["WACC\\g"] + [f"{x:.2%}" for x in g["g_values"]],
+                      [[f"{w:.2%}"] + [f"{val}" for val in row] for w, row in zip(g["wacc_values"], g["values"])]))
+        rel = v["relative"]
+        anchor = rel["peer_anchor"]
+        peer_txt = (f"同业锚 {anchor['peer_median']} 倍（{anchor['note']}）"
+                    if anchor.get("peer_median") is not None else f"同业锚：{anchor['note']}")
+        L.append(f"\n### 方法二：相对估值（{rel['metric']} 分位带）\n")
+        L.append(f"当前 {rel['current']} 倍，十年分位 {rel['percentile_10y']}%（{rel['band']}）；"
+                 f"隐含区间 {rel['implied_price_range']['low']}-{rel['implied_price_range']['high']} 元"
+                 f"（EPS {rel['implied_price_range']['eps_kind']}）；{peer_txt}\n")
+        L.append(f"> {rel['priced_in_narrative']}\n")
+        syn = v["synthesis"]
+        L.append(f"### 合成\n- DCF 基准区间 [{syn['dcf_base_range']['low']}, {syn['dcf_base_range']['high']}]；"
+                 f"相对法区间 [{syn['relative_range']['low']}, {syn['relative_range']['high']}]")
+        if syn.get("margin_basis") == "none":
+            # 两法无重叠：不给合成安全边际，改给两个单法数与分歧度。
+            L.append(f"- 两法中枢相差 {syn['divergence_pct']:+.0f}%（{syn['mode']}）："
+                     "并集中点没有经济含义，因此**不出合成安全边际**；"
+                     f"DCF 单法 {syn['dcf_margin_pct']}%，相对法 {syn['relative_margin_pct']}%")
+        else:
+            margin = (f"{syn['safety_margin_pct']:+.1f}%" if syn["safety_margin_pct"] is not None else "不可计算")
+            L.append(f"- 合成区间 [{syn['combined_range']['low']}, {syn['combined_range']['high']}]（{syn['mode']}），"
+                     f"安全边际 {margin}，置信 {syn['confidence_level']}")
+        L.append(f"- {syn['note']}\n")
 
     # 情景
     L.append("## 四、情景分析\n")
-    L.append(_tbl(["情景", "概率", "每股价值区间", "vs 基准", "关键假设", "该情景失效条件"],
-                  [[s["name"], f"{s['probability']:.0%}",
-                    f"[{s['value_per_share_range']['low']}, {s['value_per_share_range']['high']}]",
-                    s["delta_vs_base"], "；".join(s["key_assumptions"][:2]), s["falsification"]]
-                   for s in report["scenarios"]]))
+    if report["scenarios"]:
+        L.append(_tbl(["情景", "概率", "每股价值区间", "vs 基准", "关键假设", "该情景失效条件"],
+                      [[s["name"], f"{s['probability']:.0%}",
+                        f"[{s['value_per_share_range']['low']}, {s['value_per_share_range']['high']}]",
+                        s["delta_vs_base"], "；".join(s["key_assumptions"][:2]), s["falsification"]]
+                       for s in report["scenarios"]]))
+    else:
+        L.append("_未生成情景价位：估值方法对该公司类型不适用（见第三节前门判定）。_")
     L.append("")
 
     # 风险矩阵

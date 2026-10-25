@@ -1,3 +1,7 @@
+> ⚠️ **归档文件，与本项目无关。** 这是一份 Apple 设计系统笔记，曾被误放为项目设计文档。
+> 本项目的设计文档见 `docs/01_design.md`（架构与规范）、`docs/02_scoring_guide.md`（评分说明）、
+> `docs/03_acceptance.md`（验收）、`docs/04_review.md`（深度评估与修复记录）。
+
 # Design System Inspired by Apple
 
 ## 1. Visual Theme & Atmosphere

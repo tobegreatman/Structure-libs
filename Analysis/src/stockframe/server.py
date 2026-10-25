@@ -139,6 +139,11 @@ def autofetch(payload: Dict[str, Any]) -> Dict[str, Any]:
 
 
 def _field_meta() -> Dict[str, Any]:
+    # 定性字段必须带锚定量表：档位不是自由评分，每档对应固定分数（(档-1)×2.5），
+    # 界面只给"1 档/2 档"而不给含义，等于让用户盲选一个直接改分数的值。
+    from .specs import anchors_by_field
+
+    anchors = anchors_by_field()
     return {
         "framework_version": FRAMEWORK_VERSION,
         "today": date.today().isoformat(),
@@ -152,9 +157,12 @@ def _field_meta() -> Dict[str, Any]:
                 "required": s.required,
                 "annual": s.annual,
                 "group": s.field_id.split(".")[0],
+                **({"anchors": {str(n): d for n, d in anchors[s.field_id].items()}}
+                   if s.field_id in anchors else {}),
             }
             for s in FIELD_SPECS
         ],
+        "anchors": {k: {str(n): d for n, d in v.items()} for k, v in anchors.items()},
     }
 
 

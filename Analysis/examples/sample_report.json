@@ -22,6 +22,7 @@
     "generated_at": "2026-10-22",
     "data_cutoff": "2026-10-22",
     "company_type": "steady_growth",
+    "company_type_effective": "steady_growth",
     "relative_valuation_metric": "PE"
   },
   "conclusion": {
@@ -39,7 +40,7 @@
         "中线综合分 7.64 >= 7.0 且各维度 >= 4.0"
       ]
     },
-    "summary": "一句话本质：买的是人形机器人零部件从 0 到 1 的份额兑现，叠加产能爬坡带来的毛利率中枢抬升｜中线综合分 7.64（观察带 5.0-7.0 / 入池线 7.0），分桶【入池】｜短线参考【入池】（不改变中线定位）｜置信度 high(0.924)，主要归因：只在年报披露的字段，数据期为最近一期年报、不随季报前移：company.customer_concentration（2026-06-30 年报口径）",
+    "summary": "一句话本质：买的是人形机器人零部件从 0 到 1 的份额兑现，叠加产能爬坡带来的毛利率中枢抬升。中线 7.64 分（入池线 7.0）→ 分桶【入池】，规则 R6_SCORE_BAND；短线参考【入池】；置信度 高（0.924）。主要归因：判断层占 44%、数据层占 42%（判断层占比越高越依赖档位选择，越需人工复核）",
     "maintain_conditions": [
       {
         "id": "C1",
@@ -154,6 +155,7 @@
                 "score": 7.5,
                 "weight": 0.6,
                 "missing": false,
+                "suppressed": false,
                 "rationale": "M1 反映资金活化程度，经验上 >8% 对应宽松周期、<0% 收缩。",
                 "evidence": {
                   "source": "演示央行金融统计（M1 同比）",
@@ -171,6 +173,7 @@
                 "score": 7.5,
                 "weight": 0.4,
                 "missing": false,
+                "suppressed": false,
                 "rationale": "利率下行降低贴现率与融资成本，对成长股估值中枢为顺风（反向指标）。口径：中债国债收益率曲线 10 年期（日频），同比 = 最新值与 365 天前最近交易日之差，单位 bp；曲线为日终估值，按次日可用。",
                 "evidence": {
                   "source": "演示债券数据库（10Y 国债收益率同比变化，bp）",
@@ -197,6 +200,7 @@
                 "score": 7.5,
                 "weight": 0.5,
                 "missing": false,
+                "suppressed": false,
                 "rationale": "PMI 50 为荣枯线；51.5+ 对应扩张加速。",
                 "evidence": {
                   "source": "演示统计局制造业 PMI",
@@ -214,6 +218,7 @@
                 "score": 7.5,
                 "weight": 0.5,
                 "missing": false,
+                "suppressed": false,
                 "rationale": "政策取向需经'政策→行业→公司'传导链验证，非泛化受益。",
                 "evidence": {
                   "source": "演示政策取向评估底稿（政策→行业→公司传导核对）",
@@ -252,6 +257,7 @@
                 "score": 7.5,
                 "weight": 0.6,
                 "missing": false,
+                "suppressed": false,
                 "rationale": "行业增速显著高于名义 GDP 增速（约 5-6%）才算高景气。",
                 "evidence": {
                   "source": "演示行业研究（精密零部件行业营收增速）",
@@ -269,6 +275,7 @@
                 "score": 7.5,
                 "weight": 0.4,
                 "missing": false,
+                "suppressed": false,
                 "rationale": "量价齐升为最优景气组合；价格下行侵蚀利润率。",
                 "evidence": {
                   "source": "演示行业研究（量价趋势档，1-5 档对应 -2..+2）",
@@ -295,6 +302,7 @@
                 "score": 7.5,
                 "weight": 1.0,
                 "missing": false,
+                "suppressed": false,
                 "rationale": "格局决定盈利可持续性；公司卡位决定份额弹性。",
                 "evidence": {
                   "source": "演示行业研究（格局与公司卡位档）",
@@ -321,6 +329,7 @@
                 "score": 7.5,
                 "weight": 0.4,
                 "missing": false,
+                "suppressed": false,
                 "rationale": "成长早中期估值与盈利弹性最优；衰退期一票降档。",
                 "evidence": {
                   "source": "演示行业研究（生命周期档）",
@@ -338,6 +347,7 @@
                 "score": 7.5,
                 "weight": 0.6,
                 "missing": false,
+                "suppressed": false,
                 "rationale": "渗透率 10-30% 为戴维斯双击高发区间。",
                 "evidence": {
                   "source": "演示行业研究（渗透空间档）",
@@ -376,6 +386,7 @@
                 "score": 7.5,
                 "weight": 1.0,
                 "missing": false,
+                "suppressed": false,
                 "rationale": "护城河类型与强度决定超额 ROE 的持续性。",
                 "evidence": {
                   "source": "演示研究底稿（护城河锚定量表评档：技术专利+客户认证）",
@@ -402,6 +413,7 @@
                 "score": 7.5,
                 "weight": 0.6,
                 "missing": false,
+                "suppressed": false,
                 "rationale": "指引兑现率与治理记录是中线持有的前提。",
                 "evidence": {
                   "source": "演示研究底稿（管理层记录锚定量表）",
@@ -419,6 +431,7 @@
                 "score": 7.5,
                 "weight": 0.4,
                 "missing": false,
+                "suppressed": false,
                 "rationale": "质押 >30% 需关注、>50% 为高风险（监管与市场惯例阈值）。",
                 "evidence": {
                   "source": "演示交易所披露（大股东质押比例）",
@@ -445,6 +458,7 @@
                 "score": 7.5,
                 "weight": 1.0,
                 "missing": false,
+                "suppressed": false,
                 "rationale": "预期差是超额收益来源；逻辑必须可证伪（'受益于景气'类泛逻辑不接受）。",
                 "evidence": {
                   "source": "演示研究底稿（核心逻辑与预期差评档）",
@@ -483,6 +497,7 @@
                 "score": 7.5,
                 "weight": 0.4,
                 "missing": false,
+                "suppressed": false,
                 "rationale": "消费/制造龙头长期 ROE>20% 为优秀（质量增长方法论），18% 为放宽门槛。",
                 "evidence": {
                   "source": "演示公司 2026 年中报（ROE-TTM）",
@@ -500,6 +515,7 @@
                 "score": 7.5,
                 "weight": 0.35,
                 "missing": false,
+                "suppressed": false,
                 "rationale": "净利润现金含量 ≥1 为合格线；长期 <0.7 说明利润含水量高。",
                 "evidence": {
                   "source": "演示公司 2026 年中报（经营现金流净额/归母净利，TTM）",
@@ -517,6 +533,7 @@
                 "score": 7.5,
                 "weight": 0.25,
                 "missing": false,
+                "suppressed": false,
                 "rationale": "营运资本增速持续快于营收 = 渠道压货/回款恶化信号（增长质检）。",
                 "evidence": {
                   "source": "演示公司 2026 年中报（(应收+存货)增速-营收增速，pp）",
@@ -543,6 +560,7 @@
                 "score": 7.5,
                 "weight": 0.35,
                 "missing": false,
+                "suppressed": false,
                 "rationale": "与名义 GDP 及行业增速对比定位增长台阶。",
                 "evidence": {
                   "source": "演示公司 2026 年中报（营收同比）",
@@ -560,6 +578,7 @@
                 "score": 10.0,
                 "weight": 0.35,
                 "missing": false,
+                "suppressed": false,
                 "rationale": "收入与利润增速需同向；利润长期快于收入需查非经常项。",
                 "evidence": {
                   "source": "演示公司 2026 年中报（归母净利同比）",
@@ -577,6 +596,7 @@
                 "score": 7.5,
                 "weight": 0.3,
                 "missing": false,
+                "suppressed": false,
                 "rationale": "毛利率方向是量价与竞争格局的先行指标。",
                 "evidence": {
                   "source": "演示公司 2026 年中报（毛利率同比变化，pp）",
@@ -603,6 +623,7 @@
                 "score": 7.5,
                 "weight": 0.4,
                 "missing": false,
+                "suppressed": false,
                 "rationale": "ROIC 超 WACC 5pp 以上为优秀（质量增长方法论：真实经营优势的标尺）。",
                 "evidence": {
                   "source": "演示公司 2026 年中报（ROIC-TTM，计算口径见底稿）",
@@ -620,6 +641,7 @@
                 "score": 7.5,
                 "weight": 0.3,
                 "missing": false,
+                "suppressed": false,
                 "rationale": "制造业 >50% 财务弹性受限，>65% 高杠杆。",
                 "evidence": {
                   "source": "演示公司 2026 年中报（有息负债/总资产）",
@@ -637,6 +659,7 @@
                 "score": 7.5,
                 "weight": 0.3,
                 "missing": false,
+                "suppressed": false,
                 "rationale": "商誉占比 >25% 减值风险显著（并购驱动增长需打折）。",
                 "evidence": {
                   "source": "演示公司 2026 年中报（商誉/净资产）",
@@ -675,6 +698,7 @@
                 "score": 7.5,
                 "weight": 1.0,
                 "missing": false,
+                "suppressed": false,
                 "rationale": "安全边际 ≥15% 才足以补偿假设不确定性（DCF 区间中枢 vs 现价）。",
                 "evidence": {
                   "source": "演示行情库（收盘价）",
@@ -701,6 +725,7 @@
                 "score": 5.0,
                 "weight": 0.6,
                 "missing": false,
+                "suppressed": false,
                 "rationale": "历史分位 <30% 偏低、30-70% 中性、>70% 偏高（估值方法论阈值）。",
                 "evidence": {
                   "source": "演示估值数据库（近10年，窗口 2016-10 至 2026-10）",
@@ -718,6 +743,7 @@
                 "score": 5.0,
                 "weight": 0.4,
                 "missing": false,
+                "suppressed": false,
                 "rationale": "PB 分位为 PE 的交叉验证，周期股权重应上调（可配置）。",
                 "evidence": {
                   "source": "演示估值数据库（近10年，窗口 2016-10 至 2026-10）",
@@ -744,6 +770,7 @@
                 "score": 5.0,
                 "weight": 1.0,
                 "missing": false,
+                "suppressed": false,
                 "rationale": "PEG<1 为增长匹配良好；增长为负时 PEG 无意义（按缺失处理）。",
                 "evidence": {
                   "source": "演示行情库（PE-TTM）",
@@ -782,6 +809,7 @@
                 "score": 10.0,
                 "weight": 1.0,
                 "missing": false,
+                "suppressed": false,
                 "rationale": "公式 = min(10, Σ 事件强度权重)，强=4/中=2.5/弱=1/噪音=0，只计 6-12 月窗口。",
                 "evidence": {
                   "source": "计算字段（公式见评分说明与 rationale）",
@@ -808,6 +836,7 @@
                 "score": 10.0,
                 "weight": 1.0,
                 "missing": false,
+                "suppressed": false,
                 "rationale": "公式：30 日内最近事件 强=10/中=7.5/弱=2.5/无=0；利好已定价 ×0.4（兑现风险）。",
                 "evidence": {
                   "source": "计算字段（公式见评分说明与 rationale）",
@@ -846,6 +875,7 @@
                 "score": 10.0,
                 "weight": 0.5,
                 "missing": false,
+                "suppressed": false,
                 "rationale": "0-15% 为健康趋势；>30% 过热；<-25% 深度破位（非单调：两端均扣分）。",
                 "evidence": {
                   "source": "演示行情库（收盘价/MA250-1）",
@@ -863,6 +893,7 @@
                 "score": 10.0,
                 "weight": 0.5,
                 "missing": false,
+                "suppressed": false,
                 "rationale": "动量视角：接近 52 周高点为强势特征。",
                 "evidence": {
                   "source": "演示行情库（距52周高点回撤）",
@@ -889,6 +920,7 @@
                 "score": 10.0,
                 "weight": 0.5,
                 "missing": false,
+                "suppressed": false,
                 "rationale": "温和放量(1.0-1.5)最优；>3 异常放量需查归因（非单调）。",
                 "evidence": {
                   "source": "演示行情库（20日均量比）",
@@ -906,6 +938,7 @@
                 "score": 10.0,
                 "weight": 0.5,
                 "missing": false,
+                "suppressed": false,
                 "rationale": "换手过低流动性差、过高博弈过热（非单调甜点区间）。",
                 "evidence": {
                   "source": "演示行情库（日换手率）",
@@ -932,6 +965,7 @@
                 "score": 7.5,
                 "weight": 1.0,
                 "missing": false,
+                "suppressed": false,
                 "rationale": "机构增持为中线资金面确认；大幅减持需查归因。",
                 "evidence": {
                   "source": "演示基金持仓数据库（基金三季报披露）",
@@ -970,6 +1004,7 @@
                 "score": 7.0,
                 "weight": 0.45,
                 "missing": false,
+                "suppressed": false,
                 "rationale": "公式：10×(1−Σ max(0, P×I−8, 17 上限)/20)，P×I>8 的风险逐条扣减。",
                 "evidence": {
                   "source": "计算字段（公式见评分说明与 rationale）",
@@ -987,6 +1022,7 @@
                 "score": 10.0,
                 "weight": 0.25,
                 "missing": false,
+                "suppressed": false,
                 "rationale": "重大红旗（非标审计/资金占用/立案）边际影响极陡：1 条已显著降分，2 条以上由决策层直接进回避候选。",
                 "evidence": {
                   "source": "计算字段（公式见评分说明与 rationale）",
@@ -1004,6 +1040,7 @@
                 "score": 7.5,
                 "weight": 0.3,
                 "missing": false,
+                "suppressed": false,
                 "rationale": "单一客户 >30% 依赖风险、>50% 重大集中度风险。",
                 "evidence": {
                   "source": "演示公司 2026 年中报（最大客户收入占比）",
@@ -1044,12 +1081,37 @@
       ],
       "missing_dimensions": [],
       "note": "闸门口径 = 宏观/行业/公司三层的指标级覆盖；低于阈值时不出正式分桶（R7_COVERAGE）。total_ratio 为全维度覆盖，仅供参考，不参与判定"
+    },
+    "score_attribution": {
+      "judgement": 3.3,
+      "data": 3.1,
+      "risk_catalyst": 1.23,
+      "total": 7.64,
+      "weight_share": {
+        "judgement": 0.44,
+        "data": 0.42,
+        "risk_catalyst": 0.14
+      },
+      "note": "分项贡献 = 组内(维度分×中线权重)之和 ÷ 全部已评维度权重之和，三项相加 = 综合分（各分项保留 2 位小数，直接相加可能与综合分差 ±0.01）。judgement 层以 1-5 档人工/代理判断为输入，data 层为财报与行情，weight_share 为该层在已评维度中的权重占比——判断层占比越高，结论越依赖档位选择，越需要人工复核。"
     }
   },
   "valuation": {
+    "gate": {
+      "company_type": "steady_growth",
+      "type_label": "稳定成长",
+      "dcf_applicable": true,
+      "code": null,
+      "reason": "",
+      "relative_metric": {
+        "requested": "PE",
+        "supported": true,
+        "note": "按 PE 十年分位带折算隐含价位（PE × EPS(TTM)）。"
+      }
+    },
     "dcf": {
       "method": "FCFF_DCF",
       "assumptions_kind": "assumption",
+      "applicable": true,
       "scenario_results": {
         "optimistic": {
           "wacc": 0.09,
@@ -1224,6 +1286,10 @@
       },
       "mode": "intersection",
       "safety_margin_pct": 12.4,
+      "margin_basis": "combined",
+      "dcf_margin_pct": 16.8,
+      "relative_margin_pct": -0.0,
+      "divergence_pct": -14.4,
       "confidence_level": "medium",
       "note": "合成区间 = 基准情景 DCF 区间与相对估值分位带区间的交集；仅为安全边际度量基准，非价格点位预测；加权期望值同为参考量。"
     }

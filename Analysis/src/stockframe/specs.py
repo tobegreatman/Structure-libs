@@ -422,6 +422,22 @@ WEIGHTS_MID = {d.id: d.weight_mid for d in DIMENSIONS}
 WEIGHTS_SHORT = {d.id: d.weight_short for d in DIMENSIONS}
 
 
+def anchors_by_field() -> Dict[str, Dict[int, str]]:
+    """定性字段 → 1-5 档位的锚定描述。
+
+    锚定量表本来只用于评分证据（rubric 里档位 → 档内分 + 描述），
+    但界面选档时也必须有它：看不到"3 档和 4 档差在哪"，下拉就退化成盲猜，
+    而档位直接换算成分数（(档-1)×2.5），猜错就是整个因子偏 2.5 分。
+    """
+    out: Dict[str, Dict[int, str]] = {}
+    for dim in DIMENSIONS:
+        for fac in dim.factors:
+            for ind in fac.indicators:
+                if ind.anchors:
+                    out[ind.field] = dict(ind.anchors)
+    return out
+
+
 # ---------------------------------------------------------------- 文档生成
 
 def render_scoring_tables() -> str:

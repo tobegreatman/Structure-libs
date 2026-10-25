@@ -98,9 +98,14 @@ def check_field(field_id: str, raw: Dict[str, Any], analysis_date: date) -> Fiel
     period_end = raw.get("period_end")
     if period_end is not None:
         _parse_date(field_id, "period_end", period_end)
+    value = raw["value"]
+    if isinstance(value, str) and not value.strip():
+        # 空串是"没填"，不是"填了空"：归一为缺失，让 DQ 记缺口。
+        # 否则空串会被算作已提供，把"未填"提示顶掉（界面的空文本框就传 ""）。
+        value = None
     return FieldRef(
         field_id=field_id,
-        value=raw["value"],
+        value=value,
         as_of=raw["as_of"],
         available_at=raw["available_at"],
         source=source,
@@ -111,7 +116,9 @@ def check_field(field_id: str, raw: Dict[str, Any], analysis_date: date) -> Fiel
 
 
 def validate_all_fields(data: Dict[str, Any], analysis_date: date) -> Dict[str, FieldRef]:
-    """遍历 data.<group>.<field>，全部过 PIT 校验，返回 field_id -> FieldRef 注册表。"""
+    """遍历 data.<group>.<field>，先过输入契约，再过 PIT 校验，返回 registry。"""
+    from .contract import check_registered, check_value  # 局部导入：避免与 datadict 循环
+
     registry: Dict[str, FieldRef] = {}
     if not isinstance(data, dict):
         raise LookAheadError("输入 data 必须是按组组织的对象")
@@ -120,5 +127,8 @@ def validate_all_fields(data: Dict[str, Any], analysis_date: date) -> Dict[str, 
             raise LookAheadError(f"data.{group} 必须是字段对象")
         for key, raw in fields.items():
             field_id = f"{group}.{key}"
-            registry[field_id] = check_field(field_id, raw, analysis_date)
+            check_registered(field_id)
+            ref = check_field(field_id, raw, analysis_date)
+            check_value(field_id, ref.value)
+            registry[field_id] = ref
     return registry

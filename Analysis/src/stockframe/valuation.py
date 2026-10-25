@@ -66,6 +66,17 @@ def _perturbed(params: DCFParams, wacc_delta: float) -> DCFParams:
     return DCFParams(**{**params.__dict__, "wacc": params.wacc + wacc_delta})
 
 
+def dcf_not_applicable(gate_reason: str, gate_code: str) -> Dict[str, Any]:
+    """前门判定不适用：不出区间、不出敏感性网格，只记录理由。"""
+    return {
+        "method": "FCFF_DCF",
+        "assumptions_kind": "assumption",
+        "applicable": False,
+        "gate": {"code": gate_code, "reason": gate_reason},
+        "warnings": [f"未执行 DCF：{gate_reason}"],
+    }
+
+
 def run_dcf(assumptions: Dict[str, Any]) -> Dict[str, Any]:
     """三情景 DCF + 基准情景敏感性网格 + 警示列表。"""
     warnings: List[str] = []
@@ -146,6 +157,7 @@ def run_dcf(assumptions: Dict[str, Any]) -> Dict[str, Any]:
     return {
         "method": "FCFF_DCF",
         "assumptions_kind": "assumption",
+        "applicable": True,
         "scenario_results": scenario_results,
         "sensitivity_grid_base": {"wacc_values": wacc_values, "g_values": g_values, "values": grid},
         "warnings": warnings,
@@ -210,15 +222,25 @@ def run_relative(
     eps_ttm: Optional[float],
     peer_median: Optional[float],
     fwd_growth_pct: Optional[float],
+    unsupported_reason: Optional[str] = None,
 ) -> Dict[str, Any]:
-    """相对估值。任一必需输入缺失 → available=False，输出 null 而非补零/外推。"""
+    """相对估值。任一必需输入缺失/非正 → available=False，输出 null 而非补零/外推。
+
+    非正不是"缺失"，但后果一样：PE≤0 的"低估"没有含义，EPS≤0 乘出来的价位是负数。
+    两者都按不可用处理，并写明原因。
+    """
     missing = []
     if current is None:
         missing.append(f"{metric}(TTM)")
     if eps_ttm is None:
         missing.append("EPS(TTM)")
+    if current is not None and current <= 0:
+        missing.append(f"{metric}(TTM)≤0（亏损状态下该倍数无意义）")
+    if eps_ttm is not None and eps_ttm <= 0:
+        missing.append("EPS(TTM)≤0（分位带折算价位会得到负股价）")
 
-    if missing:
+    if missing or unsupported_reason:
+        why = "、".join(missing) if missing else (unsupported_reason or "")
         return {
             "method": "percentile_band",
             "available": False,
@@ -233,10 +255,10 @@ def run_relative(
                 "premium_pct": None,
                 "implied_price": None,
                 "comparable": False,
-                "note": "相对估值未启用：缺少 " + "、".join(missing) + "（不补零、不外推）",
+                "note": "相对估值未启用：" + why + "（不补零、不外推）",
             },
             "priced_in_narrative": (
-                "相对估值不可用：缺 " + "、".join(missing)
+                "相对估值不可用：" + why
                 + "；本报告该法按缺失处理，估值结论仅依赖 DCF 单法，置信度相应降档。"
             ),
         }
@@ -289,30 +311,100 @@ def run_relative(
 # ---------------------------------------------------------------- 区间合成
 
 def synthesize(
-    dcf_base: Dict[str, Any],
+    dcf_base: Optional[Dict[str, Any]],
     relative: Dict[str, Any],
     price: Optional[float],
     dcf_warnings: List[str],
+    gate: Optional[Any] = None,
 ) -> Dict[str, Any]:
-    d_lo = dcf_base["value_per_share_low"]
-    d_hi = dcf_base["value_per_share_high"]
+    # 前门不适用：连 DCF 都没算，任何"合成"都是编的
+    if gate is not None and not getattr(gate, "dcf_applicable", True):
+        return {
+            "dcf_base_range": {"low": None, "high": None},
+            "relative_range": {"low": None, "high": None},
+            "combined_range": {"low": None, "high": None},
+            "mode": "not_applicable",
+            "safety_margin_pct": None,
+            "margin_basis": "none",
+            "dcf_margin_pct": None,
+            "relative_margin_pct": None,
+            "divergence_pct": None,
+            "confidence_level": "none",
+            "note": (f"估值前门判定不适用（{gate.code}）：{gate.reason}"
+                     "本报告不出估值区间，也不计算安全边际——给一个数再标低置信度，"
+                     "读者只会记住那个数。"),
+        }
+
+    d_lo = dcf_base["value_per_share_low"] if dcf_base else None
+    d_hi = dcf_base["value_per_share_high"] if dcf_base else None
     rel_ok = bool(relative.get("available", True)) and relative["implied_price_range"]["low"] is not None
 
     if rel_ok:
         r_lo = relative["implied_price_range"]["low"]
         r_hi = relative["implied_price_range"]["high"]
-        inter_lo, inter_hi = max(d_lo, r_lo), min(d_hi, r_hi)
-        if inter_lo <= inter_hi:
-            mode, lo, hi = "intersection", inter_lo, inter_hi
-        else:
-            mode, lo, hi = "union", min(d_lo, r_lo), max(d_hi, r_hi)
         relative_range = {"low": r_lo, "high": r_hi}
+        if d_lo is None:
+            mode, lo, hi = "relative_only", r_lo, r_hi
+        else:
+            inter_lo, inter_hi = max(d_lo, r_lo), min(d_hi, r_hi)
+            if inter_lo <= inter_hi:
+                mode, lo, hi = "intersection", inter_lo, inter_hi
+            else:
+                mode, lo, hi = "union", min(d_lo, r_lo), max(d_hi, r_hi)
     else:
         mode, lo, hi = "dcf_only", d_lo, d_hi
         relative_range = {"low": None, "high": None}
 
-    central = (lo + hi) / 2.0
-    safety = (central - price) / price * 100.0 if price else None
+    # 最后一道闸：股价不可能为负。宁可不出区间，也不出一个 -17.6 元的区间。
+    if lo is not None and (lo <= 0 or (hi is not None and hi <= 0)):
+        return {
+            "dcf_base_range": {"low": d_lo, "high": d_hi},
+            "relative_range": relative_range,
+            "combined_range": {"low": None, "high": None},
+            "mode": "rejected",
+            "safety_margin_pct": None,
+            "margin_basis": "none",
+            "dcf_margin_pct": None,
+            "relative_margin_pct": None,
+            "divergence_pct": None,
+            "confidence_level": "none",
+            "note": (f"区间下限/上限为非正（[{lo}, {hi}]）：股价不可能为负，"
+                     "说明方法或输入已失效（典型原因：亏损公司、负 EPS、净债务超过 EV）。"
+                     "本报告拒绝输出该区间。"),
+        }
+
+    central = (lo + hi) / 2.0 if (lo is not None and hi is not None) else None
+
+    # 两个单法口径各自的中枢与偏离度：即使不给"合成安全边际"，也要让读者看到分歧有多大。
+    # DCF 中枢必须取 value_per_share_central——那是评分卡 val.dcf_margin 用的同一个数。
+    # 用 [low, high] 的中点会得到第二个口径（样例 19.3% vs 评分卡 16.8%），
+    # 等于把"两个安全边际"从页面上删掉又重新造了一个。
+    dcf_central = dcf_base.get("value_per_share_central") if dcf_base else None
+    if dcf_central is None and d_lo is not None and d_hi is not None:
+        dcf_central = (d_lo + d_hi) / 2.0
+    rel_central = (r_lo + r_hi) / 2.0 if rel_ok else None
+
+    def _margin(c: Optional[float]) -> Optional[float]:
+        if c is None or not price or price <= 0:
+            return None
+        return round((c - price) / price * 100.0, 1)
+
+    dcf_margin = _margin(dcf_central)
+    rel_margin = _margin(rel_central)
+    divergence = (round((rel_central / dcf_central - 1.0) * 100.0, 1)
+                  if (rel_central and dcf_central and dcf_central > 0) else None)
+
+    # 两法无重叠时，并集的中点没有经济含义：一端来自 DCF 区间、另一端来自 10 年 PE 分位带，
+    # 中点既不是"DCF 的结论"也不是"市场给的价"。此前它照样被算成安全边际，
+    # 于是宁德时代出现 +282%、茅台 +38.6%，而同一份报告的评分卡里 DCF 单法是 +45.9% / -9.4%
+    # ——同页两个"安全边际"互相矛盾，读者只会挑对自己有利的那个。
+    if mode == "union":
+        safety = None
+        margin_basis = "none"
+    else:
+        safety = _margin(central)
+        margin_basis = "combined"
+
     if mode == "dcf_only":
         level = "low"
     elif mode == "intersection" and not dcf_warnings:
@@ -323,18 +415,32 @@ def synthesize(
         level = "low"
     if mode == "dcf_only":
         note = "相对估值不可用，合成区间退化为基准情景 DCF 单法区间；置信度按 low 处理（单法无法交叉验证）。"
+    elif mode == "relative_only":
+        note = "DCF 未执行，合成区间退化为相对估值单法；单法无法交叉验证，置信度按 low 处理。"
+    elif mode == "union":
+        note = (
+            f"两法区间无重叠（方法分歧）：DCF [{d_lo}, {d_hi}] 对相对法 [{r_lo}, {r_hi}]，中枢相差 "
+            f"{divergence:+.0f}%）：并集范围由较宽一侧决定，其中点既不是 DCF 结论也不是市场价位，"
+            "没有经济含义，故**不输出合成安全边际**。请分别读 DCF 单法安全边际"
+            f"（{dcf_margin}%）与相对法分位带隐含折溢价（{rel_margin}%）。"
+            "两法分歧本身就是结论的一部分：分歧越大，越应先解释假设差异，再谈贵贱。"
+        )
     else:
         note = (
-            "合成区间 = 基准情景 DCF 区间与相对估值分位带区间的"
-            + ("交集" if mode == "intersection" else "并集（两法区间无重叠，存在方法分歧）")
-            + "；仅为安全边际度量基准，非价格点位预测；加权期望值同为参考量。"
+            "合成区间 = 基准情景 DCF 区间与相对估值分位带区间的交集"
+            "；仅为安全边际度量基准，非价格点位预测；加权期望值同为参考量。"
         )
     return {
         "dcf_base_range": {"low": d_lo, "high": d_hi},
         "relative_range": relative_range,
-        "combined_range": {"low": round(lo, 2), "high": round(hi, 2)},
+        "combined_range": {"low": round(lo, 2) if lo is not None else None,
+                           "high": round(hi, 2) if hi is not None else None},
         "mode": mode,
-        "safety_margin_pct": round(safety, 1) if safety is not None else None,
+        "safety_margin_pct": safety,
+        "margin_basis": margin_basis,
+        "dcf_margin_pct": dcf_margin,
+        "relative_margin_pct": rel_margin,
+        "divergence_pct": divergence,
         "confidence_level": level,
         "note": note,
     }

@@ -145,6 +145,50 @@ def test_extra_column_does_not_break_the_row():
     assert d.cross_check["ok"] is True
 
 
+# 长盈通 2025 年报第 62 页：客户被匿名化成「客户1…客户5」，名称里带数字。
+# 曾经的 bug：行正则的名称组写成 [^\d]，把数字排除在外，整张表一行都匹配不上，
+# 于是静默退化成"只有前五合计 54.59%"——表格明明在那里，却当作没披露单客户。
+CHANGYINGTONG = """
+公司前五名客户
+√适用 □不适用
+单位：万元 币种：人民币
+序号 客户名称 销售额 占年度销售总额比例（%） 是否与上市公司存在关联关系
+1 客户1 9,787.51 24.59 否
+2 客户2 5,743.28 14.43 否
+3 客户3 2,739.17 6.88 否
+4 客户4 2,034.61 5.11 否
+5 客户5 1,422.08 3.57 否
+合计 / 21,726.65 54.59 否
+"""
+
+
+def test_anonymized_customer_names_with_digits_are_parsed():
+    """匿名化的「客户1」也必须是可解析的名称——不能因为含数字就当表不存在。"""
+    d = parse_customer_section(CHANGYINGTONG)
+    assert d is not None, "表就在正文里，不该退化成 total_only"
+    assert d.form == "table"
+    assert d.top_ratio == 24.59, "最大客户是客户1 的 24.59%，不是前五合计 54.59%"
+    assert d.five_ratio == 54.59
+    assert d.rows == 5 and d.amount_unit == "万元"
+    assert d.top_name == "客户1"
+    assert d.cross_check["ok"] is True and d.cross_check["rule"] == "sum==total"
+    assert d.usable is True
+
+
+def test_missing_name_column_does_not_shift_the_numbers():
+    """名称列允许含数字之后，仍不能被"缺名称"的行骗到：序号必须严格递增。"""
+    broken = """
+公司前 5大客户资料
+序号 客户名称 销售额（元） 占年度销售总额比例
+9,787.51 24.59
+9,787.51 24.59
+9,787.51 24.59
+"""
+    d = parse_customer_section(broken)
+    assert d is None or d.top_ratio is None, f"没有序号锚点的表不许硬凑：{d}"
+
+
+
 def test_truncated_table_still_yields_the_top_customer():
     """格力那张表跨页断了，只有 4 行。最大客户在第 1 行，照样要给出来。"""
     d = parse_customer_section(GREE_PARTIAL)

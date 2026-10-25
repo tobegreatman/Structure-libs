@@ -1,9 +1,13 @@
-"""数据字典：字段注册表（代码即文档）+ 输入结构校验。
+"""数据字典：字段注册表（代码即文档）+ 公司类型适用性 + 输入结构校验。
 
 字段规范见设计文档 §4.3。注册表用于：
 - DQ 完整性统计（registered 中实际提供多少）
 - 缺口报告（gaps）
 - 必填字段核查（缺失 → 强制人工复核）
+
+COMPANY_PROFILES 是**行业适用性前门**：它决定本框架的两种估值方法对这类公司是否成立，
+而不是决定"给多少分"。没有这张表时，银行股会被当成成长股算 FCFF-DCF，
+得出 +95% 的安全边际——错不在公式，在于问题本身不适用。
 """
 
 from __future__ import annotations
@@ -81,12 +85,92 @@ FIELD_REGISTRY: Dict[str, FieldSpec] = {s.field_id: s for s in FIELD_SPECS}
 
 REQUIRED_FIELDS: Tuple[str, ...] = tuple(s.field_id for s in FIELD_SPECS if s.required)
 
+
+# ---------------------------------------------------------------- 公司类型 → 方法适用性
+
+@dataclass(frozen=True)
+class CompanyProfile:
+    code: str
+    label: str
+    dcf_applicable: bool
+    relative_metrics: Tuple[str, ...]   # 该类公司可用的相对估值口径（第一个为默认）
+    reason: str                          # 为什么适用/不适用（原样进报告与说明）
+
+
+# 顺序即展示顺序。dcf_applicable=False 的类型，报告不出 DCF 区间、不出安全边际、
+# 不出情景价位——这是"拒答"，不是"降级"：给一个数再标低置信度，读者只会记住数。
+COMPANY_PROFILES: Dict[str, CompanyProfile] = {
+    p.code: p for p in (
+        CompanyProfile(
+            "high_growth", "高成长", True, ("PE", "PEG", "EV_EBITDA"),
+            "营收/利润率路径是主要价值来源，FCFF-DCF 与 PE 分位均可用。"),
+        CompanyProfile(
+            "steady_growth", "稳定成长", True, ("PE", "PEG", "EV_EBITDA", "PB"),
+            "营收/利润率路径是主要价值来源，FCFF-DCF 与 PE 分位均可用。"),
+        CompanyProfile(
+            "value", "价值/低估值", True, ("PE", "PB", "EV_EBITDA"),
+            "现金流稳定，DCF 与 PE/PB 分位均可用。"),
+        CompanyProfile(
+            "platform", "平台/轻资产", True, ("PS", "EV_EBITDA", "PE"),
+            "资本开支轻，FCFF 近似自由现金流；盈利波动大时优先 PS/EV-Sales 分位。"),
+        CompanyProfile(
+            "cyclical", "周期", True, ("PB", "EV_EBITDA", "PE"),
+            "DCF 可用，但 EBIT 率路径须落在周期中枢而非当期极值；PE 在盈利高点最低、"
+            "低点最高，分位解读需结合产能周期。"),
+        CompanyProfile(
+            "resource", "资源", True, ("PB", "EV_EBITDA", "PE"),
+            "DCF 对资源价格假设极敏感，须与储量/成本曲线交叉验证；PE 分位单独使用无意义。"),
+        CompanyProfile(
+            "financial", "金融（通用）", False, ("PB",),
+            "金融企业的价值来自资产负债表（息差、准备金、资本充足率），不是营收×EBIT率路径；"
+            "本框架的 FCFF-DCF 的净债务/资本开支口径对银行、保险不成立，故不出 DCF 区间与安全边际。"),
+        CompanyProfile(
+            "bank", "银行", False, ("PB",),
+            "银行价值由净息差、信用成本、资本充足率决定，FCFF-DCF 的营收×EBIT率路径与净债务口径"
+            "均不适用（存款是负债也是经营原料）。本框架不出银行估值，需行业模板（PB-ROE / RIM）。"),
+        CompanyProfile(
+            "insurance", "保险", False, ("PB",),
+            "保险价值依赖内含价值（EV）与新业务价值，与营收×EBIT率无关；"
+            "本框架不出保险估值，需行业模板（P/EV）。"),
+        CompanyProfile(
+            "reit", "REIT/持有型地产", False, ("PB",),
+            "持有型地产价值来自物业净租金（NOI）与资本化率，与本框架的营收×EBIT率路径不同；"
+            "需行业模板（P/FFO、NAV）。"),
+        CompanyProfile(
+            "loss_making", "亏损", False, ("PS", "PB"),
+            "亏损状态下 EPS≤0 使 PE 无意义、EBIT 率为负使 DCF 显性期现金流为负，"
+            "区间会给出负股价或荒谬值；本框架不出估值，需按 PS/EV-Sales 或扭亏路径单独建模。"),
+        CompanyProfile(
+            "pre_revenue", "未盈利/次新", False, ("PS",),
+            "尚无稳定收入基数，营收增长路径与利润率假设无锚，DCF 只是把假设放大；"
+            "本框架不出估值。"),
+    )
+}
+
+COMPANY_TYPE_CODES: Tuple[str, ...] = tuple(COMPANY_PROFILES)
+
+
+def company_profile(code: str) -> CompanyProfile:
+    """按公司类型取方法适用性。未知类型直接报错（不静默套用默认模板）。"""
+    profile = COMPANY_PROFILES.get(code)
+    if profile is None:
+        raise InputError(
+            f"meta.company_type={code!r} 未登记。可选：{'、'.join(COMPANY_TYPE_CODES)}。"
+            "公司类型决定 DCF/相对估值是否适用，不能让未分类的公司走默认模板。"
+        )
+    return profile
+
 # 结构化输入块（非平铺字段）所需键
 STRUCTURAL_KEYS = ("meta", "data", "assumptions", "risks", "catalysts")
 
 
-class InputError(Exception):
-    """输入结构不合法。"""
+class InputError(ValueError):
+    """输入结构/取值不合法。
+
+    继承 ValueError 是有意的：引擎历史上对假设不合理（wacc≤g、概率和≠1、股权价值为负）
+    抛的都是 ValueError，调用方可能已经 `except ValueError` 兜底。若输入契约另立一支
+    Exception，同一类"用户填错"会分成两种异常，兜底代码只接住一半。
+    """
 
 
 def validate_structure(inp: Dict[str, Any]) -> None:
@@ -99,6 +183,14 @@ def validate_structure(inp: Dict[str, Any]) -> None:
     for key in ("stock", "analysis_date", "company_type", "relative_valuation_metric"):
         if key not in meta:
             raise InputError(f"meta 缺少 {key}")
+    profile = company_profile(meta["company_type"])
+    metric = meta["relative_valuation_metric"]
+    if metric not in profile.relative_metrics:
+        raise InputError(
+            f"meta.relative_valuation_metric={metric!r} 不适用于 company_type={profile.code}"
+            f"（{profile.label}）。该类公司可用的口径：{'、'.join(profile.relative_metrics)}。"
+            f"理由：{profile.reason}"
+        )
     for key in ("stock",):
         for sub in ("name", "code", "exchange", "currency"):
             if sub not in meta[key]:

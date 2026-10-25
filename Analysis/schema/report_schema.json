@@ -144,9 +144,31 @@
             "value",
             "resource",
             "platform",
-            "financial"
+            "financial",
+            "bank",
+            "insurance",
+            "reit",
+            "loss_making",
+            "pre_revenue"
           ],
-          "description": "公司类型决定估值方法选择(设计文档 §7.2)。"
+          "description": "公司类型决定估值方法适用性（datadict.COMPANY_PROFILES）：金融/亏损/未盈利类型不出 DCF 区间。"
+        },
+        "company_type_effective": {
+          "enum": [
+            "high_growth",
+            "steady_growth",
+            "cyclical",
+            "value",
+            "resource",
+            "platform",
+            "financial",
+            "bank",
+            "insurance",
+            "reit",
+            "loss_making",
+            "pre_revenue"
+          ],
+          "description": "实际生效的类型：声明为成长型但 EPS≤0/PE≤0 时会被前门升级为 loss_making。"
         },
         "relative_valuation_metric": {
           "enum": [
@@ -225,9 +247,11 @@
                 "R4_SPECIAL_STATUS",
                 "R5_SIGNAL_CONFLICT",
                 "R6_SCORE_BAND",
-                "R7_COVERAGE"
+                "R7_COVERAGE",
+                "R8_DATA_COVERAGE",
+                "R9_MODEL_NOT_APPLICABLE"
               ],
-              "description": "R1 硬红旗/R2 红旗数≥2/R3 数据质量强制/R4 特殊状态/R5 信号冲突/R6 分数分桶。"
+              "description": "R1 硬红旗/R2 红旗数≥2/R3 数据质量强制/R4 特殊状态/R5 信号冲突/R6 分数分桶/R7 判断层覆盖不足/R8 数据层覆盖不足/R9 估值方法不适用。"
             },
             "reasons": {
               "type": "array",
@@ -273,10 +297,79 @@
         "scale",
         "weights",
         "dimensions",
-        "evidence_coverage"
+        "evidence_coverage",
+        "score_attribution"
       ],
       "additionalProperties": false,
       "properties": {
+        "score_attribution": {
+          "type": "object",
+          "description": "综合分拆成判断层/数据层/风险催化层三块贡献，三项相加=综合分；weight_share 为该层在已评维度中的权重占比。",
+          "required": [
+            "judgement",
+            "data",
+            "risk_catalyst",
+            "total",
+            "weight_share",
+            "note"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "judgement": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "data": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "risk_catalyst": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "total": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "weight_share": {
+              "type": "object",
+              "required": [
+                "judgement",
+                "data",
+                "risk_catalyst"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "judgement": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1
+                },
+                "data": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1
+                },
+                "risk_catalyst": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1
+                }
+              }
+            },
+            "note": {
+              "type": "string"
+            }
+          }
+        },
         "evidence_coverage": {
           "type": "object",
           "description": "研究判断层证据覆盖：宏观/行业/公司的指标级覆盖比例（未补零）。低于阈值时不允许给正式分桶。total_ratio 为全维度覆盖，仅供参考。",
@@ -387,23 +480,96 @@
     "valuation": {
       "type": "object",
       "required": [
+        "gate",
         "dcf",
         "relative",
         "synthesis"
       ],
       "additionalProperties": false,
       "properties": {
+        "gate": {
+          "type": "object",
+          "description": "方法适用性前门：先判断该不该算，再谈算多少。dcf_applicable=false 时报告不出区间与安全边际。",
+          "required": [
+            "company_type",
+            "type_label",
+            "dcf_applicable",
+            "code",
+            "reason",
+            "relative_metric"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "company_type": {
+              "type": "string"
+            },
+            "type_label": {
+              "type": "string"
+            },
+            "dcf_applicable": {
+              "type": "boolean"
+            },
+            "code": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "description": "null=适用；DCF_NOT_APPLICABLE=行业类型不适用；DCF_LOSS_MAKING=亏损状态不适用。"
+            },
+            "reason": {
+              "type": "string"
+            },
+            "relative_metric": {
+              "type": "object",
+              "required": [
+                "requested",
+                "supported",
+                "note"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "requested": {
+                  "type": "string"
+                },
+                "supported": {
+                  "type": "boolean"
+                },
+                "note": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
         "dcf": {
           "type": "object",
           "required": [
             "method",
             "assumptions_kind",
-            "scenario_results",
-            "sensitivity_grid_base",
+            "applicable",
             "warnings"
           ],
           "additionalProperties": false,
           "properties": {
+            "applicable": {
+              "type": "boolean"
+            },
+            "gate": {
+              "type": "object",
+              "required": [
+                "code",
+                "reason"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "code": {
+                  "type": "string"
+                },
+                "reason": {
+                  "type": "string"
+                }
+              }
+            },
             "method": {
               "const": "FCFF_DCF"
             },
@@ -476,7 +642,32 @@
                 "type": "string"
               }
             }
-          }
+          },
+          "allOf": [
+            {
+              "if": {
+                "properties": {
+                  "applicable": {
+                    "const": true
+                  }
+                },
+                "required": [
+                  "applicable"
+                ]
+              },
+              "then": {
+                "required": [
+                  "scenario_results",
+                  "sensitivity_grid_base"
+                ]
+              },
+              "else": {
+                "required": [
+                  "gate"
+                ]
+              }
+            }
+          ]
         },
         "relative": {
           "type": "object",
@@ -515,7 +706,7 @@
                 "number",
                 "null"
               ],
-              "exclusiveMinimum": 0
+              "description": "当前倍数。亏损公司 PE 可以为负——负值表示不可用，不是「极度低估」。"
             },
             "percentile_10y": {
               "type": [
@@ -647,40 +838,76 @@
             "combined_range",
             "mode",
             "safety_margin_pct",
+            "margin_basis",
+            "dcf_margin_pct",
+            "relative_margin_pct",
+            "divergence_pct",
             "confidence_level",
             "note"
           ],
           "additionalProperties": false,
           "properties": {
             "dcf_base_range": {
-              "$ref": "#/definitions/priceRange"
+              "$ref": "#/definitions/nullablePriceRange"
             },
             "relative_range": {
               "$ref": "#/definitions/nullablePriceRange"
             },
             "combined_range": {
-              "$ref": "#/definitions/priceRange"
+              "$ref": "#/definitions/nullablePriceRange"
             },
             "mode": {
               "enum": [
                 "intersection",
                 "union",
-                "dcf_only"
+                "dcf_only",
+                "relative_only",
+                "not_applicable",
+                "rejected"
               ],
-              "description": "dcf_only = 相对估值不可用，退化为单法。"
+              "description": "dcf_only/relative_only = 单法；not_applicable = 前门判定方法不适用（不出区间）；rejected = 区间含非正值被拒。"
             },
             "safety_margin_pct": {
               "type": [
                 "number",
                 "null"
               ],
-              "description": "(合成区间中枢 - 现价)/现价 ×100，安全边际指标评分输入；现价缺失时为 null。"
+              "description": "合成区间中枢相对现价的偏离。仅当两法区间有重叠（intersection）或只有单法时为数字；两法无重叠（union）时为 null——并集中点没有经济含义，不能当作安全边际。"
+            },
+            "margin_basis": {
+              "enum": [
+                "combined",
+                "none"
+              ],
+              "description": "combined = safety_margin_pct 可读；none = 不给合成安全边际（union/不适用/被拒），改看 dcf_margin_pct 与 relative_margin_pct。"
+            },
+            "dcf_margin_pct": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "description": "DCF 基准情景中枢相对现价的偏离（单法口径）。与评分卡 val.dcf_margin 同源；两法分歧大且终值占比高时，该指标被排除在评分外（见 data_quality.notes）。"
+            },
+            "relative_margin_pct": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "description": "相对估值分位带区间中枢相对现价的偏离（单法口径）。"
+            },
+            "divergence_pct": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "description": "两法中枢差异（相对法中枢 / DCF 中枢 - 1）。分歧越大，越应先解释假设差异再谈贵贱。"
             },
             "confidence_level": {
               "enum": [
                 "high",
                 "medium",
-                "low"
+                "low",
+                "none"
               ]
             },
             "note": {
@@ -692,9 +919,9 @@
     },
     "scenarios": {
       "type": "array",
-      "minItems": 3,
+      "minItems": 0,
       "maxItems": 3,
-      "description": "乐观/基准/悲观三情景；probability 合计必须=1(引擎校验)。",
+      "description": "乐观/基准/悲观三情景；probability 合计必须=1(引擎校验)。估值前门判定不适用时为空数组——没有 DCF 就没有情景价位，不编。",
       "items": {
         "type": "object",
         "required": [
@@ -1419,6 +1646,10 @@
                     },
                     "missing": {
                       "type": "boolean"
+                    },
+                    "suppressed": {
+                      "type": "boolean",
+                      "description": "方法性抑制：指标本有数但对本标的不成立（如两法分歧大且终值主导时的 DCF 安全边际）。计入 missing，但不计入覆盖率分母——否则方法问题会被误报成缺数问题。"
                     },
                     "rationale": {
                       "type": "string",

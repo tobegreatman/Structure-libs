@@ -682,8 +682,27 @@ def a24_annual_parser_discipline() -> str:
     assert parse_customer_section(
         "财务报表附注 本行前五名客户存款余额合计占各项存款的比例不重大。") is None
 
+    # 匿名化客户名（客户1…客户5）+ 合计行带"/"占位：名称含数字也必须能解析。
+    # 曾经的 bug：名称组排除数字 → 整张表匹配不上 → 静默退化成"只有前五合计 54.59%"。
+    anon = ("公司前五名客户 √适用 □不适用 单位：万元 币种：人民币 "
+            "序号 客户名称 销售额 占年度销售总额比例（%） 是否与上市公司存在关联关系 "
+            "1 客户1 9,787.51 24.59 否 2 客户2 5,743.28 14.43 否 "
+            "3 客户3 2,739.17 6.88 否 4 客户4 2,034.61 5.11 否 "
+            "5 客户5 1,422.08 3.57 否 合计 / 21,726.65 54.59 否")
+    da = parse_customer_section(anon)
+    assert da and da.form == "table", "匿名化名称不许让整张表消失"
+    assert da.top_ratio == 24.59 and da.five_ratio == 54.59 and da.rows == 5
+    assert da.top_name == "客户1" and da.cross_check["rule"] == "sum==total"
+
+    # 名称放开数字后，没有序号锚点的表仍不许硬凑
+    no_seq = ("公司前 5大客户资料 序号 客户名称 销售额（元） 占年度销售总额比例 "
+              "9,787.51 24.59 9,787.51 24.59 9,787.51 24.59")
+    dn = parse_customer_section(no_seq)
+    assert dn is None or dn.top_ratio is None, "缺序号锚点却凑出值，说明错位防线失效"
+
     return ("表→13.73%（五行之和=合计 38.96，校验通过）；元/万元不改占比；跨页 4 行仍取第 1 名 5.91%；"
-            "列错位→判不一致不填；文字段保留主营业务收入口径 8.0%；只有合计→usable=False；无关页→None")
+            "列错位→判不一致不填；文字段保留主营业务收入口径 8.0%；只有合计→usable=False；无关页→None；"
+            "匿名化「客户1」+「合计 /」→ 24.59%（不退化为总合计）；缺序号的表→不凑")
 
 
 def a23_cadence_matches_disclosure_rhythm() -> str:
@@ -783,6 +802,275 @@ def a25_text_judgement_roundtrip() -> str:
             "录入后结论首句即原话；空串仍判未填")
 
 
+def a26_qualitative_anchors_are_visible() -> str:
+    """定性档位必须在界面上带含义，不能只给"1 档…5 档"。
+
+    档位不是自由评分：rubric 把档位严格映射成档内分（(档-1)×2.5，1→0、3→5、5→10），
+    所以选错一档整个因子偏 2.5 分。界面若不显示每档的行为描述，等于让用户盲选一个直接
+    改分数的值——锚定量表本来就在 specs.py 里写好并进了评分证据，只是没通到前端。
+
+    要守三件事：
+    1. meta 下发的每个定性字段都带齐 1-5 档锚定，且档位与量规分数一一对应；
+    2. 界面的下拉选项带锚定短语、选中后显示完整描述（档位即语义）；
+    3. 文本字段与档位字段不走同一分支（一句话本质是字符串，已由 A25 钉住）。
+    """
+    from stockframe.rubric import IndicatorSpec
+    from stockframe.server import _field_meta
+    from stockframe.specs import ANCHORS, rating_bands
+
+    # 档位 → 分数的换算必须与 rubric 一致（锚定指标不看 bands，直接 (档-1)×2.5）
+    assert [b.score for b in rating_bands()] == [0.0, 2.5, 5.0, 7.5, 10.0]
+    spec = IndicatorSpec(id="t", name="t", unit="1-5档", field="t",
+                         bands=rating_bands(), weight=1.0, rationale="t",
+                         anchors=ANCHORS["policy_stance"])
+    assert [spec.anchors[r] and (r - 1) * 2.5 for r in range(1, 6)] == [0.0, 2.5, 5.0, 7.5, 10.0]
+
+    meta = _field_meta()
+    qual = [f for f in meta["fields"] if f["qualitative"]]
+    assert len(qual) >= 8, f"定性字段应覆盖宏观/行业/公司三类，实际 {len(qual)}"
+    missing = [f["field_id"] for f in qual if "anchors" not in f]
+    assert not missing, f"这些定性字段缺锚定说明：{missing}"
+    for f in qual:
+        a = f["anchors"]
+        assert set(a) == {"1", "2", "3", "4", "5"}, f"{f['field_id']} 锚定档位不全：{sorted(a)}"
+        assert all(len(v) >= 6 for v in a.values()), f"{f['field_id']} 有档位描述过短"
+
+    # 三个典型字段：政策取向 / 渗透空间 / 投资逻辑强度，档位语义必须能区分
+    by_id = {f["field_id"]: f["anchors"] for f in qual}
+    assert "抑制" in by_id["macro.policy_stance"]["1"] and "支持" in by_id["macro.policy_stance"]["5"]
+    assert "70%" in by_id["industry.penetration_space"]["1"]
+    assert "预期差" in by_id["company.logic_strength"]["4"], "逻辑强度的关键在预期差，4 档必须点明"
+
+    html = (ROOT / "web" / "index.html").read_text(encoding="utf-8")
+    assert "data-anchor=" in html, "下拉未标记档位类型，无法按档位取锚定"
+    assert "data-hint=" in html, "缺少档位含义展示位"
+    assert "refreshAnchorHint" in html, "选中档位后不会回填该档含义"
+    assert "anchorShort(anchorOf(" in html, "选项文本没带锚定短语，等于仍是盲选"
+    assert 'unit==="文本"' in html, "文本字段分支不能被档位分支覆盖"
+
+    return (f"{len(qual)} 个定性字段全部下发 1-5 档锚定；档位↔分数 1→0/3→5/5→10 未漂移；"
+            "下拉显示「档位｜短语」、选中回填整段含义（政策：抑制→支持；渗透：>70% 无空间；逻辑：4 档含预期差）")
+
+
+def a27_input_contract() -> str:
+    """脏数据不许变成分数。
+
+    评分带用 `v >= lo and v < hi` 比较，而 NaN 对任何比较都为 False（落进最差档）、
+    +Inf 命中末带（落进满分档）——两者都被当成真实分数，置信度也不受影响。
+    同类"安静地错"还有：档位 4.7 被 int() 截成 4、档位 9 静默当缺失、
+    字段名拼错后整块证据消失、文本字段塞数字直接进结论首句。
+    这一项把这些全部钉成"报错"。
+    """
+    from stockframe.contract import ContractError
+
+    base = load_sample()
+
+    def expect_error(mut, keyword, label):
+        inp = copy.deepcopy(base)
+        mut(inp)
+        try:
+            run(inp)
+        except ContractError as exc:
+            assert keyword in str(exc), f"{label}: 报错信息未点明问题（{exc}）"
+            return
+        raise AssertionError(f"{label}: 未报错——脏数据会静默变成分数")
+
+    expect_error(lambda i: i["data"]["financial"]["roe_ttm"].update(value=float("nan")), "NaN", "roe=NaN")
+    expect_error(lambda i: i["data"]["financial"]["roe_ttm"].update(value=float("inf")), "NaN/Inf", "roe=+Inf")
+    expect_error(lambda i: i["data"]["company"]["moat"].update(value=4.7), "整数", "档位 4.7")
+    expect_error(lambda i: i["data"]["company"]["moat"].update(value=9), "越界", "档位 9")
+    expect_error(lambda i: i["data"]["market"]["price_close"].update(value=0), "必须为正", "price=0")
+
+    def typo(i):
+        i["data"]["financial"]["roe_typo"] = i["data"]["financial"].pop("roe_ttm")
+
+    expect_error(typo, "roe_ttm", "字段名拼错")
+    expect_error(lambda i: i["data"]["company"]["logic_essence"].update(value=12345), "文本字段", "文本=数字")
+
+    # 基线不受影响
+    rep = run(base)
+    assert rep["conclusion"]["bucket_mid"] == "入池", "样例基线被契约改动影响"
+
+    return ("NaN/±Inf/档位 4.7/档位 9/price=0/字段名拼错/文本塞数字 共 7 组反例全部报错，"
+            "且报错点名字段与原因；基线 7.64 入池不变")
+
+
+def a28_applicability_gate() -> str:
+    """估值方法前门：先判断"该不该算"，再谈"算多少"。
+
+    旧行为是照样算：平安银行（000001）综合分 7.12 过入池线，DCF 给 24.58–33.28 元
+    对股价 11.20，安全边际 +95.7%，EBIT 率 43.66%——唯一拦住它的是覆盖闸门，
+    不是行业判断。亏损时更直接：EPS=-0.8 会输出负股价 -17.6 元并通过 schema。
+    """
+    from stockframe.datadict import InputError
+
+    base = load_sample()
+
+    def bank(i):
+        i["meta"]["company_type"] = "bank"
+        i["meta"]["relative_valuation_metric"] = "PB"
+
+    inp = copy.deepcopy(base)
+    bank(inp)
+    rep = run(inp)
+    v = rep["valuation"]
+    assert v["gate"]["dcf_applicable"] is False and v["gate"]["code"] == "DCF_NOT_APPLICABLE"
+    assert "scenario_results" not in v["dcf"], "不适用时不得留下 DCF 数字"
+    assert v["synthesis"]["safety_margin_pct"] is None, "不适用时不得给安全边际"
+    assert v["synthesis"]["combined_range"] == {"low": None, "high": None}
+    assert rep["scenarios"] == [], "没有 DCF 就没有情景价位"
+    assert rep["conclusion"]["decision"]["rule_id"] == "R9_MODEL_NOT_APPLICABLE"
+    assert rep["conclusion"]["bucket_mid"] == "人工复核"
+    ok, errs = validate_report(rep)
+    assert ok, "银行报告 schema 校验失败：" + "; ".join(errs[:3])
+
+    # 口径必须与类型自洽：银行不能声明 PE
+    try:
+        bad = copy.deepcopy(base)
+        bad["meta"]["company_type"] = "bank"
+        run(bad)
+    except InputError as exc:
+        assert "PB" in str(exc)
+    else:
+        raise AssertionError("bank + PE 应报错（PE 对银行无意义）")
+
+    # 亏损状态：任何类型都升级为不适用
+    for label, mut in (
+        ("EPS=-0.8", lambda i: i["data"]["valuation"]["eps_ttm"].update(value=-0.8)),
+        ("PE=-35", lambda i: i["data"]["market"]["pe_ttm"].update(value=-35.0)),
+    ):
+        loss = copy.deepcopy(base)
+        mut(loss)
+        lr = run(loss)
+        assert lr["valuation"]["gate"]["code"] == "DCF_LOSS_MAKING", f"{label}: 应触发亏损前门"
+        assert lr["meta"]["company_type_effective"] == "loss_making"
+        assert lr["valuation"]["relative"]["implied_price_range"]["low"] is None
+        assert lr["valuation"]["synthesis"]["safety_margin_pct"] is None, f"{label}: 不得给安全边际"
+        ok2, errs2 = validate_report(lr)
+        assert ok2, f"{label}: schema 校验失败：{'; '.join(errs2[:3])}"
+
+    # 区间下限必须为正
+    from stockframe.valuation import synthesize
+    out = synthesize({"value_per_share_low": -2.0, "value_per_share_high": 1.0},
+                     {"available": False, "implied_price_range": {"low": None, "high": None}},
+                     10.0, [], gate=None)
+    assert out["mode"] == "rejected" and out["combined_range"] == {"low": None, "high": None}
+
+    return ("bank→DCF_NOT_APPLICABLE（无区间/无安全边际/无情景，落 R9 人工复核）；"
+            "bank+PE→报错；EPS≤0 或 PE≤0→DCF_LOSS_MAKING；区间含非正值→rejected")
+
+
+def a29_wording_enforced_at_runtime() -> str:
+    """违禁措辞必须在导出前拦，而不只是验收时扫样例报告。
+
+    文档曾写着"管线会扫描并拦下"，代码里却只有本脚本的 A4 扫样例——
+    一条 `logic_essence="建议目标价 45 元买入"` 会原样进结论首句。
+    现在改成运行期检查，且词表与 A4 的 BANNED 同源。
+    """
+    from stockframe import wording
+
+    assert tuple(BANNED) == wording.BANNED_TERMS, \
+        f"两套词表已漂移：验收 {BANNED} vs 运行时 {wording.BANNED_TERMS}"
+
+    base = load_sample()
+    hits = []
+    for term in ("目标价", "买入", "止损"):
+        inp = copy.deepcopy(base)
+        inp["data"]["company"]["logic_essence"]["value"] = f"逻辑成立就{term}"
+        try:
+            run(inp)
+        except wording.WordingError:
+            hits.append(term)
+        else:
+            raise AssertionError(f"输入含「{term}」未被拦下")
+
+    rep = run(base)
+    text = json.dumps(rep["conclusion"], ensure_ascii=False)
+    assert not [t for t in BANNED if t in text], "样例报告的结论段出现违禁措辞"
+
+    return ("词表与 A4 同源；输入含「目标价/买入/止损」→ WordingError；"
+            "样例报告结论段干净")
+
+
+def a30_assumption_contract_and_strict_json() -> str:
+    """假设层契约 + 报告必须是合法 JSON + 安全边际只有一个口径。
+
+    上一轮把契约挂在 data 字段上，assumptions（DCF 假设）没接线：
+    `wacc=NaN` 一路算出 NaN 区间，报告"通过 schema"（jsonschema 把 NaN 当 number），
+    但 node/浏览器 `JSON.parse` 直接 `Unexpected token 'N'`；
+    `shares=0` 抛 ZeroDivisionError（HTTP 500），`wacc="0.08"` 抛 TypeError。
+    """
+    from stockframe.contract import ContractError
+
+    base = load_sample()
+
+    # ① 假设层的 NaN/Inf/零股本/字符串/缺块，必须报错并点名字段
+    cases = []
+    for key, bad in (("wacc", float("nan")), ("revenue_base", float("inf")),
+                     ("shares", 0), ("tax_rate", "0.15")):
+        inp = copy.deepcopy(base)
+        inp["assumptions"]["dcf"]["base"][key] = bad
+        try:
+            run(inp)
+        except (ContractError, ValueError) as exc:
+            assert key in str(exc), f"{key} 报错信息未点名字段：{exc}"
+            cases.append(key)
+        else:
+            raise AssertionError(f"assumptions.dcf.base.{key}={bad!r} 未被拦下")
+
+    inp = copy.deepcopy(base)
+    inp["assumptions"].pop("dcf")
+    try:
+        run(inp)
+    except (ContractError, ValueError) as exc:
+        assert "dcf" in str(exc)
+    else:
+        raise AssertionError("删掉 assumptions.dcf 未报错")
+
+    # ② 出口：报告必须能被严格 JSON 解析（schema 通过 ≠ 合法 JSON）
+    rep = run(base)
+    strict = json.dumps(rep, ensure_ascii=False, allow_nan=False)
+
+    # ③ 安全边际只有一个口径：评分卡的 val.dcf_margin 与 synthesis.dcf_margin_pct 必须同源
+    syn = rep["valuation"]["synthesis"]
+    dim = next(d for d in rep["scorecard"]["dimensions"] if d["id"] == "valuation")
+    ind = next(x for f in dim["factors"] for x in f["indicators"] if x["id"] == "val.dcf_margin")
+    assert ind["value"] == syn["dcf_margin_pct"], \
+        f"评分卡 {ind['value']} 与 synthesis.dcf_margin_pct {syn['dcf_margin_pct']} 不同源"
+
+    # ④ 两法无重叠时不得输出合成安全边际
+    inp = copy.deepcopy(base)
+    for name in ("base", "optimistic", "pessimistic"):
+        inp["assumptions"]["dcf"][name].update(ebit_margin_path=[0.45] * 5)
+    union_rep = run(inp)
+    usyn = union_rep["valuation"]["synthesis"]
+    if usyn["mode"] == "union":
+        assert usyn["safety_margin_pct"] is None, "union 仍输出了合成安全边际"
+        assert usyn["margin_basis"] == "none"
+        udim = next(d for d in union_rep["scorecard"]["dimensions"] if d["id"] == "valuation")
+        uind = next(x for f in udim["factors"] for x in f["indicators"] if x["id"] == "val.dcf_margin")
+        assert uind["suppressed"] is True, "两法分歧+终值主导时 DCF 安全边际仍参与评分"
+
+    # ⑤ 措辞：引用/事实/否定不该被误伤，指令仍要拦
+    benign = ("股价仍低于卖方目标价中位数", "当前阶段不加仓", "大股东公告清仓式减持")
+    for text in benign:
+        inp = copy.deepcopy(base)
+        inp["data"]["company"]["logic_essence"]["value"] = f"买的是份额兑现：{text}，若份额下滑则失效"
+        run(inp)  # 不应抛 WordingError
+    inp = copy.deepcopy(base)
+    inp["data"]["company"]["logic_essence"]["value"] = "给予买入评级，目标价 45 元"
+    try:
+        run(inp)
+    except Exception as exc:
+        assert "WordingError" in type(exc).__name__
+    else:
+        raise AssertionError("「给予买入评级，目标价 45 元」未被拦下")
+
+    return (f"假设层 {len(cases)}+1 组反例报错并点名字段；报告严格 JSON 可序列化（{len(strict)} 字节）；"
+            "评分卡与 synthesis 安全边际同源；union 不出合成安全边际且抑制评分；"
+            "「卖方目标价/不加仓/清仓式减持」放行、「建议买入+目标价」拦截")
+
+
 def main() -> int:
     check("A1", "单元测试全绿", a1_unit_tests)
     check("A2", "样例管线跑通且通过 schema", a2_pipeline_and_schema)
@@ -809,6 +1097,11 @@ def main() -> int:
     check("A23", "披露节奏与统计口径分离（年报字段不按季频衡量）", a23_cadence_matches_disclosure_rhythm)
     check("A24", "年报解析纪律（错位/跨页/单位/分母/只有合计）", a24_annual_parser_discipline)
     check("A25", "文本判断项录入通路（一句话本质不被当数字吞掉）", a25_text_judgement_roundtrip)
+    check("A26", "定性档位可见（1-5 档必须带锚定含义）", a26_qualitative_anchors_are_visible)
+    check("A27", "输入契约（脏数据不许变成分数）", a27_input_contract)
+    check("A28", "估值方法前门（行业/亏损不适用，区间非正拒绝）", a28_applicability_gate)
+    check("A29", "违禁措辞在导出前拦下（运行期，不只验收）", a29_wording_enforced_at_runtime)
+    check("A30", "假设层契约 + 报告严格 JSON + 安全边际单一口径", a30_assumption_contract_and_strict_json)
 
     width = max(len(t) for _, t, _, _ in results) + 2
     print("=" * 78)

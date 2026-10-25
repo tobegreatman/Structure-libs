@@ -15,7 +15,7 @@ from __future__ import annotations
 from datetime import date, timedelta
 from typing import Any, Dict, List, Optional, Tuple
 
-from .datadict import FIELD_REGISTRY, FIELD_SPECS
+from .datadict import COMPANY_PROFILES, FIELD_REGISTRY, FIELD_SPECS
 from . import proxies
 from .sources.base import SourceError, validate_raw
 
@@ -220,6 +220,30 @@ def trading_from_closes(hist: List[Dict[str, Any]], asof: date) -> Dict[str, Any
 
 
 # ---------------------------------------------------------------- 主流程
+
+# 申万二级行业名 → 公司类型。只登记"方法不成立"的那几类：
+# 银行/保险/证券/地产的价值来源不是营收×EBIT率，用本框架的 FCFF-DCF 会得到荒谬区间。
+# 分类宁缺勿滥：命中不了就按增速判断，并在 warnings 里明说"未做行业分类"。
+INDUSTRY_TYPE_KEYWORDS: tuple = (
+    ("银行", "bank"),
+    ("保险", "insurance"),
+    ("证券", "financial"),
+    ("多元金融", "financial"),
+    ("房地产", "reit"),
+    ("园区开发", "reit"),
+)
+
+
+def classify_company_type(industry_name: str) -> Optional[str]:
+    """按申万二级行业名判定公司类型；判不了返回 None（交回增速/盈利判断）。"""
+    name = (industry_name or "").strip()
+    if not name:
+        return None
+    for keyword, code in INDUSTRY_TYPE_KEYWORDS:
+        if keyword in name and code in COMPANY_PROFILES:
+            return code
+    return None
+
 
 def build(
     raw: Dict[str, Any],
@@ -516,15 +540,29 @@ def build(
     logic_items = _auto_logic(data)
 
     # ---- meta
+    # company_type 必须在 datadict.COMPANY_PROFILES 里，且与 relative_valuation_metric 自洽：
+    # 旧代码写的是 "growth"（未登记的类型，等于让自动模式走默认模板而不自知），
+    # 亏损时又把口径改成 PB —— 而引擎其实一直按 PE 取值，等于口径写在报告里、算法没跟着变。
     st_flag = "ST" in (raw["stock"].get("name") or "").upper()
+    industry_name = ((raw.get("industry") or {}).get("name") or "")
+    industry_type = classify_company_type(industry_name)
+    if industry_type:
+        company_type = industry_type
+        metric = COMPANY_PROFILES[industry_type].relative_metrics[0]
+    elif (np_ttm or 0) <= 0:
+        company_type, metric = "loss_making", "PS"
+    elif g_base > 0.20:
+        company_type, metric = "high_growth", "PE"
+    else:
+        company_type, metric = "steady_growth", "PE"
     meta = {
         "stock": {
             "name": raw["stock"]["name"], "code": raw["stock"]["code"],
             "exchange": raw["stock"].get("exchange", ""), "currency": "CNY",
         },
         "analysis_date": asof.isoformat(),
-        "company_type": "growth" if g_base > 0.20 else "steady_growth",
-        "relative_valuation_metric": "PE" if (np_ttm or 0) > 0 else "PB",
+        "company_type": company_type,
+        "relative_valuation_metric": metric,
         "generated_at": raw.get("meta", {}).get("fetched_at") or "",
         "flags": {
             "st": st_flag, "audit_qualified": False, "regulatory_investigation": False,
@@ -550,6 +588,17 @@ def build(
     fill = _fill_report(inp, derivations, raw, asof, latest, np_method, rev_method)
     fill["proxied"] = proxied
     fill["customer_annual"] = customer
+    # 公司类型决定估值方法是否适用：能按行业归属判定就判定，判不了就明说"未做行业分类"。
+    # 漏说一次，读者就会看到一份"正常"的银行估值报告。
+    if industry_type:
+        fill["warnings"].append(
+            f"company_type 按行业归属「{industry_name}」判定为 {industry_type}："
+            f"{COMPANY_PROFILES[industry_type].reason}")
+    else:
+        fill["warnings"].append(
+            f"company_type 由增速与盈利机械推断为 {company_type}（未拿到行业归属，未做行业分类）："
+            "若标的属于银行/保险/证券/地产，请在输入 meta 中改为对应类型，"
+            "否则估值前门不会触发，本框架会对金融企业给出不成立的 DCF 区间。")
     if proxied.get("proxy"):
         fill["warnings"].append(
             f"{len(proxied['proxy'])} 个判断项由代理指标自动推断（不是研究结论，"

@@ -9,7 +9,9 @@
 :root{
   --bg:#f4f6f8; --surface:#fff; --surface-2:#fafbfc; --surface-3:#f2f4f7;
   --line:#e2e6eb; --line-2:#cfd6de;
-  --text:#15181d; --text-2:#3d4653; --muted:#6b7481; --faint:#98a2af;
+  /* 四级文字色全部满足 WCAG AA（正文 4.5:1）：muted 6.7 / faint 5.2（白底）。
+     ghost 只用于纯装饰（分隔、折叠箭头、空位），不承载任何信息。 */
+  --text:#15181d; --text-2:#3d4653; --muted:#545d6a; --faint:#656e7c; --ghost:#a3acb8;
   --navy:#1b3a57; --navy-soft:#eef3f8;
   --teal:#0f766e; --teal-soft:#e9f5f3;
   --red:#b02a30; --red-soft:#fbeced;
@@ -18,12 +20,16 @@
   --blue:#2b5fa8; --blue-soft:#eef3fb;
   --shadow:0 1px 2px rgba(17,24,39,.04),0 10px 26px -16px rgba(17,24,39,.28);
   --r:10px; --r-sm:7px;
+  /* 版式骨架：内容栏最大宽度与两侧留白。
+     顶栏 / 结论条 / 标签页 / 主体 / 抓取条 / 提示条 共用 --shell，
+     改这一处即可整体收放，不必逐条搜 max-width。（媒体查询断点不受此变量影响） */
+  --shell:1600px; --gutter:22px;
   --mono:"SF Mono",ui-monospace,"Cascadia Mono",Consolas,"Liberation Mono",monospace;
 }
 [data-theme="dark"]{
   --bg:#0d1015; --surface:#141920; --surface-2:#181e26; --surface-3:#1d242e;
   --line:#252d38; --line-2:#37424f;
-  --text:#e9edf3; --text-2:#c3cbd6; --muted:#98a3b2; --faint:#6d7887;
+  --text:#e9edf3; --text-2:#c3cbd6; --muted:#a7b1bf; --faint:#8f9aa9; --ghost:#4f5967;
   --navy:#8fb8dc; --navy-soft:#1a2532;
   --teal:#5fc9bb; --teal-soft:#132724;
   --red:#e8777c; --red-soft:#2a1819;
@@ -50,7 +56,7 @@ button{font:inherit;color:inherit;cursor:pointer}
   position:sticky;top:0;z-index:40;background:var(--surface);
   border-bottom:1px solid var(--line);
 }
-.topbar-in{max-width:1420px;margin:0 auto;padding:14px 22px;display:flex;gap:22px;align-items:center;flex-wrap:wrap}
+.topbar-in{max-width:var(--shell);margin:0 auto;padding:14px var(--gutter);display:flex;gap:22px;align-items:center;flex-wrap:wrap}
 .brand{display:flex;align-items:center;gap:10px;flex:none}
 .mark{width:30px;height:20px;border-radius:8px;background:var(--navy);color:#fff;display:grid;place-items:center;
   font-family:var(--mono);font-size:14px;font-weight:600;letter-spacing:-.5px}
@@ -76,12 +82,13 @@ button{font:inherit;color:inherit;cursor:pointer}
 .btn.ghost:hover{background:var(--surface-3);color:var(--text)}
 
 /* ---------------- 结论条 ---------------- */
-.verdict{max-width:1420px;margin:0 auto;padding:0 22px}
+.verdict{max-width:var(--shell);margin:0 auto;padding:0 var(--gutter)}
 .verdict-in{
   margin-top:16px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);
-  box-shadow:var(--shadow);padding:16px 18px;display:flex;gap:26px;align-items:center;flex-wrap:wrap;
+  box-shadow:var(--shadow);padding:16px 18px;display:flex;flex-direction:column;gap:13px;
   border-left:4px solid var(--bucket-c,var(--navy));
 }
+.vrow{display:flex;gap:26px;align-items:center;flex-wrap:wrap}
 .bucket{flex:none;min-width:150px}
 .bucket .lbl{font-size:10.5px;letter-spacing:.16em;color:var(--faint);font-family:var(--mono);text-transform:uppercase}
 .bucket .val{font-size:27px;font-weight:700;line-height:1.25;color:var(--bucket-c,var(--navy));letter-spacing:.02em}
@@ -91,12 +98,20 @@ button{font:inherit;color:inherit;cursor:pointer}
 .vstat .k{font-size:10.5px;letter-spacing:.1em;color:var(--faint);font-family:var(--mono);text-transform:uppercase}
 .vstat .v{font-size:20px;font-weight:650;font-family:var(--mono);line-height:1.3}
 .vstat .v small{font-size:11px;color:var(--muted);font-weight:500}
-.vsummary{flex:1;min-width:280px;font-size:13px;color:var(--text-2);line-height:1.65}
-.vsummary .rule{display:inline-block;font-family:var(--mono);font-size:10.5px;color:var(--muted);
-  border:1px dashed var(--line-2);border-radius:4px;padding:0 5px;margin-right:6px}
+/* 摘要：逻辑内核独占两行，其余事实降级为 chip —— 不再用「｜」把五件事串成一句 */
+.vsummary{display:flex;flex-direction:column;gap:6px;border-top:1px solid var(--line);padding-top:11px}
+.vsum-k{font-size:10.5px;letter-spacing:.06em;color:var(--faint);font-family:var(--mono)}
+.vsum-t{font-size:13.5px;color:var(--text);line-height:1.65;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.vsum-t.missing{color:var(--amber)}
+.vsum-chips{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:1px}
+.chip{font-family:var(--mono);font-size:10.5px;color:var(--muted);background:var(--surface-2);
+  border:1px solid var(--line-2);border-radius:4px;padding:1px 6px;white-space:nowrap}
+.chip.rule{border-style:dashed}
+.chip.warn{color:var(--amber);border-color:var(--amber);background:var(--amber-soft)}
 
 /* ---------------- 导航 ---------------- */
-.tabs{max-width:1420px;margin:14px auto 0;padding:0 22px;display:flex;gap:2px;overflow-x:auto;scrollbar-width:none}
+.tabs{max-width:var(--shell);margin:14px auto 0;padding:0 var(--gutter);display:flex;gap:2px;overflow-x:auto;scrollbar-width:none}
 .tabs::-webkit-scrollbar{display:none}
 .tab{
   border:0;background:transparent;padding:9px 13px 11px;font-size:13px;color:var(--muted);
@@ -108,7 +123,7 @@ button{font:inherit;color:inherit;cursor:pointer}
 .tab.on i{color:var(--navy)}
 
 /* ---------------- 版面 ---------------- */
-main{max-width:1420px;margin:0 auto;padding:18px 22px 80px}
+main{max-width:var(--shell);margin:0 auto;padding:18px var(--gutter) 80px}
 .view{display:none;animation:fade .18s ease}
 .view.on{display:block}
 @keyframes fade{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:none}}
@@ -119,7 +134,8 @@ main{max-width:1420px;margin:0 auto;padding:18px 22px 80px}
 .g-2-1{grid-template-columns:minmax(0,2fr) minmax(0,1fr)}
 .g-1-2{grid-template-columns:minmax(0,1fr) minmax(0,2fr)}
 @media(max-width:1080px){.g3,.g4,.g-2-1,.g-1-2{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:760px){.grid{grid-template-columns:1fr!important}.vdiv{display:none}
+@media(max-width:760px){:root{--gutter:14px}.grid{grid-template-columns:1fr!important}.vdiv{display:none}
+  .actions{flex:1 1 100%;flex-wrap:wrap}
   .dim-h{flex-wrap:wrap}.dim-h .nm{flex:1 1 100%}.dim-h .spark{flex:1 1 100%}.dim-h .wts{display:none}}
 
 .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:16px 18px;min-width:0}
@@ -181,7 +197,7 @@ td.n,th.n{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-
 .dim-h .spark{flex:1 1 160px;min-width:110px;position:relative}
 .dim-h .wts{flex:none;width:108px;text-align:right;font-size:10.5px;color:var(--muted);line-height:1.4;white-space:nowrap}
 .dim-h .wts b{font-family:var(--mono);color:var(--text-2)}
-.dim-h .caret{flex:none;width:12px;color:var(--faint);transition:transform .15s;font-size:10px;text-align:center}
+.dim-h .caret{flex:none;width:12px;color:var(--ghost);transition:transform .15s;font-size:10px;text-align:center}
 .dim.open .caret{transform:rotate(90deg)}
 .dim-body{display:none;padding:2px 13px 14px 51px;border-top:1px dashed var(--line);background:var(--surface-2)}
 .dim.open .dim-body{display:block}
@@ -203,14 +219,26 @@ td.n,th.n{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-
 .legend span{display:flex;align-items:center;gap:5px}
 .legend i{width:9px;height:9px;border-radius:2px;display:inline-block}
 
-/* 雷达 */
-.radar-wrap{flex:none;width:330px;max-width:100%}
-.radar-split{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-.ranklist{flex:1 1 240px;min-width:190px;max-width:330px}
-.rank{display:grid;grid-template-columns:40px 1fr 30px 30px;gap:8px;align-items:center;font-size:11px;margin-bottom:8px}
+/* 八维雷达（形状 + 得分）与贡献榜（得分×权重）分工，不重复编码同一个数 */
+.radar-split{display:flex;gap:20px;align-items:center;flex-wrap:wrap;margin-top:4px}
+.radar-wrap{flex:0 0 320px;max-width:100%}
+.radar-wrap svg{display:block;width:100%;height:auto}
+.ranklist{flex:1 1 220px;min-width:206px;max-width:none}
+.rank{display:grid;grid-template-columns:44px 1fr 40px 38px;gap:9px;align-items:center;font-size:12px;margin-bottom:9px}
 .rank .rn{color:var(--text-2);white-space:nowrap}
-.rank .rs{font-family:var(--mono);text-align:right;font-size:11px;color:var(--text-2)}
-.rank .rw{font-family:var(--mono);text-align:right;font-size:10px;color:var(--faint)}
+.rank .rs{font-family:var(--mono);text-align:right;font-size:11.5px;color:var(--text)}
+.rank .rw{font-family:var(--mono);text-align:right;font-size:10.5px;color:var(--muted)}
+/* 贡献分层条：综合分 = 判断层 + 数据层 + 风险催化 */
+.attrbar{margin-top:14px;padding-top:12px;border-top:1px solid var(--line)}
+.ab-stack{display:flex;height:9px;border-radius:5px;overflow:hidden;background:var(--surface-3);gap:2px}
+.ab-stack span{display:block;height:100%}
+.ab-legend{display:flex;gap:16px;flex-wrap:wrap;margin-top:8px;font-size:11px;color:var(--muted);font-family:var(--mono)}
+.ab-legend i{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:5px}
+/* 归因公式收进 ⓘ，不占视觉重心 */
+.attrwrap{margin:2px 0 14px}
+.attrwrap-h{font-size:10.5px;letter-spacing:.06em;color:var(--faint);margin-bottom:7px;display:flex;align-items:center;gap:5px}
+.ihint{cursor:help;flex:none;width:13px;height:13px;border:1px solid var(--line-2);border-radius:50%;
+  display:inline-grid;place-items:center;font-size:9px;color:var(--muted);font-family:var(--mono)}
 
 /* 估值 */
 .rangebox{margin:6px 0 18px}
@@ -221,7 +249,7 @@ td.n,th.n{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-
 .track .fill.teal{background:var(--teal)}
 .track .fill.gold{background:var(--amber)}
 .track .price{position:absolute;top:-4px;bottom:-4px;width:2px;background:var(--red)}
-.track .price:after{content:attr(data-lbl);position:absolute;top:-18px;left:50%;transform:translateX(-50%);
+.track .price:after{content:attr(data-lbl);position:absolute;top:-12px;left:50%;transform:translateX(-50%);
   font-family:var(--mono);font-size:10px;color:var(--red);white-space:nowrap;background:var(--surface);padding:0 3px}
 .axis{position:relative;height:20px;margin-left:86px;border-top:1px solid var(--line-2)}
 .axis span{position:absolute;top:4px;transform:translateX(-50%);font-family:var(--mono);font-size:10px;color:var(--faint)}
@@ -230,7 +258,7 @@ td.n,th.n{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-
 .heat{border-collapse:separate;border-spacing:2px;font-family:var(--mono);font-size:11px}
 .heat th{background:transparent;border:0;padding:3px 5px;text-align:center;font-size:10px;color:var(--faint);text-transform:none}
 .heat td{border:0;padding:7px 8px;text-align:center;border-radius:4px;color:var(--text);font-weight:550}
-.heat .corner{background:transparent;color:var(--faint);font-size:10px}
+.heat .corner{background:transparent;color:var(--ghost);font-size:10px}
 
 /* 风险矩阵 */
 .matrix{display:grid;grid-template-columns:26px repeat(5,minmax(0,1fr));gap:3px;font-size:10.5px}
@@ -269,10 +297,10 @@ td.n,th.n{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-
 .cond{display:flex;gap:10px;padding:9px 0;border-bottom:1px dashed var(--line);font-size:12.5px}
 .cond:last-child{border-bottom:0}
 .cond .cid{font-family:var(--mono);font-size:10.5px;color:var(--faint);flex:none;width:26px;padding-top:2px}
-.cond .txt{flex:1}
+.cond .txt{flex:1;min-width:0}
 .cond .thr{font-family:var(--mono);font-size:11px;color:var(--navy);background:var(--navy-soft);
-  border-radius:4px;padding:1px 5px;white-space:nowrap;align-self:flex-start}
-.cond .mt{font-size:10.5px;color:var(--faint);font-family:var(--mono);margin-top:3px}
+  border-radius:4px;padding:1px 5px;white-space:nowrap;align-self:flex-start;flex:none}
+.cond .mt{font-size:10.5px;color:var(--faint);font-family:var(--mono);margin-top:3px;line-height:1.5;overflow-wrap:anywhere}
 
 /* 计量 */
 .gauges{display:flex;gap:18px;flex-wrap:wrap;align-items:center}
@@ -316,7 +344,7 @@ textarea.editor:focus{outline:2px solid var(--navy-soft);border-color:var(--navy
 .sugg div{padding:8px 11px;font-size:12.5px;cursor:pointer;display:flex;gap:8px;align-items:baseline}
 .sugg div:hover,.sugg div.on{background:var(--surface-2)}
 .sugg .c{font-family:var(--mono);font-size:11px;color:var(--faint)}
-.fetchbar{max-width:1420px;margin:10px auto 0;padding:0 22px}
+.fetchbar{max-width:var(--shell);margin:10px auto 0;padding:0 var(--gutter)}
 .fhead{display:flex;gap:12px;align-items:center;flex-wrap:wrap;font-size:12.5px}
 .fhead b{font-weight:650}
 .fbar{flex:1 1 180px;height:6px;border-radius:6px;background:var(--line);position:relative;min-width:130px}
@@ -331,11 +359,14 @@ textarea.editor:focus{outline:2px solid var(--navy-soft);border-color:var(--navy
 .pend .g .ktags{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:3px}
 .pend .g .ktags .ktag{margin-left:0}
 .pend .g .why{font-size:11px;color:var(--faint);margin-top:4px;line-height:1.55}
-.jrow{display:flex;gap:7px;align-items:center;margin-top:6px}
+.jrow{display:flex;gap:7px;align-items:baseline;margin-top:6px;flex-wrap:wrap}
 .jrow .lb{font-family:var(--mono);font-size:10.5px;color:var(--faint);flex:0 0 96px;
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .jrow select,.jrow input{height:26px;border:1px solid var(--line-2);border-radius:5px;background:var(--surface);
   color:var(--text);font-size:11.5px;font-family:var(--mono);padding:0 5px;flex:1;min-width:0}
+/* 定性档位的锚定说明：档位直接换算成分数，选之前必须看得到"这档是什么意思" */
+.jrow .ahint{flex:1 0 100%;margin-left:103px;font-size:10.5px;color:var(--faint);line-height:1.5;
+  min-height:14px;font-family:inherit}
 .deriv{width:100%;border-collapse:collapse;margin-top:8px;font-size:11px}
 .deriv td{border-top:1px solid var(--line);padding:5px 6px;vertical-align:top;color:var(--muted);line-height:1.55}
 .deriv td:first-child{font-family:var(--mono);color:var(--faint);white-space:nowrap}
@@ -355,7 +386,7 @@ details.derivbox summary{cursor:pointer;font-size:11.5px;color:var(--muted)}
   background:var(--line);color:var(--muted);margin-left:6px}
 
 /* 提示条 */
-.banner{max-width:1420px;margin:12px auto 0;padding:0 22px}
+.banner{max-width:var(--shell);margin:12px auto 0;padding:0 var(--gutter)}
 .banner-in{display:flex;gap:10px;align-items:center;background:var(--amber-soft);color:var(--amber);
   border:1px solid color-mix(in srgb,var(--amber) 30%,transparent);border-radius:var(--r-sm);padding:8px 12px;font-size:12px}
 .banner-in code{font-family:var(--mono);background:rgba(255,255,255,.5);padding:1px 5px;border-radius:3px;color:inherit}
@@ -415,17 +446,22 @@ details.derivbox summary{cursor:pointer;font-size:11.5px;color:var(--muted)}
 
 <div class="verdict">
   <div class="verdict-in" id="verdict">
-    <div class="bucket">
-      <div class="lbl">中线分桶</div>
-      <div class="val" id="v-bucket">—</div>
-      <div class="sub" id="v-rule">—</div>
+    <div class="vrow">
+      <div class="bucket">
+        <div class="lbl">中线分桶</div>
+        <div class="val" id="v-bucket">—</div>
+        <div class="sub" id="v-rule">—</div>
+      </div>
+      <div class="vdiv"></div>
+      <div class="vstat"><div class="k">中线综合</div><div class="v" id="v-mid">—<small>/10</small></div></div>
+      <div class="vstat"><div class="k">短线参考</div><div class="v" id="v-short">—<small>/10</small></div></div>
+      <div class="vstat"><div class="k">置信度</div><div class="v" id="v-conf">—</div></div>
     </div>
-    <div class="vdiv"></div>
-    <div class="vstat"><div class="k">中线综合</div><div class="v" id="v-mid">—<small>/10</small></div></div>
-    <div class="vstat"><div class="k">短线参考</div><div class="v" id="v-short">—<small>/10</small></div></div>
-    <div class="vstat"><div class="k">置信度</div><div class="v" id="v-conf">—</div></div>
-    <div class="vdiv"></div>
-    <div class="vsummary" id="v-summary">—</div>
+    <div class="vsummary">
+      <div class="vsum-k">一句话本质 · 逻辑内核</div>
+      <div class="vsum-t" id="v-essence">—</div>
+      <div class="vsum-chips" id="v-chips"></div>
+    </div>
   </div>
 </div>
 
@@ -482,7 +518,7 @@ details.derivbox summary{cursor:pointer;font-size:11.5px;color:var(--muted)}
 <div class="toast" id="toast"></div>
 
 <script>
-window.__SNAPSHOT__ = {"report":{"schema_version":"0.1.0","meta":{"stock":{"name":"华晟精工（示例·虚构演示标的）","code":"XX0000.DEMO","exchange":"SH（演示）","currency":"CNY"},"analysis_date":"2026-10-22","price_ref":{"close":32.5,"as_of":"2026-10-22","source":"演示行情库（收盘价）","source_tier":"L2"},"horizons":{"primary":"mid_term_6_12m","reference":"short_term_0_3m"},"framework_version":"0.1.0","generated_at":"2026-10-22","data_cutoff":"2026-10-22","company_type":"steady_growth","relative_valuation_metric":"PE"},"conclusion":{"bucket_mid":"入池","bucket_short":"入池","composite_score_mid":7.64,"composite_score_short":8.8,"confidence":{"level":"high","value":0.924},"decision":{"rule_id":"R6_SCORE_BAND","reasons":["中线综合分 7.64 >= 7.0 且各维度 >= 4.0"]},"summary":"一句话本质：买的是人形机器人零部件从 0 到 1 的份额兑现，叠加产能爬坡带来的毛利率中枢抬升｜中线综合分 7.64（观察带 5.0-7.0 / 入池线 7.0），分桶【入池】｜短线参考【入池】（不改变中线定位）｜置信度 high(0.924)，主要归因：只在年报披露的字段，数据期为最近一期年报、不随季报前移：company.customer_concentration（2026-06-30 年报口径）","maintain_conditions":[{"id":"C1","condition":"下期营收同比增速维持 ≥ 15.4%（当前 22.0% 的七成）","metric":"financial.rev_growth（定期报告）","threshold":"≥ 15.4%","source":"公司定期报告（披露日后评价）"},{"id":"C2","condition":"ROE(TTM) 维持 ≥ 13.5%（较当前回落不超过 3pp）","metric":"financial.roe_ttm","threshold":"≥ 13.5%","source":"公司定期报告"},{"id":"C3","condition":"PE 十年分位不升破 70%（当前 42%）","metric":"market.pctile_pe_10y","threshold":"< 70%","source":"行情/估值数据库"},{"id":"C4","condition":"最高风险 R1（大客户资本开支放缓）不触发：大客户季报资本开支指引/排产数据 同比转负","metric":"大客户季报资本开支指引/排产数据","threshold":"同比转负","source":"公告/行业数据"}],"falsification":[{"id":"F1","condition":"逻辑证伪：若「季度机器人业务收入增速」不再满足 ≥ 50%，则逻辑「机器人零部件放量：人形机器人量产 → 公司作为核心供应商份额 >30% → 收入弹性释放」失效（传导：行业量产(β) × 公司份额(α) → 机器人业务收入增速中枢上移）→ 公司/财务维度重估","metric":"季度机器人业务收入增速","threshold":"≥ 50%","source":"演示研究底稿（L3）"},{"id":"F2","condition":"逻辑证伪：若「毛利率环比变化」不再满足 环比 +0.3pp 以上，则逻辑「产能爬坡+规模效应驱动毛利率中枢上移」失效（传导：产能利用率提升 → 单位折旧摊薄 + 良率提升 → 毛利率年改善约 1pp）→ 公司/财务维度重估","metric":"毛利率环比变化","threshold":"环比 +0.3pp 以上","source":"演示研究底稿（L3）"},{"id":"F3","condition":"增长失速：营收同比跌破 11.0%（腰斩线）→ 财务/公司维度重估","metric":"financial.rev_growth","threshold":"< 11.0%","source":"公司定期报告"},{"id":"F4","condition":"估值风险：PE 十年分位升破 80% 或 DCF 安全边际转负 → 估值维度重估","metric":"market.pctile_pe_10y / valuation.dcf_margin_of_safety","threshold":">80% 或 <0","source":"行情/估值数据库"}],"valid_until":"2027-01-20","review_cadence":"中线：季度复核或证伪条件触发即重估；短线：事件驱动复核"},"scorecard":{"scale":"0-10","weights":{"mid_term":{"macro":0.08,"industry":0.14,"company":0.22,"financial":0.2,"valuation":0.16,"catalyst":0.06,"trading":0.06,"risk":0.08},"short_term":{"macro":0.05,"industry":0.1,"company":0.05,"financial":0.05,"valuation":0.05,"catalyst":0.3,"trading":0.3,"risk":0.1}},"dimensions":[{"id":"macro","name":"宏观","score_mid":7.5,"score_short":7.5,"confidence":{"level":"high","value":0.976},"factors":[{"id":"liquidity_rate","name":"流动性与利率","weight":0.5,"renormalized":false,"available_weight_ratio":1.0,"indicators":[{"id":"macro.m1_yoy_trend","name":"M1 同比趋势","unit":"%","value":6.2,"band":"良","score":7.5,"weight":0.6,"missing":false,"rationale":"M1 反映资金活化程度，经验上 >8% 对应宽松周期、<0% 收缩。","evidence":{"source":"演示央行金融统计（M1 同比）","source_tier":"L1","as_of":"2026-09-30","available_at":"2026-10-15"}},{"id":"macro.rate_10y_chg","name":"10Y 利率同比变化","unit":"bp","value":-25,"band":"良","score":7.5,"weight":0.4,"missing":false,"rationale":"利率下行降低贴现率与融资成本，对成长股估值中枢为顺风（反向指标）。口径：中债国债收益率曲线 10 年期（日频），同比 = 最新值与 365 天前最近交易日之差，单位 bp；曲线为日终估值，按次日可用。","evidence":{"source":"演示债券数据库（10Y 国债收益率同比变化，bp）","source_tier":"L2","as_of":"2026-10-20","available_at":"2026-10-20"}}]},{"id":"growth_policy","name":"增长与政策","weight":0.5,"renormalized":false,"available_weight_ratio":1.0,"indicators":[{"id":"macro.pmi_pos","name":"PMI 荣枯线位置","unit":"点","value":50.6,"band":"良","score":7.5,"weight":0.5,"missing":false,"rationale":"PMI 50 为荣枯线；51.5+ 对应扩张加速。","evidence":{"source":"演示统计局制造业 PMI","source_tier":"L1","as_of":"2026-09-30","available_at":"2026-09-30"}},{"id":"macro.policy_stance_r","name":"政策取向（对本行业）","unit":"1-5档","value":4,"band":"偏支持：有明确支持性政策或产业规划在途","score":7.5,"weight":0.5,"missing":false,"rationale":"政策取向需经'政策→行业→公司'传导链验证，非泛化受益。","evidence":{"source":"演示政策取向评估底稿（政策→行业→公司传导核对）","source_tier":"L3","as_of":"2026-10-01","available_at":"2026-10-01"}}]}]},{"id":"industry","name":"行业","score_mid":7.5,"score_short":7.5,"confidence":{"level":"high","value":0.92},"factors":[{"id":"prosperity","name":"景气度","weight":0.4,"renormalized":false,"available_weight_ratio":1.0,"indicators":[{"id":"industry.growth","name":"行业增速","unit":"%","value":14,"band":"良","score":7.5,"weight":0.6,"missing":false,"rationale":"行业增速显著高于名义 GDP 增速（约 5-6%）才算高景气。","evidence":{"source":"演示行业研究（精密零部件行业营收增速）","source_tier":"L3","as_of":"2026-09-30","available_at":"2026-10-10"}},{"id":"industry.price_trend_r","name":"行业量价趋势","unit":"-2..+2","value":4,"band":"价格偏强（+1）","score":7.5,"weight":0.4,"missing":false,"rationale":"量价齐升为最优景气组合；价格下行侵蚀利润率。","evidence":{"source":"演示行业研究（量价趋势档，1-5 档对应 -2..+2）","source_tier":"L3","as_of":"2026-09-30","available_at":"2026-10-10"}}]},{"id":"structure","name":"竞争格局","weight":0.35,"renormalized":false,"available_weight_ratio":1.0,"indicators":[{"id":"industry.concentration_r","name":"格局与公司卡位","unit":"1-5档","value":4,"band":"较高集中、公司为细分龙头","score":7.5,"weight":1.0,"missing":false,"rationale":"格局决定盈利可持续性；公司卡位决定份额弹性。","evidence":{"source":"演示行业研究（格局与公司卡位档）","source_tier":"L3","as_of":"2026-09-30","available_at":"2026-10-10"}}]},{"id":"space","name":"成长空间","weight":0.25,"renormalized":false,"available_weight_ratio":1.0,"indicators":[{"id":"industry.stage_r","name":"行业生命周期阶段","unit":"1-5档","value":4,"band":"成长中期：双位数增长、格局渐清晰","score":7.5,"weight":0.4,"missing":false,"rationale":"成长早中期估值与盈利弹性最优；衰退期一票降档。","evidence":{"source":"演示行业研究（生命周期档）","source_tier":"L3","as_of":"2026-09-30","available_at":"2026-10-10"}},{"id":"industry.penetration_r","name":"渗透空间","unit":"1-5档","value":4,"band":"渗透率 10-30%，快速渗透期","score":7.5,"weight":0.6,"missing":false,"rationale":"渗透率 10-30% 为戴维斯双击高发区间。","evidence":{"source":"演示行业研究（渗透空间档）","source_tier":"L3","as_of":"2026-09-30","available_at":"2026-10-10"}}]}]},{"id":"company","name":"公司","score_mid":7.5,"score_short":7.5,"confidence":{"level":"high","value":0.931},"factors":[{"id":"moat","name":"护城河","weight":0.5,"renormalized":false,"available_weight_ratio":1.0,"indicators":[{"id":"company.moat_r","name":"护城河综合档","unit":"1-5档","value":4,"band":"较强壁垒：技术专利+客户认证双壁垒，切换成本高","score":7.5,"weight":1.0,"missing":false,"rationale":"护城河类型与强度决定超额 ROE 的持续性。","evidence":{"source":"演示研究底稿（护城河锚定量表评档：技术专利+客户认证）","source_tier":"L3","as_of":"2026-10-20","available_at":"2026-10-20"}}]},{"id":"governance","name":"治理与管理","weight":0.3,"renormalized":false,"available_weight_ratio":1.0,"indicators":[{"id":"company.mgmt_r","name":"管理层记录","unit":"1-5档","value":4,"band":"良好：指引兑现率高、治理规范","score":7.5,"weight":0.6,"missing":false,"rationale":"指引兑现率与治理记录是中线持有的前提。","evidence":{"source":"演示研究底稿（管理层记录锚定量表）","source_tier":"L3","as_of":"2026-10-20","available_at":"2026-10-20"}},{"id":"company.pledge","name":"大股东质押比例","unit":"%","value":12,"band":"良","score":7.5,"weight":0.4,"missing":false,"rationale":"质押 >30% 需关注、>50% 为高风险（监管与市场惯例阈值）。","evidence":{"source":"演示交易所披露（大股东质押比例）","source_tier":"L1","as_of":"2026-10-18","available_at":"2026-10-18"}}]},{"id":"logic","name":"投资逻辑强度","weight":0.2,"renormalized":false,"available_weight_ratio":1.0,"indicators":[{"id":"company.logic_r","name":"核心逻辑与预期差","unit":"1-5档","value":4,"band":"强逻辑：传导路径明确且存在被低估的预期差","score":7.5,"weight":1.0,"missing":false,"rationale":"预期差是超额收益来源；逻辑必须可证伪（'受益于景气'类泛逻辑不接受）。","evidence":{"source":"演示研究底稿（核心逻辑与预期差评档）","source_tier":"L3","as_of":"2026-10-20","available_at":"2026-10-20"}}]}]},{"id":"financial","name":"财务","score_mid":7.81,"score_short":7.81,"confidence":{"level":"high","value":0.991},"factors":[{"id":"earnings_quality","name":"盈利质量","weight":0.4,"renormalized":false,"available_weight_ratio":1.0,"indicators":[{"id":"fin.roe","name":"ROE(TTM)","unit":"%","value":16.5,"band":"良","score":7.5,"weight":0.4,"missing":false,"rationale":"消费/制造龙头长期 ROE>20% 为优秀（质量增长方法论），18% 为放宽门槛。","evidence":{"source":"演示公司 2026 年中报（ROE-TTM）","source_tier":"L1","as_of":"2026-06-30","available_at":"2026-08-28"}},{"id":"fin.ocf_np","name":"经营现金流/净利润","unit":"倍","value":0.95,"band":"良","score":7.5,"weight":0.35,"missing":false,"rationale":"净利润现金含量 ≥1 为合格线；长期 <0.7 说明利润含水量高。","evidence":{"source":"演示公司 2026 年中报（经营现金流净额/归母净利，TTM）","source_tier":"L1","as_of":"2026-06-30","available_at":"2026-08-28"}},{"id":"fin.wc_gap","name":"应收+存货增速 − 营收增速","unit":"pp","value":3.5,"band":"良","score":7.5,"weight":0.25,"missing":false,"rationale":"营运资本增速持续快于营收 = 渠道压货/回款恶化信号（增长质检）。","evidence":{"source":"演示公司 2026 年中报（(应收+存货)增速-营收增速，pp）","source_tier":"L1","as_of":"2026-06-30","available_at":"2026-08-28"}}]},{"id":"growth_quality","name":"增长质量","weight":0.35,"renormalized":false,"available_weight_ratio":1.0,"indicators":[{"id":"fin.rev_g","name":"营收增速","unit":"%","value":22,"band":"良","score":7.5,"weight":0.35,"missing":false,"rationale":"与名义 GDP 及行业增速对比定位增长台阶。","evidence":{"source":"演示公司 2026 年中报（营收同比）","source_tier":"L1","as_of":"2026-06-30","available_at":"2026-08-28"}},{"id":"fin.np_g","name":"净利增速","unit":"%","value":26,"band":"优","score":10.0,"weight":0.35,"missing":false,"rationale":"收入与利润增速需同向；利润长期快于收入需查非经常项。","evidence":{"source":"演示公司 2026 年中报（归母净利同比）","source_tier":"L1","as_of":"2026-06-30","available_at":"2026-08-28"}},{"id":"fin.gm_trend","name":"毛利率趋势(同比变化)","unit":"pp","value":1.2,"band":"良","score":7.5,"weight":0.3,"missing":false,"rationale":"毛利率方向是量价与竞争格局的先行指标。","evidence":{"source":"演示公司 2026 年中报（毛利率同比变化，pp）","source_tier":"L1","as_of":"2026-06-30","available_at":"2026-08-28"}}]},{"id":"capital_return","name":"资本回报","weight":0.25,"renormalized":false,"available_weight_ratio":1.0,"indicators":[{"id":"fin.roic_wacc","name":"ROIC − WACC 差","unit":"pp","value":4.0,"band":"良","score":7.5,"weight":0.4,"missing":false,"rationale":"ROIC 超 WACC 5pp 以上为优秀（质量增长方法论：真实经营优势的标尺）。","evidence":{"source":"演示公司 2026 年中报（ROIC-TTM，计算口径见底稿）","source_tier":"L1","as_of":"2026-06-30","available_at":"2026-08-28"}},{"id":"fin.int_debt","name":"有息负债率","unit":"%","value":28,"band":"良","score":7.5,"weight":0.3,"missing":false,"rationale":"制造业 >50% 财务弹性受限，>65% 高杠杆。","evidence":{"source":"演示公司 2026 年中报（有息负债/总资产）","source_tier":"L1","as_of":"2026-06-30","available_at":"2026-08-28"}},{"id":"fin.goodwill","name":"商誉/净资产","unit":"%","value":8,"band":"良","score":7.5,"weight":0.3,"missing":false,"rationale":"商誉占比 >25% 减值风险显著（并购驱动增长需打折）。","evidence":{"source":"演示公司 2026 年中报（商誉/净资产）","source_tier":"L1","as_of":"2026-06-30","available_at":"2026-08-28"}}]}]},{"id":"valuation","name":"估值","score_mid":6.12,"score_short":6.12,"confidence":{"level":"high","value":0.98},"factors":[{"id":"abs_margin","name":"绝对安全边际","weight":0.45,"renormalized":false,"available_weight_ratio":1.0,"indicators":[{"id":"val.dcf_margin","name":"DCF 安全边际(基准情景)","unit":"%","value":16.8,"band":"良","score":7.5,"weight":1.0,"missing":false,"rationale":"安全边际 ≥15% 才足以补偿假设不确定性（DCF 区间中枢 vs 现价）。","evidence":{"source":"演示行情库（收盘价）","source_tier":"L2","as_of":"2026-10-22","available_at":"2026-10-22"}}]},{"id":"rel_position","name":"相对位置","weight":0.35,"renormalized":false,"available_weight_ratio":1.0,"indicators":[{"id":"val.pe_pctile","name":"PE 十年分位","unit":"%","value":42,"band":"中","score":5.0,"weight":0.6,"missing":false,"rationale":"历史分位 <30% 偏低、30-70% 中性、>70% 偏高（估值方法论阈值）。","evidence":{"source":"演示估值数据库（近10年，窗口 2016-10 至 2026-10）","source_tier":"L2","as_of":"2026-10-22","available_at":"2026-10-22"}},{"id":"val.pb_pctile","name":"PB 十年分位","unit":"%","value":55,"band":"中","score":5.0,"weight":0.4,"missing":false,"rationale":"PB 分位为 PE 的交叉验证，周期股权重应上调（可配置）。","evidence":{"source":"演示估值数据库（近10年，窗口 2016-10 至 2026-10）","source_tier":"L2","as_of":"2026-10-22","available_at":"2026-10-22"}}]},{"id":"expectation_match","name":"预期匹配","weight":0.2,"renormalized":false,"available_weight_ratio":1.0,"indicators":[{"id":"val.peg","name":"PEG","unit":"倍","value":1.35,"band":"中","score":5.0,"weight":1.0,"missing":false,"rationale":"PEG<1 为增长匹配良好；增长为负时 PEG 无意义（按缺失处理）。","evidence":{"source":"演示行情库（PE-TTM）","source_tier":"L2","as_of":"2026-10-22","available_at":"2026-10-22"}}]}]},{"id":"catalyst","name":"催化剂","score_mid":10.0,"score_short":10.0,"confidence":{"level":"high","value":1.0},"factors":[{"id":"mid_density","name":"中线催化密度(6-12月)","weight":0.5,"renormalized":false,"available_weight_ratio":1.0,"indicators":[{"id":"cat.density","name":"催化密度加权分","unit":"0-10","value":10.0,"band":"优","score":10.0,"weight":1.0,"missing":false,"rationale":"公式 = min(10, Σ 事件强度权重)，强=4/中=2.5/弱=1/噪音=0，只计 6-12 月窗口。","evidence":{"source":"计算字段（公式见评分说明与 rationale）","source_tier":"L1","as_of":"2026-10-22","available_at":"2026-10-22"}}]},{"id":"short_strength","name":"短线催化强度(30日内)","weight":0.5,"renormalized":false,"available_weight_ratio":1.0,"indicators":[{"id":"cat.next_event","name":"下一事件强度分","unit":"0-10","value":10.0,"band":"优","score":10.0,"weight":1.0,"missing":false,"rationale":"公式：30 日内最近事件 强=10/中=7.5/弱=2.5/无=0；利好已定价 ×0.4（兑现风险）。","evidence":{"source":"计算字段（公式见评分说明与 rationale）","source_tier":"L1","as_of":"2026-10-22","available_at":"2026-10-22"}}]}]},{"id":"trading","name":"交易面","score_mid":9.38,"score_short":9.38,"confidence":{"level":"high","value":0.98},"factors":[{"id":"trend_position","name":"趋势与位置","weight":0.4,"renormalized":false,"available_weight_ratio":1.0,"indicators":[{"id":"trd.dist_ma250","name":"距 250 日均线","unit":"%","value":8.5,"band":"优","score":10.0,"weight":0.5,"missing":false,"rationale":"0-15% 为健康趋势；>30% 过热；<-25% 深度破位（非单调：两端均扣分）。","evidence":{"source":"演示行情库（收盘价/MA250-1）","source_tier":"L2","as_of":"2026-10-22","available_at":"2026-10-22"}},{"id":"trd.drawdown_52w","name":"距 52 周高点回撤","unit":"%","value":12.0,"band":"优","score":10.0,"weight":0.5,"missing":false,"rationale":"动量视角：接近 52 周高点为强势特征。","evidence":{"source":"演示行情库（距52周高点回撤）","source_tier":"L2","as_of":"2026-10-22","available_at":"2026-10-22"}}]},{"id":"volume_chips","name":"量价与筹码","weight":0.35,"renormalized":false,"available_weight_ratio":1.0,"indicators":[{"id":"trd.vol_ratio","name":"20 日量比","unit":"倍","value":1.25,"band":"优","score":10.0,"weight":0.5,"missing":false,"rationale":"温和放量(1.0-1.5)最优；>3 异常放量需查归因（非单调）。","evidence":{"source":"演示行情库（20日均量比）","source_tier":"L2","as_of":"2026-10-22","available_at":"2026-10-22"}},{"id":"trd.turnover","name":"换手率","unit":"%","value":3.2,"band":"优","score":10.0,"weight":0.5,"missing":false,"rationale":"换手过低流动性差、过高博弈过热（非单调甜点区间）。","evidence":{"source":"演示行情库（日换手率）","source_tier":"L2","as_of":"2026-10-22","available_at":"2026-10-22"}}]},{"id":"crowding","name":"拥挤度","weight":0.25,"renormalized":false,"available_weight_ratio":1.0,"indicators":[{"id":"trd.inst_chg","name":"机构持仓变化","unit":"pp","value":3.5,"band":"良","score":7.5,"weight":1.0,"missing":false,"rationale":"机构增持为中线资金面确认；大幅减持需查归因。","evidence":{"source":"演示基金持仓数据库（基金三季报披露）","source_tier":"L2","as_of":"2026-09-30","available_at":"2026-10-22"}}]}]},{"id":"risk","name":"风险(可控度)","score_mid":7.9,"score_short":7.9,"confidence":{"level":"high","value":0.9},"factors":[{"id":"controllability","name":"风险可控度","weight":1.0,"renormalized":false,"available_weight_ratio":1.0,"indicators":[{"id":"risk.matrix_score","name":"风险矩阵加权分","unit":"0-10","value":7.0,"band":"良","score":7.0,"weight":0.45,"missing":false,"rationale":"公式：10×(1−Σ max(0, P×I−8, 17 上限)/20)，P×I>8 的风险逐条扣减。","evidence":{"source":"计算字段（公式见评分说明与 rationale）","source_tier":"L1","as_of":"2026-10-22","available_at":"2026-10-22"}},{"id":"risk.red_flags","name":"财务红旗数量","unit":"个","value":0,"band":"优","score":10.0,"weight":0.25,"missing":false,"rationale":"重大红旗（非标审计/资金占用/立案）边际影响极陡：1 条已显著降分，2 条以上由决策层直接进回避候选。","evidence":{"source":"计算字段（公式见评分说明与 rationale）","source_tier":"L1","as_of":"2026-10-22","available_at":"2026-10-22"}},{"id":"risk.customer_conc","name":"最大客户收入占比","unit":"%","value":22,"band":"良","score":7.5,"weight":0.3,"missing":false,"rationale":"单一客户 >30% 依赖风险、>50% 重大集中度风险。","evidence":{"source":"演示公司 2026 年中报（最大客户收入占比）","source_tier":"L1","as_of":"2026-06-30","available_at":"2026-08-28"}}]}]}],"evidence_coverage":{"ratio":1.0,"threshold":0.6,"basis":"研究判断层（宏观/行业/公司）按指标权重的覆盖比例，未补零","total_ratio":1.0,"by_dimension":{"macro":1.0,"industry":1.0,"company":1.0,"financial":1.0,"valuation":1.0,"catalyst":1.0,"trading":1.0,"risk":1.0},"scored_dimensions":["macro","industry","company","financial","valuation","catalyst","trading","risk"],"missing_dimensions":[],"note":"闸门口径 = 宏观/行业/公司三层的指标级覆盖；低于阈值时不出正式分桶（R7_COVERAGE）。total_ratio 为全维度覆盖，仅供参考，不参与判定"}},"valuation":{"dcf":{"method":"FCFF_DCF","assumptions_kind":"assumption","scenario_results":{"optimistic":{"wacc":0.09,"terminal_growth":0.03,"revenue_growth_path":[0.3,0.25,0.22,0.18,0.15],"ebit_margin_path":[0.17,0.185,0.2,0.21,0.22],"value_per_share_central":64.3,"value_per_share_low":54.65,"value_per_share_high":77.85,"terminal_value_share":0.819,"net_debt_assumption":-2.5,"shares_assumption":1.62},"base":{"wacc":0.095,"terminal_growth":0.025,"revenue_growth_path":[0.22,0.18,0.15,0.12,0.1],"ebit_margin_path":[0.16,0.17,0.18,0.185,0.19],"value_per_share_central":37.97,"value_per_share_low":33.13,"value_per_share_high":44.43,"terminal_value_share":0.77,"net_debt_assumption":-2.5,"shares_assumption":1.62},"pessimistic":{"wacc":0.105,"terminal_growth":0.02,"revenue_growth_path":[0.12,0.08,0.06,0.05,0.04],"ebit_margin_path":[0.15,0.145,0.14,0.135,0.13],"value_per_share_central":16.57,"value_per_share_low":15.01,"value_per_share_high":18.56,"terminal_value_share":0.662,"net_debt_assumption":-2.5,"shares_assumption":1.62}},"sensitivity_grid_base":{"wacc_values":[0.08,0.0875,0.095,0.1025,0.11],"g_values":[0.02,0.0225,0.025,0.0275,0.03],"values":[[45.19,46.79,48.55,50.47,52.58],[40.06,41.29,42.62,44.06,45.62],[35.97,36.93,37.97,39.08,40.27],[32.63,33.4,34.22,35.1,36.04],[29.85,30.48,31.15,31.85,32.61]]},"warnings":["optimistic 情景永续终值占比 82% > 70%：估值高度依赖终值假设，可信度降档","base 情景永续终值占比 77% > 70%：估值高度依赖终值假设，可信度降档"]},"relative":{"method":"percentile_band","available":true,"metric":"PE","current":28.5,"percentile_10y":42.0,"band":"neutral","bands_definition":{"low":"<30%","neutral":"30-70%","high":">70%"},"implied_price_range":{"low":25.08,"high":39.9,"eps_used":1.14,"eps_kind":"TTM"},"peer_anchor":{"peer_median":31.0,"premium_pct":-8.1,"implied_price":35.34,"comparable":true,"note":"本公司 28.5 倍 vs 同业中位 31.0 倍 → 折价 8%；倍数处于同一可比区间，横向锚仅作参照，不构成价位判断"},"priced_in_narrative":"当前 PE(TTM) 28.5 倍处于十年 42% 分位（中性区间）；基准情景预期 EPS 增速约 21%，当前估值隐含的增长预期与该增速匹配；以上为基于分位与增速的拆解，不构成价格点位判断。"},"synthesis":{"dcf_base_range":{"low":33.13,"high":44.43},"relative_range":{"low":25.08,"high":39.9},"combined_range":{"low":33.13,"high":39.9},"mode":"intersection","safety_margin_pct":12.4,"confidence_level":"medium","note":"合成区间 = 基准情景 DCF 区间与相对估值分位带区间的交集；仅为安全边际度量基准，非价格点位预测；加权期望值同为参考量。"}},"scenarios":[{"name":"optimistic","probability":0.25,"key_assumptions":["机器人客户量产爬坡超预期，公司份额提升至 35%+","毛利率中枢上移至 20% 以上"],"value_per_share_range":{"low":54.65,"high":77.85},"drivers":["人形机器人产业链 0→1","产能利用率与规模效应"],"falsification":"头部客户量产计划推迟或砍单 → 乐观情景失效","delta_vs_base":"中枢 64.3 元 vs 基准 37.97 元（+69.3%）"},{"name":"base","probability":0.5,"key_assumptions":["机器人业务按客户指引放量，公司份额维持 30% 附近","毛利率每年中枢改善约 1pp"],"value_per_share_range":{"low":33.13,"high":44.43},"drivers":["机器人零部件放量","规模效应+良率提升"],"falsification":"季度机器人业务收入增速连续两季低于 50% → 基准情景失效","delta_vs_base":"中枢 37.97 元 vs 基准 37.97 元（+0.0%）"},{"name":"pessimistic","probability":0.25,"key_assumptions":["行业量产节奏不及预期，价格年降超过 5%","产能爬坡缓慢拖累毛利率回落至 13%"],"value_per_share_range":{"low":15.01,"high":18.56},"drivers":["行业 β 不足","价格竞争"],"falsification":"行业排产数据重回高增长 → 悲观情景失效","delta_vs_base":"中枢 16.57 元 vs 基准 37.97 元（-56.4%）"}],"risk_matrix":{"scale":"5x5_P_x_I","risks":[{"id":"R1","name":"大客户资本开支放缓","category":"customer_concentration","probability":3,"impact":4,"score":12,"level":"中","trigger":{"metric":"大客户季报资本开支指引/排产数据","threshold":"同比转负"},"mitigation":"跟踪大客户指引与在手订单；新客户导入分散","evidence":"演示客户公告与排产数据（L1/L3）"},{"id":"R2","name":"机器人量产进度不及预期","category":"demand","probability":3,"impact":3,"score":9,"level":"中","trigger":{"metric":"季度机器人业务收入增速","threshold":"< 50%"},"mitigation":"跟踪行业排产与客户上量节点","evidence":"演示行业研究（L3）"},{"id":"R3","name":"行业价格竞争加剧","category":"competition","probability":2,"impact":3,"score":6,"level":"低","trigger":{"metric":"核心产品单价年降幅度","threshold":"> 5%"},"mitigation":"高壁垒产品占比提升；长协锁定","evidence":"演示行业研究（L3）"},{"id":"R4","name":"汇率波动影响出口毛利","category":"macro","probability":2,"impact":2,"score":4,"level":"低","trigger":{"metric":"USD/CNY 季度波动","threshold":"±3% 以上"},"mitigation":"远期锁汇比例 >60%","evidence":"演示公司中报外汇敞口披露（L1）"},{"id":"R5","name":"限售解禁后股东减持","category":"governance","probability":3,"impact":3,"score":9,"level":"中","trigger":{"metric":"解禁公告与股东减持计划","threshold":"解禁后 30 日内出现减持计划公告"},"mitigation":"跟踪解禁日历与减持预披露","evidence":"演示交易所解禁日历（L1）"}],"grid":{"p_levels":[1,2,3,4,5],"i_levels":[1,2,3,4,5],"counts":[[0,0,0,0,0],[0,1,1,0,0],[0,0,2,1,0],[0,0,0,0,0],[0,0,0,0,0]]},"top_risk_ids":["R1","R2","R5","R3","R4"]},"catalyst_calendar":[{"date":"2026-10-30","event":"三季报披露（机器人业务收入与毛利率验证）","type":"earnings","direction":"+","strength":"强","expected_impact":"核心逻辑 F1 的首次季度验证点","priced_in":"部分定价","verify_method":"对照 F1/C1 阈值核验机器人业务收入增速","warning":null},{"date":"2026-11-20","event":"人形机器人行业峰会（新品与订单密集窗口）","type":"industry","direction":"+","strength":"中","expected_impact":"板块情绪与订单预期催化","priced_in":"未定价","verify_method":"会后 2 周内跟踪订单公告密度","warning":null},{"date":"2026-12-15","event":"竞对新品发布会（参数与报价对比）","type":"industry","direction":"-","strength":"弱","expected_impact":"竞争格局边际扰动","priced_in":"未定价","verify_method":"对照竞品参数与报价","warning":null},{"date":"2027-03-25","event":"年报披露+新一代执行器部件发布","type":"company","direction":"+","strength":"强","expected_impact":"新品毛利结构与全年指引","priced_in":"未定价","verify_method":"新品毛利率与订单指引核验","warning":null},{"date":"2027-06-30","event":"大客户订单续签窗口","type":"company","direction":"+","strength":"中","expected_impact":"份额与年降条款确认","priced_in":"未定价","verify_method":"订单金额与年降幅度核验","warning":null}],"tracking_checklist":[{"id":"T1","item":"证伪条件 F1：逻辑证伪：若「季度机器人业务收入增速」不再满足 ≥ 50%，则逻辑「机器人零部件放量：人形机器人量产 …","metric":"季度机器人业务收入增速","threshold":"≥ 50%","direction":"below","cadence":"weekly","action_on_trigger":"立即重估结论（非降档处理）","source":"演示研究底稿（L3）","origin":"falsification"},{"id":"T2","item":"证伪条件 F2：逻辑证伪：若「毛利率环比变化」不再满足 环比 +0.3pp 以上…","metric":"毛利率环比变化","threshold":"环比 +0.3pp 以上","direction":"below","cadence":"weekly","action_on_trigger":"立即重估结论（非降档处理）","source":"演示研究底稿（L3）","origin":"falsification"},{"id":"T3","item":"证伪条件 F3：增长失速：营收同比跌破 11.0%（腰斩线）→ 财务/公司维度重估","metric":"financial.rev_growth","threshold":"< 11.0%","direction":"below","cadence":"weekly","action_on_trigger":"立即重估结论（非降档处理）","source":"公司定期报告","origin":"falsification"},{"id":"T4","item":"证伪条件 F4：估值风险：PE 十年分位升破 80% 或 DCF 安全边际转负 → 估值维度重估","metric":"market.pctile_pe_10y / valuation.dcf_margin_of_safety","threshold":">80% 或 <0","direction":"below","cadence":"weekly","action_on_trigger":"立即重估结论（非降档处理）","source":"行情/估值数据库","origin":"falsification"},{"id":"T5","item":"风险 R1（大客户资本开支放缓，中风险）触发监控","metric":"大客户季报资本开支指引/排产数据","threshold":"同比转负","direction":"above","cadence":"weekly","action_on_trigger":"评估是否触发证伪/情景切换","source":"演示客户公告与排产数据（L1/L3）","origin":"risk_trigger"},{"id":"T6","item":"风险 R2（机器人量产进度不及预期，中风险）触发监控","metric":"季度机器人业务收入增速","threshold":"< 50%","direction":"below","cadence":"weekly","action_on_trigger":"评估是否触发证伪/情景切换","source":"演示行业研究（L3）","origin":"risk_trigger"},{"id":"T7","item":"风险 R5（限售解禁后股东减持，中风险）触发监控","metric":"解禁公告与股东减持计划","threshold":"解禁后 30 日内出现减持计划公告","direction":"above","cadence":"weekly","action_on_trigger":"评估是否触发证伪/情景切换","source":"演示交易所解禁日历（L1）","origin":"risk_trigger"},{"id":"T8","item":"催化剂核验：三季报披露（机器人业务收入与毛利率验证）（2026-10-30）","metric":"对照 F1/C1 阈值核验机器人业务收入增速","threshold":"兑现/不及预期 二分核验","direction":"above","cadence":"event","action_on_trigger":"按情景分支更新（超预期→乐观权重上调；不及预期→悲观权重上调）","source":"事件公告","origin":"catalyst_verify"},{"id":"T9","item":"催化剂核验：人形机器人行业峰会（新品与订单密集窗口）（2026-11-20）","metric":"会后 2 周内跟踪订单公告密度","threshold":"兑现/不及预期 二分核验","direction":"above","cadence":"event","action_on_trigger":"按情景分支更新（超预期→乐观权重上调；不及预期→悲观权重上调）","source":"事件公告","origin":"catalyst_verify"},{"id":"T10","item":"催化剂核验：年报披露+新一代执行器部件发布（2027-03-25）","metric":"新品毛利率与订单指引核验","threshold":"兑现/不及预期 二分核验","direction":"above","cadence":"event","action_on_trigger":"按情景分支更新（超预期→乐观权重上调；不及预期→悲观权重上调）","source":"事件公告","origin":"catalyst_verify"},{"id":"T11","item":"催化剂核验：大客户订单续签窗口（2027-06-30）","metric":"订单金额与年降幅度核验","threshold":"兑现/不及预期 二分核验","direction":"above","cadence":"event","action_on_trigger":"按情景分支更新（超预期→乐观权重上调；不及预期→悲观权重上调）","source":"事件公告","origin":"catalyst_verify"},{"id":"T12","item":"下期定期报告披露核验（营收/净利增速、ROE、OCF/净利、营运资本差）","metric":"financial.rev_growth / np_growth / roe_ttm / ocf_np_ratio / wc_growth_gap","threshold":"对照 maintain_conditions C1/C2 阈值","direction":"below","cadence":"quarterly","action_on_trigger":"不达阈值→重估财务维度并更新分桶","source":"公司定期报告（披露日之后评价，PIT 对齐）","origin":"disclosure"}],"data_quality":{"overall":0.965,"completeness":1.0,"timeliness":1.0,"source_tier_score":0.823,"min_tier_used":"L1","tier_distribution":{"L1":13,"L2":14,"L3":12,"L4":0},"gaps":[],"forced_manual_review":false,"notes":["只在年报披露的字段，数据期为最近一期年报、不随季报前移：company.customer_concentration（2026-06-30 年报口径）"]},"evidence_log":[{"field_id":"company.customer_concentration","source":"演示公司 2026 年中报（最大客户收入占比）","source_tier":"L1","as_of":"2026-06-30","available_at":"2026-08-28","used_by":["risk.customer_conc"]},{"field_id":"company.logic_essence","source":"演示研究底稿（一句话本质）","source_tier":"L3","as_of":"2026-10-20","available_at":"2026-10-20","used_by":["未直接入模（DQ 统计用）"]},{"field_id":"company.logic_strength","source":"演示研究底稿（核心逻辑与预期差评档）","source_tier":"L3","as_of":"2026-10-20","available_at":"2026-10-20","used_by":["company.logic_r"]},{"field_id":"company.mgmt_record","source":"演示研究底稿（管理层记录锚定量表）","source_tier":"L3","as_of":"2026-10-20","available_at":"2026-10-20","used_by":["company.mgmt_r"]},{"field_id":"company.moat","source":"演示研究底稿（护城河锚定量表评档：技术专利+客户认证）","source_tier":"L3","as_of":"2026-10-20","available_at":"2026-10-20","used_by":["company.moat_r"]},{"field_id":"company.pledge_pct","source":"演示交易所披露（大股东质押比例）","source_tier":"L1","as_of":"2026-10-18","available_at":"2026-10-18","used_by":["company.pledge"]},{"field_id":"financial.gm_trend","source":"演示公司 2026 年中报（毛利率同比变化，pp）","source_tier":"L1","as_of":"2026-06-30","available_at":"2026-08-28","used_by":["fin.gm_trend"]},{"field_id":"financial.goodwill_pct","source":"演示公司 2026 年中报（商誉/净资产）","source_tier":"L1","as_of":"2026-06-30","available_at":"2026-08-28","used_by":["fin.goodwill"]},{"field_id":"financial.int_debt_ratio","source":"演示公司 2026 年中报（有息负债/总资产）","source_tier":"L1","as_of":"2026-06-30","available_at":"2026-08-28","used_by":["fin.int_debt"]},{"field_id":"financial.np_growth","source":"演示公司 2026 年中报（归母净利同比）","source_tier":"L1","as_of":"2026-06-30","available_at":"2026-08-28","used_by":["fin.np_g"]},{"field_id":"financial.ocf_np_ratio","source":"演示公司 2026 年中报（经营现金流净额/归母净利，TTM）","source_tier":"L1","as_of":"2026-06-30","available_at":"2026-08-28","used_by":["fin.ocf_np"]},{"field_id":"financial.rev_growth","source":"演示公司 2026 年中报（营收同比）","source_tier":"L1","as_of":"2026-06-30","available_at":"2026-08-28","used_by":["fin.rev_g"]},{"field_id":"financial.roe_ttm","source":"演示公司 2026 年中报（ROE-TTM）","source_tier":"L1","as_of":"2026-06-30","available_at":"2026-08-28","used_by":["fin.roe"]},{"field_id":"financial.roic","source":"演示公司 2026 年中报（ROIC-TTM，计算口径见底稿）","source_tier":"L1","as_of":"2026-06-30","available_at":"2026-08-28","used_by":["fin.roic_wacc"]},{"field_id":"financial.wacc_assumed","source":"演示研究假设（WACC，与 DCF 假设一致性核对）","source_tier":"L3","as_of":"2026-10-20","available_at":"2026-10-20","used_by":["fin.roic_wacc"]},{"field_id":"financial.wc_growth_gap","source":"演示公司 2026 年中报（(应收+存货)增速-营收增速，pp）","source_tier":"L1","as_of":"2026-06-30","available_at":"2026-08-28","used_by":["fin.wc_gap"]},{"field_id":"industry.concentration","source":"演示行业研究（格局与公司卡位档）","source_tier":"L3","as_of":"2026-09-30","available_at":"2026-10-10","used_by":["industry.concentration_r"]},{"field_id":"industry.industry_growth","source":"演示行业研究（精密零部件行业营收增速）","source_tier":"L3","as_of":"2026-09-30","available_at":"2026-10-10","used_by":["industry.growth"]},{"field_id":"industry.penetration_space","source":"演示行业研究（渗透空间档）","source_tier":"L3","as_of":"2026-09-30","available_at":"2026-10-10","used_by":["industry.penetration_r"]},{"field_id":"industry.price_trend","source":"演示行业研究（量价趋势档，1-5 档对应 -2..+2）","source_tier":"L3","as_of":"2026-09-30","available_at":"2026-10-10","used_by":["industry.price_trend_r"]},{"field_id":"industry.stage","source":"演示行业研究（生命周期档）","source_tier":"L3","as_of":"2026-09-30","available_at":"2026-10-10","used_by":["industry.stage_r"]},{"field_id":"macro.m1_yoy","source":"演示央行金融统计（M1 同比）","source_tier":"L1","as_of":"2026-09-30","available_at":"2026-10-15","used_by":["macro.m1_yoy_trend"]},{"field_id":"macro.pmi","source":"演示统计局制造业 PMI","source_tier":"L1","as_of":"2026-09-30","available_at":"2026-09-30","used_by":["macro.pmi_pos"]},{"field_id":"macro.policy_stance","source":"演示政策取向评估底稿（政策→行业→公司传导核对）","source_tier":"L3","as_of":"2026-10-01","available_at":"2026-10-01","used_by":["macro.policy_stance_r"]},{"field_id":"macro.rate_10y_chg_yoy","source":"演示债券数据库（10Y 国债收益率同比变化，bp）","source_tier":"L2","as_of":"2026-10-20","available_at":"2026-10-20","used_by":["macro.rate_10y_chg"]},{"field_id":"market.dist_ma250","source":"演示行情库（收盘价/MA250-1）","source_tier":"L2","as_of":"2026-10-22","available_at":"2026-10-22","used_by":["trd.dist_ma250"]},{"field_id":"market.drawdown_52w","source":"演示行情库（距52周高点回撤）","source_tier":"L2","as_of":"2026-10-22","available_at":"2026-10-22","used_by":["trd.drawdown_52w"]},{"field_id":"market.inst_hold_chg_pct","source":"演示基金持仓数据库（基金三季报披露）","source_tier":"L2","as_of":"2026-09-30","available_at":"2026-10-22","used_by":["trd.inst_chg"]},{"field_id":"market.pb","source":"演示行情库（PB）","source_tier":"L2","as_of":"2026-10-22","available_at":"2026-10-22","used_by":["未直接入模（DQ 统计用）"]},{"field_id":"market.pctile_pb_10y","source":"演示估值数据库（近10年，窗口 2016-10 至 2026-10）","source_tier":"L2","as_of":"2026-10-22","available_at":"2026-10-22","used_by":["val.pb_pctile"]},{"field_id":"market.pctile_pe_10y","source":"演示估值数据库（近10年，窗口 2016-10 至 2026-10）","source_tier":"L2","as_of":"2026-10-22","available_at":"2026-10-22","used_by":["val.pe_pctile","valuation.relative/synthesis"]},{"field_id":"market.pe_ttm","source":"演示行情库（PE-TTM）","source_tier":"L2","as_of":"2026-10-22","available_at":"2026-10-22","used_by":["val.peg","valuation.relative/synthesis"]},{"field_id":"market.price_close","source":"演示行情库（收盘价）","source_tier":"L2","as_of":"2026-10-22","available_at":"2026-10-22","used_by":["val.dcf_margin","valuation.relative/synthesis"]},{"field_id":"market.turnover_pct","source":"演示行情库（日换手率）","source_tier":"L2","as_of":"2026-10-22","available_at":"2026-10-22","used_by":["trd.turnover"]},{"field_id":"market.vol_ratio_20d","source":"演示行情库（20日均量比）","source_tier":"L2","as_of":"2026-10-22","available_at":"2026-10-22","used_by":["trd.vol_ratio"]},{"field_id":"valuation.eps_ttm","source":"演示行情库（EPS-TTM）","source_tier":"L2","as_of":"2026-10-22","available_at":"2026-10-22","used_by":["val.peg","valuation.relative/synthesis"]},{"field_id":"valuation.pe_hist_p25","source":"演示估值数据库（近10年 PE P25，窗口 2016-10 至 2026-10）","source_tier":"L2","as_of":"2026-10-22","available_at":"2026-10-22","used_by":["valuation.relative/synthesis"]},{"field_id":"valuation.pe_hist_p75","source":"演示估值数据库（近10年 PE P75，窗口 2016-10 至 2026-10）","source_tier":"L2","as_of":"2026-10-22","available_at":"2026-10-22","used_by":["valuation.relative/synthesis"]},{"field_id":"valuation.peer_pe_median","source":"演示同业研究（可比公司 PE-TTM 中位数，自然年口径对齐）","source_tier":"L3","as_of":"2026-10-20","available_at":"2026-10-20","used_by":["valuation.relative/synthesis"]}],"disclaimer":"免责声明：本报告由 stockframe 研究框架基于公开数据与显式假设生成，仅供研究复核参考，不构成投资建议。框架输出为研究分桶（入池/观察/回避/人工复核）与条件化结论，不含任何买卖、价位或仓位建议。市场有风险，投资需谨慎。任何投资决策应结合个人风险承受能力、资金状况和投资目标独立判断，必要时咨询持牌专业机构。过往表现不预示未来收益。"},"input":{"_note":"演示输入：标的公司为虚构（XX0000.DEMO），全部数据为演示数据，仅用于展示框架管线与报告格式，不对应任何真实公司。真实使用时按数据字典替换 data/risks/catalysts，并保证全部字段带 as_of/available_at/source/source_tier。","meta":{"stock":{"name":"华晟精工（示例·虚构演示标的）","code":"XX0000.DEMO","exchange":"SH（演示）","currency":"CNY"},"analysis_date":"2026-10-22","company_type":"steady_growth","relative_valuation_metric":"PE","generated_at":"2026-10-23T06:30:00+08:00","flags":{"st":false,"audit_qualified":false,"regulatory_investigation":false,"major_fraud_red_flag":false,"suspended":false,"restructuring":false,"new_listing_under_1y":false},"red_flags":[]},"data":{"market":{"price_close":{"value":32.5,"as_of":"2026-10-22","available_at":"2026-10-22","source":"演示行情库（收盘价）","source_tier":"L2"},"pe_ttm":{"value":28.5,"as_of":"2026-10-22","available_at":"2026-10-22","source":"演示行情库（PE-TTM）","source_tier":"L2"},"pb":{"value":3.8,"as_of":"2026-10-22","available_at":"2026-10-22","source":"演示行情库（PB）","source_tier":"L2"},"pctile_pe_10y":{"value":42,"as_of":"2026-10-22","available_at":"2026-10-22","source":"演示估值数据库（近10年，窗口 2016-10 至 2026-10）","source_tier":"L2"},"pctile_pb_10y":{"value":55,"as_of":"2026-10-22","available_at":"2026-10-22","source":"演示估值数据库（近10年，窗口 2016-10 至 2026-10）","source_tier":"L2"},"turnover_pct":{"value":3.2,"as_of":"2026-10-22","available_at":"2026-10-22","source":"演示行情库（日换手率）","source_tier":"L2"},"vol_ratio_20d":{"value":1.25,"as_of":"2026-10-22","available_at":"2026-10-22","source":"演示行情库（20日均量比）","source_tier":"L2"},"dist_ma250":{"value":8.5,"as_of":"2026-10-22","available_at":"2026-10-22","source":"演示行情库（收盘价/MA250-1）","source_tier":"L2"},"drawdown_52w":{"value":12.0,"as_of":"2026-10-22","available_at":"2026-10-22","source":"演示行情库（距52周高点回撤）","source_tier":"L2"},"inst_hold_chg_pct":{"value":3.5,"as_of":"2026-09-30","available_at":"2026-10-22","period_end":"2026-09-30","source":"演示基金持仓数据库（基金三季报披露）","source_tier":"L2"}},"macro":{"m1_yoy":{"value":6.2,"as_of":"2026-09-30","available_at":"2026-10-15","period_end":"2026-09-30","source":"演示央行金融统计（M1 同比）","source_tier":"L1"},"rate_10y_chg_yoy":{"value":-25,"as_of":"2026-10-20","available_at":"2026-10-20","source":"演示债券数据库（10Y 国债收益率同比变化，bp）","source_tier":"L2"},"pmi":{"value":50.6,"as_of":"2026-09-30","available_at":"2026-09-30","source":"演示统计局制造业 PMI","source_tier":"L1"},"policy_stance":{"value":4,"as_of":"2026-10-01","available_at":"2026-10-01","source":"演示政策取向评估底稿（政策→行业→公司传导核对）","source_tier":"L3"}},"industry":{"industry_growth":{"value":14,"as_of":"2026-09-30","available_at":"2026-10-10","source":"演示行业研究（精密零部件行业营收增速）","source_tier":"L3"},"price_trend":{"value":4,"as_of":"2026-09-30","available_at":"2026-10-10","source":"演示行业研究（量价趋势档，1-5 档对应 -2..+2）","source_tier":"L3"},"stage":{"value":4,"as_of":"2026-09-30","available_at":"2026-10-10","source":"演示行业研究（生命周期档）","source_tier":"L3"},"concentration":{"value":4,"as_of":"2026-09-30","available_at":"2026-10-10","source":"演示行业研究（格局与公司卡位档）","source_tier":"L3"},"penetration_space":{"value":4,"as_of":"2026-09-30","available_at":"2026-10-10","source":"演示行业研究（渗透空间档）","source_tier":"L3"}},"company":{"moat":{"value":4,"as_of":"2026-10-20","available_at":"2026-10-20","source":"演示研究底稿（护城河锚定量表评档：技术专利+客户认证）","source_tier":"L3"},"mgmt_record":{"value":4,"as_of":"2026-10-20","available_at":"2026-10-20","source":"演示研究底稿（管理层记录锚定量表）","source_tier":"L3"},"pledge_pct":{"value":12,"as_of":"2026-10-18","available_at":"2026-10-18","source":"演示交易所披露（大股东质押比例）","source_tier":"L1"},"logic_strength":{"value":4,"as_of":"2026-10-20","available_at":"2026-10-20","source":"演示研究底稿（核心逻辑与预期差评档）","source_tier":"L3"},"logic_essence":{"value":"买的是人形机器人零部件从 0 到 1 的份额兑现，叠加产能爬坡带来的毛利率中枢抬升","as_of":"2026-10-20","available_at":"2026-10-20","source":"演示研究底稿（一句话本质）","source_tier":"L3"},"customer_concentration":{"value":22,"as_of":"2026-06-30","available_at":"2026-08-28","period_end":"2026-06-30","source":"演示公司 2026 年中报（最大客户收入占比）","source_tier":"L1"}},"financial":{"roe_ttm":{"value":16.5,"as_of":"2026-06-30","available_at":"2026-08-28","period_end":"2026-06-30","source":"演示公司 2026 年中报（ROE-TTM）","source_tier":"L1"},"roic":{"value":13.5,"as_of":"2026-06-30","available_at":"2026-08-28","period_end":"2026-06-30","source":"演示公司 2026 年中报（ROIC-TTM，计算口径见底稿）","source_tier":"L1"},"wacc_assumed":{"value":9.5,"as_of":"2026-10-20","available_at":"2026-10-20","source":"演示研究假设（WACC，与 DCF 假设一致性核对）","source_tier":"L3"},"ocf_np_ratio":{"value":0.95,"as_of":"2026-06-30","available_at":"2026-08-28","period_end":"2026-06-30","source":"演示公司 2026 年中报（经营现金流净额/归母净利，TTM）","source_tier":"L1"},"wc_growth_gap":{"value":3.5,"as_of":"2026-06-30","available_at":"2026-08-28","period_end":"2026-06-30","source":"演示公司 2026 年中报（(应收+存货)增速-营收增速，pp）","source_tier":"L1"},"rev_growth":{"value":22,"as_of":"2026-06-30","available_at":"2026-08-28","period_end":"2026-06-30","source":"演示公司 2026 年中报（营收同比）","source_tier":"L1"},"np_growth":{"value":26,"as_of":"2026-06-30","available_at":"2026-08-28","period_end":"2026-06-30","source":"演示公司 2026 年中报（归母净利同比）","source_tier":"L1"},"gm_trend":{"value":1.2,"as_of":"2026-06-30","available_at":"2026-08-28","period_end":"2026-06-30","source":"演示公司 2026 年中报（毛利率同比变化，pp）","source_tier":"L1"},"int_debt_ratio":{"value":28,"as_of":"2026-06-30","available_at":"2026-08-28","period_end":"2026-06-30","source":"演示公司 2026 年中报（有息负债/总资产）","source_tier":"L1"},"goodwill_pct":{"value":8,"as_of":"2026-06-30","available_at":"2026-08-28","period_end":"2026-06-30","source":"演示公司 2026 年中报（商誉/净资产）","source_tier":"L1"}},"valuation":{"eps_ttm":{"value":1.14,"as_of":"2026-10-22","available_at":"2026-10-22","source":"演示行情库（EPS-TTM）","source_tier":"L2"},"peer_pe_median":{"value":31,"as_of":"2026-10-20","available_at":"2026-10-20","source":"演示同业研究（可比公司 PE-TTM 中位数，自然年口径对齐）","source_tier":"L3"},"pe_hist_p25":{"value":22,"as_of":"2026-10-22","available_at":"2026-10-22","source":"演示估值数据库（近10年 PE P25，窗口 2016-10 至 2026-10）","source_tier":"L2"},"pe_hist_p75":{"value":35,"as_of":"2026-10-22","available_at":"2026-10-22","source":"演示估值数据库（近10年 PE P75，窗口 2016-10 至 2026-10）","source_tier":"L2"}}},"assumptions":{"_kind":"assumption（预测/假设数据，与实际数据严格隔离；报告中标注为假设）","eps_fwd":{"base":1.38,"optimistic":1.55,"pessimistic":1.1},"scenario_probabilities":{"optimistic":0.25,"base":0.5,"pessimistic":0.25},"dcf":{"base":{"wacc":0.095,"terminal_growth":0.025,"revenue_growth_path":[0.22,0.18,0.15,0.12,0.1],"ebit_margin_path":[0.16,0.17,0.18,0.185,0.19],"tax_rate":0.15,"dep_amort_pct_rev":0.045,"capex_pct_rev":0.065,"nwc_pct_rev_delta":0.012,"revenue_base":18.5,"net_debt":-2.5,"shares":1.62},"optimistic":{"wacc":0.09,"terminal_growth":0.03,"revenue_growth_path":[0.3,0.25,0.22,0.18,0.15],"ebit_margin_path":[0.17,0.185,0.2,0.21,0.22],"tax_rate":0.15,"dep_amort_pct_rev":0.045,"capex_pct_rev":0.07,"nwc_pct_rev_delta":0.012,"revenue_base":18.5,"net_debt":-2.5,"shares":1.62},"pessimistic":{"wacc":0.105,"terminal_growth":0.02,"revenue_growth_path":[0.12,0.08,0.06,0.05,0.04],"ebit_margin_path":[0.15,0.145,0.14,0.135,0.13],"tax_rate":0.15,"dep_amort_pct_rev":0.045,"capex_pct_rev":0.06,"nwc_pct_rev_delta":0.01,"revenue_base":18.5,"net_debt":-2.5,"shares":1.62}},"scenario_notes":{"optimistic":{"key_assumptions":["机器人客户量产爬坡超预期，公司份额提升至 35%+","毛利率中枢上移至 20% 以上"],"drivers":["人形机器人产业链 0→1","产能利用率与规模效应"],"falsification":"头部客户量产计划推迟或砍单 → 乐观情景失效"},"base":{"key_assumptions":["机器人业务按客户指引放量，公司份额维持 30% 附近","毛利率每年中枢改善约 1pp"],"drivers":["机器人零部件放量","规模效应+良率提升"],"falsification":"季度机器人业务收入增速连续两季低于 50% → 基准情景失效"},"pessimistic":{"key_assumptions":["行业量产节奏不及预期，价格年降超过 5%","产能爬坡缓慢拖累毛利率回落至 13%"],"drivers":["行业 β 不足","价格竞争"],"falsification":"行业排产数据重回高增长 → 悲观情景失效"}}},"risks":[{"id":"R1","name":"大客户资本开支放缓","category":"customer_concentration","probability":3,"impact":4,"trigger":{"metric":"大客户季报资本开支指引/排产数据","threshold":"同比转负"},"mitigation":"跟踪大客户指引与在手订单；新客户导入分散","evidence":"演示客户公告与排产数据（L1/L3）"},{"id":"R2","name":"机器人量产进度不及预期","category":"demand","probability":3,"impact":3,"trigger":{"metric":"季度机器人业务收入增速","threshold":"< 50%"},"mitigation":"跟踪行业排产与客户上量节点","evidence":"演示行业研究（L3）"},{"id":"R3","name":"行业价格竞争加剧","category":"competition","probability":2,"impact":3,"trigger":{"metric":"核心产品单价年降幅度","threshold":"> 5%"},"mitigation":"高壁垒产品占比提升；长协锁定","evidence":"演示行业研究（L3）"},{"id":"R4","name":"汇率波动影响出口毛利","category":"macro","probability":2,"impact":2,"trigger":{"metric":"USD/CNY 季度波动","threshold":"±3% 以上"},"mitigation":"远期锁汇比例 >60%","evidence":"演示公司中报外汇敞口披露（L1）"},{"id":"R5","name":"限售解禁后股东减持","category":"governance","probability":3,"impact":3,"trigger":{"metric":"解禁公告与股东减持计划","threshold":"解禁后 30 日内出现减持计划公告"},"mitigation":"跟踪解禁日历与减持预披露","evidence":"演示交易所解禁日历（L1）"}],"catalysts":[{"date":"2026-10-30","event":"三季报披露（机器人业务收入与毛利率验证）","type":"earnings","direction":"+","strength":"强","expected_impact":"核心逻辑 F1 的首次季度验证点","priced_in":"部分定价","verify_method":"对照 F1/C1 阈值核验机器人业务收入增速","source":"演示公司公告","source_tier":"L1"},{"date":"2026-11-20","event":"人形机器人行业峰会（新品与订单密集窗口）","type":"industry","direction":"+","strength":"中","expected_impact":"板块情绪与订单预期催化","priced_in":"未定价","verify_method":"会后 2 周内跟踪订单公告密度","source":"演示行业会议日历","source_tier":"L3"},{"date":"2026-12-15","event":"竞对新品发布会（参数与报价对比）","type":"industry","direction":"-","strength":"弱","expected_impact":"竞争格局边际扰动","priced_in":"未定价","verify_method":"对照竞品参数与报价","source":"演示行业会议日历","source_tier":"L3"},{"date":"2027-03-25","event":"年报披露+新一代执行器部件发布","type":"company","direction":"+","strength":"强","expected_impact":"新品毛利结构与全年指引","priced_in":"未定价","verify_method":"新品毛利率与订单指引核验","source":"演示公司公告","source_tier":"L1"},{"date":"2027-06-30","event":"大客户订单续签窗口","type":"company","direction":"+","strength":"中","expected_impact":"份额与年降条款确认","priced_in":"未定价","verify_method":"订单金额与年降幅度核验","source":"演示行业研究","source_tier":"L3"}],"logic_items":[{"statement":"机器人零部件放量：人形机器人量产 → 公司作为核心供应商份额 >30% → 收入弹性释放","transmission":"行业量产(β) × 公司份额(α) → 机器人业务收入增速中枢上移","priced_in":"部分定价","verify_metric":"季度机器人业务收入增速","verify_threshold":"≥ 50%","source":"演示研究底稿（L3）"},{"statement":"产能爬坡+规模效应驱动毛利率中枢上移","transmission":"产能利用率提升 → 单位折旧摊薄 + 良率提升 → 毛利率年改善约 1pp","priced_in":"未充分定价","verify_metric":"毛利率环比变化","verify_threshold":"环比 +0.3pp 以上","source":"演示研究底稿（L3）"}]},"meta":{"framework_version":"stockframe-0.1.0","fields":[{"field_id":"market.price_close","name":"收盘价","unit":"元","update_days":1,"qualitative":false,"required":true,"annual":false,"group":"market"},{"field_id":"market.pe_ttm","name":"PE(TTM)","unit":"倍","update_days":1,"qualitative":false,"required":true,"annual":false,"group":"market"},{"field_id":"market.pb","name":"PB","unit":"倍","update_days":1,"qualitative":false,"required":false,"annual":false,"group":"market"},{"field_id":"market.pctile_pe_10y","name":"PE 十年分位","unit":"%","update_days":1,"qualitative":false,"required":false,"annual":false,"group":"market"},{"field_id":"market.pctile_pb_10y","name":"PB 十年分位","unit":"%","update_days":1,"qualitative":false,"required":false,"annual":false,"group":"market"},{"field_id":"market.turnover_pct","name":"换手率","unit":"%","update_days":1,"qualitative":false,"required":false,"annual":false,"group":"market"},{"field_id":"market.vol_ratio_20d","name":"20日量比","unit":"倍","update_days":1,"qualitative":false,"required":false,"annual":false,"group":"market"},{"field_id":"market.dist_ma250","name":"距250日线","unit":"%","update_days":1,"qualitative":false,"required":false,"annual":false,"group":"market"},{"field_id":"market.drawdown_52w","name":"距52周高点回撤","unit":"%","update_days":1,"qualitative":false,"required":false,"annual":false,"group":"market"},{"field_id":"market.inst_hold_chg_pct","name":"机构持仓变化","unit":"pp","update_days":92,"qualitative":false,"required":false,"annual":false,"group":"market"},{"field_id":"macro.m1_yoy","name":"M1 同比","unit":"%","update_days":31,"qualitative":false,"required":false,"annual":false,"group":"macro"},{"field_id":"macro.rate_10y_chg_yoy","name":"10Y利率同比变化","unit":"bp","update_days":31,"qualitative":false,"required":false,"annual":false,"group":"macro"},{"field_id":"macro.pmi","name":"PMI","unit":"点","update_days":31,"qualitative":false,"required":false,"annual":false,"group":"macro"},{"field_id":"macro.policy_stance","name":"政策取向(对行业)","unit":"1-5档","update_days":31,"qualitative":true,"required":false,"annual":false,"group":"macro"},{"field_id":"industry.industry_growth","name":"行业增速","unit":"%","update_days":92,"qualitative":false,"required":false,"annual":false,"group":"industry"},{"field_id":"industry.price_trend","name":"行业量价趋势","unit":"1-5档(-2..+2)","update_days":92,"qualitative":true,"required":false,"annual":false,"group":"industry"},{"field_id":"industry.stage","name":"行业生命周期阶段","unit":"1-5档","update_days":92,"qualitative":true,"required":false,"annual":false,"group":"industry"},{"field_id":"industry.concentration","name":"格局/公司卡位","unit":"1-5档","update_days":92,"qualitative":true,"required":false,"annual":false,"group":"industry"},{"field_id":"industry.penetration_space","name":"渗透空间","unit":"1-5档","update_days":92,"qualitative":true,"required":false,"annual":false,"group":"industry"},{"field_id":"company.moat","name":"护城河综合档","unit":"1-5档","update_days":92,"qualitative":true,"required":false,"annual":false,"group":"company"},{"field_id":"company.mgmt_record","name":"管理层记录","unit":"1-5档","update_days":92,"qualitative":true,"required":false,"annual":false,"group":"company"},{"field_id":"company.pledge_pct","name":"大股东质押比例","unit":"%","update_days":31,"qualitative":false,"required":false,"annual":false,"group":"company"},{"field_id":"company.logic_strength","name":"投资逻辑强度(预期差)","unit":"1-5档","update_days":92,"qualitative":true,"required":false,"annual":false,"group":"company"},{"field_id":"company.logic_essence","name":"一句话本质（逻辑内核）","unit":"文本","update_days":92,"qualitative":false,"required":false,"annual":false,"group":"company"},{"field_id":"company.customer_concentration","name":"最大客户收入占比","unit":"%","update_days":365,"qualitative":false,"required":false,"annual":true,"group":"company"},{"field_id":"financial.roe_ttm","name":"ROE(TTM)","unit":"%","update_days":92,"qualitative":false,"required":true,"annual":false,"group":"financial"},{"field_id":"financial.roic","name":"ROIC","unit":"%","update_days":92,"qualitative":false,"required":false,"annual":false,"group":"financial"},{"field_id":"financial.wacc_assumed","name":"WACC(假设)","unit":"%","update_days":92,"qualitative":false,"required":false,"annual":false,"group":"financial"},{"field_id":"financial.ocf_np_ratio","name":"经营现金流/净利润","unit":"倍","update_days":92,"qualitative":false,"required":false,"annual":false,"group":"financial"},{"field_id":"financial.wc_growth_gap","name":"应收+存货增速-营收增速","unit":"pp","update_days":92,"qualitative":false,"required":false,"annual":false,"group":"financial"},{"field_id":"financial.rev_growth","name":"营收增速(同比)","unit":"%","update_days":92,"qualitative":false,"required":true,"annual":false,"group":"financial"},{"field_id":"financial.np_growth","name":"净利增速(同比)","unit":"%","update_days":92,"qualitative":false,"required":false,"annual":false,"group":"financial"},{"field_id":"financial.gm_trend","name":"毛利率趋势(同比变化)","unit":"pp","update_days":92,"qualitative":false,"required":false,"annual":false,"group":"financial"},{"field_id":"financial.int_debt_ratio","name":"有息负债率","unit":"%","update_days":92,"qualitative":false,"required":false,"annual":false,"group":"financial"},{"field_id":"financial.goodwill_pct","name":"商誉/净资产","unit":"%","update_days":92,"qualitative":false,"required":false,"annual":false,"group":"financial"},{"field_id":"valuation.eps_ttm","name":"EPS(TTM)","unit":"元","update_days":92,"qualitative":false,"required":true,"annual":false,"group":"valuation"},{"field_id":"valuation.peer_pe_median","name":"同业 PE 中位数","unit":"倍","update_days":92,"qualitative":false,"required":false,"annual":false,"group":"valuation"},{"field_id":"valuation.pe_hist_p25","name":"PE 十年 P25","unit":"倍","update_days":1,"qualitative":false,"required":false,"annual":false,"group":"valuation"},{"field_id":"valuation.pe_hist_p75","name":"PE 十年 P75","unit":"倍","update_days":1,"qualitative":false,"required":false,"annual":false,"group":"valuation"}]}};
+window.__SNAPSHOT__ = {"report":{"schema_version":"0.1.0","meta":{"stock":{"name":"华晟精工（示例·虚构演示标的）","code":"XX0000.DEMO","exchange":"SH（演示）","currency":"CNY"},"analysis_date":"2026-10-22","price_ref":{"close":32.5,"as_of":"2026-10-22","source":"演示行情库（收盘价）","source_tier":"L2"},"horizons":{"primary":"mid_term_6_12m","reference":"short_term_0_3m"},"framework_version":"0.1.0","generated_at":"2026-10-22","data_cutoff":"2026-10-22","company_type":"steady_growth","company_type_effective":"steady_growth","relative_valuation_metric":"PE"},"conclusion":{"bucket_mid":"入池","bucket_short":"入池","composite_score_mid":7.64,"composite_score_short":8.8,"confidence":{"level":"high","value":0.924},"decision":{"rule_id":"R6_SCORE_BAND","reasons":["中线综合分 7.64 >= 7.0 且各维度 >= 4.0"]},"summary":"一句话本质：买的是人形机器人零部件从 0 到 1 的份额兑现，叠加产能爬坡带来的毛利率中枢抬升。中线 7.64 分（入池线 7.0）→ 分桶【入池】，规则 R6_SCORE_BAND；短线参考【入池】；置信度 高（0.924）。主要归因：判断层占 44%、数据层占 42%（判断层占比越高越依赖档位选择，越需人工复核）","maintain_conditions":[{"id":"C1","condition":"下期营收同比增速维持 ≥ 15.4%（当前 22.0% 的七成）","metric":"financial.rev_growth（定期报告）","threshold":"≥ 15.4%","source":"公司定期报告（披露日后评价）"},{"id":"C2","condition":"ROE(TTM) 维持 ≥ 13.5%（较当前回落不超过 3pp）","metric":"financial.roe_ttm","threshold":"≥ 13.5%","source":"公司定期报告"},{"id":"C3","condition":"PE 十年分位不升破 70%（当前 42%）","metric":"market.pctile_pe_10y","threshold":"< 70%","source":"行情/估值数据库"},{"id":"C4","condition":"最高风险 R1（大客户资本开支放缓）不触发：大客户季报资本开支指引/排产数据 同比转负","metric":"大客户季报资本开支指引/排产数据","threshold":"同比转负","source":"公告/行业数据"}],"falsification":[{"id":"F1","condition":"逻辑证伪：若「季度机器人业务收入增速」不再满足 ≥ 50%，则逻辑「机器人零部件放量：人形机器人量产 → 公司作为核心供应商份额 >30% → 收入弹性释放」失效（传导：行业量产(β) × 公司份额(α) → 机器人业务收入增速中枢上移）→ 公司/财务维度重估","metric":"季度机器人业务收入增速","threshold":"≥ 50%","source":"演示研究底稿（L3）"},{"id":"F2","condition":"逻辑证伪：若「毛利率环比变化」不再满足 环比 +0.3pp 以上，则逻辑「产能爬坡+规模效应驱动毛利率中枢上移」失效（传导：产能利用率提升 → 单位折旧摊薄 + 良率提升 → 毛利率年改善约 1pp）→ 公司/财务维度重估","metric":"毛利率环比变化","threshold":"环比 +0.3pp 以上","source":"演示研究底稿（L3）"},{"id":"F3","condition":"增长失速：营收同比跌破 11.0%（腰斩线）→ 财务/公司维度重估","metric":"financial.rev_growth","threshold":"< 11.0%","source":"公司定期报告"},{"id":"F4","condition":"估值风险：PE 十年分位升破 80% 或 DCF 安全边际转负 → 估值维度重估","metric":"market.pctile_pe_10y / valuation.dcf_margin_of_safety","threshold":">80% 或 <0","source":"行情/估值数据库"}],"valid_until":"2027-01-20","review_cadence":"中线：季度复核或证伪条件触发即重估；短线：事件驱动复核"},"scorecard":{"scale":"0-10","weights":{"mid_term":{"macro":0.08,"industry":0.14,"company":0.22,"financial":0.2,"valuation":0.16,"catalyst":0.06,"trading":0.06,"risk":0.08},"short_term":{"macro":0.05,"industry":0.1,"company":0.05,"financial":0.05,"valuation":0.05,"catalyst":0.3,"trading":0.3,"risk":0.1}},"dimensions":[{"id":"macro","name":"宏观","score_mid":7.5,"score_short":7.5,"confidence":{"level":"high","value":0.976},"factors":[{"id":"liquidity_rate","name":"流动性与利率","weight":0.5,"renormalized":false,"available_weight_ratio":1.0,"indicators":[{"id":"macro.m1_yoy_trend","name":"M1 同比趋势","unit":"%","value":6.2,"band":"良","score":7.5,"weight":0.6,"missing":false,"suppressed":false,"rationale":"M1 反映资金活化程度，经验上 >8% 对应宽松周期、<0% 收缩。","evidence":{"source":"演示央行金融统计（M1 同比）","source_tier":"L1","as_of":"2026-09-30","available_at":"2026-10-15"}},{"id":"macro.rate_10y_chg","name":"10Y 利率同比变化","unit":"bp","value":-25,"band":"良","score":7.5,"weight":0.4,"missing":false,"suppressed":false,"rationale":"利率下行降低贴现率与融资成本，对成长股估值中枢为顺风（反向指标）。口径：中债国债收益率曲线 10 年期（日频），同比 = 最新值与 365 天前最近交易日之差，单位 bp；曲线为日终估值，按次日可用。","evidence":{"source":"演示债券数据库（10Y 国债收益率同比变化，bp）","source_tier":"L2","as_of":"2026-10-20","available_at":"2026-10-20"}}]},{"id":"growth_policy","name":"增长与政策","weight":0.5,"renormalized":false,"available_weight_ratio":1.0,"indicators":[{"id":"macro.pmi_pos","name":"PMI 荣枯线位置","unit":"点","value":50.6,"band":"良","score":7.5,"weight":0.5,"missing":false,"suppressed":false,"rationale":"PMI 50 为荣枯线；51.5+ 对应扩张加速。","evidence":{"source":"演示统计局制造业 PMI","source_tier":"L1","as_of":"2026-09-30","available_at":"2026-09-30"}},{"id":"macro.policy_stance_r","name":"政策取向（对本行业）","unit":"1-5档","value":4,"band":"偏支持：有明确支持性政策或产业规划在途","score":7.5,"weight":0.5,"missing":false,"suppressed":false,"rationale":"政策取向需经'政策→行业→公司'传导链验证，非泛化受益。","evidence":{"source":"演示政策取向评估底稿（政策→行业→公司传导核对）","source_tier":"L3","as_of":"2026-10-01","available_at":"2026-10-01"}}]}]},{"id":"industry","name":"行业","score_mid":7.5,"score_short":7.5,"confidence":{"level":"high","value":0.92},"factors":[{"id":"prosperity","name":"景气度","weight":0.4,"renormalized":false,"available_weight_ratio":1.0,"indicators":[{"id":"industry.growth","name":"行业增速","unit":"%","value":14,"band":"良","score":7.5,"weight":0.6,"missing":false,"suppressed":false,"rationale":"行业增速显著高于名义 GDP 增速（约 5-6%）才算高景气。","evidence":{"source":"演示行业研究（精密零部件行业营收增速）","source_tier":"L3","as_of":"2026-09-30","available_at":"2026-10-10"}},{"id":"industry.price_trend_r","name":"行业量价趋势","unit":"-2..+2","value":4,"band":"价格偏强（+1）","score":7.5,"weight":0.4,"missing":false,"suppressed":false,"rationale":"量价齐升为最优景气组合；价格下行侵蚀利润率。","evidence":{"source":"演示行业研究（量价趋势档，1-5 档对应 -2..+2）","source_tier":"L3","as_of":"2026-09-30","available_at":"2026-10-10"}}]},{"id":"structure","name":"竞争格局","weight":0.35,"renormalized":false,"available_weight_ratio":1.0,"indicators":[{"id":"industry.concentration_r","name":"格局与公司卡位","unit":"1-5档","value":4,"band":"较高集中、公司为细分龙头","score":7.5,"weight":1.0,"missing":false,"suppressed":false,"rationale":"格局决定盈利可持续性；公司卡位决定份额弹性。","evidence":{"source":"演示行业研究（格局与公司卡位档）","source_tier":"L3","as_of":"2026-09-30","available_at":"2026-10-10"}}]},{"id":"space","name":"成长空间","weight":0.25,"renormalized":false,"available_weight_ratio":1.0,"indicators":[{"id":"industry.stage_r","name":"行业生命周期阶段","unit":"1-5档","value":4,"band":"成长中期：双位数增长、格局渐清晰","score":7.5,"weight":0.4,"missing":false,"suppressed":false,"rationale":"成长早中期估值与盈利弹性最优；衰退期一票降档。","evidence":{"source":"演示行业研究（生命周期档）","source_tier":"L3","as_of":"2026-09-30","available_at":"2026-10-10"}},{"id":"industry.penetration_r","name":"渗透空间","unit":"1-5档","value":4,"band":"渗透率 10-30%，快速渗透期","score":7.5,"weight":0.6,"missing":false,"suppressed":false,"rationale":"渗透率 10-30% 为戴维斯双击高发区间。","evidence":{"source":"演示行业研究（渗透空间档）","source_tier":"L3","as_of":"2026-09-30","available_at":"2026-10-10"}}]}]},{"id":"company","name":"公司","score_mid":7.5,"score_short":7.5,"confidence":{"level":"high","value":0.931},"factors":[{"id":"moat","name":"护城河","weight":0.5,"renormalized":false,"available_weight_ratio":1.0,"indicators":[{"id":"company.moat_r","name":"护城河综合档","unit":"1-5档","value":4,"band":"较强壁垒：技术专利+客户认证双壁垒，切换成本高","score":7.5,"weight":1.0,"missing":false,"suppressed":false,"rationale":"护城河类型与强度决定超额 ROE 的持续性。","evidence":{"source":"演示研究底稿（护城河锚定量表评档：技术专利+客户认证）","source_tier":"L3","as_of":"2026-10-20","available_at":"2026-10-20"}}]},{"id":"governance","name":"治理与管理","weight":0.3,"renormalized":false,"available_weight_ratio":1.0,"indicators":[{"id":"company.mgmt_r","name":"管理层记录","unit":"1-5档","value":4,"band":"良好：指引兑现率高、治理规范","score":7.5,"weight":0.6,"missing":false,"suppressed":false,"rationale":"指引兑现率与治理记录是中线持有的前提。","evidence":{"source":"演示研究底稿（管理层记录锚定量表）","source_tier":"L3","as_of":"2026-10-20","available_at":"2026-10-20"}},{"id":"company.pledge","name":"大股东质押比例","unit":"%","value":12,"band":"良","score":7.5,"weight":0.4,"missing":false,"suppressed":false,"rationale":"质押 >30% 需关注、>50% 为高风险（监管与市场惯例阈值）。","evidence":{"source":"演示交易所披露（大股东质押比例）","source_tier":"L1","as_of":"2026-10-18","available_at":"2026-10-18"}}]},{"id":"logic","name":"投资逻辑强度","weight":0.2,"renormalized":false,"available_weight_ratio":1.0,"indicators":[{"id":"company.logic_r","name":"核心逻辑与预期差","unit":"1-5档","value":4,"band":"强逻辑：传导路径明确且存在被低估的预期差","score":7.5,"weight":1.0,"missing":false,"suppressed":false,"rationale":"预期差是超额收益来源；逻辑必须可证伪（'受益于景气'类泛逻辑不接受）。","evidence":{"source":"演示研究底稿（核心逻辑与预期差评档）","source_tier":"L3","as_of":"2026-10-20","available_at":"2026-10-20"}}]}]},{"id":"financial","name":"财务","score_mid":7.81,"score_short":7.81,"confidence":{"level":"high","value":0.991},"factors":[{"id":"earnings_quality","name":"盈利质量","weight":0.4,"renormalized":false,"available_weight_ratio":1.0,"indicators":[{"id":"fin.roe","name":"ROE(TTM)","unit":"%","value":16.5,"band":"良","score":7.5,"weight":0.4,"missing":false,"suppressed":false,"rationale":"消费/制造龙头长期 ROE>20% 为优秀（质量增长方法论），18% 为放宽门槛。","evidence":{"source":"演示公司 2026 年中报（ROE-TTM）","source_tier":"L1","as_of":"2026-06-30","available_at":"2026-08-28"}},{"id":"fin.ocf_np","name":"经营现金流/净利润","unit":"倍","value":0.95,"band":"良","score":7.5,"weight":0.35,"missing":false,"suppressed":false,"rationale":"净利润现金含量 ≥1 为合格线；长期 <0.7 说明利润含水量高。","evidence":{"source":"演示公司 2026 年中报（经营现金流净额/归母净利，TTM）","source_tier":"L1","as_of":"2026-06-30","available_at":"2026-08-28"}},{"id":"fin.wc_gap","name":"应收+存货增速 − 营收增速","unit":"pp","value":3.5,"band":"良","score":7.5,"weight":0.25,"missing":false,"suppressed":false,"rationale":"营运资本增速持续快于营收 = 渠道压货/回款恶化信号（增长质检）。","evidence":{"source":"演示公司 2026 年中报（(应收+存货)增速-营收增速，pp）","source_tier":"L1","as_of":"2026-06-30","available_at":"2026-08-28"}}]},{"id":"growth_quality","name":"增长质量","weight":0.35,"renormalized":false,"available_weight_ratio":1.0,"indicators":[{"id":"fin.rev_g","name":"营收增速","unit":"%","value":22,"band":"良","score":7.5,"weight":0.35,"missing":false,"suppressed":false,"rationale":"与名义 GDP 及行业增速对比定位增长台阶。","evidence":{"source":"演示公司 2026 年中报（营收同比）","source_tier":"L1","as_of":"2026-06-30","available_at":"2026-08-28"}},{"id":"fin.np_g","name":"净利增速","unit":"%","value":26,"band":"优","score":10.0,"weight":0.35,"missing":false,"suppressed":false,"rationale":"收入与利润增速需同向；利润长期快于收入需查非经常项。","evidence":{"source":"演示公司 2026 年中报（归母净利同比）","source_tier":"L1","as_of":"2026-06-30","available_at":"2026-08-28"}},{"id":"fin.gm_trend","name":"毛利率趋势(同比变化)","unit":"pp","value":1.2,"band":"良","score":7.5,"weight":0.3,"missing":false,"suppressed":false,"rationale":"毛利率方向是量价与竞争格局的先行指标。","evidence":{"source":"演示公司 2026 年中报（毛利率同比变化，pp）","source_tier":"L1","as_of":"2026-06-30","available_at":"2026-08-28"}}]},{"id":"capital_return","name":"资本回报","weight":0.25,"renormalized":false,"available_weight_ratio":1.0,"indicators":[{"id":"fin.roic_wacc","name":"ROIC − WACC 差","unit":"pp","value":4.0,"band":"良","score":7.5,"weight":0.4,"missing":false,"suppressed":false,"rationale":"ROIC 超 WACC 5pp 以上为优秀（质量增长方法论：真实经营优势的标尺）。","evidence":{"source":"演示公司 2026 年中报（ROIC-TTM，计算口径见底稿）","source_tier":"L1","as_of":"2026-06-30","available_at":"2026-08-28"}},{"id":"fin.int_debt","name":"有息负债率","unit":"%","value":28,"band":"良","score":7.5,"weight":0.3,"missing":false,"suppressed":false,"rationale":"制造业 >50% 财务弹性受限，>65% 高杠杆。","evidence":{"source":"演示公司 2026 年中报（有息负债/总资产）","source_tier":"L1","as_of":"2026-06-30","available_at":"2026-08-28"}},{"id":"fin.goodwill","name":"商誉/净资产","unit":"%","value":8,"band":"良","score":7.5,"weight":0.3,"missing":false,"suppressed":false,"rationale":"商誉占比 >25% 减值风险显著（并购驱动增长需打折）。","evidence":{"source":"演示公司 2026 年中报（商誉/净资产）","source_tier":"L1","as_of":"2026-06-30","available_at":"2026-08-28"}}]}]},{"id":"valuation","name":"估值","score_mid":6.12,"score_short":6.12,"confidence":{"level":"high","value":0.98},"factors":[{"id":"abs_margin","name":"绝对安全边际","weight":0.45,"renormalized":false,"available_weight_ratio":1.0,"indicators":[{"id":"val.dcf_margin","name":"DCF 安全边际(基准情景)","unit":"%","value":16.8,"band":"良","score":7.5,"weight":1.0,"missing":false,"suppressed":false,"rationale":"安全边际 ≥15% 才足以补偿假设不确定性（DCF 区间中枢 vs 现价）。","evidence":{"source":"演示行情库（收盘价）","source_tier":"L2","as_of":"2026-10-22","available_at":"2026-10-22"}}]},{"id":"rel_position","name":"相对位置","weight":0.35,"renormalized":false,"available_weight_ratio":1.0,"indicators":[{"id":"val.pe_pctile","name":"PE 十年分位","unit":"%","value":42,"band":"中","score":5.0,"weight":0.6,"missing":false,"suppressed":false,"rationale":"历史分位 <30% 偏低、30-70% 中性、>70% 偏高（估值方法论阈值）。","evidence":{"source":"演示估值数据库（近10年，窗口 2016-10 至 2026-10）","source_tier":"L2","as_of":"2026-10-22","available_at":"2026-10-22"}},{"id":"val.pb_pctile","name":"PB 十年分位","unit":"%","value":55,"band":"中","score":5.0,"weight":0.4,"missing":false,"suppressed":false,"rationale":"PB 分位为 PE 的交叉验证，周期股权重应上调（可配置）。","evidence":{"source":"演示估值数据库（近10年，窗口 2016-10 至 2026-10）","source_tier":"L2","as_of":"2026-10-22","available_at":"2026-10-22"}}]},{"id":"expectation_match","name":"预期匹配","weight":0.2,"renormalized":false,"available_weight_ratio":1.0,"indicators":[{"id":"val.peg","name":"PEG","unit":"倍","value":1.35,"band":"中","score":5.0,"weight":1.0,"missing":false,"suppressed":false,"rationale":"PEG<1 为增长匹配良好；增长为负时 PEG 无意义（按缺失处理）。","evidence":{"source":"演示行情库（PE-TTM）","source_tier":"L2","as_of":"2026-10-22","available_at":"2026-10-22"}}]}]},{"id":"catalyst","name":"催化剂","score_mid":10.0,"score_short":10.0,"confidence":{"level":"high","value":1.0},"factors":[{"id":"mid_density","name":"中线催化密度(6-12月)","weight":0.5,"renormalized":false,"available_weight_ratio":1.0,"indicators":[{"id":"cat.density","name":"催化密度加权分","unit":"0-10","value":10.0,"band":"优","score":10.0,"weight":1.0,"missing":false,"suppressed":false,"rationale":"公式 = min(10, Σ 事件强度权重)，强=4/中=2.5/弱=1/噪音=0，只计 6-12 月窗口。","evidence":{"source":"计算字段（公式见评分说明与 rationale）","source_tier":"L1","as_of":"2026-10-22","available_at":"2026-10-22"}}]},{"id":"short_strength","name":"短线催化强度(30日内)","weight":0.5,"renormalized":false,"available_weight_ratio":1.0,"indicators":[{"id":"cat.next_event","name":"下一事件强度分","unit":"0-10","value":10.0,"band":"优","score":10.0,"weight":1.0,"missing":false,"suppressed":false,"rationale":"公式：30 日内最近事件 强=10/中=7.5/弱=2.5/无=0；利好已定价 ×0.4（兑现风险）。","evidence":{"source":"计算字段（公式见评分说明与 rationale）","source_tier":"L1","as_of":"2026-10-22","available_at":"2026-10-22"}}]}]},{"id":"trading","name":"交易面","score_mid":9.38,"score_short":9.38,"confidence":{"level":"high","value":0.98},"factors":[{"id":"trend_position","name":"趋势与位置","weight":0.4,"renormalized":false,"available_weight_ratio":1.0,"indicators":[{"id":"trd.dist_ma250","name":"距 250 日均线","unit":"%","value":8.5,"band":"优","score":10.0,"weight":0.5,"missing":false,"suppressed":false,"rationale":"0-15% 为健康趋势；>30% 过热；<-25% 深度破位（非单调：两端均扣分）。","evidence":{"source":"演示行情库（收盘价/MA250-1）","source_tier":"L2","as_of":"2026-10-22","available_at":"2026-10-22"}},{"id":"trd.drawdown_52w","name":"距 52 周高点回撤","unit":"%","value":12.0,"band":"优","score":10.0,"weight":0.5,"missing":false,"suppressed":false,"rationale":"动量视角：接近 52 周高点为强势特征。","evidence":{"source":"演示行情库（距52周高点回撤）","source_tier":"L2","as_of":"2026-10-22","available_at":"2026-10-22"}}]},{"id":"volume_chips","name":"量价与筹码","weight":0.35,"renormalized":false,"available_weight_ratio":1.0,"indicators":[{"id":"trd.vol_ratio","name":"20 日量比","unit":"倍","value":1.25,"band":"优","score":10.0,"weight":0.5,"missing":false,"suppressed":false,"rationale":"温和放量(1.0-1.5)最优；>3 异常放量需查归因（非单调）。","evidence":{"source":"演示行情库（20日均量比）","source_tier":"L2","as_of":"2026-10-22","available_at":"2026-10-22"}},{"id":"trd.turnover","name":"换手率","unit":"%","value":3.2,"band":"优","score":10.0,"weight":0.5,"missing":false,"suppressed":false,"rationale":"换手过低流动性差、过高博弈过热（非单调甜点区间）。","evidence":{"source":"演示行情库（日换手率）","source_tier":"L2","as_of":"2026-10-22","available_at":"2026-10-22"}}]},{"id":"crowding","name":"拥挤度","weight":0.25,"renormalized":false,"available_weight_ratio":1.0,"indicators":[{"id":"trd.inst_chg","name":"机构持仓变化","unit":"pp","value":3.5,"band":"良","score":7.5,"weight":1.0,"missing":false,"suppressed":false,"rationale":"机构增持为中线资金面确认；大幅减持需查归因。","evidence":{"source":"演示基金持仓数据库（基金三季报披露）","source_tier":"L2","as_of":"2026-09-30","available_at":"2026-10-22"}}]}]},{"id":"risk","name":"风险(可控度)","score_mid":7.9,"score_short":7.9,"confidence":{"level":"high","value":0.9},"factors":[{"id":"controllability","name":"风险可控度","weight":1.0,"renormalized":false,"available_weight_ratio":1.0,"indicators":[{"id":"risk.matrix_score","name":"风险矩阵加权分","unit":"0-10","value":7.0,"band":"良","score":7.0,"weight":0.45,"missing":false,"suppressed":false,"rationale":"公式：10×(1−Σ max(0, P×I−8, 17 上限)/20)，P×I>8 的风险逐条扣减。","evidence":{"source":"计算字段（公式见评分说明与 rationale）","source_tier":"L1","as_of":"2026-10-22","available_at":"2026-10-22"}},{"id":"risk.red_flags","name":"财务红旗数量","unit":"个","value":0,"band":"优","score":10.0,"weight":0.25,"missing":false,"suppressed":false,"rationale":"重大红旗（非标审计/资金占用/立案）边际影响极陡：1 条已显著降分，2 条以上由决策层直接进回避候选。","evidence":{"source":"计算字段（公式见评分说明与 rationale）","source_tier":"L1","as_of":"2026-10-22","available_at":"2026-10-22"}},{"id":"risk.customer_conc","name":"最大客户收入占比","unit":"%","value":22,"band":"良","score":7.5,"weight":0.3,"missing":false,"suppressed":false,"rationale":"单一客户 >30% 依赖风险、>50% 重大集中度风险。","evidence":{"source":"演示公司 2026 年中报（最大客户收入占比）","source_tier":"L1","as_of":"2026-06-30","available_at":"2026-08-28"}}]}]}],"evidence_coverage":{"ratio":1.0,"threshold":0.6,"basis":"研究判断层（宏观/行业/公司）按指标权重的覆盖比例，未补零","total_ratio":1.0,"by_dimension":{"macro":1.0,"industry":1.0,"company":1.0,"financial":1.0,"valuation":1.0,"catalyst":1.0,"trading":1.0,"risk":1.0},"scored_dimensions":["macro","industry","company","financial","valuation","catalyst","trading","risk"],"missing_dimensions":[],"note":"闸门口径 = 宏观/行业/公司三层的指标级覆盖；低于阈值时不出正式分桶（R7_COVERAGE）。total_ratio 为全维度覆盖，仅供参考，不参与判定"},"score_attribution":{"judgement":3.3,"data":3.1,"risk_catalyst":1.23,"total":7.64,"weight_share":{"judgement":0.44,"data":0.42,"risk_catalyst":0.14},"note":"分项贡献 = 组内(维度分×中线权重)之和 ÷ 全部已评维度权重之和，三项相加 = 综合分（各分项保留 2 位小数，直接相加可能与综合分差 ±0.01）。judgement 层以 1-5 档人工/代理判断为输入，data 层为财报与行情，weight_share 为该层在已评维度中的权重占比——判断层占比越高，结论越依赖档位选择，越需要人工复核。"}},"valuation":{"gate":{"company_type":"steady_growth","type_label":"稳定成长","dcf_applicable":true,"code":null,"reason":"","relative_metric":{"requested":"PE","supported":true,"note":"按 PE 十年分位带折算隐含价位（PE × EPS(TTM)）。"}},"dcf":{"method":"FCFF_DCF","assumptions_kind":"assumption","applicable":true,"scenario_results":{"optimistic":{"wacc":0.09,"terminal_growth":0.03,"revenue_growth_path":[0.3,0.25,0.22,0.18,0.15],"ebit_margin_path":[0.17,0.185,0.2,0.21,0.22],"value_per_share_central":64.3,"value_per_share_low":54.65,"value_per_share_high":77.85,"terminal_value_share":0.819,"net_debt_assumption":-2.5,"shares_assumption":1.62},"base":{"wacc":0.095,"terminal_growth":0.025,"revenue_growth_path":[0.22,0.18,0.15,0.12,0.1],"ebit_margin_path":[0.16,0.17,0.18,0.185,0.19],"value_per_share_central":37.97,"value_per_share_low":33.13,"value_per_share_high":44.43,"terminal_value_share":0.77,"net_debt_assumption":-2.5,"shares_assumption":1.62},"pessimistic":{"wacc":0.105,"terminal_growth":0.02,"revenue_growth_path":[0.12,0.08,0.06,0.05,0.04],"ebit_margin_path":[0.15,0.145,0.14,0.135,0.13],"value_per_share_central":16.57,"value_per_share_low":15.01,"value_per_share_high":18.56,"terminal_value_share":0.662,"net_debt_assumption":-2.5,"shares_assumption":1.62}},"sensitivity_grid_base":{"wacc_values":[0.08,0.0875,0.095,0.1025,0.11],"g_values":[0.02,0.0225,0.025,0.0275,0.03],"values":[[45.19,46.79,48.55,50.47,52.58],[40.06,41.29,42.62,44.06,45.62],[35.97,36.93,37.97,39.08,40.27],[32.63,33.4,34.22,35.1,36.04],[29.85,30.48,31.15,31.85,32.61]]},"warnings":["optimistic 情景永续终值占比 82% > 70%：估值高度依赖终值假设，可信度降档","base 情景永续终值占比 77% > 70%：估值高度依赖终值假设，可信度降档"]},"relative":{"method":"percentile_band","available":true,"metric":"PE","current":28.5,"percentile_10y":42.0,"band":"neutral","bands_definition":{"low":"<30%","neutral":"30-70%","high":">70%"},"implied_price_range":{"low":25.08,"high":39.9,"eps_used":1.14,"eps_kind":"TTM"},"peer_anchor":{"peer_median":31.0,"premium_pct":-8.1,"implied_price":35.34,"comparable":true,"note":"本公司 28.5 倍 vs 同业中位 31.0 倍 → 折价 8%；倍数处于同一可比区间，横向锚仅作参照，不构成价位判断"},"priced_in_narrative":"当前 PE(TTM) 28.5 倍处于十年 42% 分位（中性区间）；基准情景预期 EPS 增速约 21%，当前估值隐含的增长预期与该增速匹配；以上为基于分位与增速的拆解，不构成价格点位判断。"},"synthesis":{"dcf_base_range":{"low":33.13,"high":44.43},"relative_range":{"low":25.08,"high":39.9},"combined_range":{"low":33.13,"high":39.9},"mode":"intersection","safety_margin_pct":12.4,"margin_basis":"combined","dcf_margin_pct":16.8,"relative_margin_pct":-0.0,"divergence_pct":-14.4,"confidence_level":"medium","note":"合成区间 = 基准情景 DCF 区间与相对估值分位带区间的交集；仅为安全边际度量基准，非价格点位预测；加权期望值同为参考量。"}},"scenarios":[{"name":"optimistic","probability":0.25,"key_assumptions":["机器人客户量产爬坡超预期，公司份额提升至 35%+","毛利率中枢上移至 20% 以上"],"value_per_share_range":{"low":54.65,"high":77.85},"drivers":["人形机器人产业链 0→1","产能利用率与规模效应"],"falsification":"头部客户量产计划推迟或砍单 → 乐观情景失效","delta_vs_base":"中枢 64.3 元 vs 基准 37.97 元（+69.3%）"},{"name":"base","probability":0.5,"key_assumptions":["机器人业务按客户指引放量，公司份额维持 30% 附近","毛利率每年中枢改善约 1pp"],"value_per_share_range":{"low":33.13,"high":44.43},"drivers":["机器人零部件放量","规模效应+良率提升"],"falsification":"季度机器人业务收入增速连续两季低于 50% → 基准情景失效","delta_vs_base":"中枢 37.97 元 vs 基准 37.97 元（+0.0%）"},{"name":"pessimistic","probability":0.25,"key_assumptions":["行业量产节奏不及预期，价格年降超过 5%","产能爬坡缓慢拖累毛利率回落至 13%"],"value_per_share_range":{"low":15.01,"high":18.56},"drivers":["行业 β 不足","价格竞争"],"falsification":"行业排产数据重回高增长 → 悲观情景失效","delta_vs_base":"中枢 16.57 元 vs 基准 37.97 元（-56.4%）"}],"risk_matrix":{"scale":"5x5_P_x_I","risks":[{"id":"R1","name":"大客户资本开支放缓","category":"customer_concentration","probability":3,"impact":4,"score":12,"level":"中","trigger":{"metric":"大客户季报资本开支指引/排产数据","threshold":"同比转负"},"mitigation":"跟踪大客户指引与在手订单；新客户导入分散","evidence":"演示客户公告与排产数据（L1/L3）"},{"id":"R2","name":"机器人量产进度不及预期","category":"demand","probability":3,"impact":3,"score":9,"level":"中","trigger":{"metric":"季度机器人业务收入增速","threshold":"< 50%"},"mitigation":"跟踪行业排产与客户上量节点","evidence":"演示行业研究（L3）"},{"id":"R3","name":"行业价格竞争加剧","category":"competition","probability":2,"impact":3,"score":6,"level":"低","trigger":{"metric":"核心产品单价年降幅度","threshold":"> 5%"},"mitigation":"高壁垒产品占比提升；长协锁定","evidence":"演示行业研究（L3）"},{"id":"R4","name":"汇率波动影响出口毛利","category":"macro","probability":2,"impact":2,"score":4,"level":"低","trigger":{"metric":"USD/CNY 季度波动","threshold":"±3% 以上"},"mitigation":"远期锁汇比例 >60%","evidence":"演示公司中报外汇敞口披露（L1）"},{"id":"R5","name":"限售解禁后股东减持","category":"governance","probability":3,"impact":3,"score":9,"level":"中","trigger":{"metric":"解禁公告与股东减持计划","threshold":"解禁后 30 日内出现减持计划公告"},"mitigation":"跟踪解禁日历与减持预披露","evidence":"演示交易所解禁日历（L1）"}],"grid":{"p_levels":[1,2,3,4,5],"i_levels":[1,2,3,4,5],"counts":[[0,0,0,0,0],[0,1,1,0,0],[0,0,2,1,0],[0,0,0,0,0],[0,0,0,0,0]]},"top_risk_ids":["R1","R2","R5","R3","R4"]},"catalyst_calendar":[{"date":"2026-10-30","event":"三季报披露（机器人业务收入与毛利率验证）","type":"earnings","direction":"+","strength":"强","expected_impact":"核心逻辑 F1 的首次季度验证点","priced_in":"部分定价","verify_method":"对照 F1/C1 阈值核验机器人业务收入增速","warning":null},{"date":"2026-11-20","event":"人形机器人行业峰会（新品与订单密集窗口）","type":"industry","direction":"+","strength":"中","expected_impact":"板块情绪与订单预期催化","priced_in":"未定价","verify_method":"会后 2 周内跟踪订单公告密度","warning":null},{"date":"2026-12-15","event":"竞对新品发布会（参数与报价对比）","type":"industry","direction":"-","strength":"弱","expected_impact":"竞争格局边际扰动","priced_in":"未定价","verify_method":"对照竞品参数与报价","warning":null},{"date":"2027-03-25","event":"年报披露+新一代执行器部件发布","type":"company","direction":"+","strength":"强","expected_impact":"新品毛利结构与全年指引","priced_in":"未定价","verify_method":"新品毛利率与订单指引核验","warning":null},{"date":"2027-06-30","event":"大客户订单续签窗口","type":"company","direction":"+","strength":"中","expected_impact":"份额与年降条款确认","priced_in":"未定价","verify_method":"订单金额与年降幅度核验","warning":null}],"tracking_checklist":[{"id":"T1","item":"证伪条件 F1：逻辑证伪：若「季度机器人业务收入增速」不再满足 ≥ 50%，则逻辑「机器人零部件放量：人形机器人量产 …","metric":"季度机器人业务收入增速","threshold":"≥ 50%","direction":"below","cadence":"weekly","action_on_trigger":"立即重估结论（非降档处理）","source":"演示研究底稿（L3）","origin":"falsification"},{"id":"T2","item":"证伪条件 F2：逻辑证伪：若「毛利率环比变化」不再满足 环比 +0.3pp 以上…","metric":"毛利率环比变化","threshold":"环比 +0.3pp 以上","direction":"below","cadence":"weekly","action_on_trigger":"立即重估结论（非降档处理）","source":"演示研究底稿（L3）","origin":"falsification"},{"id":"T3","item":"证伪条件 F3：增长失速：营收同比跌破 11.0%（腰斩线）→ 财务/公司维度重估","metric":"financial.rev_growth","threshold":"< 11.0%","direction":"below","cadence":"weekly","action_on_trigger":"立即重估结论（非降档处理）","source":"公司定期报告","origin":"falsification"},{"id":"T4","item":"证伪条件 F4：估值风险：PE 十年分位升破 80% 或 DCF 安全边际转负 → 估值维度重估","metric":"market.pctile_pe_10y / valuation.dcf_margin_of_safety","threshold":">80% 或 <0","direction":"below","cadence":"weekly","action_on_trigger":"立即重估结论（非降档处理）","source":"行情/估值数据库","origin":"falsification"},{"id":"T5","item":"风险 R1（大客户资本开支放缓，中风险）触发监控","metric":"大客户季报资本开支指引/排产数据","threshold":"同比转负","direction":"above","cadence":"weekly","action_on_trigger":"评估是否触发证伪/情景切换","source":"演示客户公告与排产数据（L1/L3）","origin":"risk_trigger"},{"id":"T6","item":"风险 R2（机器人量产进度不及预期，中风险）触发监控","metric":"季度机器人业务收入增速","threshold":"< 50%","direction":"below","cadence":"weekly","action_on_trigger":"评估是否触发证伪/情景切换","source":"演示行业研究（L3）","origin":"risk_trigger"},{"id":"T7","item":"风险 R5（限售解禁后股东减持，中风险）触发监控","metric":"解禁公告与股东减持计划","threshold":"解禁后 30 日内出现减持计划公告","direction":"above","cadence":"weekly","action_on_trigger":"评估是否触发证伪/情景切换","source":"演示交易所解禁日历（L1）","origin":"risk_trigger"},{"id":"T8","item":"催化剂核验：三季报披露（机器人业务收入与毛利率验证）（2026-10-30）","metric":"对照 F1/C1 阈值核验机器人业务收入增速","threshold":"兑现/不及预期 二分核验","direction":"above","cadence":"event","action_on_trigger":"按情景分支更新（超预期→乐观权重上调；不及预期→悲观权重上调）","source":"事件公告","origin":"catalyst_verify"},{"id":"T9","item":"催化剂核验：人形机器人行业峰会（新品与订单密集窗口）（2026-11-20）","metric":"会后 2 周内跟踪订单公告密度","threshold":"兑现/不及预期 二分核验","direction":"above","cadence":"event","action_on_trigger":"按情景分支更新（超预期→乐观权重上调；不及预期→悲观权重上调）","source":"事件公告","origin":"catalyst_verify"},{"id":"T10","item":"催化剂核验：年报披露+新一代执行器部件发布（2027-03-25）","metric":"新品毛利率与订单指引核验","threshold":"兑现/不及预期 二分核验","direction":"above","cadence":"event","action_on_trigger":"按情景分支更新（超预期→乐观权重上调；不及预期→悲观权重上调）","source":"事件公告","origin":"catalyst_verify"},{"id":"T11","item":"催化剂核验：大客户订单续签窗口（2027-06-30）","metric":"订单金额与年降幅度核验","threshold":"兑现/不及预期 二分核验","direction":"above","cadence":"event","action_on_trigger":"按情景分支更新（超预期→乐观权重上调；不及预期→悲观权重上调）","source":"事件公告","origin":"catalyst_verify"},{"id":"T12","item":"下期定期报告披露核验（营收/净利增速、ROE、OCF/净利、营运资本差）","metric":"financial.rev_growth / np_growth / roe_ttm / ocf_np_ratio / wc_growth_gap","threshold":"对照 maintain_conditions C1/C2 阈值","direction":"below","cadence":"quarterly","action_on_trigger":"不达阈值→重估财务维度并更新分桶","source":"公司定期报告（披露日之后评价，PIT 对齐）","origin":"disclosure"}],"data_quality":{"overall":0.965,"completeness":1.0,"timeliness":1.0,"source_tier_score":0.823,"min_tier_used":"L1","tier_distribution":{"L1":13,"L2":14,"L3":12,"L4":0},"gaps":[],"forced_manual_review":false,"notes":["只在年报披露的字段，数据期为最近一期年报、不随季报前移：company.customer_concentration（2026-06-30 年报口径）"]},"evidence_log":[{"field_id":"company.customer_concentration","source":"演示公司 2026 年中报（最大客户收入占比）","source_tier":"L1","as_of":"2026-06-30","available_at":"2026-08-28","used_by":["risk.customer_conc"]},{"field_id":"company.logic_essence","source":"演示研究底稿（一句话本质）","source_tier":"L3","as_of":"2026-10-20","available_at":"2026-10-20","used_by":["未直接入模（DQ 统计用）"]},{"field_id":"company.logic_strength","source":"演示研究底稿（核心逻辑与预期差评档）","source_tier":"L3","as_of":"2026-10-20","available_at":"2026-10-20","used_by":["company.logic_r"]},{"field_id":"company.mgmt_record","source":"演示研究底稿（管理层记录锚定量表）","source_tier":"L3","as_of":"2026-10-20","available_at":"2026-10-20","used_by":["company.mgmt_r"]},{"field_id":"company.moat","source":"演示研究底稿（护城河锚定量表评档：技术专利+客户认证）","source_tier":"L3","as_of":"2026-10-20","available_at":"2026-10-20","used_by":["company.moat_r"]},{"field_id":"company.pledge_pct","source":"演示交易所披露（大股东质押比例）","source_tier":"L1","as_of":"2026-10-18","available_at":"2026-10-18","used_by":["company.pledge"]},{"field_id":"financial.gm_trend","source":"演示公司 2026 年中报（毛利率同比变化，pp）","source_tier":"L1","as_of":"2026-06-30","available_at":"2026-08-28","used_by":["fin.gm_trend"]},{"field_id":"financial.goodwill_pct","source":"演示公司 2026 年中报（商誉/净资产）","source_tier":"L1","as_of":"2026-06-30","available_at":"2026-08-28","used_by":["fin.goodwill"]},{"field_id":"financial.int_debt_ratio","source":"演示公司 2026 年中报（有息负债/总资产）","source_tier":"L1","as_of":"2026-06-30","available_at":"2026-08-28","used_by":["fin.int_debt"]},{"field_id":"financial.np_growth","source":"演示公司 2026 年中报（归母净利同比）","source_tier":"L1","as_of":"2026-06-30","available_at":"2026-08-28","used_by":["fin.np_g"]},{"field_id":"financial.ocf_np_ratio","source":"演示公司 2026 年中报（经营现金流净额/归母净利，TTM）","source_tier":"L1","as_of":"2026-06-30","available_at":"2026-08-28","used_by":["fin.ocf_np"]},{"field_id":"financial.rev_growth","source":"演示公司 2026 年中报（营收同比）","source_tier":"L1","as_of":"2026-06-30","available_at":"2026-08-28","used_by":["fin.rev_g"]},{"field_id":"financial.roe_ttm","source":"演示公司 2026 年中报（ROE-TTM）","source_tier":"L1","as_of":"2026-06-30","available_at":"2026-08-28","used_by":["fin.roe"]},{"field_id":"financial.roic","source":"演示公司 2026 年中报（ROIC-TTM，计算口径见底稿）","source_tier":"L1","as_of":"2026-06-30","available_at":"2026-08-28","used_by":["fin.roic_wacc"]},{"field_id":"financial.wacc_assumed","source":"演示研究假设（WACC，与 DCF 假设一致性核对）","source_tier":"L3","as_of":"2026-10-20","available_at":"2026-10-20","used_by":["fin.roic_wacc"]},{"field_id":"financial.wc_growth_gap","source":"演示公司 2026 年中报（(应收+存货)增速-营收增速，pp）","source_tier":"L1","as_of":"2026-06-30","available_at":"2026-08-28","used_by":["fin.wc_gap"]},{"field_id":"industry.concentration","source":"演示行业研究（格局与公司卡位档）","source_tier":"L3","as_of":"2026-09-30","available_at":"2026-10-10","used_by":["industry.concentration_r"]},{"field_id":"industry.industry_growth","source":"演示行业研究（精密零部件行业营收增速）","source_tier":"L3","as_of":"2026-09-30","available_at":"2026-10-10","used_by":["industry.growth"]},{"field_id":"industry.penetration_space","source":"演示行业研究（渗透空间档）","source_tier":"L3","as_of":"2026-09-30","available_at":"2026-10-10","used_by":["industry.penetration_r"]},{"field_id":"industry.price_trend","source":"演示行业研究（量价趋势档，1-5 档对应 -2..+2）","source_tier":"L3","as_of":"2026-09-30","available_at":"2026-10-10","used_by":["industry.price_trend_r"]},{"field_id":"industry.stage","source":"演示行业研究（生命周期档）","source_tier":"L3","as_of":"2026-09-30","available_at":"2026-10-10","used_by":["industry.stage_r"]},{"field_id":"macro.m1_yoy","source":"演示央行金融统计（M1 同比）","source_tier":"L1","as_of":"2026-09-30","available_at":"2026-10-15","used_by":["macro.m1_yoy_trend"]},{"field_id":"macro.pmi","source":"演示统计局制造业 PMI","source_tier":"L1","as_of":"2026-09-30","available_at":"2026-09-30","used_by":["macro.pmi_pos"]},{"field_id":"macro.policy_stance","source":"演示政策取向评估底稿（政策→行业→公司传导核对）","source_tier":"L3","as_of":"2026-10-01","available_at":"2026-10-01","used_by":["macro.policy_stance_r"]},{"field_id":"macro.rate_10y_chg_yoy","source":"演示债券数据库（10Y 国债收益率同比变化，bp）","source_tier":"L2","as_of":"2026-10-20","available_at":"2026-10-20","used_by":["macro.rate_10y_chg"]},{"field_id":"market.dist_ma250","source":"演示行情库（收盘价/MA250-1）","source_tier":"L2","as_of":"2026-10-22","available_at":"2026-10-22","used_by":["trd.dist_ma250"]},{"field_id":"market.drawdown_52w","source":"演示行情库（距52周高点回撤）","source_tier":"L2","as_of":"2026-10-22","available_at":"2026-10-22","used_by":["trd.drawdown_52w"]},{"field_id":"market.inst_hold_chg_pct","source":"演示基金持仓数据库（基金三季报披露）","source_tier":"L2","as_of":"2026-09-30","available_at":"2026-10-22","used_by":["trd.inst_chg"]},{"field_id":"market.pb","source":"演示行情库（PB）","source_tier":"L2","as_of":"2026-10-22","available_at":"2026-10-22","used_by":["未直接入模（DQ 统计用）"]},{"field_id":"market.pctile_pb_10y","source":"演示估值数据库（近10年，窗口 2016-10 至 2026-10）","source_tier":"L2","as_of":"2026-10-22","available_at":"2026-10-22","used_by":["val.pb_pctile"]},{"field_id":"market.pctile_pe_10y","source":"演示估值数据库（近10年，窗口 2016-10 至 2026-10）","source_tier":"L2","as_of":"2026-10-22","available_at":"2026-10-22","used_by":["val.pe_pctile","valuation.relative/synthesis"]},{"field_id":"market.pe_ttm","source":"演示行情库（PE-TTM）","source_tier":"L2","as_of":"2026-10-22","available_at":"2026-10-22","used_by":["val.peg","valuation.relative/synthesis"]},{"field_id":"market.price_close","source":"演示行情库（收盘价）","source_tier":"L2","as_of":"2026-10-22","available_at":"2026-10-22","used_by":["val.dcf_margin","valuation.relative/synthesis"]},{"field_id":"market.turnover_pct","source":"演示行情库（日换手率）","source_tier":"L2","as_of":"2026-10-22","available_at":"2026-10-22","used_by":["trd.turnover"]},{"field_id":"market.vol_ratio_20d","source":"演示行情库（20日均量比）","source_tier":"L2","as_of":"2026-10-22","available_at":"2026-10-22","used_by":["trd.vol_ratio"]},{"field_id":"valuation.eps_ttm","source":"演示行情库（EPS-TTM）","source_tier":"L2","as_of":"2026-10-22","available_at":"2026-10-22","used_by":["val.peg","valuation.relative/synthesis"]},{"field_id":"valuation.pe_hist_p25","source":"演示估值数据库（近10年 PE P25，窗口 2016-10 至 2026-10）","source_tier":"L2","as_of":"2026-10-22","available_at":"2026-10-22","used_by":["valuation.relative/synthesis"]},{"field_id":"valuation.pe_hist_p75","source":"演示估值数据库（近10年 PE P75，窗口 2016-10 至 2026-10）","source_tier":"L2","as_of":"2026-10-22","available_at":"2026-10-22","used_by":["valuation.relative/synthesis"]},{"field_id":"valuation.peer_pe_median","source":"演示同业研究（可比公司 PE-TTM 中位数，自然年口径对齐）","source_tier":"L3","as_of":"2026-10-20","available_at":"2026-10-20","used_by":["valuation.relative/synthesis"]}],"disclaimer":"免责声明：本报告由 stockframe 研究框架基于公开数据与显式假设生成，仅供研究复核参考，不构成投资建议。框架输出为研究分桶（入池/观察/回避/人工复核）与条件化结论，不含任何买卖、价位或仓位建议。市场有风险，投资需谨慎。任何投资决策应结合个人风险承受能力、资金状况和投资目标独立判断，必要时咨询持牌专业机构。过往表现不预示未来收益。"},"input":{"_note":"演示输入：标的公司为虚构（XX0000.DEMO），全部数据为演示数据，仅用于展示框架管线与报告格式，不对应任何真实公司。真实使用时按数据字典替换 data/risks/catalysts，并保证全部字段带 as_of/available_at/source/source_tier。","meta":{"stock":{"name":"华晟精工（示例·虚构演示标的）","code":"XX0000.DEMO","exchange":"SH（演示）","currency":"CNY"},"analysis_date":"2026-10-22","company_type":"steady_growth","relative_valuation_metric":"PE","generated_at":"2026-10-23T06:30:00+08:00","flags":{"st":false,"audit_qualified":false,"regulatory_investigation":false,"major_fraud_red_flag":false,"suspended":false,"restructuring":false,"new_listing_under_1y":false},"red_flags":[]},"data":{"market":{"price_close":{"value":32.5,"as_of":"2026-10-22","available_at":"2026-10-22","source":"演示行情库（收盘价）","source_tier":"L2"},"pe_ttm":{"value":28.5,"as_of":"2026-10-22","available_at":"2026-10-22","source":"演示行情库（PE-TTM）","source_tier":"L2"},"pb":{"value":3.8,"as_of":"2026-10-22","available_at":"2026-10-22","source":"演示行情库（PB）","source_tier":"L2"},"pctile_pe_10y":{"value":42,"as_of":"2026-10-22","available_at":"2026-10-22","source":"演示估值数据库（近10年，窗口 2016-10 至 2026-10）","source_tier":"L2"},"pctile_pb_10y":{"value":55,"as_of":"2026-10-22","available_at":"2026-10-22","source":"演示估值数据库（近10年，窗口 2016-10 至 2026-10）","source_tier":"L2"},"turnover_pct":{"value":3.2,"as_of":"2026-10-22","available_at":"2026-10-22","source":"演示行情库（日换手率）","source_tier":"L2"},"vol_ratio_20d":{"value":1.25,"as_of":"2026-10-22","available_at":"2026-10-22","source":"演示行情库（20日均量比）","source_tier":"L2"},"dist_ma250":{"value":8.5,"as_of":"2026-10-22","available_at":"2026-10-22","source":"演示行情库（收盘价/MA250-1）","source_tier":"L2"},"drawdown_52w":{"value":12.0,"as_of":"2026-10-22","available_at":"2026-10-22","source":"演示行情库（距52周高点回撤）","source_tier":"L2"},"inst_hold_chg_pct":{"value":3.5,"as_of":"2026-09-30","available_at":"2026-10-22","period_end":"2026-09-30","source":"演示基金持仓数据库（基金三季报披露）","source_tier":"L2"}},"macro":{"m1_yoy":{"value":6.2,"as_of":"2026-09-30","available_at":"2026-10-15","period_end":"2026-09-30","source":"演示央行金融统计（M1 同比）","source_tier":"L1"},"rate_10y_chg_yoy":{"value":-25,"as_of":"2026-10-20","available_at":"2026-10-20","source":"演示债券数据库（10Y 国债收益率同比变化，bp）","source_tier":"L2"},"pmi":{"value":50.6,"as_of":"2026-09-30","available_at":"2026-09-30","source":"演示统计局制造业 PMI","source_tier":"L1"},"policy_stance":{"value":4,"as_of":"2026-10-01","available_at":"2026-10-01","source":"演示政策取向评估底稿（政策→行业→公司传导核对）","source_tier":"L3"}},"industry":{"industry_growth":{"value":14,"as_of":"2026-09-30","available_at":"2026-10-10","source":"演示行业研究（精密零部件行业营收增速）","source_tier":"L3"},"price_trend":{"value":4,"as_of":"2026-09-30","available_at":"2026-10-10","source":"演示行业研究（量价趋势档，1-5 档对应 -2..+2）","source_tier":"L3"},"stage":{"value":4,"as_of":"2026-09-30","available_at":"2026-10-10","source":"演示行业研究（生命周期档）","source_tier":"L3"},"concentration":{"value":4,"as_of":"2026-09-30","available_at":"2026-10-10","source":"演示行业研究（格局与公司卡位档）","source_tier":"L3"},"penetration_space":{"value":4,"as_of":"2026-09-30","available_at":"2026-10-10","source":"演示行业研究（渗透空间档）","source_tier":"L3"}},"company":{"moat":{"value":4,"as_of":"2026-10-20","available_at":"2026-10-20","source":"演示研究底稿（护城河锚定量表评档：技术专利+客户认证）","source_tier":"L3"},"mgmt_record":{"value":4,"as_of":"2026-10-20","available_at":"2026-10-20","source":"演示研究底稿（管理层记录锚定量表）","source_tier":"L3"},"pledge_pct":{"value":12,"as_of":"2026-10-18","available_at":"2026-10-18","source":"演示交易所披露（大股东质押比例）","source_tier":"L1"},"logic_strength":{"value":4,"as_of":"2026-10-20","available_at":"2026-10-20","source":"演示研究底稿（核心逻辑与预期差评档）","source_tier":"L3"},"logic_essence":{"value":"买的是人形机器人零部件从 0 到 1 的份额兑现，叠加产能爬坡带来的毛利率中枢抬升","as_of":"2026-10-20","available_at":"2026-10-20","source":"演示研究底稿（一句话本质）","source_tier":"L3"},"customer_concentration":{"value":22,"as_of":"2026-06-30","available_at":"2026-08-28","period_end":"2026-06-30","source":"演示公司 2026 年中报（最大客户收入占比）","source_tier":"L1"}},"financial":{"roe_ttm":{"value":16.5,"as_of":"2026-06-30","available_at":"2026-08-28","period_end":"2026-06-30","source":"演示公司 2026 年中报（ROE-TTM）","source_tier":"L1"},"roic":{"value":13.5,"as_of":"2026-06-30","available_at":"2026-08-28","period_end":"2026-06-30","source":"演示公司 2026 年中报（ROIC-TTM，计算口径见底稿）","source_tier":"L1"},"wacc_assumed":{"value":9.5,"as_of":"2026-10-20","available_at":"2026-10-20","source":"演示研究假设（WACC，与 DCF 假设一致性核对）","source_tier":"L3"},"ocf_np_ratio":{"value":0.95,"as_of":"2026-06-30","available_at":"2026-08-28","period_end":"2026-06-30","source":"演示公司 2026 年中报（经营现金流净额/归母净利，TTM）","source_tier":"L1"},"wc_growth_gap":{"value":3.5,"as_of":"2026-06-30","available_at":"2026-08-28","period_end":"2026-06-30","source":"演示公司 2026 年中报（(应收+存货)增速-营收增速，pp）","source_tier":"L1"},"rev_growth":{"value":22,"as_of":"2026-06-30","available_at":"2026-08-28","period_end":"2026-06-30","source":"演示公司 2026 年中报（营收同比）","source_tier":"L1"},"np_growth":{"value":26,"as_of":"2026-06-30","available_at":"2026-08-28","period_end":"2026-06-30","source":"演示公司 2026 年中报（归母净利同比）","source_tier":"L1"},"gm_trend":{"value":1.2,"as_of":"2026-06-30","available_at":"2026-08-28","period_end":"2026-06-30","source":"演示公司 2026 年中报（毛利率同比变化，pp）","source_tier":"L1"},"int_debt_ratio":{"value":28,"as_of":"2026-06-30","available_at":"2026-08-28","period_end":"2026-06-30","source":"演示公司 2026 年中报（有息负债/总资产）","source_tier":"L1"},"goodwill_pct":{"value":8,"as_of":"2026-06-30","available_at":"2026-08-28","period_end":"2026-06-30","source":"演示公司 2026 年中报（商誉/净资产）","source_tier":"L1"}},"valuation":{"eps_ttm":{"value":1.14,"as_of":"2026-10-22","available_at":"2026-10-22","source":"演示行情库（EPS-TTM）","source_tier":"L2"},"peer_pe_median":{"value":31,"as_of":"2026-10-20","available_at":"2026-10-20","source":"演示同业研究（可比公司 PE-TTM 中位数，自然年口径对齐）","source_tier":"L3"},"pe_hist_p25":{"value":22,"as_of":"2026-10-22","available_at":"2026-10-22","source":"演示估值数据库（近10年 PE P25，窗口 2016-10 至 2026-10）","source_tier":"L2"},"pe_hist_p75":{"value":35,"as_of":"2026-10-22","available_at":"2026-10-22","source":"演示估值数据库（近10年 PE P75，窗口 2016-10 至 2026-10）","source_tier":"L2"}}},"assumptions":{"_kind":"assumption（预测/假设数据，与实际数据严格隔离；报告中标注为假设）","eps_fwd":{"base":1.38,"optimistic":1.55,"pessimistic":1.1},"scenario_probabilities":{"optimistic":0.25,"base":0.5,"pessimistic":0.25},"dcf":{"base":{"wacc":0.095,"terminal_growth":0.025,"revenue_growth_path":[0.22,0.18,0.15,0.12,0.1],"ebit_margin_path":[0.16,0.17,0.18,0.185,0.19],"tax_rate":0.15,"dep_amort_pct_rev":0.045,"capex_pct_rev":0.065,"nwc_pct_rev_delta":0.012,"revenue_base":18.5,"net_debt":-2.5,"shares":1.62},"optimistic":{"wacc":0.09,"terminal_growth":0.03,"revenue_growth_path":[0.3,0.25,0.22,0.18,0.15],"ebit_margin_path":[0.17,0.185,0.2,0.21,0.22],"tax_rate":0.15,"dep_amort_pct_rev":0.045,"capex_pct_rev":0.07,"nwc_pct_rev_delta":0.012,"revenue_base":18.5,"net_debt":-2.5,"shares":1.62},"pessimistic":{"wacc":0.105,"terminal_growth":0.02,"revenue_growth_path":[0.12,0.08,0.06,0.05,0.04],"ebit_margin_path":[0.15,0.145,0.14,0.135,0.13],"tax_rate":0.15,"dep_amort_pct_rev":0.045,"capex_pct_rev":0.06,"nwc_pct_rev_delta":0.01,"revenue_base":18.5,"net_debt":-2.5,"shares":1.62}},"scenario_notes":{"optimistic":{"key_assumptions":["机器人客户量产爬坡超预期，公司份额提升至 35%+","毛利率中枢上移至 20% 以上"],"drivers":["人形机器人产业链 0→1","产能利用率与规模效应"],"falsification":"头部客户量产计划推迟或砍单 → 乐观情景失效"},"base":{"key_assumptions":["机器人业务按客户指引放量，公司份额维持 30% 附近","毛利率每年中枢改善约 1pp"],"drivers":["机器人零部件放量","规模效应+良率提升"],"falsification":"季度机器人业务收入增速连续两季低于 50% → 基准情景失效"},"pessimistic":{"key_assumptions":["行业量产节奏不及预期，价格年降超过 5%","产能爬坡缓慢拖累毛利率回落至 13%"],"drivers":["行业 β 不足","价格竞争"],"falsification":"行业排产数据重回高增长 → 悲观情景失效"}}},"risks":[{"id":"R1","name":"大客户资本开支放缓","category":"customer_concentration","probability":3,"impact":4,"trigger":{"metric":"大客户季报资本开支指引/排产数据","threshold":"同比转负"},"mitigation":"跟踪大客户指引与在手订单；新客户导入分散","evidence":"演示客户公告与排产数据（L1/L3）"},{"id":"R2","name":"机器人量产进度不及预期","category":"demand","probability":3,"impact":3,"trigger":{"metric":"季度机器人业务收入增速","threshold":"< 50%"},"mitigation":"跟踪行业排产与客户上量节点","evidence":"演示行业研究（L3）"},{"id":"R3","name":"行业价格竞争加剧","category":"competition","probability":2,"impact":3,"trigger":{"metric":"核心产品单价年降幅度","threshold":"> 5%"},"mitigation":"高壁垒产品占比提升；长协锁定","evidence":"演示行业研究（L3）"},{"id":"R4","name":"汇率波动影响出口毛利","category":"macro","probability":2,"impact":2,"trigger":{"metric":"USD/CNY 季度波动","threshold":"±3% 以上"},"mitigation":"远期锁汇比例 >60%","evidence":"演示公司中报外汇敞口披露（L1）"},{"id":"R5","name":"限售解禁后股东减持","category":"governance","probability":3,"impact":3,"trigger":{"metric":"解禁公告与股东减持计划","threshold":"解禁后 30 日内出现减持计划公告"},"mitigation":"跟踪解禁日历与减持预披露","evidence":"演示交易所解禁日历（L1）"}],"catalysts":[{"date":"2026-10-30","event":"三季报披露（机器人业务收入与毛利率验证）","type":"earnings","direction":"+","strength":"强","expected_impact":"核心逻辑 F1 的首次季度验证点","priced_in":"部分定价","verify_method":"对照 F1/C1 阈值核验机器人业务收入增速","source":"演示公司公告","source_tier":"L1"},{"date":"2026-11-20","event":"人形机器人行业峰会（新品与订单密集窗口）","type":"industry","direction":"+","strength":"中","expected_impact":"板块情绪与订单预期催化","priced_in":"未定价","verify_method":"会后 2 周内跟踪订单公告密度","source":"演示行业会议日历","source_tier":"L3"},{"date":"2026-12-15","event":"竞对新品发布会（参数与报价对比）","type":"industry","direction":"-","strength":"弱","expected_impact":"竞争格局边际扰动","priced_in":"未定价","verify_method":"对照竞品参数与报价","source":"演示行业会议日历","source_tier":"L3"},{"date":"2027-03-25","event":"年报披露+新一代执行器部件发布","type":"company","direction":"+","strength":"强","expected_impact":"新品毛利结构与全年指引","priced_in":"未定价","verify_method":"新品毛利率与订单指引核验","source":"演示公司公告","source_tier":"L1"},{"date":"2027-06-30","event":"大客户订单续签窗口","type":"company","direction":"+","strength":"中","expected_impact":"份额与年降条款确认","priced_in":"未定价","verify_method":"订单金额与年降幅度核验","source":"演示行业研究","source_tier":"L3"}],"logic_items":[{"statement":"机器人零部件放量：人形机器人量产 → 公司作为核心供应商份额 >30% → 收入弹性释放","transmission":"行业量产(β) × 公司份额(α) → 机器人业务收入增速中枢上移","priced_in":"部分定价","verify_metric":"季度机器人业务收入增速","verify_threshold":"≥ 50%","source":"演示研究底稿（L3）"},{"statement":"产能爬坡+规模效应驱动毛利率中枢上移","transmission":"产能利用率提升 → 单位折旧摊薄 + 良率提升 → 毛利率年改善约 1pp","priced_in":"未充分定价","verify_metric":"毛利率环比变化","verify_threshold":"环比 +0.3pp 以上","source":"演示研究底稿（L3）"}]},"meta":{"framework_version":"stockframe-0.1.0","fields":[{"field_id":"market.price_close","name":"收盘价","unit":"元","update_days":1,"qualitative":false,"required":true,"annual":false,"group":"market"},{"field_id":"market.pe_ttm","name":"PE(TTM)","unit":"倍","update_days":1,"qualitative":false,"required":true,"annual":false,"group":"market"},{"field_id":"market.pb","name":"PB","unit":"倍","update_days":1,"qualitative":false,"required":false,"annual":false,"group":"market"},{"field_id":"market.pctile_pe_10y","name":"PE 十年分位","unit":"%","update_days":1,"qualitative":false,"required":false,"annual":false,"group":"market"},{"field_id":"market.pctile_pb_10y","name":"PB 十年分位","unit":"%","update_days":1,"qualitative":false,"required":false,"annual":false,"group":"market"},{"field_id":"market.turnover_pct","name":"换手率","unit":"%","update_days":1,"qualitative":false,"required":false,"annual":false,"group":"market"},{"field_id":"market.vol_ratio_20d","name":"20日量比","unit":"倍","update_days":1,"qualitative":false,"required":false,"annual":false,"group":"market"},{"field_id":"market.dist_ma250","name":"距250日线","unit":"%","update_days":1,"qualitative":false,"required":false,"annual":false,"group":"market"},{"field_id":"market.drawdown_52w","name":"距52周高点回撤","unit":"%","update_days":1,"qualitative":false,"required":false,"annual":false,"group":"market"},{"field_id":"market.inst_hold_chg_pct","name":"机构持仓变化","unit":"pp","update_days":92,"qualitative":false,"required":false,"annual":false,"group":"market"},{"field_id":"macro.m1_yoy","name":"M1 同比","unit":"%","update_days":31,"qualitative":false,"required":false,"annual":false,"group":"macro"},{"field_id":"macro.rate_10y_chg_yoy","name":"10Y利率同比变化","unit":"bp","update_days":31,"qualitative":false,"required":false,"annual":false,"group":"macro"},{"field_id":"macro.pmi","name":"PMI","unit":"点","update_days":31,"qualitative":false,"required":false,"annual":false,"group":"macro"},{"field_id":"macro.policy_stance","name":"政策取向(对行业)","unit":"1-5档","update_days":31,"qualitative":true,"required":false,"annual":false,"group":"macro"},{"field_id":"industry.industry_growth","name":"行业增速","unit":"%","update_days":92,"qualitative":false,"required":false,"annual":false,"group":"industry"},{"field_id":"industry.price_trend","name":"行业量价趋势","unit":"1-5档(-2..+2)","update_days":92,"qualitative":true,"required":false,"annual":false,"group":"industry"},{"field_id":"industry.stage","name":"行业生命周期阶段","unit":"1-5档","update_days":92,"qualitative":true,"required":false,"annual":false,"group":"industry"},{"field_id":"industry.concentration","name":"格局/公司卡位","unit":"1-5档","update_days":92,"qualitative":true,"required":false,"annual":false,"group":"industry"},{"field_id":"industry.penetration_space","name":"渗透空间","unit":"1-5档","update_days":92,"qualitative":true,"required":false,"annual":false,"group":"industry"},{"field_id":"company.moat","name":"护城河综合档","unit":"1-5档","update_days":92,"qualitative":true,"required":false,"annual":false,"group":"company"},{"field_id":"company.mgmt_record","name":"管理层记录","unit":"1-5档","update_days":92,"qualitative":true,"required":false,"annual":false,"group":"company"},{"field_id":"company.pledge_pct","name":"大股东质押比例","unit":"%","update_days":31,"qualitative":false,"required":false,"annual":false,"group":"company"},{"field_id":"company.logic_strength","name":"投资逻辑强度(预期差)","unit":"1-5档","update_days":92,"qualitative":true,"required":false,"annual":false,"group":"company"},{"field_id":"company.logic_essence","name":"一句话本质（逻辑内核）","unit":"文本","update_days":92,"qualitative":false,"required":false,"annual":false,"group":"company"},{"field_id":"company.customer_concentration","name":"最大客户收入占比","unit":"%","update_days":365,"qualitative":false,"required":false,"annual":true,"group":"company"},{"field_id":"financial.roe_ttm","name":"ROE(TTM)","unit":"%","update_days":92,"qualitative":false,"required":true,"annual":false,"group":"financial"},{"field_id":"financial.roic","name":"ROIC","unit":"%","update_days":92,"qualitative":false,"required":false,"annual":false,"group":"financial"},{"field_id":"financial.wacc_assumed","name":"WACC(假设)","unit":"%","update_days":92,"qualitative":false,"required":false,"annual":false,"group":"financial"},{"field_id":"financial.ocf_np_ratio","name":"经营现金流/净利润","unit":"倍","update_days":92,"qualitative":false,"required":false,"annual":false,"group":"financial"},{"field_id":"financial.wc_growth_gap","name":"应收+存货增速-营收增速","unit":"pp","update_days":92,"qualitative":false,"required":false,"annual":false,"group":"financial"},{"field_id":"financial.rev_growth","name":"营收增速(同比)","unit":"%","update_days":92,"qualitative":false,"required":true,"annual":false,"group":"financial"},{"field_id":"financial.np_growth","name":"净利增速(同比)","unit":"%","update_days":92,"qualitative":false,"required":false,"annual":false,"group":"financial"},{"field_id":"financial.gm_trend","name":"毛利率趋势(同比变化)","unit":"pp","update_days":92,"qualitative":false,"required":false,"annual":false,"group":"financial"},{"field_id":"financial.int_debt_ratio","name":"有息负债率","unit":"%","update_days":92,"qualitative":false,"required":false,"annual":false,"group":"financial"},{"field_id":"financial.goodwill_pct","name":"商誉/净资产","unit":"%","update_days":92,"qualitative":false,"required":false,"annual":false,"group":"financial"},{"field_id":"valuation.eps_ttm","name":"EPS(TTM)","unit":"元","update_days":92,"qualitative":false,"required":true,"annual":false,"group":"valuation"},{"field_id":"valuation.peer_pe_median","name":"同业 PE 中位数","unit":"倍","update_days":92,"qualitative":false,"required":false,"annual":false,"group":"valuation"},{"field_id":"valuation.pe_hist_p25","name":"PE 十年 P25","unit":"倍","update_days":1,"qualitative":false,"required":false,"annual":false,"group":"valuation"},{"field_id":"valuation.pe_hist_p75","name":"PE 十年 P75","unit":"倍","update_days":1,"qualitative":false,"required":false,"annual":false,"group":"valuation"}]}};
 </script>
 <script>
 "use strict";
@@ -494,8 +530,8 @@ const $ = (s, r=document) => r.querySelector(s);
 const $$ = (s, r=document) => Array.from(r.querySelectorAll(s));
 const esc = v => String(v==null?"":v).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const nf = (v, d=1) => (v==null || Number.isNaN(v)) ? "—" : Number(v).toFixed(d);
-const pct = (v, d=1) => (v==null) ? "—" : (Number(v)*100).toFixed(d)+"%";
-const signed = (v, d=1) => (v==null) ? "—" : (v>0?"+":"")+Number(v).toFixed(d);
+const pct = (v, d=1) => (v==null || Number.isNaN(v)) ? "—" : (Number(v)*100).toFixed(d)+"%";
+const signed = (v, d=1) => (v==null || Number.isNaN(v)) ? "—" : (v>0?"+":"")+Number(v).toFixed(d);
 const BUCKET = {
   "入池":   {c:"var(--red)",   cls:"red"},
   "观察":   {c:"var(--amber)", cls:"amber"},
@@ -504,6 +540,8 @@ const BUCKET = {
 };
 const TIER_CLS = {L1:"teal", L2:"blue", L3:"amber", L4:"red"};
 const CAT_TYPE = {earnings:"财报",industry:"行业",company:"公司",policy:"政策",capital:"资本运作",other:"其他"};
+const CONF = {high:"高", medium:"中", low:"低"};
+const lv = x => (x==null ? "—" : (CONF[x] || String(x)));
 
 function toast(msg){
   const t = $("#toast"); t.textContent = msg; t.classList.add("on");
@@ -526,42 +564,77 @@ function table(headers, rows, cls=""){
 const SHORT = {macro:"宏观",industry:"行业",company:"公司",financial:"财务",
   valuation:"估值",catalyst:"催化",trading:"交易",risk:"风险"};
 
-function radar(dims, weights, key){
-  const W=330, H=300, cx=W/2, cy=H/2+2, R=92, N=dims.length;
-  const pt = (i, v) => {
-    const a = -Math.PI/2 + i*2*Math.PI/N, r = R*Math.max(0,Math.min(1, v/10));
+/* 八维雷达：半径 = 得分。只画"形状"，回答"哪一维塌了"；权重与贡献交给右侧榜，两处不重复编码同一个数。 */
+function radar(dims, key){
+  const W=356, H=322, cx=W/2, cy=158, R=100, N=dims.length;
+  const at=(i,v)=>{
+    const a=-Math.PI/2+i*2*Math.PI/N, r=R*Math.max(0,Math.min(1,(v||0)/10));
     return [cx+r*Math.cos(a), cy+r*Math.sin(a)];
   };
+  const band=v=> v>=7?"var(--navy)": v>=5?"var(--amber)":"var(--green)";
+  const f=n=>n.toFixed(1);
   let g="";
   [2,4,6,8,10].forEach(lv=>{
-    const p = dims.map((_,i)=>pt(i,lv).join(",")).join(" ");
-    g += `<polygon points="${p}" fill="none" stroke="var(--line)" stroke-width="1"/>`;
+    const p=dims.map((_,i)=>at(i,lv).map(f).join(",")).join(" ");
+    g+=`<polygon points="${p}" fill="${lv===10?"var(--surface-2)":"none"}" stroke="var(--line)" stroke-width="1"/>`;
   });
   dims.forEach((_,i)=>{
-    const [x,y]=pt(i,10);
-    g += `<line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" stroke="var(--line)" stroke-width="1"/>`;
+    const [x,y]=at(i,10);
+    g+=`<line x1="${cx}" y1="${cy}" x2="${f(x)}" y2="${f(y)}" stroke="var(--line)" stroke-width="1"/>`;
   });
-  const poly = dims.map((d,i)=>pt(i, d[key]||0).join(",")).join(" ");
-  g += `<polygon points="${poly}" fill="var(--navy)" fill-opacity=".13" stroke="var(--navy)" stroke-width="1.7"/>`;
+  [5,10].forEach(lv=>{
+    const [x,y]=at(0,lv);
+    g+=`<text x="${cx+5}" y="${f(y+3.5)}" font-size="9.5" fill="var(--ghost)" font-family="var(--mono)">${lv}</text>`;
+  });
+  const poly=dims.map((d,i)=>at(i,d[key]).map(f).join(",")).join(" ");
+  g+=`<polygon points="${poly}" fill="var(--navy)" fill-opacity=".12" stroke="var(--navy)"
+        stroke-width="1.8" stroke-linejoin="round"/>`;
   dims.forEach((d,i)=>{
-    const [x,y]=pt(i, d[key]||0);
-    g += `<circle cx="${x}" cy="${y}" r="2.8" fill="var(--navy)"/>`;
-    const [lx,ly]=pt(i,11.6);
-    const a = -Math.PI/2 + i*2*Math.PI/N;
-    const anchor = Math.abs(Math.cos(a))<0.2 ? "middle" : (Math.cos(a)>0 ? "start":"end");
-    const dy = Math.sin(a)>0.6 ? 8 : (Math.sin(a)<-0.6 ? -4 : 3);
-    const label = `${SHORT[d.id]||d.name.slice(0,4)} ${nf(d[key],1)}`;
-    g += `<text x="${lx}" y="${ly+dy}" text-anchor="${anchor}" font-size="10.5" fill="var(--muted)">${esc(label)}</text>`;
+    const v=d[key], a=-Math.PI/2+i*2*Math.PI/N;
+    const [x,y]=at(i,v);
+    g+=`<circle cx="${f(x)}" cy="${f(y)}" r="3.4" fill="${band(v||0)}" stroke="var(--surface)" stroke-width="1.4"/>`;
+    const lx=cx+(R+22)*Math.cos(a), ly=cy+(R+22)*Math.sin(a);
+    const anchor=Math.abs(Math.cos(a))<0.25?"middle":(Math.cos(a)>0?"start":"end");
+    const dy=Math.sin(a)>0.7?11:(Math.sin(a)<-0.7?-7:3);
+    g+=`<text x="${f(lx)}" y="${f(ly+dy)}" text-anchor="${anchor}" font-size="11.5" fill="var(--text-2)">${esc(SHORT[d.id]||d.name)}</text>`;
+    g+=`<text x="${f(lx)}" y="${f(ly+dy+15)}" text-anchor="${anchor}" font-size="12.5" font-weight="650"
+          font-family="var(--mono)" fill="${band(v||0)}">${v==null?"—":nf(v,1)}</text>`;
   });
-  return `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="八维评分雷达图">${g}</svg>`;
+  const weak=dims.reduce((m,d)=>(d[key]!=null&&(m==null||d[key]<m[key])?d:m),null);
+  return `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img"
+    aria-label="八维得分雷达图，满分 10 分，最弱维度 ${esc(weak?SHORT[weak.id]||weak.name:"—")}">${g}</svg>`;
 }
 
+/* 贡献分层：综合分拆成"判断层 / 数据层 / 风险催化"三块，回答"结论有多少来自人的档位"。 */
+function attrBar(at, composite){
+  if(!at) return "";
+  const segs=[["判断层", at.judgement||0, "var(--navy)"],
+              ["数据层", at.data||0, "var(--teal)"],
+              ["风险/催化", at.risk_catalyst||0, "var(--amber)"]];
+  const total=segs.reduce((a,s)=>a+s[1],0)||1;
+  return `<div class="attrbar">
+    <div class="ab-stack" title="三段相加 ≈ 综合分（各分项保留 2 位，直接相加可能差 ±0.01）">${segs.map(([n,v,c])=>
+      `<span style="width:${(v/total*100).toFixed(1)}%;background:${c}" title="${n} ${nf(v,2)} 分 · 占 ${pct(v/total,0)}"></span>`).join("")}</div>
+    <div class="ab-legend">${segs.map(([n,v,c])=>
+      `<span><i style="background:${c}"></i>${n} ${nf(v,2)}</span>`).join("")}
+      <span>综合 ${nf(composite!=null?composite:total,2)} 分</span></div>
+  </div>`;
+}
+
+/* 贡献榜：贡献 = 得分 × 权重，八项相加即综合分。按贡献排序，回答"综合分是谁撑起来的"。 */
 function rankList(dims, weights, key){
-  const sorted=[...dims].filter(d=>d[key]!=null).sort((a,b)=>b[key]-a[key]);
-  return `<div class="ranklist">${sorted.map(d=>`<div class="rank">
-    <span class="rn">${esc(SHORT[d.id]||d.name)}</span>
-    <span class="bar thin"><span style="width:${(d[key]||0)*10}%;background:${(d[key]||0)>=7?"var(--navy)":(d[key]||0)>=5?"var(--amber)":"var(--green)"}"></span></span>
-    <span class="rs">${nf(d[key],1)}</span><span class="rw">${Math.round((weights[d.id]||0)*100)}%</span>
+  const rows=dims.filter(d=>d[key]!=null)
+    .map(d=>({id:d.id, name:d.name, score:d[key], w:weights[d.id]||0, c:d[key]*(weights[d.id]||0)}))
+    .sort((a,b)=>b.c-a.c);
+  const max=Math.max(...rows.map(r=>r.c),0.001);
+  const head=`<div class="rank" style="margin-bottom:6px">
+    <span class="rn faint" style="font-size:10.5px">维度</span><span></span>
+    <span class="rs faint" style="font-size:10.5px;font-weight:400">贡献</span>
+    <span class="rw faint" style="font-size:10.5px">权重</span></div>`;
+  return `<div class="ranklist">${head}${rows.map(r=>`<div class="rank" title="得分 ${nf(r.score,1)} × 权重 ${pct(r.w,0)} = 贡献 ${nf(r.c,2)}">
+    <span class="rn">${esc(SHORT[r.id]||r.name)}</span>
+    <span class="bar thin"><span style="width:${Math.max(2,r.c/max*100)}%;background:${r.score>=7?"var(--navy)":r.score>=5?"var(--amber)":"var(--green)"}"></span></span>
+    <span class="rs">${nf(r.c,2)}</span><span class="rw">${pct(r.w,0)}</span>
   </div>`).join("")}</div>`;
 }
 
@@ -574,7 +647,7 @@ function gauge(val, label, color, max=1){
         <circle cx="44" cy="44" r="${r}" fill="none" stroke="${color}" stroke-width="7" stroke-linecap="round"
           stroke-dasharray="${C}" stroke-dashoffset="${C*(1-p)}" transform="rotate(-90 44 44)"/>
       </svg>
-      <div class="g-val">${val==null?"—":(max===1?nf(val,3):nf(val,1))}</div>
+      <div class="g-val">${val==null?"—":(max===1?pct(val,0):nf(val,1))}</div>
     </div>
     <div class="g-cap">${esc(label)}</div>
   </div>`;
@@ -584,26 +657,29 @@ function gauge(val, label, color, max=1){
 function viewOverview(){
   const r=S.report, c=r.conclusion, dims=r.scorecard.dimensions, w=r.scorecard.weights.mid_term;
   const dq=r.data_quality, syn=r.valuation.synthesis;
+  const cov=r.scorecard.evidence_coverage||{};
+  const covRatio=cov.ratio, covLow=covRatio<(cov.threshold==null?0.6:cov.threshold);
   const topRisks=[...r.risk_matrix.risks].sort((a,b)=>b.score-a.score).slice(0,3);
   const nextCat=[...r.catalyst_calendar].filter(x=>x.date).sort((a,b)=>a.date<b.date?-1:1).slice(0,3);
 
   const hero = `
   <div class="grid g-2-1">
     <div class="card">
-      ${cardH("评分结构",
-        `<span class="mono">0–10 分</span>`,
-        `八维得分（右侧数字为得分 · 中线权重）；明细见「评分卡」`)}
+      ${cardH("八维得分与贡献分层",
+        `<span class="mono">0–10 分 · 中线权重</span>`,
+        `雷达半径 = 各维得分（顶点色：≥7 主色 / 5–7 琥珀 / &lt;5 绿）；右侧按贡献（得分×权重）排序，贡献合计 = 综合分；最下方为三层拆解`)}
       <div class="radar-split">
-        <div class="radar-wrap">${radar(dims, w, "score_mid")}</div>
+        <div class="radar-wrap">${radar(dims, "score_mid")}</div>
         ${rankList(dims, w, "score_mid")}
       </div>
+      ${attrBar(r.scorecard.score_attribution, c.composite_score_mid)}
     </div>
     <div class="card">
       ${cardH("结论与置信度", `<span class="mono">${esc(c.valid_until||"")} 前有效</span>`)}
       <div class="gauges">
         ${gauge(c.confidence.value, "综合置信度", "var(--navy)")}
         ${gauge(dq.overall, "数据质量", "var(--teal)")}
-        ${gauge(c.composite_score_mid/10, "中线得分", "var(--amber)")}
+        ${gauge(covRatio, "判断层覆盖", covLow?"var(--amber)":"var(--blue)")}
       </div>
       <hr class="sep">
       <dl class="kv">
@@ -633,17 +709,27 @@ function viewOverview(){
   </div>`;
 
   const bands = rangeChart(r);
-  const valuationCard = `<div class="card" style="margin-top:14px">
+  const gate = r.valuation.gate || {};
+  const valuationCard = gate.dcf_applicable === false
+    ? `<div class="card" style="margin-top:14px">
+    ${cardH("估值：本框架对该类公司不适用",
+      `<span class="chip amber">${esc(gate.code||"不适用")}</span>`)}
+    <div class="tiny" style="line-height:1.75">${esc(gate.reason||"")}</div>
+    <div class="tiny faint" style="margin-top:8px;line-height:1.6">${esc(syn.note||"")}</div>
+  </div>`
+    : `<div class="card" style="margin-top:14px">
     ${cardH("估值区间（两法并列，非单点）",
       `<span class="chip ${syn.mode==="intersection"?"teal":"amber"}">${syn.mode==="intersection"?"交集":"并集·方法分歧"}</span>
-       <span class="chip">安全边际 ${signed(syn.safety_margin_pct,1)}%</span>`)}
+       ${syn.margin_basis==="none"
+         ? `<span class="chip amber">不出合成安全边际 · DCF ${signed(syn.dcf_margin_pct,1)}% / 相对法 ${signed(syn.relative_margin_pct,1)}%</span>`
+         : `<span class="chip">安全边际 ${signed(syn.safety_margin_pct,1)}%</span>`}`)}
     ${bands}
     <div class="tiny faint">合成区间仅用于安全边际度量与情景锚定，不构成价格点位判断。${esc(syn.note||"")}</div>
   </div>`;
 
   const side = `
   <div class="card">
-    ${cardH("主要风险", `<span class="mono">Top3</span>`)}
+    ${cardH("主要风险", `<span class="mono">前 3 项</span>`)}
     ${topRisks.map(x=>`<div class="cond"><div class="cid">${esc(x.id)}</div>
       <div class="txt">${esc(x.name)}<div class="mt">P${x.probability}×I${x.impact} = ${x.score} · ${esc(x.category)}</div></div>
       <div class="thr">${esc(x.level)}</div></div>`).join("")}
@@ -699,11 +785,28 @@ function viewScorecard(){
   const r=S.report, dims=r.scorecard.dimensions, wm=r.scorecard.weights.mid_term, ws=r.scorecard.weights.short_term;
   const rows = dims.map((d,i)=>dimBlock(d,i,wm[d.id],ws[d.id])).join("");
   const indCount = dims.reduce((a,d)=>a+d.factors.reduce((b,f)=>b+f.indicators.length,0),0);
+  const at = r.scorecard.score_attribution || null;
+  const attrStrip = at ? `<div class="attrwrap">
+    <div class="attrwrap-h">综合分拆解
+      <span class="ihint" title="${esc(at.note||"")}">i</span>
+    </div>
+    <div class="grid" style="grid-template-columns:repeat(3,minmax(0,1fr));gap:10px">
+    ${[["判断层（宏观/行业/公司）", at.judgement, at.weight_share.judgement],
+       ["数据层（财务/估值/交易）", at.data, at.weight_share.data],
+       ["风险 / 催化", at.risk_catalyst, at.weight_share.risk_catalyst]].map(([n,v,sh])=>`
+      <div style="padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface-2)">
+        <div class="tiny muted">${n}</div>
+        <div class="mono" style="font-size:20px;font-weight:650">${nf(v,2)}<span class="tiny faint"> 分</span></div>
+        <div class="tiny faint">权重占比 ${pct(sh,0)}</div>
+      </div>`).join("")}
+    </div>
+  </div>` : "";
   $("#view-scorecard").innerHTML = `
     <div class="card">
       ${cardH("八维评分卡",
-        `<span class="mono">scale ${esc(String(r.scorecard.scale))}</span>`,
+        `<span class="mono">0–10 分制</span>`,
         `点击任一行展开到因子 → 指标 → 证据，逐层可追溯（共 ${indCount} 个指标）；橙色竖线为 7.0 入池线`)}
+      ${attrStrip}
       <div class="dim-h head">
         <div class="idx">#</div><div class="nm">维度 / 因子数</div>
         <div class="sc">中线得分</div><div class="spark">得分条（中线 / 短线）</div>
@@ -756,7 +859,7 @@ function dimBlock(d, i, wmid, wshort){
   return `<div class="dim">
     <div class="dim-h">
       <div class="idx">${String(i+1).padStart(2,"0")}</div>
-      <div class="nm">${esc(d.name)}<small>${d.factors.length} 个因子 · ${d.factors.reduce((a,f)=>a+f.indicators.length,0)} 个指标 · 置信 ${esc(d.confidence.level)}</small></div>
+      <div class="nm">${esc(d.name)}<small>${d.factors.length} 个因子 · ${d.factors.reduce((a,f)=>a+f.indicators.length,0)} 个指标 · 置信 ${esc(lv(d.confidence.level))}</small></div>
       <div class="sc">${nf(d.score_mid,1)}<small>/10</small></div>
       <div class="spark">
         <div class="bar"><span style="width:${(d.score_mid||0)*10}%;background:var(--navy)"></span><i class="tick" style="left:70%"></i></div>
@@ -766,7 +869,7 @@ function dimBlock(d, i, wmid, wshort){
       <div class="caret">▶</div>
     </div>
     <div class="dim-body">
-      <div class="tiny faint" style="margin:8px 0 0">维度置信度 ${esc(d.confidence.level)} ${nf(d.confidence.value,3)}</div>
+      <div class="tiny faint" style="margin:8px 0 0">维度置信度 ${esc(lv(d.confidence.level))} ${pct(d.confidence.value,0)}</div>
       ${factors}
     </div>
   </div>`;
@@ -774,7 +877,25 @@ function dimBlock(d, i, wmid, wshort){
 
 /* ------------------------------ 估值 ------------------------------ */
 function viewValuation(){
-  const v=S.report.valuation, dcf=v.dcf, base=dcf.scenario_results.base, rel=v.relative, syn=v.synthesis;
+  const v=S.report.valuation, dcf=v.dcf, gate=v.gate||{}, rel=v.relative, syn=v.synthesis;
+  if(gate.dcf_applicable===false || !dcf.scenario_results){
+    $("#view-valuation").innerHTML = `
+      <div class="card">
+        ${cardH("估值：本框架对该类公司不适用", `<span class="chip amber">${esc(gate.code||"—")}</span>`,
+          "前门先判断方法是否成立，再谈算多少；不适用时不出区间、不出安全边际")}
+        <div class="tiny" style="line-height:1.8">${esc(gate.reason||"")}</div>
+        <hr class="sep">
+        <dl class="kv">
+          <dt>声明类型</dt><dd>${esc(gate.company_type||"—")}（${esc(gate.type_label||"—")}）</dd>
+          <dt>相对估值口径</dt><dd>${esc(rel.metric||"—")} · ${rel.available?"可用":"不可用"}</dd>
+          <dt>口径说明</dt><dd>${esc((gate.relative_metric||{}).note||"—")}</dd>
+        </dl>
+        <div class="tiny muted" style="margin-top:10px;line-height:1.7">${esc(rel.priced_in_narrative||"")}</div>
+        <div class="tiny faint" style="margin-top:8px;line-height:1.7">${esc(syn.note||"")}</div>
+      </div>`;
+    return;
+  }
+  const base=dcf.scenario_results.base;
   const scenRows = ["optimistic","base","pessimistic"].map(k=>{
     const s=dcf.scenario_results[k]; const nm={optimistic:"乐观",base:"基准",pessimistic:"悲观"}[k];
     return [`<span class="chip ${k==="optimistic"?"red":k==="pessimistic"?"green":""}">${nm}</span>`,
@@ -821,10 +942,12 @@ function viewValuation(){
       <div class="card">
         ${cardH("区间合成（不给单点）", `<span class="chip ${syn.mode==="intersection"?"teal":"amber"}">${syn.mode==="intersection"?"交集":"并集"}</span>`)}
         <div class="mono" style="font-size:26px;font-weight:650">${nf(syn.combined_range.low,2)}<span class="faint"> — </span>${nf(syn.combined_range.high,2)}</div>
-        <div class="tiny muted">现价 ${nf(S.report.meta.price_ref.close,2)} · 安全边际 <b style="color:${syn.safety_margin_pct>0?"var(--red)":"var(--green)"}">${signed(syn.safety_margin_pct,1)}%</b></div>
+        <div class="tiny muted">现价 ${nf(S.report.meta.price_ref.close,2)} · ${syn.margin_basis==="none"
+          ? `<b class="amber">不出合成安全边际</b>（两法中枢相差 ${signed(syn.divergence_pct,0)}%，并集中点无经济含义）`
+          : `安全边际 <b style="color:${syn.safety_margin_pct>0?"var(--red)":"var(--green)"}">${signed(syn.safety_margin_pct,1)}%</b>`}</div>
         <hr class="sep">
         <dl class="kv">
-          <dt>合成置信度</dt><dd>${esc(syn.confidence_level)}</dd>
+          <dt>合成置信度</dt><dd>${esc(lv(syn.confidence_level))}</dd>
           <dt>DCF 区间</dt><dd>${nf(syn.dcf_base_range.low,2)} — ${nf(syn.dcf_base_range.high,2)}</dd>
           <dt>相对法区间</dt><dd>${nf(syn.relative_range.low,2)} — ${nf(syn.relative_range.high,2)}</dd>
         </dl>
@@ -842,7 +965,7 @@ function viewValuation(){
         ${cardH("DCF 三情景", "", "中枢值为区间中位数口径")}
         <div class="table-wrap"><table>
           <thead><tr><th>情景</th><th class="n">中枢（元）</th><th class="n">区间（元）</th>
-            <th class="n">WACC</th><th class="n">永续 g</th><th class="n">TV 占比</th></tr></thead>
+            <th class="n">WACC</th><th class="n">永续 g</th><th class="n">终值占比</th></tr></thead>
           <tbody>${scenRows.map(r=>`<tr>${r.map(c=>typeof c==="string"?`<td>${c}</td>`:`<td class="${c.cls}">${c.v}</td>`).join("")}</tr>`).join("")}</tbody>
         </table></div>
       </div>
@@ -948,7 +1071,7 @@ function viewRisks(){
       <div class="card flush">
         ${cardH("风险清单与触发器", "", "每条风险必须带可观测触发器，否则不可跟踪")}
         <div class="table-wrap"><table>
-          <thead><tr><th>ID</th><th>风险</th><th class="n">P</th><th class="n">I</th><th class="n">分</th><th>等级</th><th>触发器</th><th>应对</th></tr></thead>
+          <thead><tr><th>编号</th><th>风险</th><th class="n">概率</th><th class="n">影响</th><th class="n">分</th><th>等级</th><th>触发器</th><th>应对</th></tr></thead>
           <tbody>${rows.map(r=>`<tr>${r.map(c=>typeof c==="string"?`<td>${c}</td>`:`<td class="${c.cls}">${c.v}</td>`).join("")}</tr>`).join("")}</tbody>
         </table></div>
       </div>
@@ -1000,7 +1123,7 @@ function viewTracking(){
     <div class="card flush">
       ${cardH("跟踪清单", `<span class="mono">${t.length} 条</span>`, "每条都绑定指标、阈值、频率、触发动作与出处")}
       <div class="table-wrap"><table>
-        <thead><tr><th>ID</th><th>跟踪项</th><th>指标</th><th>阈值</th><th>方向</th><th>频率</th><th>触发动作</th><th>出处</th></tr></thead>
+        <thead><tr><th>编号</th><th>跟踪项</th><th>指标</th><th>阈值</th><th>方向</th><th>频率</th><th>触发动作</th><th>出处</th></tr></thead>
         <tbody>${t.map(x=>`<tr>
           <td class="mono">${esc(x.id)}</td>
           <td><b>${esc(x.item)}</b><div class="tiny faint">${esc(x.origin||"")}</div></td>
@@ -1143,7 +1266,8 @@ function clearReport(){
     const el=$(sel); if(el) el.textContent="—";
   });
   ["#v-mid","#v-short","#v-conf"].forEach(sel=>{ const el=$(sel); if(el) el.innerHTML="—"; });
-  const sum=$("#v-summary"); if(sum) sum.textContent="";
+  const ess=$("#v-essence"); if(ess){ ess.textContent="—"; ess.classList.remove("missing"); }
+  const ch=$("#v-chips"); if(ch) ch.innerHTML="";
   $$(".view").forEach(v=>{
     if(v.id==="view-dict") return;  // 数据字典与报告无关，保留
     v.innerHTML='<div class="empty">没有可展示的报告</div>';
@@ -1212,23 +1336,56 @@ async function autoAnalyze(query,secid,name){
 
 function metaOf(fid){ return ((S.meta&&S.meta.fields)||[]).find(x=>x.field_id===fid)||null; }
 
+function anchorOf(fid, slot){
+  const m=metaOf(fid); if(!m||!m.anchors) return "";
+  return m.anchors[String(slot)]||"";
+}
+function anchorShort(t){
+  if(!t) return "";
+  // 锚定文字有两种写法：「偏支持：有明确支持性政策…」与「渗透率已高（>70%），…」
+  const m=t.match(/^[^：:，,（(；;]+/);
+  const s=(m?m[0]:t).trim();
+  return s.length>10?s.slice(0,10)+"…":s;
+}
 function judgeRow(fid){
   const m=metaOf(fid), unit=m?m.unit:"", name=m?m.name:fid;
-  let ctrl;
+  let ctrl, hint="";
   if(unit==="文本"){
     // 文本型判断项（一句话本质）：值是字符串，不是数字——渲染纯文本框，
     // 提交侧也不做 Number() 转换（见 applyJudgement），否则文字被静默丢弃。
     ctrl=`<input type="text" data-fid="${esc(fid)}" data-text="1" placeholder="一句话写清逻辑内核" maxlength="200">`;
   }else if(/-2\.\.\+2/.test(unit)){
-    ctrl=`<select data-fid="${esc(fid)}"><option value="">—</option>`+
-      [-2,-1,0,1,2].map(v=>`<option value="${v}">${v>0?"+"+v:v}</option>`).join("")+`</select>`;
+    // 值域 -2..+2，对应锚定量表第 1..5 档
+    ctrl=`<select data-fid="${esc(fid)}" data-anchor="1"><option value="">—</option>`+
+      [-2,-1,0,1,2].map(v=>{
+        const s=anchorShort(anchorOf(fid, v+3));
+        return `<option value="${v}">${v>0?"+"+v:v}${s?" ｜ "+esc(s):""}</option>`;
+      }).join("")+`</select>`;
+    hint=`<div class="ahint" data-hint="${esc(fid)}">选档后显示该档含义</div>`;
   }else if(m&&m.qualitative){
-    ctrl=`<select data-fid="${esc(fid)}"><option value="">—</option>`+
-      [1,2,3,4,5].map(v=>`<option value="${v}">${v} 档</option>`).join("")+`</select>`;
+    // 每档都带锚定短语：档位直接换算成分数（(档-1)×2.5），看不到含义就是盲选
+    ctrl=`<select data-fid="${esc(fid)}" data-anchor="0"><option value="">—</option>`+
+      [1,2,3,4,5].map(v=>{
+        const s=anchorShort(anchorOf(fid, v));
+        return `<option value="${v}">${v} 档${s?" ｜ "+esc(s):""}</option>`;
+      }).join("")+`</select>`;
+    hint=`<div class="ahint" data-hint="${esc(fid)}">选档后显示该档含义</div>`;
   }else{
     ctrl=`<input type="number" step="any" data-fid="${esc(fid)}" placeholder="${esc(unit)}">`;
   }
-  return `<div class="jrow"><span class="lb" title="${esc(name)}｜${esc(unit)}">${esc(name)}</span>${ctrl}</div>`;
+  return `<div class="jrow"><span class="lb" title="${esc(name)}｜${esc(unit)}">${esc(name)}</span>${ctrl}${hint}</div>`;
+}
+
+// 选中档位后把该档的完整锚定描述显示出来（档位换算成分数，读不懂就等于盲选）
+function refreshAnchorHint(sel){
+  if(!sel||!sel.dataset||!sel.dataset.fid) return;
+  const box=sel.parentElement&&sel.parentElement.querySelector(`[data-hint="${sel.dataset.fid}"]`);
+  if(!box) return;
+  const raw=sel.value;
+  if(raw===""){ box.textContent="选档后显示该档含义"; return; }
+  const slot=sel.dataset.anchor==="1"?Number(raw)+3:Number(raw);
+  const txt=anchorOf(sel.dataset.fid, slot);
+  box.textContent=txt||"（该档没有锚定说明）";
 }
 
 function presentFields(){
@@ -1305,6 +1462,10 @@ function renderFetchbar(){
     </div>
   </div>`;
   $("#btn-applyj").addEventListener("click",applyJudgement);
+  // 委托绑定在容器属性上（innerHTML 重渲染后不残留旧监听）；
+  // 选档即显示该档含义，避免"1 档到 5 档"没有语义、用户盲选。
+  el.onchange=ev=>{ const s=ev.target.closest&&ev.target.closest("select[data-anchor]"); if(s) refreshAnchorHint(s); };
+  el.oninput=ev=>{ const s=ev.target.closest&&ev.target.closest("select[data-anchor]"); if(s) refreshAnchorHint(s); };
 }
 
 function applyJudgement(){
@@ -1340,6 +1501,55 @@ function applyJudgement(){
   }).catch(e=>toast("重算失败："+e.message));
 }
 
+/* 摘要区：本质（2 行）+ chips。数据一律取自报告的结构化字段，
+   只有在"只加载报告、没有输入 JSON"时才退回从 summary 文本里取本质原句。 */
+function essenceOf(r){
+  if(S.input){
+    const g=(S.input.data||{}).company||{};
+    const f=g.logic_essence;
+    if(f && typeof f.value==="string" && f.value.trim()) return f.value.trim();
+  }
+  const m=/一句话本质[：:]\s*([^。｜|\n]+)/.exec((r.conclusion&&r.conclusion.summary)||"");
+  if(!m) return "";
+  const t=m[1].trim();
+  // 未填时引擎写入的是提示语而不是判断，不能当成"本质"渲染
+  return /^[（(]?未填/.test(t) ? "" : t;
+}
+function renderVerdictDetail(r){
+  const c=r.conclusion||{}, sc=r.scorecard||{}, dq=r.data_quality||{}, va=r.valuation||{};
+  const ess=essenceOf(r), el=$("#v-essence");
+  if(el){
+    if(ess){ el.textContent=ess; el.classList.remove("missing"); el.removeAttribute("title"); }
+    else{
+      el.textContent="未填逻辑内核 —— 本报告的因果链只有数据侧，建议补一句「买的是什么」";
+      el.classList.add("missing");
+    }
+  }
+  const chips=[];
+  const rule=c.decision&&c.decision.rule_id;
+  if(rule) chips.push(`<span class="chip rule" title="决策规则：编号即溯源，理由见评分卡页">${esc(rule)}</span>`);
+  const ws=sc.score_attribution&&sc.score_attribution.weight_share;
+  if(ws) chips.push(`<span class="chip" title="分项贡献占综合分的权重份额；判断层越高，结论越依赖人工档位">判断 ${pct(ws.judgement,0)} · 数据 ${pct(ws.data,0)} · 风险催化 ${pct(ws.risk_catalyst,0)}</span>`);
+  const cov=sc.evidence_coverage;
+  if(cov && typeof cov.ratio==="number"){
+    const low=cov.ratio<(cov.threshold==null?0.6:cov.threshold);
+    chips.push(`<span class="chip ${low?"warn":""}" title="${esc(cov.basis||"")}">判断层覆盖 ${pct(cov.ratio,0)}</span>`);
+  }
+  const gate=va.gate||{};
+  if(gate.dcf_applicable===false){
+    chips.push(`<span class="chip warn" title="${esc(gate.reason||"估值口径不适用")}">估值不适用 · ${esc(gate.code||"")}</span>`);
+  }else if(gate.type_label){
+    const conf=(va.synthesis&&va.synthesis.confidence_level)||"";
+    chips.push(`<span class="chip" title="公司类型决定可用估值口径">${esc(gate.type_label)} · DCF 适用${conf?" · 置信 "+esc(lv(conf)):""}</span>`);
+  }
+  const gaps=dq.gaps||[];
+  if(gaps.length){
+    const tip=gaps.slice(0,6).map(g=>g.field+"："+g.reason).join("\n");
+    chips.push(`<span class="chip warn" title="${esc(tip)}">数据缺口 ${gaps.length} 项</span>`);
+  }
+  const box=$("#v-chips"); if(box) box.innerHTML=chips.join("");
+}
+
 function renderAll(){
   const r=S.report; if(!r) return;
   const c=r.conclusion, m=r.meta;
@@ -1355,8 +1565,8 @@ function renderAll(){
   $("#v-rule").textContent=c.decision.rule_id;
   $("#v-mid").innerHTML=`${nf(c.composite_score_mid,2)}<small>/10</small>`;
   $("#v-short").innerHTML=`${nf(c.composite_score_short,2)}<small>/10 · ${esc(c.bucket_short)}</small>`;
-  $("#v-conf").innerHTML=`${nf(c.confidence.value,3)}<small> ${esc(c.confidence.level)}</small>`;
-  $("#v-summary").innerHTML=esc(c.summary);
+  $("#v-conf").innerHTML=`${pct(c.confidence.value,0)}<small> ${esc(lv(c.confidence.level))}</small>`;
+  renderVerdictDetail(r);
   viewOverview(); viewScorecard(); viewValuation(); viewScenarios();
   viewRisks(); viewCatalysts(); viewTracking(); viewDQ(); viewEvidence(); viewDict();
   renderFetchbar();

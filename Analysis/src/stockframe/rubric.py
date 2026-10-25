@@ -80,6 +80,11 @@ class IndicatorResult:
     missing: bool
     evidence: Optional[FieldRef]           # 原始字段引用（派生字段为主字段）
     evidence_refs: List[FieldRef] = field(default_factory=list)  # 派生字段全部来源
+    # 方法性抑制：指标本来有数，但对该标的/该情形不成立（例如两法分歧大且终值主导时的
+    # DCF 安全边际）。它与"数据缺失"必须区分开：覆盖率的分母要剔除它，否则一个
+    # 高权重指标被合理地排除，会把整个维度判成"数据不足"，把方法问题误报成缺数问题。
+    suppressed: bool = False
+    suppress_reason: Optional[str] = None
 
 @dataclass
 class FactorResult:
@@ -122,12 +127,15 @@ class RubricEngine:
         derived: Dict[str, Callable[[], Any]],
         derived_sources: Dict[str, List[str]],
         analysis_date,
+        suppressed: Optional[Dict[str, str]] = None,
     ) -> None:
         self.dims = list(dims)
         self.registry = registry
         self.derived = derived
         self.derived_sources = derived_sources
         self.analysis_date = analysis_date
+        # indicator_id -> 抑制原因。见 IndicatorResult.suppressed 的说明。
+        self.suppressed = dict(suppressed or {})
 
     # -- 单指标 ---------------------------------------------------------
 
@@ -166,6 +174,12 @@ class RubricEngine:
         return None, None
 
     def eval_indicator(self, spec: IndicatorSpec) -> IndicatorResult:
+        reason = self.suppressed.get(spec.id)
+        if reason is not None:
+            # 有数但不该用：记 missing（不参与加权），但标记 suppressed 让覆盖率跳过它
+            return IndicatorResult(spec=spec, value=None, band=None, score=None,
+                                   missing=True, evidence=None, evidence_refs=[],
+                                   suppressed=True, suppress_reason=reason)
         value, refs, main = self._resolve(spec)
         if value is None:
             return IndicatorResult(spec=spec, value=None, band=None, score=None,
