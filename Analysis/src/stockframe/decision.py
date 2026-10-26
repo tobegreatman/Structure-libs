@@ -38,6 +38,11 @@ FULL_REJECT_CODES = {"DCF_NOT_APPLICABLE"}
 
 CONFLICT_MAIN_THRESHOLD = 7.0  # 主信号：中线综合分达入池线才需要"高分 vs 弱维度"的人工权衡
 
+# 入池的维度下限：综合分 >= 7.0 但任一维度 < 4.0 时只给"观察"。
+# 抽成常量是因为 sensitivity.py 要用同一条线算"翻转点"——两处各写一个 4.0，
+# 改了一处忘了另一处，翻转点就会指向一个不存在的边界。
+DIM_MIN_FOR_ENTRY = 4.0
+
 CONFLICT_RULES = [
     # (冲突维度, 冲突阈值, 说明) —— 仅在 composite_mid >= 7.0 时评估；
     # 综合分本身未达入池线时已是"观察"，无需再升级为人工复核。
@@ -51,7 +56,7 @@ def _bucket_from_score(score: Optional[float], dim_min: Optional[float]) -> str:
     if score is None:
         return "人工复核"
     if score >= 7.0:
-        return "入池" if (dim_min is None or dim_min >= 4.0) else "观察"
+        return "入池" if (dim_min is None or dim_min >= DIM_MIN_FOR_ENTRY) else "观察"
     if score >= 5.0:
         return "观察"
     if score < 3.5:

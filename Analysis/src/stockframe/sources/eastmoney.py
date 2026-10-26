@@ -288,11 +288,15 @@ class EastmoneyProvider:
         # 客户集中度只在年报正文（PDF），走巨潮原文；银行/保险没这项披露属正常缺失，
         # 所以这里只降级、不阻断，也不把"取不到"写成错误。
         customer = None
+        # 失败原因要跟着 raw 走到底：只进 warnings 的话，报告里那一行会和"用户没填"
+        # 长得一模一样（都是"未提供"），读者无法判断该去翻年报还是该重跑一次。
+        customer_error = None
         if self._cninfo is not None:
             try:
                 customer = self._cninfo.annual_customer(ref.code, analysis_date)
                 self.endpoints.extend(self._cninfo.endpoints)
             except SourceError as exc:
+                customer_error = str(exc)
                 warnings.append(f"年报客户集中度未能自动提取：{exc}")
             if customer and customer.get("top_ratio") is None:
                 five = customer.get("five_ratio")
@@ -320,6 +324,7 @@ class EastmoneyProvider:
             "peer_val": peer_val,
             "rate_10y": rate_10y,
             "customer": customer,
+            "customer_error": customer_error,
             "meta": {
                 "provider": self.name,
                 "fetched_at": datetime.now().astimezone().isoformat(timespec="seconds"),

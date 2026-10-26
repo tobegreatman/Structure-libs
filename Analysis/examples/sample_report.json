@@ -40,6 +40,129 @@
         "中线综合分 7.64 >= 7.0 且各维度 >= 4.0"
       ]
     },
+    "stance": {
+      "code": "research",
+      "label": "够格研究",
+      "headline": "7.64 分，够格进入候选池",
+      "basis": "入池只说明「值得花时间研究透」，不包含「价格合适」或「马上会涨」——它给的是研究顺序，不是动手信号。",
+      "do_next": [
+        "把核心逻辑逐条压到下方「证伪条件」上，任一成立，入池资格立刻作废",
+        "数据已齐，可以直接进入证伪核对"
+      ],
+      "abandon": "分数再降 0.64 分（跌破 7.0）掉回「观察」；或证伪条件 F1 成立。",
+      "caveat": "本框架没有回测样本，算不出涨跌概率，所以这里不会给出「买什么卖什么」或「值多少钱」——那会是无依据的编造。它只回答一个问题：这只票现在够不够格进入你的研究范围。"
+    },
+    "sensitivity": {
+      "boundary": 7.0,
+      "distance": 0.64,
+      "next_bucket": "观察",
+      "band": {
+        "low": 7.0,
+        "high": 10.0,
+        "position": 0.213,
+        "zone": "下沿"
+      },
+      "headroom": {
+        "at_top": true,
+        "ceiling": null,
+        "room": null,
+        "next_up": null
+      },
+      "distance_anchors": 0.26,
+      "drivers": [
+        {
+          "id": "valuation",
+          "name": "估值",
+          "weight": 0.16,
+          "score": 6.12,
+          "delta": 2.13,
+          "score_after": 3.99,
+          "anchors": null,
+          "bucket_after": "观察",
+          "mechanism": "dim_floor"
+        },
+        {
+          "id": "company",
+          "name": "公司",
+          "weight": 0.22,
+          "score": 7.5,
+          "delta": 2.92,
+          "score_after": 4.58,
+          "anchors": 1.17,
+          "bucket_after": "观察",
+          "mechanism": "score_band"
+        },
+        {
+          "id": "financial",
+          "name": "财务",
+          "weight": 0.2,
+          "score": 7.81,
+          "delta": 3.21,
+          "score_after": 4.6,
+          "anchors": null,
+          "bucket_after": "观察",
+          "mechanism": "score_band"
+        },
+        {
+          "id": "industry",
+          "name": "行业",
+          "weight": 0.14,
+          "score": 7.5,
+          "delta": 3.51,
+          "score_after": 3.99,
+          "anchors": 1.4,
+          "bucket_after": "观察",
+          "mechanism": "dim_floor"
+        },
+        {
+          "id": "macro",
+          "name": "宏观",
+          "weight": 0.08,
+          "score": 7.5,
+          "delta": 3.51,
+          "score_after": 3.99,
+          "anchors": 1.4,
+          "bucket_after": "观察",
+          "mechanism": "dim_floor"
+        },
+        {
+          "id": "risk",
+          "name": "风险(可控度)",
+          "weight": 0.08,
+          "score": 7.9,
+          "delta": 3.91,
+          "score_after": 3.99,
+          "anchors": null,
+          "bucket_after": "观察",
+          "mechanism": "dim_floor"
+        },
+        {
+          "id": "trading",
+          "name": "交易面",
+          "weight": 0.06,
+          "score": 9.38,
+          "delta": 5.39,
+          "score_after": 3.99,
+          "anchors": null,
+          "bucket_after": "观察",
+          "mechanism": "dim_floor"
+        },
+        {
+          "id": "catalyst",
+          "name": "催化剂",
+          "weight": 0.06,
+          "score": 10.0,
+          "delta": 6.01,
+          "score_after": 3.99,
+          "anchors": null,
+          "bucket_after": "观察",
+          "mechanism": "dim_floor"
+        }
+      ],
+      "insensitive": [],
+      "unscored": [],
+      "note": "向下 2.13 分即转【观察】（最敏感的是「估值」，维度跌破 4.0 的入池下限）；向上已无更优档位（本桶为最高档），这个结论只谈守不守得住，不谈还能更好。本表只覆盖分数驱动的机制（综合分跌破分界线 / 维度跌破 4.0 / R5 信号冲突），R1–R4、R7–R9 由输入与覆盖决定；档数按每档 2.5 分折算，仅对判断层（宏观/行业/公司）成立。"
+    },
     "summary": "一句话本质：买的是人形机器人零部件从 0 到 1 的份额兑现，叠加产能爬坡带来的毛利率中枢抬升。中线 7.64 分（入池线 7.0）→ 分桶【入池】，规则 R6_SCORE_BAND；短线参考【入池】；置信度 高（0.924）。主要归因：判断层占 44%、数据层占 42%（判断层占比越高越依赖档位选择，越需人工复核）",
     "maintain_conditions": [
       {

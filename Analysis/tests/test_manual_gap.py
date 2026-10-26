@@ -144,3 +144,58 @@ def test_blank_text_is_still_missing():
     }
     rep = run(inp)
     assert "未填：需人工补一句逻辑内核" in rep["conclusion"]["summary"]
+
+
+# ---------------------------------------------------------------------------
+# "空"有三种，报告必须说清是哪一种
+# ---------------------------------------------------------------------------
+
+def _gap_reason(out, fid=FID):
+    rep = run(out["input"])
+    return next((g["reason"] for g in rep["data_quality"]["gaps"] if g["field"] == fid), None)
+
+
+def test_fetch_failure_says_why_and_how_to_retry():
+    """自动提取失败 ≠ 用户没填：必须带原因，并说明重跑会复用已下载的年报。"""
+    raw = raw_fixture()
+    raw.pop("customer", None)
+    raw["customer_error"] = "年报 PDF 下载超时（30s）"
+    out = autobuild.build(raw, ASOF)
+
+    why = out["input"]["data_notes"][FID]
+    assert "自动提取失败" in why and "下载超时" in why
+    assert "重跑" in why and "缓存" in why, "要告诉读者下一步是重跑而不是翻年报"
+    # 进报告：DQ 缺口里必须是这条，而不是与"压根没填"同款的通用句
+    assert _gap_reason(out) == why
+    assert "未提供（该指标按缺失处理，不补零）" not in why
+
+
+def test_five_only_gap_reason_is_the_upper_bound_not_a_generic_line():
+    """只披露前五合计时，缺口写"上界是多少、最坏落哪档"，仍不填值。"""
+    raw = raw_fixture()
+    raw["customer"] = {
+        "form": "total_only", "top_ratio": None, "five_ratio": 48.11,
+        "period": "2025-12-31", "notice_date": "2026-04-17",
+        "single_50_check": "not_applicable", "denominator": "年度销售总额",
+        "reason": "年报未披露单客户占比",
+    }
+    out = autobuild.build(raw, ASOF)
+    why = out["input"]["data_notes"][FID]
+    assert "48.11" in why and "上界不是点估计" in why
+    assert "「中」档 5.0 分" in why, "上界落在哪一档要算出来，不能只说'可能偏高'"
+    assert _gap_reason(out) == why
+    # 值仍然不许填：上界不是点估计
+    assert FID.split(".", 1)[1] not in (out["input"]["data"].get("company") or {})
+
+
+def test_no_note_when_value_is_present():
+    """有值时不留任何缺口说明——说明只在"空"的时候才是信息。"""
+    raw = raw_fixture()
+    raw["customer"] = {
+        "form": "table", "top_ratio": 3.58, "five_ratio": 11.4,
+        "period": "2025-12-31", "notice_date": "2026-04-17",
+        "single_50_check": None, "denominator": "年度销售总额",
+    }
+    out = autobuild.build(raw, ASOF)
+    assert not (out["input"].get("data_notes") or {}), "值已填，不该再有缺口说明"
+    assert _gap_reason(out) is None

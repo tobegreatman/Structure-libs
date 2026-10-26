@@ -16,6 +16,7 @@ from .gate import resolve_gate
 from .pit import FieldRef, validate_all_fields
 from .riskmatrix import build_matrix, matrix_score
 from .rubric import DimensionResult, RubricEngine
+from .sensitivity import analyze as analyze_sensitivity
 from .specs import DIMENSIONS, WEIGHTS_MID, WEIGHTS_SHORT
 from .wording import enforce_input, enforce_report
 
@@ -191,7 +192,7 @@ def run(inp: Dict[str, Any]) -> Dict[str, Any]:
     # ---- 5) 汇总与 DQ ----
     composite_mid = RubricEngine.composite(dim_results, "weight_mid")
     composite_short = RubricEngine.composite(dim_results, "weight_short")
-    dq = compute_dq(registry, analysis_date)
+    dq = compute_dq(registry, analysis_date, field_notes=inp.get("data_notes"))
     if degrade_notes:
         dq["notes"].extend(degrade_notes)
     if not relative.get("available", True) and synthesis["mode"] == "dcf_only":
@@ -265,6 +266,22 @@ def run(inp: Dict[str, Any]) -> Dict[str, Any]:
     if decision["rule_id"] in ("R8_DATA_COVERAGE", "R9_MODEL_NOT_APPLICABLE"):
         # 这两条闸门是"不出分桶"，不是"分数难看"——必须在 DQ 备注里留痕
         dq["notes"].extend(decision["reasons"][-1:])
+
+    # ---- 6b) 结论翻转点：单维下调多少分，分桶第一次改变 ----
+    # 放在引擎：分桶规则在 decision.py，界面复刻一遍就成了第二套实现（§16.1）。
+    # 这是"对结论本身的预测"——算术恒等、可复算，不涉及任何价格方向判断。
+    sensitivity = analyze_sensitivity(
+        [{
+            "id": r.spec.id,
+            "name": r.spec.name,
+            "weight": r.spec.weight_mid,
+            "score": r.score,
+            "anchored": any(ind.anchors is not None
+                            for f in r.spec.factors for ind in f.indicators),
+        } for r in dim_results],
+        composite_mid,
+        decision["bucket_mid"],
+    )
 
     # ---- 7) 条件化结论 ----
     rev_growth = _num(registry, "financial.rev_growth")
@@ -405,6 +422,15 @@ def run(inp: Dict[str, Any]) -> Dict[str, Any]:
     # ---- 11) 组装 ----
     data_cutoff = max((ref.available_at for ref in registry.values()), default=analysis_date.isoformat())
     price_ref = registry.get("market.price_close")
+
+    # ---- 11a) 立场句：把桶翻译成"现在该不该动手" ----
+    # 读者拿到报告第一个问的是"那到底该不该买"，而分桶名（观察/入池）对非专业读者
+    # 不构成答案。这一句就是答案，且只由 decision 的桶决定，不引入第二种判定。
+    stance = _stance(
+        decision["bucket_mid"], composite_mid, decision["rule_id"], decision["reasons"],
+        sensitivity, dq, coverage, ws, gate.as_dict(), synthesis, falsification,
+    )
+
     report: Dict[str, Any] = {
         "schema_version": "0.1.0",
         "meta": {
@@ -431,6 +457,8 @@ def run(inp: Dict[str, Any]) -> Dict[str, Any]:
             "composite_score_short": composite_short,
             "confidence": {"level": conf_level, "value": overall_conf},
             "decision": {"rule_id": decision["rule_id"], "reasons": decision["reasons"]},
+            "stance": stance,
+            "sensitivity": sensitivity,
             "summary": summary,
             "maintain_conditions": maintain,
             "falsification": falsification,
@@ -455,6 +483,139 @@ def run(inp: Dict[str, Any]) -> Dict[str, Any]:
     # 所以"校验通过"并不能保证输出是合法 JSON。
     assert_finite(report)
     return report
+
+
+RULE_CN = {
+    "R1_HARD_FLAG": "硬红旗否决",
+    "R2_RED_FLAGS": "财务红旗数量过多",
+    "R3_DQ_FORCED": "数据质量不达标",
+    "R4_SPECIAL_STATUS": "特殊状态（ST/停牌等）",
+    "R5_SIGNAL_CONFLICT": "分数高但与某个维度冲突",
+    "R6_SCORE_BAND": "按分数分档",
+    "R7_COVERAGE": "判断层证据覆盖不足",
+    "R8_DATA_COVERAGE": "财务/估值/交易数据覆盖不足",
+    "R9_MODEL_NOT_APPLICABLE": "这套估值口径不适用它",
+}
+
+# 立场句下方那句实话。必须写：读者问的是"该不该买"，而本框架按设计不回答这个问题
+# （没有回测样本 → 任何"买/卖"都是无依据的断言，见蓝图 §767 与 A4 措辞闸门）。
+# 不把这层说透，读者只会觉得系统在打太极；说透了，才知道该拿它做什么用。
+STANCE_CAVEAT = (
+    "本框架没有回测样本，算不出涨跌概率，所以这里不会给出「买什么卖什么」或「值多少钱」——"
+    "那会是无依据的编造。它只回答一个问题：这只票现在够不够格进入你的研究范围。"
+)
+
+
+def _short(text: Any, n: int = 42) -> str:
+    """把引擎里的长句压到一句话内。摘要用，不改变任何判定。"""
+    t = str(text or "").strip()
+    for mark in ("→", "（", "；"):
+        i = t.find(mark)
+        if 0 < i < n + 10:
+            t = t[:i]
+            break
+    return t if len(t) <= n else t[: n - 1] + "…"
+
+
+def _stance(bucket: str, score: Optional[float], rule_id: str, reasons: List[str],
+            sens: Dict[str, Any], dq: Dict[str, Any], coverage: float,
+            ws: Dict[str, Any], gate: Dict[str, Any], syn: Dict[str, Any],
+            falsification: List[Dict[str, Any]]) -> Dict[str, Any]:
+    """把"桶 + 分数 + 缺口"翻成一句人话立场，回答"现在该不该动手"。
+
+    为什么必须由引擎给而不是前端拼：这是**结论的一部分**，不是排版选择。
+    前端各自拼一句，同一份报告在不同视图里会说不同的话（§16.1 的老问题）。
+
+    四档与 decision 的四个桶一一对应，不新增任何判定：
+    - 人工复核 → 不下结论（这套尺子量不出来）
+    - 回避     → 按框架规避
+    - 观察     → 暂不介入
+    - 入池     → 够格研究（**入池 ≠ 现在买**，这句必须说，否则会被读成买入信号）
+
+    措辞边界：只用"介入/研究/规避"这类对框架立场的描述，不出现交易指令
+    （A4 词表：买入/卖出/加仓/减仓/目标价/止损/止盈/建仓/清仓）。
+    """
+    band = (sens or {}).get("band") or {}
+    hr = (sens or {}).get("headroom") or {}
+    dist = (sens or {}).get("distance")
+    room = hr.get("room")
+    zone = band.get("zone") or ""
+    n_gap = len(dq.get("gaps") or [])
+    cov = f"{coverage:.0%}"
+    f1 = (falsification or [{}])[0]
+    f1_id = f1.get("id") or ""
+
+    rule_label = RULE_CN.get(rule_id, rule_id or "")
+    sc = f"{score:.2f}" if isinstance(score, (int, float)) else "—"
+
+    if bucket == "人工复核":
+        why = _short((reasons or [""])[0], 40)
+        return {
+            "code": "insufficient",
+            "label": "本框架不下结论",
+            "headline": f"这套尺子量不出来：{rule_label}",
+            "basis": f"「人工复核」不是「不好」，是「用这套标准判不了」——{why}。",
+            "do_next": [
+                "先看触发的是哪条闸门（规则与理由见下方「判断依据」）",
+                "补上缺的数据把它拉回可判档；补不上，就承认这套框架不适用于它",
+            ],
+            "abandon": "不适用：它本来就没给结论，谈不上推翻。",
+            "caveat": STANCE_CAVEAT,
+        }
+
+    if bucket == "回避":
+        return {
+            "code": "avoid",
+            "label": "按框架规避",
+            "headline": f"{sc} 分，已跌破 3.5 的回避线",
+            "basis": "3.5 以下是基本面、估值、风险多项同时不达标：这不是「便宜」，是「质量不够」。",
+            "do_next": [
+                "不必再花时间研究它",
+                "若已持有：值得先看的是下方风险矩阵与证伪条件，而不是价格什么时候回本",
+            ],
+            "abandon": "分数回到 5.0 以上，才重新进入「观察」带。",
+            "caveat": STANCE_CAVEAT,
+        }
+
+    if bucket == "入池":
+        return {
+            "code": "research",
+            "label": "够格研究",
+            "headline": f"{sc} 分，够格进入候选池",
+            "basis": "入池只说明「值得花时间研究透」，不包含「价格合适」或「马上会涨」——"
+                     "它给的是研究顺序，不是动手信号。",
+            "do_next": [
+                "把核心逻辑逐条压到下方「证伪条件」上，任一成立，入池资格立刻作废",
+                (f"补齐 {n_gap} 项缺失数据能让判断更硬" if n_gap
+                 else "数据已齐，可以直接进入证伪核对"),
+            ],
+            "abandon": (f"分数再降 {abs(dist):.2f} 分（跌破 7.0）掉回「观察」" if dist is not None
+                        else "分数跌破 7.0 掉回「观察」")
+                       + (f"；或证伪条件 {f1_id} 成立。" if f1_id else "。"),
+            "caveat": STANCE_CAVEAT,
+        }
+
+    # 观察（含"高分但某维度 < 4.0"）：这一档最容易被读成"再等等就能买"，所以要点明
+    # "分数不会因为股价下跌自己变高"——它衡量的是公司质量与估值，不是涨跌空间。
+    head = (f"{sc} 分，离「入池」还差 {room:.2f} 分——现在不是动手的位置"
+            if room is not None else f"{sc} 分，落在「观察」带——现在不是动手的位置")
+    return {
+        "code": "hold_off",
+        "label": "暂不介入",
+        "headline": head,
+        "basis": f"7.0 分才进候选池，5.0–7.0 一律算「观察」：意思是「继续看着」，不是「可以动手」。"
+                 f"当前在观察带{zone}。",
+        "do_next": [
+            "不用做任何操作。分数不会因为股价下跌自己变高——它衡量的是公司质量与估值，不是涨跌空间",
+            (f"想让它够格只有两条路：补齐 {n_gap} 项缺失数据（现覆盖 {cov}），或经营层面实质改善"
+             if n_gap else f"想让它够格：等经营层面实质改善（当前数据覆盖 {cov}）"),
+            "若你正在考虑它：先把「一句话本质」写出来——写不出来，说明理由还没成形",
+        ],
+        "abandon": (f"再降 {abs(dist):.2f} 分（跌破 3.5）转「回避」" if dist is not None
+                    else "分数跌破 3.5 转「回避」")
+                   + (f"；更早的信号是证伪条件 {f1_id}（见下方列表）。" if f1_id else "。"),
+        "caveat": STANCE_CAVEAT,
+    }
 
 
 def _attribution(dim_results: List[DimensionResult], composite_mid: Any) -> Dict[str, Any]:

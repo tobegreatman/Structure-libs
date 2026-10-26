@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from typing import Any, Dict, List
 
+from .sensitivity import MECHANISM_CN
+
 
 def _tbl(header: List[str], rows: List[List[str]]) -> str:
     out = ["| " + " | ".join(header) + " |", "|" + "|".join(["---"] * len(header)) + "|"]
@@ -25,10 +27,48 @@ def render_markdown(report: Dict[str, Any]) -> str:
 
     # 结论摘要（结论先行）
     L.append("## 一、结论摘要\n")
+
+    # 立场句放在最前面：读者第一个问题是"该不该动手"，分桶名（观察/入池）不是答案。
+    # 这一段完全来自 conclusion.stance，渲染层不做二次判断（与界面同源）。
+    st = c.get("stance") or {}
+    if st:
+        L.append(f"### 立场：{st['label']}\n")
+        L.append(f"**{st['headline']}**\n")
+        L.append(f"- 依据：{st['basis']}")
+        for i, line in enumerate(st.get("do_next") or [], 1):
+            L.append(f"- 现在做什么（{i}）：{line}")
+        L.append(f"- 什么时候必须重看：{st['abandon']}")
+        L.append(f"- 能力边界：{st['caveat']}\n")
+
     L.append(f"**中线分桶：【{c['bucket_mid']}】**（综合分 {c['composite_score_mid']}/10，置信度 {c['confidence']['level']} {c['confidence']['value']}；命中规则 `{c['decision']['rule_id']}`）")
     L.append(f"短线参考：【{c['bucket_short']}】（综合分 {c['composite_score_short']}/10，不改变中线定位）\n")
     L.append(f"> {c['summary']}\n")
     L.append("**分桶判定理由**：" + "；".join(c["decision"]["reasons"]) + "\n")
+
+    # 结论翻转点：只讲"结论有多经得起单维恶化"，不讲价格方向
+    sens = c.get("sensitivity") or {}
+    if sens.get("drivers"):
+        band = sens.get("band") or {}
+        hr = sens.get("headroom") or {}
+        pos = (f"，在本桶（{band['low']:.1f}–{band['high']:.1f}）里只走到 "
+               f"{band['position']:.0%}（{band['zone']}）" if band.get("position") is not None else "")
+        up = ("；**往上已无更高档位**" if hr.get("at_top")
+              else (f"；往上还差 {hr['room']:.2f} 分进【{hr['next_up']}】"
+                    if hr.get("room") is not None else ""))
+        L.append("### 结论翻转点（单维下调多少分，分桶第一次改变）\n")
+        L.append(f"当前 {c['composite_score_mid']:.2f} 分{pos}；距 {sens['boundary']}"
+                 f"（{sens['next_bucket']}线）**{sens['distance']:+.2f}** 分{up}。"
+                 "下表按位移升序，越靠前越能单点改变结论。\n")
+        L.append(_tbl(
+            ["维度", "中线权重", "当前得分", "下调", "翻桶时得分", "档数", "翻转后"],
+            [[d["name"], f"{d['weight']:.2f}", f"{d['score']:.2f}", f"−{d['delta']:.2f}",
+              f"{d['score_after']:.2f}",
+              "—" if d["anchors"] is None else f"{d['anchors']:.2f}",
+              f"{d['bucket_after']}（{MECHANISM_CN[d['mechanism']]}）"] for d in sens["drivers"]]))
+        L.append(f"\n> {sens['note']}\n")
+    elif sens.get("note"):
+        L.append(f"> 结论翻转点：{sens['note']}\n")
+
     L.append("### 维持条件（全部成立才维持当前桶）\n")
     L.append(_tbl(["#", "条件", "指标", "阈值", "来源"],
                   [[x["id"], x["condition"], x["metric"], x["threshold"], x["source"]] for x in c["maintain_conditions"]]))
@@ -149,7 +189,12 @@ def render_markdown(report: Dict[str, Any]) -> str:
     tier_txt = "、".join(f"{k}×{v}" for k, v in dq["tier_distribution"].items() if v)
     L.append(f"- 来源分布：{tier_txt or '—'}；强制人工复核：{'是' if dq['forced_manual_review'] else '否'}")
     if dq["gaps"]:
-        L.append("- 缺口：" + "；".join(f"{x['field']}（{x['reason']}）" for x in dq["gaps"][:10]) + ("..." if len(dq["gaps"]) > 10 else ""))
+        # 前 10 条截断是给"一屏读完"用的，但装配层知道原因的缺口（只披露前五合计 /
+        # 正文没这项 / 自动提取失败）不能跟着被截掉——截掉的恰好是最该读的那几条。
+        generic = ("未提供（该指标按缺失处理，不补零）", "必填字段缺失")
+        shown = dq["gaps"][:10] + [g for g in dq["gaps"][10:] if g["reason"] not in generic]
+        L.append("- 缺口：" + "；".join(f"{x['field']}（{x['reason']}）" for x in shown)
+                 + ("..." if len(shown) < len(dq["gaps"]) else ""))
     if dq["notes"]:
         L.append("- 备注：" + "；".join(dq["notes"]))
     L.append("")

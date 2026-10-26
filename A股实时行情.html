@@ -114,6 +114,48 @@ main{max-width:1280px;margin:0 auto;padding:22px 24px 10px;display:flex;flex-dir
 .up{color:var(--red)} .down{color:var(--green)} .flat{color:var(--text2)}
 .idx-change.up{background:var(--red-soft)} .idx-change.down{background:var(--green-soft)} .idx-change.flat{background:rgba(0,0,0,.05)}
 
+/* ================= 核心 ETF 分时（默认收起） ================= */
+.etf-panel{padding:0;overflow:hidden}
+.etf-head{display:flex;align-items:center;gap:14px;padding:13px 20px 13px 22px;cursor:pointer;
+  user-select:none;transition:background .2s ease}
+.etf-head:hover{background:rgba(0,0,0,.02)}
+.etf-h2{display:flex;align-items:center;gap:8px;font-size:15.5px;font-weight:700;letter-spacing:-.01em;flex:none}
+.etf-badge{font-size:9.5px;font-weight:700;color:var(--blue);background:var(--blue-soft);
+  padding:2px 7px;border-radius:99px;letter-spacing:.02em}
+.etf-sub{font-size:11.5px;color:var(--text2);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.etf-right{margin-left:auto;display:flex;align-items:center;gap:12px;flex:none}
+.etf-live{font-size:11.5px;color:var(--text3);font-variant-numeric:tabular-nums}
+.etf-toggle{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:650;color:var(--blue);
+  background:var(--blue-soft);padding:6px 11px 6px 13px;border-radius:99px;transition:background .2s ease,transform .18s ease}
+.etf-toggle:hover{background:rgba(0,122,255,.16)}
+.etf-toggle:active{transform:scale(.95)}
+.etf-toggle svg{width:12px;height:12px;transition:transform .32s cubic-bezier(.2,.7,.3,1)}
+.etf-panel.open .etf-toggle svg{transform:rotate(180deg)}
+.etf-body{border-top:1px solid var(--line);padding:14px 18px 18px}
+.etf-body[hidden]{display:none}
+.etf-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}
+.etf-card{background:rgba(0,0,0,.018);border:1px solid var(--line);border-radius:var(--r-md);
+  padding:11px 13px 6px;cursor:pointer;position:relative;overflow:hidden;
+  transition:transform .2s cubic-bezier(.2,.7,.3,1),box-shadow .2s ease,background .2s ease;
+  animation:popIn .42s cubic-bezier(.2,.7,.3,1) both}
+.etf-card:hover{transform:translateY(-2px);background:#fff;box-shadow:0 10px 24px rgba(0,0,0,.10);z-index:2}
+.etf-card.selected{background:#fff;box-shadow:0 0 0 2px var(--blue),0 10px 24px rgba(0,122,255,.16)}
+.etf-top{display:flex;align-items:baseline;justify-content:space-between;gap:6px}
+.etf-name{font-size:12.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.etf-code{font-size:9.5px;color:var(--text3);font-variant-numeric:tabular-nums;flex:none}
+.etf-line{display:flex;align-items:baseline;justify-content:space-between;gap:6px;margin-top:4px}
+.etf-price{font-size:17px;font-weight:800;letter-spacing:-.02em;font-variant-numeric:tabular-nums;line-height:1.15}
+.etf-pct{font-size:11px;font-weight:700;font-variant-numeric:tabular-nums;padding:2px 7px;border-radius:99px;
+  transition:background .3s ease}
+.etf-pct.up{background:var(--red-soft)} .etf-pct.down{background:var(--green-soft)} .etf-pct.flat{background:rgba(0,0,0,.05)}
+.etf-spark{display:block;width:100%;height:38px;margin-top:5px}
+@media (max-width:860px){ .etf-sub{display:none} }
+@media (max-width:520px){
+  .etf-head{padding:12px 14px}
+  .etf-grid{grid-template-columns:repeat(2,1fr);gap:10px}
+  .etf-body{padding:12px 12px 14px}
+}
+
 /* ================= 主区 ================= */
 .main-grid{display:grid;grid-template-columns:minmax(360px,400px) 1fr;gap:16px;align-items:stretch}
 
@@ -296,6 +338,24 @@ footer{max-width:1280px;margin:0 auto;padding:6px 24px 34px;text-align:center;fo
   <!-- 指数卡 -->
   <section class="index-row" id="indexRow"></section>
 
+  <!-- 核心 ETF 分时（默认收起，展开后才按需拉取） -->
+  <section class="panel etf-panel" id="etfPanel" style="animation-delay:.16s">
+    <div class="etf-head" id="etfHead">
+      <div class="etf-h2">核心 ETF 分时<span class="etf-badge">宽基 · 行业</span></div>
+      <span class="etf-sub">中证A50 · 沪深300 · 创业50 · 中证1000 · 证券 · 银行</span>
+      <div class="etf-right">
+        <span class="etf-live" id="etfLive">默认收起 · 不占刷新额度</span>
+        <button class="etf-toggle" id="etfToggle" aria-expanded="false" aria-controls="etfBody">
+          <span class="etf-toggle-label">展开</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="etf-body" id="etfBody" hidden>
+      <div class="etf-grid" id="etfGrid"></div>
+    </div>
+  </section>
+
   <!-- 行业榜 + 分时图 -->
   <section class="main-grid">
     <div class="panel sector-panel" style="animation-delay:.18s">
@@ -403,6 +463,16 @@ const INDEXES = [
   { secid:'1.000688', name:'科创50',  code:'000688' },
 ];
 const SECTOR_FIELDS = 'f12,f14,f2,f3,f6,f62,f66,f72,f78,f84,f104,f105,f128,f140,f164,f174';
+/* 核心 ETF（宽基各取规模/流动性居前的单只 + 券商、银行两只行业龙头）：分时数据仅在展开面板后按需拉取，默认收起时零额外请求 */
+const ETFS = [
+  { secid:'0.159593', name:'中证A50',  full:'中证A50ETF',  code:'159593' },
+  { secid:'1.510300', name:'沪深300',  full:'沪深300ETF',  code:'510300' },
+  { secid:'0.159949', name:'创业50',   full:'创业板50ETF', code:'159949' },
+  { secid:'1.512100', name:'中证1000', full:'中证1000ETF', code:'512100' },
+  { secid:'1.512880', name:'证券',     full:'证券ETF',     code:'512880' },
+  { secid:'1.512800', name:'银行',     full:'银行ETF',     code:'512800' },
+];
+const ETF_EVERY = 2;              // 展开状态下 ETF 分时每 2 轮刷新一次（与指数卡 spark 同频）
 const SPARK_EVERY = 2;           // 指数迷你分时每 2 轮刷新一次
 const FLOW_EVERY = 2;            // 两市资金分时每 2 轮刷新一次
 const INDUSTRY_GAP = 120;         // 行业板块数据固定 120 秒（2 分钟）更新一次：与页面刷新周期（15/30/60 秒）解耦，数据不完整时下轮强制补拉
@@ -463,6 +533,8 @@ const state = {
   rows: {},                      // 板块行 DOM 池
   hmCells: {},
   idxCards: {},
+  etfOpen: false,                // 核心 ETF 分时面板是否展开（默认收起）
+  etfBusy: false,                // ETF 分时拉取中（防展开展开/刷新重复并发）
   loading: false,
 };
 
@@ -577,6 +649,11 @@ async function refresh(manual = false) {
     if (state.selected.isSector) { flowIdx = tasks.length; queue(() => apiFlow(state.selected.secid)); }   /* 行业资金分时：仅行业选中时请求 */
     let mflowIdx = -1;
     if (state.round % FLOW_EVERY === 0) { mflowIdx = tasks.length; MKT_FLOW.forEach(s => queue(() => apiFlow(s))); }   /* 两市资金分时：降频拉取（沪+深综） */
+    let etfIdx = -1;
+    if (state.etfOpen && (manual || state.round % ETF_EVERY === 0)) {   /* ETF 分时：仅展开时拉取，展开面板不占默认刷新预算 */
+      etfIdx = tasks.length;
+      ETFS.forEach(e => queue(() => apiTrend(e.secid), 260));
+    }
     const results = await Promise.all(tasks);
     const idxRes = results[0], trendRes = results[1];
     /* 行业单请求解析（仅本轮实际拉取时）：失败/超时 → null → 空数组走独立退避记账 */
@@ -614,6 +691,9 @@ async function refresh(manual = false) {
     /* 两市资金分时同为增强视图：两路都成功才重绘，失败保持上一轮图面 */
     if (mflowA && mflowA.data && mflowA.data.klines && mflowB && mflowB.data && mflowB.data.klines)
       renderMarketFlow(mflowA.data, mflowB.data);
+
+    /* 核心 ETF 分时（仅展开时存在本轮数据）：失败不重绘，保留上一轮曲线，不计入全局退避 */
+    if (etfIdx >= 0) renderEtfs(results.slice(etfIdx, etfIdx + ETFS.length));
 
     /* 行业结算（与其他刷新解耦）：渲染+快照锚点+独立退避账全在 settleIndustry 内，失败不拖累全局 failed */
     if (indIdx >= 0) settleIndustry(indLv, sectorRows);
@@ -738,6 +818,76 @@ function drawSpark(svg, pts, raw, key) {
     <line x1="0" x2="${W}" y1="${Y(pre).toFixed(1)}" y2="${Y(pre).toFixed(1)}" stroke="rgba(0,0,0,.10)" stroke-width="1" vector-effect="non-scaling-stroke" stroke-dasharray="3 4"/>
     <polygon points="0,${H} ${xy.join(' ')} ${endX},${H}" fill="url(#sg)" stroke="none"/>
     <polyline points="${xy.join(' ')}" fill="none" stroke="${color}" stroke-width="1.5" vector-effect="non-scaling-stroke" stroke-linejoin="round" stroke-linecap="round"/>`;
+}
+
+/* ---------- 核心 ETF 分时（默认收起 · 展开才拉数据） ---------- */
+function buildEtfCards() {
+  const grid = $('#etfGrid');
+  if (!grid || grid.dataset.built) return;
+  grid.innerHTML = ETFS.map((e, k) => `
+    <div class="etf-card" data-i="${k}" style="animation-delay:${(k * .03).toFixed(2)}s">
+      <div class="etf-top"><span class="etf-name">${e.name}</span><span class="etf-code">${e.code}</span></div>
+      <div class="etf-line"><span class="etf-price flat" data-f="price">--</span><span class="etf-pct flat" data-f="pct">--</span></div>
+      <svg class="etf-spark" viewBox="0 0 100 44" preserveAspectRatio="none" data-f="spark"></svg>
+    </div>`).join('');
+  grid.dataset.built = '1';
+  grid.querySelectorAll('.etf-card').forEach(card => {
+    card.addEventListener('click', () => {
+      const e = ETFS[+card.dataset.i];
+      selectTarget({ secid: e.secid, name: e.full, isSector: false, code: e.code });
+      syncSelectedUI();
+    });
+  });
+}
+function renderEtfs(list) {
+  const grid = $('#etfGrid');
+  if (!grid || !grid.dataset.built) return;
+  let ok = 0;
+  ETFS.forEach((e, k) => {
+    const data = list[k] && list[k].data;
+    if (!data || !data.trends || !data.trends.length) return;
+    const pts = parseTrends(data);
+    if (!pts.length) return;
+    const card = grid.children[k];
+    const pre = num(data.preClose ?? data.prePrice) ?? pts[0].p;
+    const last = pts[pts.length - 1].p;
+    const pct = pre ? (last / pre - 1) * 100 : null;
+    const priceEl = card.querySelector('[data-f="price"]');
+    priceEl.textContent = fmt2(last, 3);
+    priceEl.className = 'etf-price ' + cls3(pct);
+    const pctEl = card.querySelector('[data-f="pct"]');
+    pctEl.textContent = fmtPct(pct);
+    pctEl.className = 'etf-pct ' + cls3(pct);
+    drawSpark(card.querySelector('[data-f="spark"]'), pts, data, 'etf:' + e.secid);
+    ok++;
+  });
+  if (ok) {
+    const n = new Date();
+    $('#etfLive').textContent = `${pad(n.getHours())}:${pad(n.getMinutes())} 更新 · 点击卡片看主图`;
+  } else if ($('#etfLive')) {
+    $('#etfLive').textContent = '分时拉取失败 · 稍后自动重试';
+  }
+}
+async function fetchEtfs() {
+  if (!state.etfOpen || state.etfBusy) return;
+  state.etfBusy = true;
+  buildEtfCards();
+  $('#etfLive').textContent = '加载中…';
+  try {
+    /* 错峰发出（每只间隔 260ms），避免与主刷新叠加成瞬时并发 */
+    const tasks = ETFS.map((e, i) => new Promise(res => setTimeout(() => res(apiTrend(e.secid).catch(() => null)), i * 260)));
+    renderEtfs(await Promise.all(tasks));
+  } finally { state.etfBusy = false; }
+}
+function setEtfOpen(open) {
+  state.etfOpen = !!open;
+  const panel = $('#etfPanel'), body = $('#etfBody'), btn = $('#etfToggle');
+  panel.classList.toggle('open', state.etfOpen);
+  body.hidden = !state.etfOpen;
+  btn.setAttribute('aria-expanded', state.etfOpen ? 'true' : 'false');
+  btn.querySelector('.etf-toggle-label').textContent = state.etfOpen ? '收起' : '展开';
+  if (state.etfOpen) { buildEtfCards(); fetchEtfs(); }
+  else $('#etfLive').textContent = '默认收起 · 不占刷新额度';
 }
 
 /* ---------- 行业板块 ---------- */
@@ -1266,6 +1416,8 @@ function syncSelectedUI() {
     r.classList.toggle('selected', state.selected.isSector && r.dataset.code === state.selected.code));
   document.querySelectorAll('.index-card').forEach((c, k) =>
     c.classList.toggle('selected', !state.selected.isSector && INDEXES[k].code === state.selected.code));
+  document.querySelectorAll('.etf-card').forEach((c, k) =>
+    c.classList.toggle('selected', !!ETFS[k] && !state.selected.isSector && ETFS[k].secid === state.selected.secid));
   Object.entries(state.hmCells).forEach(([code, cell]) =>
     cell.classList.toggle('selected', state.selected.isSector && code === state.selected.code));
 }
@@ -1339,6 +1491,8 @@ $('#refreshBtn').addEventListener('click', () => {
   state.countdown = state.interval;
   refresh(true);
 });
+/* 核心 ETF 分时：整条头部可点（包含收起/展开按钮，事件向上冒泡到头部只触发一次） */
+$('#etfHead').addEventListener('click', () => setEtfOpen(!state.etfOpen));
 
 /* ---------- 启动 ---------- */
 renderFundBars(null);

@@ -166,6 +166,46 @@ main{max-width:var(--shell);margin:0 auto;padding:18px var(--gutter) 80px}
 .mono{font-family:var(--mono)}
 hr.sep{border:0;border-top:1px solid var(--line);margin:13px 0}
 
+/* 研判四行：定位 / 翻转 / 触发 / 边界。
+   每一行都是引擎字段的直译（sensitivity / falsification / score_attribution），
+   不在前端做任何判断——只换措辞、不换结论。 */
+/* 全宽卡片里文本行长会超过 90 字，反而难读：正文限宽，右侧留白比拉长句子好 */
+.vt{margin-top:12px;border-top:1px solid var(--line);max-width:1000px}
+/* 立场条：整块的重心，第一眼要看到"暂不介入"这四个字与为什么 */
+.vt-stance{margin-top:12px;padding:11px 13px;border-radius:var(--r-sm);border:1px solid var(--line);
+  background:var(--surface-2)}
+.vt-stance.warn{border-color:color-mix(in srgb,var(--amber) 38%,transparent);background:var(--amber-soft)}
+.vt-stance.ok{border-color:color-mix(in srgb,var(--teal) 38%,transparent);background:var(--teal-soft)}
+.vs-label{font-size:19px;font-weight:700;letter-spacing:.02em;line-height:1.25;color:var(--text)}
+.vt-stance.warn .vs-label{color:var(--amber)}
+.vt-stance.ok .vs-label{color:var(--teal)}
+.vs-head{margin-top:2px;font-size:13px;font-weight:600;color:var(--text);line-height:1.55}
+.vs-basis{margin-top:5px;font-size:12px;color:var(--text-2);line-height:1.65}
+.vs-list{margin:0;padding-left:17px}
+.vs-list li{margin:3px 0}
+.vs-list li::marker{color:var(--faint)}
+/* 能力边界：告诉读者"为什么这里没有买卖结论"，比藏起来更有用 */
+.vs-caveat{margin-top:9px;padding-left:9px;border-left:2px solid var(--line);
+  font-size:11px;line-height:1.65;color:var(--faint)}
+.vt-more{margin-top:10px}
+.vt-more>summary{cursor:pointer;list-style:none;font-size:11.5px;color:var(--muted);
+  padding:5px 0;user-select:none}
+.vt-more>summary::-webkit-details-marker{display:none}
+.vt-more>summary::before{content:"▸ ";color:var(--faint)}
+.vt-more[open]>summary::before{content:"▾ "}
+.vt-more[open]>summary{color:var(--text-2)}
+.vt-row{display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-bottom:1px dashed var(--line)}
+.vt-row:last-child{border-bottom:0;padding-bottom:0}
+/* 「放弃线」是这一块唯一的硬条件，给它一条竖线，避免各行等重 */
+.vt-row.key{margin:4px 0;padding:9px 10px 9px 9px;border-bottom:0;border-left:2px solid var(--amber);
+  background:color-mix(in srgb,var(--amber) 7%,transparent);border-radius:0 var(--r-sm) var(--r-sm) 0}
+.vt-k{flex:none;width:40px;padding-top:2px;font-size:11px;font-weight:600;letter-spacing:.04em;color:var(--muted)}
+.vt-row.key .vt-k{color:var(--amber)}
+.vt-v{flex:1;min-width:0;font-size:12.5px;line-height:1.65;color:var(--text-2);overflow-wrap:anywhere}
+.vt-v b{color:var(--text);font-weight:600}
+.vt-v .num{font-family:var(--mono);font-size:12px;color:var(--text)}
+.vt-v .sub{display:block;margin-top:3px;font-size:11px;color:var(--faint);line-height:1.5}
+
 /* 进度条 */
 .bar{height:6px;border-radius:10px;background:var(--surface-3);overflow:hidden;position:relative}
 .bar>span{display:block;height:100%;border-radius:10px;background:var(--navy)}
@@ -213,6 +253,9 @@ td.n,th.n{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-
 .ind-val b{font-size:13.5px}
 .ind-meta{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px;font-size:11px;color:var(--muted);align-items:center}
 .ind-why{font-size:11.5px;color:var(--muted);margin-top:5px;line-height:1.55}
+.ind-cap{margin-top:6px;padding:5px 8px;border-radius:5px;font-size:11.5px;line-height:1.55;
+  color:var(--text-2);background:var(--amber-soft);border-left:2px solid var(--amber)}
+.ind-cap b{color:var(--amber);font-weight:600;margin-right:6px}
 .ind-ev{font-size:10.5px;color:var(--faint);font-family:var(--mono);margin-top:4px;display:flex;gap:10px;flex-wrap:wrap}
 .miss{color:var(--amber);font-size:11.5px}
 .legend{display:flex;gap:16px;flex-wrap:wrap;font-size:11px;color:var(--muted)}
@@ -662,8 +705,19 @@ function viewOverview(){
   const topRisks=[...r.risk_matrix.risks].sort((a,b)=>b.score-a.score).slice(0,3);
   const nextCat=[...r.catalyst_calendar].filter(x=>x.date).sort((a,b)=>a.date<b.date?-1:1).slice(0,3);
 
+  /* 立场卡放在最上面、横跨全宽：读者第一个问题是"该不该动手"，
+     把它塞进右栏第三行等于没回答。雷达图与三项读数是对这个答案的支撑，放在它下面。 */
+  const stanceCard = `
+  <div class="card" style="margin-top:14px">
+    ${cardH("现在该不该动手",
+      `<span class="mono">${esc(c.valid_until||"")} 前有效</span>`,
+      "立场句由分桶与分数直译而来，不是价格判断；往下是「下一步 / 放弃线 / 可信度」")}
+    ${verdictBlock(r, nextCat)}
+  </div>`;
+
   const hero = `
-  <div class="grid g-2-1">
+  ${stanceCard}
+  <div class="grid g-2-1" style="margin-top:14px">
     <div class="card">
       ${cardH("八维得分与贡献分层",
         `<span class="mono">0–10 分 · 中线权重</span>`,
@@ -675,20 +729,13 @@ function viewOverview(){
       ${attrBar(r.scorecard.score_attribution, c.composite_score_mid)}
     </div>
     <div class="card">
-      ${cardH("结论与置信度", `<span class="mono">${esc(c.valid_until||"")} 前有效</span>`)}
+      ${cardH("三项读数", `<span class="mono">0–100%</span>`,
+        "置信度/数据质量/判断层覆盖衡量的是「这份判断有多硬」，不是收益预期；口径见「数据质量」页")}
       <div class="gauges">
         ${gauge(c.confidence.value, "综合置信度", "var(--navy)")}
         ${gauge(dq.overall, "数据质量", "var(--teal)")}
         ${gauge(covRatio, "判断层覆盖", covLow?"var(--amber)":"var(--blue)")}
       </div>
-      <hr class="sep">
-      <dl class="kv">
-        <dt>决策规则</dt><dd>${esc(c.decision.rule_id)}</dd>
-        <dt>最弱维度</dt><dd>${esc(weakest(dims))}</dd>
-        <dt>最强维度</dt><dd>${esc(strongest(dims))}</dd>
-        <dt>同步节奏</dt><dd>${esc(c.review_cadence||"—")}</dd>
-      </dl>
-      <div style="margin-top:10px">${c.decision.reasons.map(x=>`<div class="tiny muted" style="padding:2px 0">· ${esc(x)}</div>`).join("")}</div>
     </div>
   </div>`;
 
@@ -742,15 +789,135 @@ function viewOverview(){
   </div>`;
 
   $("#view-overview").innerHTML = hero + conds +
-    `<div class="grid" style="grid-template-columns:minmax(0,1.75fr) minmax(0,1fr);margin-top:14px;gap:14px">
+    `<div class="grid" style="grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);margin-top:14px;gap:14px">
       <div>${valuationCard}</div><div>${side}</div></div>`
     + `<div class="disclaimer">${esc(r.disclaimer)}</div>`;
 }
 
-function weakest(dims){ const d=[...dims].filter(x=>x.score_mid!=null).sort((a,b)=>a.score_mid-b.score_mid)[0];
-  return d?`${d.name}（${nf(d.score_mid,1)}）`:"—"; }
-function strongest(dims){ const d=[...dims].filter(x=>x.score_mid!=null).sort((a,b)=>b.score_mid-a.score_mid)[0];
-  return d?`${d.name}（${nf(d.score_mid,1)}）`:"—"; }
+/* ------------------------------ 立场 + 研判 ------------------------------
+   这一块的第一句话必须直接回答"现在该不该动手"。分桶名（观察/入池）对非专业
+   读者不构成答案，所以最上面是引擎下发的 conclusion.stance（label/headline/basis
+   /do_next/abandon/caveat），下面才是"下一步 / 放弃线 / 可信度"。
+   原来的四行（桶与分项 / 翻转点 / 维度排序 / 两法分歧）没有删，折进「进阶读数」——
+   它们是给要看分数结构的人用的，不该挡住第一个问题。
+   前端仍然不做判定：stance 整段照抄引擎字段，进阶部分只是 sensitivity 的直译。 */
+function verdictBlock(r, nextCat){
+  const c=r.conclusion, sen=c.sensitivity||{}, sc=r.scorecard||{};
+  const at=sc.score_attribution||{}, ws=at.weight_share||{};
+  const v=r.valuation||{}, syn=v.synthesis||{}, gate=v.gate||{};
+  const drv=(sen.drivers||[]).slice(0,3), band=sen.band||{}, hr=sen.headroom||{};
+  const top=(c.bucket_mid==="入池"), scoreDriven=(sen.boundary!=null && sen.distance!=null);
+  const first=drv[0], dnum=(sen.distance==null?null:Math.abs(sen.distance));
+  const st=c.stance||null;
+
+  /* ① 结论：什么档、几分、在桶里宽不宽裕、这些分是谁贡献的 */
+  const split=[["判断层",at.judgement],["数据层",at.data],["风险催化",at.risk_catalyst]]
+    .filter(x=>x[1]!=null).map(x=>`${x[0]} <span class="num">${nf(x[1],2)}</span>`).join(" + ");
+  const pos=band.position!=null
+    ? ` · 桶内 <span class="num">${nf(band.position*100,0)}%</span>（${esc(band.zone||"")}）` : "";
+  const head=`<b>${esc(c.bucket_mid)}</b>${top?"（最高档）":""} · <span class="num">${nf(c.composite_score_mid,2)}</span> 分${pos}`
+    + `<span class="sub">${split?split+` ≈ <b>${nf(c.composite_score_mid,2)}</b>；`:""}`
+    + `置信 <span class="num">${nf(c.confidence&&c.confidence.value,3)}</span>（${esc(lv(c.confidence&&c.confidence.level))}）`
+    + `｜${esc((c.decision.reasons||[]).join("；"))}</span>`;
+
+  /* ② 方向：往下几步掉档、往上还有没有档。这一行回答"所以呢" */
+  let dir;
+  if(!scoreDriven){
+    dir=`<span class="muted">当前桶由规则与覆盖决定，不由分数决定，没有"往下几分"这回事</span>`;
+  }else if(sen.distance<0){
+    dir=`分数已经在【${esc(c.bucket_mid)}】边界外 <b>${nf(dnum,2)}</b> 分，结论本身已经不稳。`;
+  }else if(hr.at_top){
+    dir=`档位已经到顶：往上没有更优的一档可升，能变的只有往下，而往下只剩 <b>${nf(dnum,2)}</b> 分`
+      + `${sen.distance_anchors!=null?`（${nf(Math.abs(sen.distance_anchors),2)} 档）`:""}。`;
+  }else{
+    dir=`往下 <b>${nf(dnum,2)}</b> 分就落到【${esc(sen.next_bucket||"—")}】；往上还差 <b>${nf(hr.room,2)}</b> 分才够【${esc(hr.next_up||"—")}】。`;
+  }
+  const dirTail=first
+    ? `<span class="sub">最薄的一环是<b>${esc(first.name)}</b>：现在 ${nf(first.score,2)} 分，掉到 ${nf(first.score_after,2)} 就会 ${esc(mechCn(first.mechanism))}；`
+      + `撑住结论的是判断层与数据层，合计 ${nf((at.judgement||0)+(at.data||0),2)} 分。</span>`
+    : `<span class="sub">${esc(sen.note||"当前桶由规则与覆盖决定，不由分数决定")}</span>`;
+
+  /* ③ 盯谁：哪几个维度真能改变结论、什么数据会推翻它 */
+  const watch=first
+    ? `最先翻的是<b>${esc(first.name)}</b>（掉 <b>${nf(first.delta,2)}</b> 分 →【${esc(first.bucket_after)}】）`
+      + (drv[1]?`；其次 <b>${esc(drv[1].name)}</b> ${nf(drv[1].delta,2)} 分`
+              +(drv[1].anchors!=null?`（${nf(drv[1].anchors,2)} 档）`:""):"")
+      + (drv[2]?`、<b>${esc(drv[2].name)}</b> ${nf(drv[2].delta,2)} 分`:"")
+    : `<span class="muted">单维归零也不改变分桶，不存在单点失效</span>`;
+  /* falsification 的 threshold 写的是"仍然成立"的条件（如 ≥50%），直接拼成"会推翻"会读反方向；
+     所以这里用 maintain_conditions 的 condition 原文——它的语义就是"全部成立才维持当前桶"。 */
+  const mnt=(c.maintain_conditions||[]).filter(x=>x.condition);
+  const cat=(nextCat||[])[0];
+  const watchTail=`<span class="sub">`
+    + (mnt.length
+        ? `要守住结论：`+mnt.slice(0,2).map(x=>esc(x.condition)).join("；")
+          +(mnt.length>2?` 等 ${mnt.length} 条`:"")+`（全部成立才维持，破一条即降一档）`
+        : "无可用维持条件")
+    + (cat?`｜最近催化 ${esc((cat.date||"").slice(5))} ${esc(cat.event)}`:"")
+    + `</span>`;
+
+  /* ④ 可信：这一层读数能信到哪、为什么不该读单点 */
+  const two=(gate.dcf_applicable===false || syn.divergence_pct==null)
+    ? `估值两法不可比（${esc(gate.code||"未给出可比口径")}），这一步给不出方向`
+    : `同一现价，DCF 口径 <b>${nf(syn.dcf_margin_pct,1)}%</b>、相对法 <b>${nf(syn.relative_margin_pct,1)}%</b>，`
+      + `两法差 <b>${nf(Math.abs(syn.divergence_pct),1)}</b> 个点——估值这一步给不出方向，只能当约束用`;
+  const edgeTail=`<span class="sub">判断层占 <b>${nf((ws.judgement||0)*100,0)}%</b>（宏观/行业/公司靠人工定档）`
+    + `→ 读数只到「档」不到「点」`
+    + (band.zone==="下沿"?`，所以 ${nf(c.composite_score_mid,2)} 该读作「刚够线」而不是「接近满分」`:"")
+    + `。</span>`;
+
+  /* ⑤ 白话可信度：一句人话讲清"这份判断硬不硬、能用来干什么" */
+  const confv=nf(c.confidence&&c.confidence.value,3), confl=esc(lv(c.confidence&&c.confidence.level));
+  const judgePct=nf((ws.judgement||0)*100,0);
+  const trust=`置信 <b>${confv}</b>（${confl}）：<b>${judgePct}%</b> 来自人工定档（宏观/行业/公司），`
+    + `其余 <b>${nf(100-(ws.judgement||0)*100,0)}%</b> 是可复算的财报与行情`
+    + (gate.dcf_applicable===false || syn.divergence_pct==null
+        ? `；估值两法不可比。`
+        : `；估值两法差 <b>${nf(Math.abs(syn.divergence_pct),1)}</b> 个点。`)
+    + `<span class="sub">所以它只能回答「够不够格」，回答不了「值多少钱」「会不会涨」。</span>`;
+
+  if(!st){
+    /* 旧报告/降级：没有立场字段就退回原来的四行，不猜一个立场出来 */
+    return `<div class="vt">
+      <div class="vt-row"><div class="vt-k">结论</div><div class="vt-v">${head}</div></div>
+      <div class="vt-row key"><div class="vt-k">方向</div><div class="vt-v">${dir}${dirTail}</div></div>
+      <div class="vt-row"><div class="vt-k">盯谁</div><div class="vt-v">${watch}${watchTail}</div></div>
+      <div class="vt-row"><div class="vt-k">可信</div><div class="vt-v">${two}${edgeTail}</div></div>
+    </div>`;
+  }
+
+  const tone = st.code==="research" ? "ok" : (st.code==="insufficient" ? "" : "warn");
+  const more = `<details class="vt-more"><summary>进阶读数：分数结构 / 翻转点 / 两法分歧</summary>
+      <div class="vt-row"><div class="vt-k">结构</div><div class="vt-v">${head}</div></div>
+      <div class="vt-row"><div class="vt-k">翻转</div><div class="vt-v">${dir}${dirTail}</div></div>
+      <div class="vt-row"><div class="vt-k">维度</div><div class="vt-v">${watch}${watchTail}</div></div>
+      <div class="vt-row"><div class="vt-k">口径</div><div class="vt-v">${two}${edgeTail}</div></div>
+    </details>`;
+
+  return `<div class="vt">
+    <div class="vt-stance ${tone}">
+      <div class="vs-label">${esc(st.label)}</div>
+      <div class="vs-head">${esc(st.headline)}</div>
+      <div class="vs-basis">${esc(st.basis)}</div>
+    </div>
+    <div class="vt-row"><div class="vt-k">下一步</div><div class="vt-v">
+      <ol class="vs-list">${(st.do_next||[]).map(x=>`<li>${esc(x)}</li>`).join("")}</ol></div></div>
+    <div class="vt-row key"><div class="vt-k">放弃线</div><div class="vt-v">${esc(st.abandon)}</div></div>
+    <div class="vt-row"><div class="vt-k">可信度</div><div class="vt-v">${trust}</div></div>
+    <div class="vs-caveat">${esc(st.caveat)}</div>
+    ${more}
+  </div>`;
+}
+function mechCn(m){
+  return {"score_band":"综合分跌破 7.0 线","dim_floor":"跌破 4.0 的入池下限","signal_conflict":"触发 R5 转人工复核"}[m]||m;
+}
+/* 规则码对读者是天书（R6_SCORE_BAND 读不出"按分数分桶"），界面上只给中文名，编号进 title 供溯源 */
+function ruleCn(id){
+  return {"R1_HARD_FLAG":"硬红旗否决","R2_RED_FLAGS":"红旗数量拒入","R3_DQ_FORCED":"数据质量复核",
+          "R4_SPECIAL_STATUS":"特殊状态复核","R5_SIGNAL_CONFLICT":"信号冲突复核",
+          "R6_SCORE_BAND":"按分数分桶","R7_COVERAGE":"判断层覆盖不足",
+          "R8_DATA_COVERAGE":"数据层覆盖不足","R9_MODEL_NOT_APPLICABLE":"估值口径不适用"}[id]||id||"";
+}
 
 /* 估值区间图：DCF / 相对 / 合成 + 现价竖线 */
 function rangeChart(r){
@@ -825,6 +992,9 @@ function viewScorecard(){
 }
 
 function dimBlock(d, i, wmid, wshort){
+  // 年报客户集中度：值留空（前五合计不是最大一家），但"上界"是能确定的，
+  // 由引擎侧算好放进 fill.customer_annual.bound_note，这里只负责显示，不重算。
+  const cust=(S.fill&&S.fill.customer_annual)||null;
   const factors = d.factors.map(f=>{
     const inds = f.indicators.map(ind=>{
       const scoreTxt = ind.missing ? `<b class="miss">缺失</b>` : `<b>${nf(ind.score,1)}</b><span class="faint">/10</span>`;
@@ -834,6 +1004,10 @@ function dimBlock(d, i, wmid, wshort){
         : `${ind.value==null?"—":esc(String(ind.value))}${esc(unit)}`);
       const band = ind.band ? `<span class="chip">${esc(ind.band)}</span>` : `<span class="chip amber">未评分</span>`;
       const ev = ind.evidence||{};
+      const capNote=(ind.id==="risk.customer_conc"&&ind.missing&&cust&&cust.bound_note)
+        ? `<div class="ind-cap"><b>上界已知：</b>${esc(cust.bound_note)}`
+          + (cust.upper_bound_band?` · 最坏「${esc(cust.upper_bound_band)}」档 <span class="mono">${nf(cust.upper_bound_score,1)}</span> 分`:"")
+          + `</div>` : "";
       return `<div class="ind">
         <div class="ind-top">
           <div class="ind-name">${esc(ind.name)}<code>${esc(ind.id)}</code></div>
@@ -841,6 +1015,7 @@ function dimBlock(d, i, wmid, wshort){
         </div>
         <div class="ind-meta">${band}<span>权重 ${nf(ind.weight,2)}</span>
           ${ind.missing?'<span class="miss">该指标缺失，权重已剔除</span>':""}</div>
+        ${capNote}
         <div class="ind-why">${esc(ind.rationale||"")}</div>
         <div class="ind-ev">
           <span>来源：${esc(ev.source||"—")}</span>
@@ -1172,7 +1347,7 @@ function viewDQ(){
         </div>`).join("")}
         <hr class="sep">
         <div class="tiny" style="font-weight:600;margin-bottom:4px">缺口</div>
-        ${(d.gaps&&d.gaps.length)?d.gaps.map(g=>`<div class="tiny muted">· ${esc(g)}</div>`).join(""):'<div class="tiny faint">无缺失字段</div>'}
+        ${(d.gaps&&d.gaps.length)?d.gaps.map(g=>`<div class="tiny muted">· <code>${esc(g.field)}</code> ${esc(g.reason)}</div>`).join(""):'<div class="tiny faint">无缺失字段</div>'}
       </div>
     </div>
     <div class="card" style="margin-top:14px">
@@ -1527,7 +1702,7 @@ function renderVerdictDetail(r){
   }
   const chips=[];
   const rule=c.decision&&c.decision.rule_id;
-  if(rule) chips.push(`<span class="chip rule" title="决策规则：编号即溯源，理由见评分卡页">${esc(rule)}</span>`);
+  if(rule) chips.push(`<span class="chip rule" title="决策规则 ${esc(rule)}：编号即溯源，理由见评分卡页">${esc(ruleCn(rule))}</span>`);
   const ws=sc.score_attribution&&sc.score_attribution.weight_share;
   if(ws) chips.push(`<span class="chip" title="分项贡献占综合分的权重份额；判断层越高，结论越依赖人工档位">判断 ${pct(ws.judgement,0)} · 数据 ${pct(ws.data,0)} · 风险催化 ${pct(ws.risk_catalyst,0)}</span>`);
   const cov=sc.evidence_coverage;
@@ -1562,7 +1737,8 @@ function renderAll(){
   $("#v-bucket").textContent=c.bucket_mid;
   $("#v-bucket").style.color=b.c;
   $("#verdict").style.setProperty("--bucket-c", b.c);
-  $("#v-rule").textContent=c.decision.rule_id;
+  $("#v-rule").textContent=ruleCn(c.decision.rule_id);
+  $("#v-rule").title="决策规则 "+c.decision.rule_id+"（编号即溯源，理由见评分卡页）";
   $("#v-mid").innerHTML=`${nf(c.composite_score_mid,2)}<small>/10</small>`;
   $("#v-short").innerHTML=`${nf(c.composite_score_short,2)}<small>/10 · ${esc(c.bucket_short)}</small>`;
   $("#v-conf").innerHTML=`${pct(c.confidence.value,0)}<small> ${esc(lv(c.confidence.level))}</small>`;

@@ -465,6 +465,14 @@ def build(
     # 客户集中度走年报原文（L1），不走代理：这一项有真实披露，不需要推断
     customer = _fill_customer_annual(data, raw, asof, derivations)
 
+    # 「为什么这一项是空的」要跟着输入进引擎：DQ 缺口清单默认只写"未提供"，
+    # 与"用户压根没填"无法区分。年报口径字段的空有三种（只披露前五合计 /
+    # 正文没这项 / 自动提取失败），三种对应三种动作，不能共用一句话。
+    data_notes = {}
+    cust_note = _customer_gap_why(raw)
+    if cust_note:
+        data_notes[CUSTOMER_FID] = cust_note
+
     # ---- DCF 假设（机械外推，全部标注）
     cagr, cagr_note = _annual_cagr(reports, "revenue", 3)
     g_raw = cagr if cagr is not None else (latest.get("rev_yoy") or 0.0) / 100.0
@@ -584,6 +592,8 @@ def build(
     }
     if overrides:
         _apply_overrides(inp, overrides)
+    if data_notes:
+        inp["data_notes"] = data_notes
 
     fill = _fill_report(inp, derivations, raw, asof, latest, np_method, rev_method)
     fill["proxied"] = proxied
@@ -834,7 +844,9 @@ def _fill_customer_annual(data: Dict[str, Any], raw: Dict[str, Any], asof: date,
     top = cust.get("top_ratio")
     period, notice = cust.get("period"), cust.get("notice_date")
     if top is None or not period or not notice:
-        return cust
+        # 留空也要把"能确定到什么程度"带出去：界面在风险维度那一行直接显示上界，
+        # 读者不必去缺口面板里翻——不然一个空格子会被读成"这项没人管"。
+        return _decorate_customer_gap(cust)
     if date.fromisoformat(notice) > asof:
         # 源侧已按公告日过滤，这里是第二道闸：分析时点之前没公告的年报，一个字都不能用
         return cust
@@ -863,17 +875,102 @@ def _fill_customer_annual(data: Dict[str, Any], raw: Dict[str, Any], asof: date,
     return cust
 
 
+CUSTOMER_SINGLE_CAP = 50.0
+
+
+def _customer_upper_bound(cust: Dict[str, Any]) -> Optional[float]:
+    """能确定的上界。没有前五合计就什么都不知道，返回 None——不猜。
+
+    两条证据取更紧的那个：前五合计是"最大一家 ≤ 五家之和"的数学上界；
+    B 段勾"不适用"给出"单个客户 <50%"的声明上界。两者同时成立时取 min。
+    """
+    five = cust.get("five_ratio")
+    if five is None:
+        return None
+    ub = float(five)
+    if cust.get("single_50_check") == "not_applicable":
+        ub = min(ub, CUSTOMER_SINGLE_CAP)
+    return round(ub, 2)
+
+
+def _customer_band(pct: float) -> Optional[Dict[str, Any]]:
+    """上界落在哪一档。阈值直接取 specs 里那套，不在这里重写一遍。"""
+    from .specs import DIMENSIONS
+
+    for dim in DIMENSIONS:
+        for factor in dim.factors:
+            for ind in factor.indicators:
+                if ind.id != "risk.customer_conc":
+                    continue
+                for band in ind.bands:
+                    if band.contains(pct):
+                        return {"band": band.label, "score": band.score}
+    return None
+
+
+def _customer_check_phrase(cust: Dict[str, Any]) -> str:
+    """把 B 段勾选翻成一句人话；没找到这段就不说，绝不默认"没有勾"。"""
+    flag = cust.get("single_50_check")
+    if flag == "not_applicable":
+        return ("同一段勾选「不适用」→ 单个客户销售占比未超 50%，"
+                "且公司自认不存在严重依赖少数客户")
+    if flag == "applicable":
+        return ("同一段勾选「适用」→ 前五名中存在新增客户或存在依赖少数客户的情形，"
+                "但正文未量化，仍需人工读一次原文")
+    return ""
+
+
 def _customer_gap_why(raw: Dict[str, Any]) -> str:
     """客户集中度留空时，说清是"哪种空"——面板上这一句话决定了研究者要不要去翻年报。"""
     cust = raw.get("customer") or {}
     if cust.get("top_ratio") is not None:
         return ""
     if cust.get("five_ratio") is not None:
-        return (f"年报（{cust.get('period')}）只披露前五名客户合计 {cust['five_ratio']}%，"
-                f"没给单客户占比——最大一家不超过这个数，需要读一次年报填单客户口径")
+        ub = _customer_upper_bound(cust)
+        msg = (f"年报（{cust.get('period')}）只披露前五名客户合计 {cust['five_ratio']}%，"
+               f"未披露单客户占比——最大一家不超过 {ub}%，这只是上界不是点估计，故留空不填")
+        band = _customer_band(ub) if ub is not None else None
+        if band:
+            msg += f"（即便按上界算，该项最坏也只落「{band['band']}」档 {band['score']:.1f} 分）"
+        tail = _customer_check_phrase(cust)
+        if tail:
+            msg += "；" + tail
+        return msg
     if cust:
-        return f"年报（{cust.get('period')}）没有这项披露：{cust.get('reason') or '正文未给出客户集中度'}"
+        msg = f"年报（{cust.get('period')}）没有这项披露：{cust.get('reason') or '正文未给出客户集中度'}"
+        if cust.get("single_50_check") == "not_applicable":
+            msg += "；但 B 段勾选「不适用」→ 单个客户销售占比未超 50%"
+        return msg
+    err = raw.get("customer_error")
+    if err:
+        return (f"本次自动提取失败：{err}。已下载的年报会缓存复用，重跑一次通常能过；"
+                "同一条错误反复出现再人工读原文补录")
     return "本次未取到年报原文（见取数告警），需要人工读一次"
+
+
+def _decorate_customer_gap(cust: Dict[str, Any]) -> Dict[str, Any]:
+    """给"留空"的披露块补上可直接展示的上界字段（不改原 raw 块，避免副作用）。"""
+    out = dict(cust)
+    ub = _customer_upper_bound(cust)
+    parts = []
+    if ub is not None:
+        out["upper_bound_pct"] = ub
+        band = _customer_band(ub)
+        if band:
+            out["upper_bound_band"] = band["band"]
+            out["upper_bound_score"] = band["score"]
+        five = cust.get("five_ratio")
+        if ub != five:
+            # 前五合计宽于 50% 时，勾选声明把上界收得更紧——两个数都要说，否则读者会以为上界还是 62%
+            parts.append(f"前五名合计 {five}%，该声明把上界收到 {ub}%")
+        else:
+            parts.append(f"前五名合计 {five}%，最大一家 ≤ 此值")
+    tail = _customer_check_phrase(cust)
+    if tail:
+        parts.append(tail)
+    if parts:
+        out["bound_note"] = "；".join(parts)
+    return out
 
 
 # ---------------------------------------------------------------- 覆盖度报告

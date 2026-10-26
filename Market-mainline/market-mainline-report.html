@@ -44,7 +44,7 @@ nav .wrap{display:flex;align-items:center;justify-content:space-between;height:1
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
 .hero-kicker{font-size:13px;letter-spacing:4px;color:#86868b;text-transform:uppercase;margin-bottom:18px}
 #hero h1{font-size:clamp(42px,7vw,74px);font-weight:600;line-height:1.05;letter-spacing:-.02em;margin-bottom:22px}
-.hero-summary{max-width:760px;margin:0 auto 30px;font-size:19px;line-height:1.5;color:#a1a1a6}
+.hero-summary{max-width:760px;margin:0 auto 30px;font-size:16px;line-height:1.5;color:#a1a1a6}
 .hero-chips{display:flex;justify-content:center;flex-wrap:wrap;gap:10px;margin-bottom:42px}
 .hchip{font-size:13.5px;padding:7px 16px;border-radius:980px;border:1px solid rgba(255,255,255,.22);color:#f5f5f7;display:inline-flex;gap:7px;align-items:center}
 .hchip b{font-weight:600}
@@ -128,6 +128,12 @@ section h2{font-size:clamp(30px,4.6vw,42px);font-weight:600;letter-spacing:-.01e
 .cands-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:10px}
 .cand-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:16px}
 .cand-head h3{font-size:18px;font-weight:600;letter-spacing:-.01em}
+.cand-right{display:flex;align-items:center;gap:8px;flex:none}
+.cand-score{font-size:13px;font-weight:700;color:var(--blue);background:rgba(0,113,227,.08);border-radius:8px;padding:3px 9px;font-variant-numeric:tabular-nums}
+.cand-score small{font-size:11px;font-weight:500;color:var(--gray)}
+.cand-score.bad{color:var(--red);background:rgba(255,69,58,.1)}
+.cand-warn{margin-top:10px;font-size:12.5px;color:var(--red);line-height:1.5}
+.sys-warn{margin-top:10px;font-size:12.5px;line-height:1.5;color:#b26a00;background:rgba(255,159,10,.1);border-radius:8px;padding:8px 10px}
 .dim-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-top:1px solid var(--border-soft)}
 .dim-row .dk{font-size:12px;font-weight:700;color:var(--blue);width:26px}
 .dim-row .dn{font-size:13.5px;color:var(--ink);flex:1}
@@ -155,6 +161,15 @@ section h2{font-size:clamp(30px,4.6vw,42px);font-weight:600;letter-spacing:-.01e
 .dim-head h3{font-size:14px;font-weight:600}
 .point{display:flex;gap:10px;align-items:baseline;padding:7px 0;font-size:12px;flex-wrap:wrap}
 .point::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--blue);flex:none;position:relative;top:-2px}
+/* 章节对象标签：说明证据链 / 相对强度 / 梯队各自属于哪个方向 */
+.sec-target{display:inline-flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:12.5px;color:var(--gray);background:#e8e8ed;border-radius:980px;padding:6px 14px;margin-bottom:18px}
+.sec-target b{color:var(--ink);font-weight:600;font-size:13.5px}
+/* 其他方向补充证据：重复 dim 块，不参与四维评级与雷达 */
+.evid-extra{margin-top:18px}
+.extra-item{padding:12px 0;border-top:1px dashed var(--border-soft)}
+.extra-item:first-of-type{border-top:none;padding-top:0}
+.extra-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+.extra-head b{font-size:14px;font-weight:600}
 
 /* ============ 相对强度 ============ */
 .rs-box{padding:10px}
@@ -163,6 +178,7 @@ section h2{font-size:clamp(30px,4.6vw,42px);font-weight:600;letter-spacing:-.01e
 .rs-legend i{display:inline-block;width:22px;height:3px;border-radius:2px;vertical-align:middle;margin-right:6px}
 .rs-legend i.sq{width:12px;height:12px;border-radius:3px}
 .rs-mode{font-size:12px;color:var(--amber);background:rgba(255,159,10,.1);border-radius:8px;padding:3px 10px;font-weight:600}
+.rs-stale{font-size:12.5px;line-height:1.5;color:#b26a00;background:rgba(255,159,10,.1);border-radius:10px;padding:9px 13px;margin-bottom:12px}
 .rs-scraps{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:12px}
 .rs-scraps span{font-size:12.5px;color:var(--gray);background:var(--canvas);border:1px solid var(--border-soft);border-radius:8px;padding:4px 10px}
 /* 快照柱状图入场动画（跟随章节 reveal 级联触发，纯 CSS） */
@@ -313,7 +329,7 @@ footer.demo footer .f-demo{display:block}
     <div class="wrap">
       <div class="sec-kicker">04 · Relative Strength</div>
       <h2>相对强度 · 60 日窗口</h2>
-      <p class="sec-sub">主线板块 vs 沪深300 的累计涨幅对比——W2 中窗是主线确认与否决的核心窗口。</p>
+      <p class="sec-sub">所选方向 vs 沪深300 的累计涨幅对比——W2 中窗是主线确认与否决的核心窗口。</p>
       <div id="rs-body"></div>
     </div>
   </section>
@@ -546,6 +562,8 @@ D4 逻辑驱动
 对确认的主线做生命周期定位（判断依据：量能结构、龙头行为、调整后能否再创新高）：
 启动期（首波上攻、梯队未完整）→ 发酵期（梯队完整、龙头新高）→ 高潮期（补涨扩散、成交占比见顶）→ 分歧期（龙头滞涨、跟风大面）→ 退潮期（亏钱效应、排名消失）。
 
+stage 字段只写单一标准词，五选一，禁止括号限定或箭头拼接。尚未跨越阶段、但已出现反向信号的，阶段维持原档，把信号写进 stageNote（如「高位分歧初现」）；确需表达「正在过渡」的，也写 stageNote（如「高潮期→分歧期过渡中」），stage 仍填当前所处档位。stage 是枚举字段，混入限定语会让报告页的生命周期定位失效。
+
 ▍第四步附 · 上期对账（附带上期台账时强制执行，未附带则跳过并在 dataGaps 登记）
 
 1. environment 各项 prev 值优先引用上期台账同字段；与其他来源数字不一致时，注明「与上期台账口径差异」及以哪个为准；
@@ -562,10 +580,10 @@ D4 逻辑驱动
 
 | 键 | 类型 | 内容 |
 |---|---|---|
-| meta | object | reportDate、mainline（无主线时填「无主线 · 轮动市」）、stage（生命周期阶段，无主线填 null）、confidence（高/中/低）、environmentState（进攻/中性/防守）、verdict（确认主线 / 候补观察 / 无主线·轮动市）、summary（≤60 字结论逻辑） |
+| meta | object | reportDate、mainline（无主线时填「无主线 · 轮动市」）、stage（生命周期阶段，**仅限启动期/发酵期/高潮期/分歧期/退潮期 五选一**，禁止括号或箭头拼接，无主线填 null）、stageNote（可选，一句过渡或反向信号说明，如「高位分歧初现」，无则填 null）、confidence（高/中/低）、environmentState（进攻/中性/防守）、verdict（确认主线 / 候补观察 / 无主线·轮动市）、summary（≤60 字结论逻辑） |
 | environment | object | limitUpCount{value,prev,source}（涨停家数与上日值；**prev 优先引用上期台账同字段值**，与其他来源不一致时须注明）；maxConBoards{value,theme,source}（最高连板与所属题材）；blastRate{value,source}（炸板率%）；breadth{value,source}（市场广度=上涨家数占比%）；index{name,vsMA20,vsMA60,volumeTrend,source}——**vsMA20/vsMA60 仅限填「上方 / 下方 / 附近」，取不到填 null 并登记 dataGaps，禁止「需进一步确认」类模糊词** |
 | candidates | array | 每项：name、d1/d2/d3/d4（各为 强/中/弱，对应 2/1/0 分）、score（四项总分 0-8）、verdict（主线/候补/候选观察/轮动）、note（一句话证据摘要，含关键数字；处于冷却期的方向注明「冷却期第 N 日」） |
-| evidence | array | 主线证据链，每项：dim（D1-D4）、title、level（强/中/弱）、points[{fact, source}]——每个数字带 [来源｜日期] |
+| evidence | array | **单方向四维链，与 ladder 取同一方向**；每项：dim（D1-D4）、title、level（强/中/弱）、points[{fact, source}]——每个数字带 [来源｜日期]；同一 dim 只允许出现一条，其余候选的证据写在其 candidate.note，禁止追加重复维度块 |
 | relativeStrength | array | 可选：每项 {date, sector, benchmark}，跟踪板块与沪深300 的近 60 日累计涨幅%，用于相对强度曲线；**必须在 dataGaps 注明跟踪对象与计算口径；无 score ≥4 候选时置空数组 []**；取不到逐日序列时给近 5/20/60 日三点快照并在 dataGaps 注明 |
 | ladder | object | **单方向梯队**——取 score 最高候选方向：leaders[]（先锋）、core[]（中军）、followers[]（跟风），每项 {name, role, gain20d, note}；其余方向个股禁止混入，在其 candidate 的 note 中说明；中军须符合「板块内流通市值前 20% 且成交额前 10%」；gain20d 限 20 日口径，口径不符（如「9 月以来」累计涨幅）填 null 并把实际口径写进 note |
 | alerts | array | 2-3 条可观察的失效信号，每条写明触发后应重估什么 |
@@ -577,7 +595,7 @@ D4 逻辑驱动
 JSON 骨架（结构参考，禁止照抄数字）：
 
   {
-    "meta": {"reportDate": "", "mainline": "", "stage": "", "confidence": "", "environmentState": "", "verdict": "", "summary": ""},
+    "meta": {"reportDate": "", "mainline": "", "stage": "", "stageNote": null, "confidence": "", "environmentState": "", "verdict": "", "summary": ""},
     "environment": {"limitUpCount": {"value": 0, "prev": 0, "source": ""}, "maxConBoards": {"value": 0, "theme": "", "source": ""}, "blastRate": {"value": 0, "source": ""}, "breadth": {"value": 0, "source": ""}, "index": {"name": "", "vsMA20": "", "vsMA60": "", "volumeTrend": "", "source": ""}},
     "candidates": [{"name": "", "d1": "", "d2": "", "d3": "", "d4": "", "score": 0, "verdict": "", "note": ""}],
     "evidence": [{"dim": "", "title": "", "level": "", "points": [{"fact": "", "source": ""}]}],
@@ -621,11 +639,19 @@ function verdictCls(v){
   if (v.indexOf('候选') >= 0) return 'v-watch';
   return 'v-rot';
 }
-/* 环境态配色 */
-function envCls(s){
+/* 环境态归一：混合/过渡写法（如「中性偏防守」）统一取最严档 防守 > 中性 > 进攻。
+   配色与信号权限必须共用本函数，避免同一字段出现两种解读。 */
+function envKey(s){
   s = String(s || '');
-  if (s.indexOf('进攻') >= 0) return 'env-attack';
-  if (s.indexOf('中性') >= 0) return 'env-neutral';
+  if (s.indexOf('防守') >= 0) return '防守';
+  if (s.indexOf('中性') >= 0) return '中性';
+  if (s.indexOf('进攻') >= 0) return '进攻';
+  return '';
+}
+function envCls(s){
+  var k = envKey(s);
+  if (k === '进攻') return 'env-attack';
+  if (k === '中性') return 'env-neutral';
   return 'env-defend';
 }
 /* 涨跌着色（A股：红涨绿跌） */
@@ -821,7 +847,7 @@ function renderHero(d, mode){
   function confCls(c){ return c === '高' ? 'var(--green)' : (c === '中' ? 'var(--amber)' : 'var(--red)'); }
   var chips = '';
   chips += '<span class="hchip ' + (isNoMain ? '' : 'hl') + '">结论 <b>' + esc(meta.verdict || '—') + '</b></span>';
-  if (!isNoMain && meta.stage) chips += '<span class="hchip">阶段 <b>' + esc(meta.stage) + '</b></span>';
+  if (!isNoMain && meta.stage) chips += '<span class="hchip">阶段 <b>' + esc(meta.stage) + (meta.stageNote ? ' · ' + esc(String(meta.stageNote)) : '') + '</b></span>';
   chips += '<span class="hchip">置信度 <b style="color:' + confCls(meta.confidence) + '">' + esc(meta.confidence || '—') + '</b></span>';
   chips += '<span class="hchip">环境态 <b>' + esc(meta.environmentState || '—') + '</b></span>';
   $('#hero-body').innerHTML =
@@ -852,7 +878,7 @@ function renderEnv(d){
   var html = '<div class="stats-grid">';
   var luDelta = lu.value != null ? delta(lu.value, lu.prev) : '';
   html += '<div class="card stat"><div class="stat-label">涨停家数</div>' + statVal(lu.value, ' 家', 'num-lu') +
-    '<div class="stat-sub">' + (luDelta ? luDelta + ' 较上日' : (lu.value != null ? '无上期台账，单周快照' : '未获取')) + '</div>' + srcLine(lu.source) + '</div>';
+    '<div class="stat-sub">' + (lu.value == null ? '' : (luDelta ? luDelta + ' 较上日' : '无上期台账，单周快照')) + '</div>' + srcLine(lu.source) + '</div>';
   html += '<div class="card stat"><div class="stat-label">最高连板</div>' + statVal(mc.value, ' 连板', 'num-mc') +
     '<div class="stat-sub">' + (mc.theme ? '题材：' + esc(mc.theme) : '—') + '</div>' + srcLine(mc.source) + '</div>';
   html += '<div class="card stat"><div class="stat-label">炸板率</div>' + statVal(br.value, '%', 'num-br') +
@@ -891,24 +917,47 @@ function renderEnv(d){
   }
 }
 
+/* 候选档位归并：与徽章配色共用 verdictCls，保证「计数」与「颜色」不错位 */
+function vRank(v){
+  var cls = verdictCls(v);
+  return cls === 'v-main' ? 0 : (cls === 'v-alt' ? 1 : (cls === 'v-watch' ? 2 : 3));
+}
+/* D1-D4 实算总分（强=2/中=1/弱=0），用于交叉校验 JSON 的 score 字段（红线 8） */
+function scoreOf(c){
+  var m = {'强':2, '中':1, '弱':0}, sum = 0, ok = true;
+  ['d1','d2','d3','d4'].forEach(function(k){
+    var v = m[c[k]];
+    if (v == null) ok = false; else sum += v;
+  });
+  return ok ? sum : null;
+}
+
 function renderCands(d){
   var list = (d.candidates || []).slice();
   /* 框架排序：主线 > 候补 > 候选观察 > 轮动；未知 verdict 殿后 */
-  var order = {'主线':0, '候补':1, '候选观察':2, '轮动':3};
-  list.sort(function(a, b){ return (order[a.verdict] != null ? order[a.verdict] : 9) - (order[b.verdict] != null ? order[b.verdict] : 9); });
+  list.sort(function(a, b){ return vRank(a.verdict) - vRank(b.verdict); });
   if (!list.length){ $('#cand-body').innerHTML = '<div class="empty-note">candidates 为空——本轮未识别出任何候选方向。</div>'; return; }
-  var nMain = 0, nAlt = 0, nWatch = 0, nRot = 0;
-  list.forEach(function(c){ if (c.verdict === '主线') nMain++; else if (c.verdict === '候补') nAlt++; else if (c.verdict === '候选观察') nWatch++; else nRot++; });
+  var counts = [0, 0, 0, 0];
+  list.forEach(function(c){ counts[vRank(c.verdict)]++; });
+  var nMain = counts[0], nAlt = counts[1], nWatch = counts[2], nRot = counts[3];
   var html = '<div class="cand-count">' +
     '<span class="v v-main">主线 ' + nMain + '</span><span class="v v-alt">候补 ' + nAlt + '</span><span class="v v-watch">候选观察 ' + nWatch + '</span><span class="v v-rot">轮动 ' + nRot + '</span></div>';
   html += '<div class="cands-grid">';
   list.forEach(function(c){
     var dims = [['D1','价格持续性', c.d1], ['D2','资金持续性', c.d2], ['D3','赚钱效应', c.d3], ['D4','逻辑驱动', c.d4]];
+    var calc = scoreOf(c);
+    var bad = (calc != null && typeof c.score === 'number' && c.score !== calc);
+    var scCls = calc == null ? '' : (bad ? ' bad' : '');
+    var scTxt = calc == null ? '—' : String(calc);
     html += '<div class="card cand">' +
-      '<div class="cand-head"><h3>' + esc(c.name) + '</h3><span class="v ' + verdictCls(c.verdict) + '">' + esc(c.verdict || '—') + '</span></div>';
+      '<div class="cand-head"><h3>' + esc(c.name) + '</h3><div class="cand-right">' +
+        '<span class="v ' + verdictCls(c.verdict) + '">' + esc(c.verdict || '—') + '</span>' +
+        '<span class="cand-score' + scCls + '" title="D1+D2+D3+D4 实算总分（强=2/中=1/弱=0）">' + scTxt + '<small>/8</small></span>' +
+      '</div></div>';
     dims.forEach(function(dt){
       html += '<div class="dim-row"><span class="dk">' + esc(dt[0]) + '</span><span class="dn">' + esc(dt[1]) + '</span>' + lvChip(dt[2]) + '</div>';
     });
+    if (bad) html += '<div class="cand-warn">算式不符：JSON 填 score=' + esc(c.score) + '，按 D1-D4 实算应为 ' + calc + '，请核对后重发。</div>';
     if (c.note) html += '<div class="cand-note">' + esc(c.note) + '</div>';
     html += '</div>';
   });
@@ -923,21 +972,61 @@ function renderCands(d){
   $('#cand-body').innerHTML = html;
 }
 
-function renderEvid(d){
+/* 章节对象：取本轮判定方向（无主线时取分数最高的候选） */
+function subjectOf(d){
   var meta = d.meta || {};
-  var ev = d.evidence || [];
   var isNoMain = String(meta.mainline || '').indexOf('无主线') >= 0;
-  if (isNoMain && !ev.length){
-    $('#evid-body').innerHTML = '<div class="empty-note">当前为「无主线 · 轮动市」——证据不足以确认任何方向，这是合法且重要的结论。等待新候选出现后按周度四维检验确认。</div>';
+  var vOrder = {'主线':0, '候补':1, '候选观察':2, '轮动':3};
+  var cands = (d.candidates || []).filter(function(c){ return c && c.name; }).slice();
+  cands.sort(function(a, b){
+    var sa = typeof a.score === 'number' ? a.score : -1;
+    var sb = typeof b.score === 'number' ? b.score : -1;
+    if (sa !== sb) return sb - sa;
+    return (vOrder[a.verdict] != null ? vOrder[a.verdict] : 9) - (vOrder[b.verdict] != null ? vOrder[b.verdict] : 9);
+  });
+  var top = cands[0];
+  var name = isNoMain ? (top ? top.name : '未标注候选') : (meta.mainline || (top ? top.name : '未标注'));
+  /* 章节口径必须跟随 meta.verdict（主线 / 候补），不能看 mainline——mainline 是板块名，永远不会含「候补」 */
+  var vc = verdictCls(meta.verdict);
+  var kind = isNoMain ? '候选观察对象 · 无主线' : (vc === 'v-alt' ? '候补方向' : (vc === 'v-watch' ? '候选观察方向' : '主线方向'));
+  return {name: name, kind: kind, isNoMain: isNoMain};
+}
+
+/* 补充证据块的方向归属：按候选名核心词在标题/证据文本中匹配，取不到留空 */
+function blockDirection(item, d){
+  var text = String(item.title || '') + ' ' + (item.points || []).map(function(p){ return String(p.fact || ''); }).join(' ');
+  var hit = '';
+  (d.candidates || []).forEach(function(c){
+    var key = String(c.name || '').split(/[（(]/)[0].split(/[\/／、]/)[0].trim();
+    if (key && text.indexOf(key) >= 0) hit = String(c.name || '');
+  });
+  return hit;
+}
+
+function renderEvid(d){
+  var ev = (d.evidence || []).filter(Boolean);
+  var subj = subjectOf(d);
+  var head = '<div class="sec-target">本节对象：<b>' + esc(subj.name) + '</b><span>· ' + esc(subj.kind) + ' · 四维链仅取该方向</span></div>';
+  if (subj.isNoMain && !ev.length){
+    $('#evid-body').innerHTML = head + '<div class="empty-note">当前为「无主线 · 轮动市」——证据不足以确认任何方向，这是合法且重要的结论。等待新候选出现后按周度四维检验确认。</div>';
     return;
   }
-  if (!ev.length){ $('#evid-body').innerHTML = '<div class="empty-note">evidence 为空——主线证据链缺失，请人工复核。</div>'; return; }
+  if (!ev.length){ $('#evid-body').innerHTML = head + '<div class="empty-note">evidence 为空——主线证据链缺失，请人工复核。</div>'; return; }
+  /* 单方向四维链：同一 dim 只取首条（即最高分方向）；重复 dim 归入「其他方向补充证据」，不参与雷达 */
+  var firstByDim = {}, primary = [], extra = [];
+  ev.forEach(function(item){
+    var k = String(item.dim || '').toUpperCase();
+    if (!firstByDim[k]){ firstByDim[k] = item; primary.push(item); }
+    else extra.push(item);
+  });
+  primary.sort(function(a, b){
+    return (parseInt(String(a.dim).replace(/\D/g, ''), 10) || 9) - (parseInt(String(b.dim).replace(/\D/g, ''), 10) || 9);
+  });
   /* 雷达图取值：优先 evidence.level，回退 candidates 中主线方向 */
   var levels = [], dimMeta = [], dimNames = ['价格持续性', '资金持续性', '赚钱效应', '逻辑驱动'];
   for (var i = 0; i < 4; i++){
     var L = 0;
-    var item = null;
-    for (var j = 0; j < ev.length; j++){ if (String(ev[j].dim) === 'D' + (i + 1)) item = ev[j]; }
+    var item = firstByDim['D' + (i + 1)] || null;
     if (item && lv(item.level).k > 0) L = lv(item.level).k;
     else {
       var m = (d.candidates || []).filter(function(c){ return c.verdict === '主线'; })[0];
@@ -956,10 +1045,10 @@ function renderEvid(d){
       '<div class="rbar' + barCls + '"><i style="--w:' + Math.round(levels[r] * 100) + '%"></i></div>' +
       lvChip(dimMeta[r].level) + '</div>';
   }
-  var html = '<div class="evid-grid"><div class="card evid-radar">' + radarSVG(levels) +
+  var html = head + '<div class="evid-grid"><div class="card evid-radar">' + radarSVG(levels) +
     '<div class="radar-aside"><div class="ra-title">四维强弱总览</div>' + asideRows +
     '<div class="ra-note">雷达形状即 D1-D4 的强弱结构——各维明细证据见下方块。</div></div></div><div class="evid-list">';
-  ev.forEach(function(item){
+  primary.forEach(function(item){
     html += '<div class="dim-block"><div class="dim-head"><span class="dtag">' + esc(item.dim) + '</span><h3>' + esc(item.title || '') + '</h3>' + lvChip(item.level) + '</div>';
     (item.points || []).forEach(function(p){
       html += '<div class="point"><span>' + esc(p.fact) + '</span>' + (p.source ? '<span class="chip src">' + esc(p.source) + '</span>' : '') + '</div>';
@@ -968,11 +1057,25 @@ function renderEvid(d){
     html += '</div>';
   });
   html += '</div></div>';
+  if (extra.length){
+    html += '<div class="card evid-extra"><div class="dim-head"><span class="dtag">补充</span><h3>其他方向补充证据 · 不参与四维评级与雷达</h3></div>';
+    extra.forEach(function(item){
+      var dir = blockDirection(item, d);
+      html += '<div class="extra-item"><div class="extra-head"><span class="dtag">' + esc(item.dim || '') + '</span><b>' + esc(item.title || '') + '</b>' +
+        (dir ? '<span class="chip src">' + esc(dir) + '</span>' : '') + lvChip(item.level) + '</div>';
+      (item.points || []).forEach(function(p){
+        html += '<div class="point"><span>' + esc(p.fact) + '</span>' + (p.source ? '<span class="chip src">' + esc(p.source) + '</span>' : '') + '</div>';
+      });
+      html += '</div>';
+    });
+    html += '</div>';
+  }
   $('#evid-body').innerHTML = html;
 }
 
 function renderRS(d){
   var rs = d.relativeStrength || [];
+  var subj = subjectOf(d);
   function toNum(v){
     if (typeof v === 'number' && isFinite(v)) return v;
     if (typeof v === 'string'){ var x = parseFloat(v.replace(/%/g, '').trim()); return isFinite(x) ? x : null; }
@@ -989,15 +1092,22 @@ function renderRS(d){
         + ' ｜ 沪深300 ' + (bv != null ? (bv > 0 ? '+' : '') + bv.toFixed(1) + '%' : '缺失'));
     }
   });
-  var legendLine = '<div class="rs-legend"><span><i style="background:#0071e3"></i>主线板块（累计涨幅）</span><span><i style="background:#86868b;background-image:linear-gradient(90deg,#86868b 60%,transparent 60%)"></i>沪深300 基准</span></div>';
+  var legendLine = '<div class="rs-legend"><span><i style="background:#0071e3"></i>' + esc(subj.name) + '（累计涨幅）</span><span><i style="background:#86868b;background-image:linear-gradient(90deg,#86868b 60%,transparent 60%)"></i>沪深300 基准</span></div>';
+  /* 最新数据点是否覆盖报告日：防止「沿用上期快照」被当成当日序列 */
+  var rd = String((d.meta || {}).reportDate || '');
+  var ds = (Array.isArray(rs) ? rs : []).map(function(p){ return (p && p.date) ? String(p.date) : ''; }).filter(Boolean).sort();
+  var lastDate = ds.length ? ds[ds.length - 1] : '';
+  var staleNote = (rd && lastDate && lastDate !== rd)
+    ? '<div class="rs-stale">最新数据点 ' + esc(lastDate) + ' ≠ 报告日 ' + esc(rd) + '——本节可能沿用上期快照，未补取当日值，阅读时勿当作最新点位。</div>' : '';
+  var head = '<div class="sec-target">本节对象：<b>' + esc(subj.name) + '</b><span>· ' + esc(subj.kind) + ' · 单方向口径</span></div>' + staleNote;
   if (full.length >= 4){
-    $('#rs-body').innerHTML = '<div class="card rs-box">' + rsSVG(full) + legendLine + '</div>';
+    $('#rs-body').innerHTML = head + '<div class="card rs-box">' + rsSVG(full) + legendLine + '</div>';
   } else if (partial.length >= 2){
-    $('#rs-body').innerHTML = '<div class="card rs-box">' + rsBars(partial) +
-      '<div class="rs-legend"><span><i class="sq" style="background:#0071e3"></i>主线板块</span><span><i class="sq" style="background:#aeaeb2"></i>沪深300</span><span class="rs-mode">快照模式 · 区间累计涨幅对比（非逐日曲线）</span></div></div>';
+    $('#rs-body').innerHTML = head + '<div class="card rs-box">' + rsBars(partial) +
+      '<div class="rs-legend"><span><i class="sq" style="background:#0071e3"></i>' + esc(subj.name) + '</span><span><i class="sq" style="background:#aeaeb2"></i>沪深300</span><span class="rs-mode">快照模式 · 区间累计涨幅对比（非逐日曲线）</span></div></div>';
   } else {
     var scrapHtml = scraps.length ? '<div class="rs-scraps"><span>' + scraps.join('</span><span>') + '</span></div>' : '';
-    $('#rs-body').innerHTML = '<div class="card rs-box"><div style="padding:26px;text-align:center">' +
+    $('#rs-body').innerHTML = head + '<div class="card rs-box"><div style="padding:26px;text-align:center">' +
       gapNote('relativeStrength 有效数据点不足 2 个') + scrapHtml +
       '<p style="margin-top:12px;font-size:13.5px;color:var(--gray)">AI 多数情况只能取到区间快照——序列缺失属设计内降级，不影响其余章节。可要求 AI 按模板第五步输出近 5/10/20/60 日四点区间快照（板块与沪深300 均须为具体数值）。</p></div></div>';
   }
@@ -1005,13 +1115,26 @@ function renderRS(d){
 
 function renderCycle(d){
   var meta = d.meta || {}, lad = d.ladder || {};
+  var subj = subjectOf(d);
   var stageIdx = -1;
   var st = String(meta.stage || '');
-  for (var i = 0; i < STAGES.length; i++){ if (st.indexOf(STAGES[i].n.slice(0, 2)) >= 0) stageIdx = i; }
-  var html = '<div class="card cycle-box">' + cycleSVG(stageIdx);
+  /* 括号内为限定/补充说明（如「发酵期（高位分歧初现）」），不得参与主阶段匹配 */
+  var stMain = st.replace(/[（(][^）)]*[）)]/g, '').trim();
+  var stKey = stMain || st;
+  for (var i = 0; i < STAGES.length; i++){ if (stKey.indexOf(STAGES[i].n.slice(0, 2)) >= 0) stageIdx = i; }
+  /* 主阶段文本无标准词时，回退全文匹配（容错历史数据） */
+  if (stageIdx < 0) for (var j = 0; j < STAGES.length; j++){ if (st.indexOf(STAGES[j].n.slice(0, 2)) >= 0) stageIdx = j; }
+  var html = '<div class="sec-target">梯队方向：<b>' + esc(subj.name) + '</b><span>· ' + esc(subj.kind) + ' · 单方向梯队，其余方向个股列于其候选 note</span></div>';
+  html += '<div class="card cycle-box">' + cycleSVG(stageIdx);
   if (stageIdx >= 0){
-    /* 组合填法（如「高潮期→分歧期过渡」）时保留原文标注，定位取最重（最后命中）阶段 */
-    var rawSt = (st && st !== STAGES[stageIdx].n) ? '（原文标注：' + esc(st) + '）' : '';
+    /* 组合填法（如「高潮期→分歧期过渡」）时保留原文标注；主阶段带括号限定（如「发酵期（高位分歧初现）」）时只显示限定语 */
+    var curName = STAGES[stageIdx].n, rawSt = '';
+    if (st && st !== curName){
+      var paren = st.match(/[（(]([^）)]*)[）)]/);
+      rawSt = (stMain === curName && paren) ? '（' + esc(paren[1]) + '）' : '（原文标注：' + esc(st) + '）';
+    }
+    /* 新契约：过渡/反向信号走 stageNote，优先于括号回退，两者取其一 */
+    if (meta.stageNote) rawSt = '（' + esc(String(meta.stageNote)) + '）';
     html += '<p class="stage-note">当前定位：<b style="color:var(--blue)">' + esc(STAGES[stageIdx].n) + '</b>' + rawSt + ' —— ' + esc(STAGES[stageIdx].d) + '（依据：量能结构、龙头行为、调整后能否再新高）</p>';
   }
   else html += '<p class="stage-note">' + (st ? '未匹配到标准阶段：' + esc(st) : '未提供生命周期定位——无主线时无阶段定位。') + '</p>';
@@ -1030,8 +1153,11 @@ function renderCycle(d){
     any = true;
     grid += '<div class="card"><div class="lg-title"><span class="role-pill ' + g.cls + '">' + g.pill + '</span><small>' + esc(g.desc) + '</small></div>';
     arr.forEach(function(m){
-      var g2 = String(m.gain20d || '');
-      var gc = g2.indexOf('+') === 0 ? 'up' : (g2.indexOf('-') === 0 ? 'down' : 'flat');
+      /* gain20d 允许数值或字符串；数值型补 % 再判涨跌色，避免 82 被当成「无方向」 */
+      var gRaw = m.gain20d;
+      var g2 = (typeof gRaw === 'number') ? ((gRaw > 0 ? '+' : '') + gRaw + '%') : String(gRaw == null ? '' : gRaw);
+      var gNum = parseFloat(g2.replace(/[^\d.\-]/g, ''));
+      var gc = (isFinite(gNum) && gNum > 0) ? 'up' : ((isFinite(gNum) && gNum < 0) ? 'down' : 'flat');
       grid += '<div class="lg-item"><div class="lg-name"><span>' + esc(m.name) + '</span><span class="lg-gain ' + gc + '">' + esc(g2 || '—') + '</span></div>' +
         (m.note ? '<div class="lg-note">' + esc(m.note) + '</div>' : '') + '</div>';
     });
@@ -1056,20 +1182,33 @@ function renderAlerts(d){
 }
 
 function renderSystem(d){
-  var sys = d.system || {};
-  var st = sys.environmentState || (d.meta || {}).environmentState || '—';
+  var sys = d.system || {}, meta = d.meta || {};
+  var st = sys.environmentState || meta.environmentState || '—';
   var permMap = {
     '进攻': '进攻态：信号 A + B 均开放（仍需十问清单）',
     '中性': '中性态：只做信号 B（缩量回踩）',
     '防守': '防守态：全部只观察，不开新仓'
   };
-  var permHint = null;
-  for (var k in permMap){ if (String(st).indexOf(k) >= 0) permHint = permMap[k]; }
+  /* 与配色共用 envKey：混合写法取其最严档，避免色彩与权限各说一套 */
+  var permHint = permMap[envKey(st)] || null;
+  /* 口径自检：字段互斥、广度与三区阈值是否自洽（纯数值判定，不做语义猜测） */
+  var warns = [];
+  if (meta.environmentState && sys.environmentState && envKey(meta.environmentState) !== envKey(sys.environmentState)){
+    warns.push('meta.environmentState（' + esc(meta.environmentState) + '）与 system.environmentState（' + esc(sys.environmentState) + '）不一致。');
+  }
+  var bd = (d.environment || {}).breadth || {};
+  var bdNum = (typeof bd.value === 'number') ? bd.value : parseFloat(String(bd.value));
+  if (isFinite(bdNum)){
+    var zone = bdNum < 35 ? '防守' : (bdNum > 55 ? '进攻' : '中性');
+    var k0 = envKey(st);
+    if (k0 && zone !== k0) warns.push('广度 ' + bdNum + '% 按上列阈值应属「' + zone + '」区，与判定「' + k0 + '」不一致——若由成交额、涨停结构等其他指标触发，须在 summary 或 dataGaps 写明依据。');
+  }
   var res = sys.resonanceSectors || [];
   var html = '<div class="sys-grid">';
   html += '<div class="card"><h3 style="font-size:15px;color:var(--gray);font-weight:600;margin-bottom:12px">环境态（初判 · 供人工终审）</h3>' +
     '<div class="sys-state ' + envCls(st) + '">' + esc(st) + '</div>' +
-    '<div class="sys-desc">广度阈值：进攻 &gt;55% ／ 中性 35-55% ／ 防守 &lt;35%，经验参数。以周日人工终审为准。</div></div>';
+    '<div class="sys-desc">广度阈值：进攻 &gt;55% ／ 中性 35-55% ／ 防守 &lt;35%，经验参数。以周日人工终审为准。</div>' +
+    (warns.length ? '<div class="sys-warn">口径自检 · ' + warns.join(' ') + '</div>' : '') + '</div>';
   html += '<div class="card"><h3 style="font-size:15px;color:var(--gray);font-weight:600;margin-bottom:12px">本周信号权限</h3>' +
     '<div class="sys-perm">' + esc(sys.signalPermission || permHint || '—') + '</div>' +
     '<div class="sys-desc" style="margin-top:10px">对接第 9 章：进攻态 A+B、中性态只 B、防守态只观察。</div></div>';

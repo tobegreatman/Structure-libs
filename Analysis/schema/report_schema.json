@@ -189,8 +189,10 @@
         "bucket_short",
         "composite_score_mid",
         "composite_score_short",
-        "confidence",
-        "decision",
+          "confidence",
+          "decision",
+          "stance",
+          "sensitivity",
         "summary",
         "maintain_conditions",
         "falsification",
@@ -259,6 +261,223 @@
               "items": {
                 "type": "string"
               }
+            }
+          }
+        },
+        "stance": {
+          "type": "object",
+          "description": "立场句：把分桶翻成「现在该不该动手」的一句话答案。四档与四个桶一一对应（insufficient/avoid 规避/hold_off 暂不介入/research 够格研究），不引入第二种判定。措辞只说框架立场，不构成交易指令（A4 词表拦截买入/卖出/加仓等）。",
+          "required": [
+            "code",
+            "label",
+            "headline",
+            "basis",
+            "do_next",
+            "abandon",
+            "caveat"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "code": {
+              "enum": [
+                "insufficient",
+                "avoid",
+                "hold_off",
+                "research"
+              ],
+              "description": "insufficient=本框架不下结论（人工复核桶）；avoid=按框架规避；hold_off=暂不介入（观察桶）；research=够格研究（入池桶，入池≠现在买）。"
+            },
+            "label": {
+              "type": "string",
+              "minLength": 1,
+              "description": "给读者的短标签，如「暂不介入」。"
+            },
+            "headline": {
+              "type": "string",
+              "minLength": 1,
+              "description": "一句结论：分数与线的位置关系，直接回答「现在能不能动手」。"
+            },
+            "basis": {
+              "type": "string",
+              "minLength": 1,
+              "description": "为什么是这个立场：分档规则 + 当前所在位置。"
+            },
+            "do_next": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "string"
+              },
+              "description": "读者下一步该做什么（非交易指令）：等什么、补什么、核对什么。"
+            },
+            "abandon": {
+              "type": "string",
+              "minLength": 1,
+              "description": "什么情况下必须重看：分数跌破哪条线，或哪条证伪条件触发。"
+            },
+            "caveat": {
+              "type": "string",
+              "minLength": 1,
+              "description": "能力边界：本框架没有回测样本、不给涨跌概率，因此不出现买卖措辞，只回答「够不够格」。"
+            }
+          }
+        },
+        "sensitivity": {
+          "type": "object",
+          "description": "结论翻转点：把某一维度单独下调，分桶第一次改变时的位移；同时给出向上还有没有档位。只覆盖分数驱动的机制（综合分跌破分界线 / 维度跌破 4.0 / R5 信号冲突）；R1–R4、R7–R9 由输入与覆盖决定。这是对结论本身的预测，不是价格预测。",
+          "required": [
+            "boundary",
+            "distance",
+            "distance_anchors",
+            "next_bucket",
+            "band",
+            "headroom",
+            "drivers",
+            "insensitive",
+            "unscored",
+            "note"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "band": {
+              "type": "object",
+              "description": "分数在本桶区间里的相对位置：0=刚够格，1=触到本桶天花板。用来给 distance 一个尺度（0.64 分除以桶高 3 分 = 21%，才读得出「刚过线」）。",
+              "required": ["low", "high", "position", "zone"],
+              "additionalProperties": false,
+              "properties": {
+                "low": {"type": ["number", "null"]},
+                "high": {"type": ["number", "null"]},
+                "position": {
+                  "type": ["number", "null"],
+                  "minimum": 0,
+                  "maximum": 1
+                },
+                "zone": {
+                  "enum": ["下沿", "中段", "上沿", null],
+                  "description": "桶内位置三等分的纯描述，不是对标的的评价。"
+                }
+              }
+            },
+            "headroom": {
+              "type": "object",
+              "description": "往好里走还有没有档位可升、还差多少分。入池是最高档，对它而言 at_top=true 且 room=null——只有下行风险，没有上行档位。",
+              "required": ["at_top", "ceiling", "room", "next_up"],
+              "additionalProperties": false,
+              "properties": {
+                "at_top": {"type": "boolean"},
+                "ceiling": {"type": ["number", "null"]},
+                "room": {"type": ["number", "null"]},
+                "next_up": {
+                  "enum": ["入池", "观察", "回避", "人工复核", null]
+                }
+              }
+            },
+            "distance_anchors": {
+              "type": ["number", "null"],
+              "description": "distance 折算成档（每档 2.5 分）。0.26 档读作「不足一档」。"
+            },
+            "boundary": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "description": "当前桶往下走的分界线：入池看 7.0，观察看 3.5（5.0 以下到 3.5 仍是观察，跌破 5.0 分桶不变）；回避桶为 null。"
+            },
+            "distance": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "description": "综合分到该分界线的距离，负数表示已经在界外。"
+            },
+            "next_bucket": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "description": "跌破分界线后落入的桶；回避桶为 null。"
+            },
+            "drivers": {
+              "type": "array",
+              "description": "按位移升序排列：越靠前越能单点改变结论。",
+              "items": {
+                "type": "object",
+                "required": [
+                  "id",
+                  "name",
+                  "weight",
+                  "score",
+                  "delta",
+                  "score_after",
+                  "anchors",
+                  "bucket_after",
+                  "mechanism"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "weight": {
+                    "type": "number"
+                  },
+                  "score": {
+                    "type": "number"
+                  },
+                  "delta": {
+                    "type": "number",
+                    "exclusiveMinimum": 0,
+                    "description": "该维度得分需要下调多少分，分桶才第一次改变。"
+                  },
+                  "score_after": {
+                    "type": "number",
+                    "description": "翻桶时的维度得分（= score - delta）。"
+                  },
+                  "anchors": {
+                    "type": [
+                      "number",
+                      "null"
+                    ],
+                    "description": "折算档数（每档 2.5 分）；非判断层维度为 null——数据类维度没有档位可言。"
+                  },
+                  "bucket_after": {
+                    "enum": [
+                      "入池",
+                      "观察",
+                      "回避",
+                      "人工复核"
+                    ]
+                  },
+                  "mechanism": {
+                    "enum": [
+                      "score_band",
+                      "dim_floor",
+                      "signal_conflict"
+                    ],
+                    "description": "score_band 综合分跌破分界线 / dim_floor 跌破 4.0 入池下限 / signal_conflict R5 转人工复核。"
+                  }
+                }
+              }
+            },
+            "insensitive": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "即使归零也不改变分桶的维度（已评分）。"
+            },
+            "unscored": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "未评分维度，无法计算位移。"
+            },
+            "note": {
+              "type": "string"
             }
           }
         },

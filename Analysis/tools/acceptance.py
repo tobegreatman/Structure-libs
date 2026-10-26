@@ -626,8 +626,28 @@ def a22_customer_annual_channel() -> str:
     assert "customer_concentration" not in out4["input"]["data"]["company"]
     assert any(FID in g["fields"] for g in out4["fill"]["pending"])
 
+    # 6) B 段勾"不适用"是唯一能拿到的"单客户 <50%"证据：只收紧上界，仍然不填值
+    #    药明康德 2025 年报就是这个形态：只给前五合计 48.11%，勾了"不适用"。
+    out5 = autobuild.build(block(form="total_only", top_ratio=None, five_ratio=62.0,
+                                 rows=0, page=17, cross_check=None,
+                                 single_50_check="not_applicable"), ASOF)
+    ca = out5["fill"]["customer_annual"]
+    assert ca["upper_bound_pct"] == 50.0, "上界应收到 min(前五合计, 50)"
+    assert ca["upper_bound_band"] == "弱" and ca["upper_bound_score"] == 2.5
+    assert "customer_concentration" not in out5["input"]["data"]["company"], \
+        "上界仍然只是上界，不许当观测值填"
+    g5 = next(g for g in out5["fill"]["pending"] if FID in g["fields"])["why"]
+    assert "上界" in g5 and "不适用" in g5 and "最坏" in g5
+    assert "需要读一次年报" not in g5, "读了也没有，这句会把人送去白跑"
+
+    # 7) 界面上那一格不能只是一个"缺失"——否则上界就等于没算
+    html = (ROOT / "web" / "index.html").read_text(encoding="utf-8")
+    assert "ind-cap" in html and "customer_annual" in html and "bound_note" in html, \
+        "评分卡风险维度没有读 fill.customer_annual.bound_note"
+
     return ("通道=巨潮年报原文（无令牌）；单客户占比→L1、退出待补清单、推导带页码与校验；"
-            "只有前五合计→不填值、缺口写上界；无披露→回落判断项；公告日晚于时点→不用")
+            "只有前五合计→不填值、缺口写上界；B 段勾不适用→上界收到 50% 并给最坏档位；"
+            "无披露→回落判断项；公告日晚于时点→不用")
 
 
 def a24_annual_parser_discipline() -> str:
@@ -700,9 +720,42 @@ def a24_annual_parser_discipline() -> str:
     dn = parse_customer_section(no_seq)
     assert dn is None or dn.top_ratio is None, "缺序号锚点却凑出值，说明错位防线失效"
 
+    # 英文长名 + 客户表后紧贴供应商表（阳光电源 300274 的真实版式）。
+    # 曾经的 bug：名称上限 24 字符漏掉「Algihaz Contracting Company」(26)，循环 continue 跳过后
+    # 把供应商五行接成客户表 → 和 25.11 撞合计 16.96 → 一份可用的年报被判 table_inconsistent。
+    sungrow = ("公司主要销售客户情况 前五名客户合计销售金额（元） 15,123,390,977.62 "
+               "公司前 5大客户资料 序号 客户名称 销售额（元） 占年度销售总额比例 "
+               "1 Algihaz Contracting Company 4,010,035,531.92 4.50% "
+               "2 中国能源建设集团有限公司 3,133,290,738.68 3.51% "
+               "3 中建投租赁股份有限公司 3,035,992,813.05 3.40% "
+               "4 湖北联投集团有限公司 2,574,124,517.62 2.89% "
+               "5 Larsen and Toubro Limited 2,369,947,376.35 2.66% "
+               "合计 -- 15,123,390,977.62 16.96% 主要客户其他情况说明 □适用 √不适用 "
+               "公司主要供应商情况 前五名供应商合计采购金额（元） 11,923,973,315.00 "
+               "公司前 5名供应商资料 序号 供应商名称 采购额（元） 占年度采购总额比例 "
+               "1 供应商一 6,928,853,013.03 14.59% "
+               "2 明阳新能源投资控股集团有限公司 1,343,123,078.47 2.83% "
+               "3 供应商二 1,236,057,374.84 2.60% "
+               "4 欣旺达电子股份有限公司 1,210,830,597.80 2.55% "
+               "5 瑞浦兰钧能源股份有限公司 1,205,109,250.86 2.54% "
+               "合计 -- 11,923,973,315.00 25.12%")
+    dg = parse_customer_section(sungrow)
+    assert dg and dg.form == "table", "英文长名把整张表判成不一致：%r" % (dg,)
+    assert dg.top_ratio == 4.5 and dg.top_name and "Algihaz" in dg.top_name
+    assert dg.cross_check["sum_ratio"] == 16.96 and dg.cross_check["ok"]
+    assert dg.five_ratio == 16.96 and dg.top_ratio != 14.59, "供应商第一大被当成客户第一大"
+
+    # 客户表只解析到 3 行时，后面的供应商表（序号同样从 1 起）绝不能被接上
+    dg3 = parse_customer_section(sungrow.replace(
+        "4 湖北联投集团有限公司 2,574,124,517.62 2.89% "
+        "5 Larsen and Toubro Limited 2,369,947,376.35 2.66% ", ""))
+    assert dg3 and dg3.rows == 3 and dg3.top_ratio == 4.5 and dg3.top_ratio != 14.59
+    assert dg3.cross_check["sum_ratio"] == 11.41
+
     return ("表→13.73%（五行之和=合计 38.96，校验通过）；元/万元不改占比；跨页 4 行仍取第 1 名 5.91%；"
             "列错位→判不一致不填；文字段保留主营业务收入口径 8.0%；只有合计→usable=False；无关页→None；"
-            "匿名化「客户1」+「合计 /」→ 24.59%（不退化为总合计）；缺序号的表→不凑")
+            "匿名化「客户1」+「合计 /」→ 24.59%（不退化为总合计）；缺序号的表→不凑；"
+            "英文长名 4.50%（不误判不一致）；客户表后接供应商表→不串（14.59% 不得冒充）")
 
 
 def a23_cadence_matches_disclosure_rhythm() -> str:
@@ -1071,6 +1124,170 @@ def a30_assumption_contract_and_strict_json() -> str:
             "「卖方目标价/不加仓/清仓式减持」放行、「建议买入+目标价」拦截")
 
 
+def a31_flip_points_are_exact_and_engine_side() -> str:
+    """结论翻转点：界面上的"−2.13"必须真的翻桶，且必须由引擎算。
+
+    最自然的错法是在前端手算 `(综合分 − 7.0) / 该维权重`——那样样例会报"估值 −4.00"，
+    而实际上任一维度跌破 4.0 的入池下限，−2.13 就已经把【入池】打成【观察】。
+    所以这项同时钉两件事：位移的最小性（少 0.01 不翻），以及界面只读引擎字段。
+    """
+    from stockframe import sensitivity as S
+
+    rep = json.loads((ROOT / "examples" / "sample_report.json").read_text(encoding="utf-8"))
+    sens = rep["conclusion"]["sensitivity"]
+    w = rep["scorecard"]["weights"]["mid_term"]
+    judge = {"macro", "industry", "company"}
+    rows = [{"id": d["id"], "name": d["name"], "weight": w[d["id"]],
+             "score": d["score_mid"], "anchored": d["id"] in judge}
+            for d in rep["scorecard"]["dimensions"]]
+    bucket = rep["conclusion"]["bucket_mid"]
+
+    assert sens["drivers"], "样例报告没有算出任何可翻维度"
+    for d in sens["drivers"]:
+        at = S.bucket_with(rows, d["id"], round(d["score"] - d["delta"], 2))
+        assert at == d["bucket_after"] != bucket, \
+            f"{d['id']}：声称 −{d['delta']} 转【{d['bucket_after']}】，实测 {at}"
+        back = S.bucket_with(rows, d["id"], round(d["score"] - d["delta"] + 0.01, 2))
+        assert back == bucket, f"{d['id']}：少 0.01 就已经翻桶，位移不是最小"
+
+    # 机制必须是"最早"的那条：样例估值先跌破 4.0，而不是等到 R5 的 3.0
+    val = [d for d in sens["drivers"] if d["id"] == "valuation"][0]
+    assert val["mechanism"] == "dim_floor", f"估值首个机制应为维度下限，实际 {val['mechanism']}"
+
+    html = (ROOT / "web" / "index.html").read_text(encoding="utf-8")
+    # 主线四行改成「立场 / 下一步 / 放弃线 / 可信度」后，翻转点等结构读数折进「进阶读数」，
+    # 但字段来源不变：仍然是 sen.drivers / sen.band / sen.headroom，不许在前端重算。
+    for label in ("结构", "翻转", "维度", "口径"):
+        assert f">{label}</div>" in html, f"进阶读数缺少「{label}」行"
+    assert "sen.drivers" in html and "sensitivity" in html, "界面没有读引擎的 sensitivity 字段"
+    # 只报"往下多远"会让人以为上面还有空间：界面必须同时读 band（桶内位置）与 headroom（向上有无档位）
+    assert "sen.band" in html and "sen.headroom" in html, \
+        "界面没有读 band/headroom——方向那行会退化回「只报向下多远」"
+    assert "hr.at_top" in html, "界面没有处理「入池已达最高档」这一情形"
+    md = (ROOT / "examples" / "sample_report.md").read_text(encoding="utf-8")
+    assert "结论翻转点" in md and "翻桶时得分" in md, "Markdown 报告缺少翻转点表"
+    assert "往上已无更高档位" in md, "Markdown 没说明向上已无更高档位"
+
+    return (f"{len(sens['drivers'])} 维各有最小位移；最敏感「{sens['drivers'][0]['name']}」"
+            f"−{sens['drivers'][0]['delta']:.2f}（{sens['drivers'][0]['mechanism']}）→ "
+            f"{sens['drivers'][0]['bucket_after']}；少 0.01 均不翻；"
+            f"桶内位置 {sens['band']['position']:.0%}（{sens['band']['zone']}）、"
+            f"向上{'无档位' if sens['headroom']['at_top'] else '差 %.2f 分' % sens['headroom']['room']}；"
+            "界面四行与 MD 表均读引擎字段")
+
+
+
+def a33_empty_field_says_which_kind_of_empty() -> str:
+    """缺口原因必须可分辨：自动提取失败 / 只披露前五合计 / 压根没填，不能共用一句话。
+
+    这条钉的是"读报告的人下一步该做什么"：前两种要去重跑或翻年报，第三种才是让你补录。
+    三种都写成"未提供"时，读者只能靠猜——而这恰好是"这项是不是坏了"的来源。
+    """
+    from stockframe.engine import run as engine_run
+    from stockframe.report import render_markdown
+
+    inp = json.loads(json.dumps(json.loads(
+        (ROOT / "examples" / "sample_input.json").read_text(encoding="utf-8"))))
+    inp["data"].get("company", {}).pop("customer_concentration", None)
+    note = ("本次自动提取失败：年报 PDF 下载超时（30s）。"
+            "已下载的年报会缓存复用，重跑一次通常能过")
+    inp["data_notes"] = {"company.customer_concentration": note}
+    rep = engine_run(inp)
+
+    gaps = [g for g in rep["data_quality"]["gaps"] if g["field"] == "company.customer_concentration"]
+    assert gaps, "客户集中度留空却没有进缺口清单"
+    assert gaps[0]["reason"] == note, f"缺口没有采用装配层给的原因：{gaps[0]['reason']}"
+    others = [g for g in rep["data_quality"]["gaps"] if g["field"] != "company.customer_concentration"]
+    assert all(g["reason"] in ("必填字段缺失", "未提供（该指标按缺失处理，不补零）") for g in others), \
+        "没给原因的字段不该被别处的说明污染"
+
+    md = render_markdown(rep)
+    assert note in md, "Markdown 的缺口列表把带原因的条目截断了（前 10 条截断规则漏掉了它）"
+
+    html = (ROOT / "web" / "index.html").read_text(encoding="utf-8")
+    assert "esc(g.field)" in html and "esc(g.reason)" in html, \
+        "数据质量页的缺口必须渲染字段名与原因，不能直接把对象塞进 esc()"
+    return "失败原因进缺口（截断不吞）+ 其它字段仍走通用句 + 数据质量页渲染 field/reason"
+
+
+def a32_stance_answers_the_question() -> str:
+    """立场句：报告第一句话必须回答「现在该不该动手」。
+
+    存在的理由：分桶名（观察/入池）对非专业读者不构成答案。实测把四行技术读数
+    （分数结构/翻转点/维度排序/两法分歧）摆在最前面，读者的反馈是"看完还是不知道
+    该不该买"。所以引擎多给一段 stance，四档与四个桶一一对应。
+
+    要防的回退有四种：
+    1. 悄悄变成第五种判定（stance 只能由 bucket 决定）；
+    2. 把「入池」写成买入提示（入池 ≠ 现在买，这句必须写在 basis 里）；
+    3. 这段自己长出交易指令（它是最像投资建议的一段，必须过 A4 词表）；
+    4. 界面把它塞回角落（必须在八维图之前）。
+    """
+    from stockframe.engine import _stance, run
+    from stockframe.report import render_markdown
+    from stockframe.validate import validate_report
+    from stockframe.wording import scan
+
+    def fake(bucket, score=6.84, rule="R6_SCORE_BAND"):
+        sens = {"boundary": 3.5, "distance": 3.34, "distance_anchors": 1.34,
+                "next_bucket": "回避",
+                "band": {"low": 3.5, "high": 7.0, "position": 0.95, "zone": "上沿"},
+                "headroom": {"at_top": False, "ceiling": 7.0, "room": 0.16, "next_up": "入池"},
+                "drivers": [], "insensitive": [], "unscored": [], "note": "单维归零不翻桶"}
+        return _stance(bucket, score, rule, ["中线综合分处于观察带"], sens,
+                       {"gaps": [{"field": "a.b", "reason": "未提供"}]}, 0.807,
+                       {"judgement": 0.44, "data": 0.42, "risk_catalyst": 0.14},
+                       {"dcf_applicable": True},
+                       {"divergence_pct": 14.4, "dcf_margin_pct": 16.8, "relative_margin_pct": 3.1},
+                       [{"id": "F1", "condition": "ROE 跌破 17.8% → 重估",
+                         "metric": "financial.roe_ttm", "threshold": "≥ 17.8%"}])
+
+    # 1) 四个桶 → 四档，不多不少
+    for bucket, code in (("人工复核", "insufficient"), ("回避", "avoid"),
+                         ("观察", "hold_off"), ("入池", "research")):
+        assert fake(bucket)["code"] == code, f"{bucket} 应映射到 {code}，实际 {fake(bucket)['code']}"
+
+    # 2) 观察档要直接回答"现在能不能动手"，并拆掉"等它跌"这个误读
+    hold = fake("观察")
+    assert hold["label"] == "暂不介入"
+    assert "0.16" in hold["headline"] and "不是动手的位置" in hold["headline"]
+    assert "不会因为股价下跌自己变高" in " ".join(hold["do_next"]), \
+        "必须点明分数衡量质量与估值，不是涨跌空间"
+    # 3) 入池 ≠ 现在买；人工复核 ≠ 这票很差
+    assert "不包含「价格合适」" in fake("入池", 7.64)["basis"], "入池被读成买入信号"
+    manual = fake("人工复核", None, "R9_MODEL_NOT_APPLICABLE")
+    assert "这套尺子量不出来" in manual["headline"] and "不是「不好」" in manual["basis"]
+
+    # 4) 四档全文过 A4 词表（立场句是最像投资建议的一段，反而最需要闸门）
+    for bucket in ("人工复核", "回避", "观察", "入池"):
+        st = fake(bucket)
+        for text in [st["label"], st["headline"], st["basis"], st["abandon"], st["caveat"], *st["do_next"]]:
+            assert scan(text) == [], f"{bucket} 的立场句含交易指令措辞：{text}"
+
+    # 5) 样例报告：字段齐、schema 必填、MD 排在分桶之前
+    inp = json.loads((ROOT / "examples" / "sample_input.json").read_text(encoding="utf-8"))
+    rep = run(inp)
+    st = rep["conclusion"]["stance"]
+    assert st["code"] == "research" and st["label"] == "够格研究", f"样例分桶与立场不一致：{st}"
+    ok, errs = validate_report(rep)
+    assert ok, f"含 stance 的报告未通过 schema：{errs[:2]}"
+    md = render_markdown(rep)
+    assert "### 立场：" in md and md.index("### 立场：") < md.index("**中线分桶："), \
+        "Markdown 里立场必须排在分桶之前"
+
+    # 6) 界面：立场卡在八维图之前，且读的是引擎字段（不在前端另拼一句话）
+    html = (ROOT / "web" / "index.html").read_text(encoding="utf-8")
+    for token in ("vt-stance", "st.label", "st.do_next", "st.abandon", "st.caveat"):
+        assert token in html, f"界面没有读 stance.{token.split('.')[-1]}"
+    assert html.index("现在该不该动手") < html.index("八维得分与贡献分层"), \
+        "立场卡必须排在八维图之前，否则读者第一眼还是只有分数"
+    assert "旧报告/降级" in html, "缺少无 stance 时的降级分支（旧报告不能白屏）"
+
+    return ("四桶→四档（insufficient/avoid/hold_off/research）不加判定；观察档答「暂不介入·差 0.16 分」"
+            "并拆穿「等跌就够格」；入池档写明不等于现在买；人工复核写成「尺子量不出来」；"
+            "四档全文过 A4 词表；样例 schema 通过；MD 与界面均把立场排在分数之前")
+
+
 def main() -> int:
     check("A1", "单元测试全绿", a1_unit_tests)
     check("A2", "样例管线跑通且通过 schema", a2_pipeline_and_schema)
@@ -1102,6 +1319,9 @@ def main() -> int:
     check("A28", "估值方法前门（行业/亏损不适用，区间非正拒绝）", a28_applicability_gate)
     check("A29", "违禁措辞在导出前拦下（运行期，不只验收）", a29_wording_enforced_at_runtime)
     check("A30", "假设层契约 + 报告严格 JSON + 安全边际单一口径", a30_assumption_contract_and_strict_json)
+    check("A31", "结论翻转点（位移最小性 + 引擎计算）", a31_flip_points_are_exact_and_engine_side)
+    check("A32", "立场句（报告第一句回答「现在该不该动手」）", a32_stance_answers_the_question)
+    check("A33", "缺口原因可分辨（失败 / 只披露合计 / 没填）", a33_empty_field_says_which_kind_of_empty)
 
     width = max(len(t) for _, t, _, _ in results) + 2
     print("=" * 78)

@@ -1,6 +1,6 @@
 # 市场主线判断 · AI 联网分析提示词模板
 
-> 版本 v3.4 · 2026-10-17 ｜ 配套《从认知到体系》第 7 章环境态三态表、第 9 章「三过滤第一关·主线」
+> 版本 v3.5 · 2026-10-24 ｜ 配套《从认知到体系》第 7 章环境态三态表、第 9 章「三过滤第一关·主线」
 > 用途：将提示词整段复制给具备联网能力的 AI/Agent，由其自动获取真实数据、按科学框架判断 A 股市场主线，输出**标准 JSON**。
 > 呈现：JSON 有两条路——① 粘贴进本目录可视化报告页 `market-mainline-report.html` 自动渲染；② 配合第五节「报告生成提示词」，让 Agent 从零生成苹果风单文件 HTML 报告。
 > 定位：补上体系中「机器筛不出、人工最难做」的最后一环——主线与环境态的初判。
@@ -63,6 +63,13 @@ v3.0 首次实战（week-10-15）核查发现 6 处模板漏洞 + 4 处执行失
 
 1. **新增可选字段 strongest**：`{name, attr}` 对应快报第 2 项「今日最强方向」——此前该信息仅存在于快报文本，JSON 无字段承载，取数成果无法归档，周度 W1 证据缺一环；attr 三选一（既有主线延续 / 高潮补涨 / 新候选），取不到填 null；日报页已同步渲染「今日最强」行，旧台账无此字段时自动跳过；
 2. **呈现优化**：日报页数据缺口由胶囊芯片改为左竖线引述列表，适配 40+ 字长文本缺口说明。
+
+### v3.5 修订（2026-10-24，证据链方向归属澄清）
+
+复盘 week-10-15～10-23 台账发现：`ladder` 已明确单方向，但 `evidence` 未约束方向归属，AI 在多候选时追加重复维度块（如 week-10-23 出现两个 D3，第二个属人工智能/物理AI），而页面取「最后一条」导致四维雷达混用两个方向的标题与评级。本版修复：
+
+1. **evidence 明确单方向四维链**：与 ladder 取同一方向；同一 dim 只允许一条，其余候选的证据写在其 candidate.note，禁止追加重复维度块；
+2. **页面呈现配套**：章节增加「本节对象」标签（无主线时标注候选观察对象）；重复 dim 块移入「其他方向补充证据」，不参与四维评级与雷达；相对强度图例改用实际方向名。
 
 ---
 
@@ -159,6 +166,8 @@ D4 逻辑驱动
 对确认的主线做生命周期定位（判断依据：量能结构、龙头行为、调整后能否再创新高）：
 启动期（首波上攻、梯队未完整）→ 发酵期（梯队完整、龙头新高）→ 高潮期（补涨扩散、成交占比见顶）→ 分歧期（龙头滞涨、跟风大面）→ 退潮期（亏钱效应、排名消失）。
 
+**stage 字段只写单一标准词，五选一，禁止括号限定或箭头拼接。** 尚未跨越阶段、但已出现反向信号的，阶段维持原档，把信号写进 `stageNote`（如「高位分歧初现」）；确需表达「正在过渡」的，也写 stageNote（如「高潮期→分歧期过渡中」），stage 仍填当前所处档位。理由：stage 是枚举字段，混入限定语会让报告页的生命周期定位失效（曾出现「发酵期（高位分歧初现）」被误渲染为分歧期）。
+
 ▍第四步附 · 上期对账（附带上期台账时强制执行，未附带则跳过并在 dataGaps 登记）
 
 1. environment 各项 prev 值优先引用上期台账同字段；与其他来源数字不一致时，注明「与上期台账口径差异」及以哪个为准；
@@ -175,10 +184,10 @@ D4 逻辑驱动
 
 | 键 | 类型 | 内容 |
 |---|---|---|
-| meta | object | reportDate、mainline（无主线时填「无主线 · 轮动市」）、stage（生命周期阶段，无主线填 null）、confidence（高/中/低）、environmentState（进攻/中性/防守）、verdict（确认主线 / 候补观察 / 无主线·轮动市）、summary（≤60 字结论逻辑） |
+| meta | object | reportDate、mainline（无主线时填「无主线 · 轮动市」）、stage（生命周期阶段，**仅限启动期/发酵期/高潮期/分歧期/退潮期 五选一**，禁止括号或箭头拼接，无主线填 null）、stageNote（可选，一句过渡或反向信号说明，如「高位分歧初现」「高潮期→分歧期过渡中」，无则填 null）、confidence（高/中/低）、environmentState（进攻/中性/防守）、verdict（确认主线 / 候补观察 / 无主线·轮动市）、summary（≤60 字结论逻辑） |
 | environment | object | limitUpCount{value,prev,source}（涨停家数与上日值；**prev 优先引用上期台账同字段值**，与其他来源不一致时须注明）；maxConBoards{value,theme,source}（最高连板与所属题材）；blastRate{value,source}（炸板率%）；breadth{value,source}（市场广度=上涨家数占比%）；index{name,vsMA20,vsMA60,volumeTrend,source}——**vsMA20/vsMA60 仅限填「上方 / 下方 / 附近」，取不到填 null 并登记 dataGaps，禁止「需进一步确认」类模糊词** |
 | candidates | array | 每项：name、d1/d2/d3/d4（各为 强/中/弱，对应 2/1/0 分）、score（四项总分 0-8）、verdict（主线/候补/候选观察/轮动）、note（一句话证据摘要，含关键数字；处于冷却期的方向注明「冷却期第 N 日」） |
-| evidence | array | 主线证据链，每项：dim（D1-D4）、title、level（强/中/弱）、points[{fact, source}]——每个数字带 [来源｜日期] |
+| evidence | array | **单方向四维链，与 ladder 取同一方向**；每项：dim（D1-D4）、title、level（强/中/弱）、points[{fact, source}]——每个数字带 [来源｜日期]；同一 dim 只允许出现一条，其余候选的证据写在其 candidate.note，禁止追加重复维度块 |
 | relativeStrength | array | 可选：每项 {date, sector, benchmark}，跟踪板块与沪深300 的近 60 日累计涨幅%，用于相对强度曲线；**必须在 dataGaps 注明跟踪对象与计算口径；无 score ≥4 候选时置空数组 []**；取不到逐日序列时给近 5/20/60 日三点快照并在 dataGaps 注明 |
 | ladder | object | **单方向梯队**——取 score 最高候选方向：leaders[]（先锋）、core[]（中军）、followers[]（跟风），每项 {name, role, gain20d, note}；其余方向个股禁止混入，在其 candidate 的 note 中说明；中军须符合「板块内流通市值前 20% 且成交额前 10%」；gain20d 限 20 日口径，口径不符（如「9 月以来」累计涨幅）填 null 并把实际口径写进 note |
 | alerts | array | 2-3 条可观察的失效信号，每条写明触发后应重估什么 |
@@ -190,7 +199,7 @@ D4 逻辑驱动
 JSON 骨架（结构参考，禁止照抄数字）：
 
   {
-    "meta": {"reportDate": "", "mainline": "", "stage": "", "confidence": "", "environmentState": "", "verdict": "", "summary": ""},
+    "meta": {"reportDate": "", "mainline": "", "stage": "", "stageNote": null, "confidence": "", "environmentState": "", "verdict": "", "summary": ""},
     "environment": {"limitUpCount": {"value": 0, "prev": 0, "source": ""}, "maxConBoards": {"value": 0, "theme": "", "source": ""}, "blastRate": {"value": 0, "source": ""}, "breadth": {"value": 0, "source": ""}, "index": {"name": "", "vsMA20": "", "vsMA60": "", "volumeTrend": "", "source": ""}},
     "candidates": [{"name": "", "d1": "", "d2": "", "d3": "", "d4": "", "score": 0, "verdict": "", "note": ""}],
     "evidence": [{"dim": "", "title": "", "level": "", "points": [{"fact": "", "source": ""}]}],

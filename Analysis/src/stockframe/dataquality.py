@@ -18,6 +18,7 @@ TIER_SCORE = {"L1": 1.0, "L2": 0.85, "L3": 0.6, "L4": 0.0}
 def compute_dq(
     registry: Dict[str, FieldRef],
     analysis_date: date,
+    field_notes: Optional[Dict[str, str]] = None,
 ) -> Dict[str, Any]:
     registered = [s.field_id for s in FIELD_SPECS]
     present = [f for f in registered if f in registry and registry[f].value is not None]
@@ -52,8 +53,14 @@ def compute_dq(
 
     overall = 0.5 * completeness + 0.3 * timeliness + 0.2 * tier_score
 
+    # 缺口原因：默认一句"未提供"，但装配层若知道为什么空（只披露前五合计 /
+    # 正文没这项 / 自动提取失败），必须用它的说法覆盖——否则三种情况在报告里
+    # 长得一模一样，读者无法判断该去翻年报还是该重跑一次。
+    notes_map = field_notes or {}
     gaps = [
-        {"field": s.field_id, "reason": "必填字段缺失" if s.field_id in REQUIRED_FIELDS else "未提供（该指标按缺失处理，不补零）"}
+        {"field": s.field_id,
+         "reason": notes_map.get(s.field_id)
+         or ("必填字段缺失" if s.field_id in REQUIRED_FIELDS else "未提供（该指标按缺失处理，不补零）")}
         for s in FIELD_SPECS if s.field_id not in registry or registry[s.field_id].value is None
     ]
     missing_required = [f for f in REQUIRED_FIELDS if f not in registry or registry[f].value is None]

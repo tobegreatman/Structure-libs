@@ -127,6 +127,13 @@ def enforce_report(report: Dict[str, Any]) -> None:
         where = f"catalyst_calendar[{i}]"
         for field in ("event", "expected_impact", "verify_method", "warning"):
             problems += _hit(f"{where}.{field}", item.get(field))
+    # 立场句是**最像投资建议**的一段（它直接回答"该不该动手"），必须过同一道闸。
+    # 放在最后扫不是因为它次要，而是因为它完全由引擎模板生成——一旦被改动就会被拦下。
+    stance = c.get("stance") or {}
+    for field in ("label", "headline", "basis", "abandon", "caveat"):
+        problems += _hit(f"conclusion.stance.{field}", stance.get(field))
+    for i, text in enumerate(stance.get("do_next") or []):
+        problems += _hit(f"conclusion.stance.do_next[{i}]", text)
     if problems:
         raise WordingError(
             "报告含交易指令措辞，已在导出前拦下：" + "；".join(problems)

@@ -19,7 +19,7 @@ PYTHONPATH=src python -m stockframe.server --open
 PYTHONPATH=src python -m stockframe.cli examples/sample_input.json \
     -o examples/sample_report.json --md examples/sample_report.md
 
-# 3) 一键验收（30 项机检 + 单测）
+# 3) 一键验收（31 项机检 + 单测）
 PYTHONPATH=src python tools/acceptance.py
 
 # 4) 校验 AI 写的一句话本质（字数/证伪阈值/违禁措辞/字段 ID）
@@ -106,7 +106,7 @@ POST /api/analyze             # 与手工输入走同一条管线
 
 | 视图 | 看什么 |
 |---|---|
-| 概览 | 分桶、综合分、置信度、八维雷达、贡献榜、贡献分层、维持/证伪条件、区间对照 |
+| 概览 | 分桶、综合分、置信度、**立场卡（现在该不该动手 / 下一步 / 放弃线 / 可信度）**、八维雷达、贡献榜、贡献分层、维持/证伪条件、区间对照；分数结构等进阶读数折叠在立场卡下方 |
 | 评分卡 | 点开维度逐层下钻到指标：权重、档位、得分、rationale、证据四要素 |
 | 估值 | DCF 三情景 + 敏感性热力图、相对法分位带、合成区间与安全边际 |
 | 情景 / 风险 / 催化 / 跟踪 | 概率条、5×5 矩阵、事件时间轴、带阈值的跟踪项 |
@@ -128,7 +128,7 @@ POST /api/analyze             # 与手工输入走同一条管线
 |---|---|
 | `docs/01_design.md` | 设计文档：边界、8 层架构、双周期权重、PIT、估值、情景、风险、决策、数据字典、界面、判断层代理口径 |
 | `docs/02_scoring_guide.md` | 评分说明：记分口径、三层加权、缺失重归一化、置信度公式、量规总表（自动生成） |
-| `docs/03_acceptance.md` | 验收清单：机检 A1–A30 + 人检 R1–R9 |
+| `docs/03_acceptance.md` | 验收清单：机检 A1–A31 + 人检 R1–R9 |
 | `docs/05_blueprint.md` | **重构蓝图**：18 条不变式、六层架构与模块契约、v2 待改的 10 项设计债务、M0–M6 重建路线（重建读这一份就够） |
 | `schema/report_schema.json` | 输出契约（Draft-07） |
 | `src/stockframe/` | 引擎、数据字典、PIT 守卫、输入契约、估值前门、量规、估值、决策、报告、CLI、Web 服务 |
@@ -145,13 +145,13 @@ POST /api/analyze             # 与手工输入走同一条管线
 ```
 src/stockframe/   engine / pit / datadict / rubric / specs / valuation /
                   riskmatrix / catalysts / tracking / dataquality / decision /
-                  report / validate / cli / server / autobuild / proxies
+                  sensitivity / report / validate / cli / server / autobuild / proxies
 src/stockframe/sources/  base（契约）/ eastmoney（A 股公开接口）/ chinabond（中债 10Y）
 web/              app.template.html（手写）→ index.html（内联快照构建产物）
 docs/             设计 / 评分说明 / 验收 / 评估 / 重构蓝图
 schema/           report_schema.json
 examples/         sample_input.json / sample_report.json / sample_report.md
-tests/            235 个单测（PIT/评分/估值/决策/端到端/服务端/自动装配/代理/数据源/人工补录/披露节奏/年报客户表/契约/措辞/提示词锚文对账·独立版无内部引用）
+tests/            280 个单测（PIT/评分/估值/决策/端到端/服务端/自动装配/代理/数据源/人工补录/披露节奏/年报客户表·单客户上界/立场句/缺口原因分层/契约/措辞/结论翻转点/提示词锚文对账·独立版无内部引用）
 tools/            build_ui.py / build_scoring_doc.py / acceptance.py
 ```
 

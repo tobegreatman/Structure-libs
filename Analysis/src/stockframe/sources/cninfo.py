@@ -94,6 +94,10 @@ class CustomerDisclosure:
     rows: int = 0                   # 成功解析到的客户行数
     cross_check: Optional[Dict[str, Any]] = None
     quote: str = ""                 # 原文片段，供审计
+    # B 段勾选：证监会年报格式准则要求披露"向单个客户的销售比例超过总额的 50%、
+    # 前 5 名客户中存在新增客户的或严重依赖于少数客户的情形"。勾"不适用"= 三者皆无
+    # → 单个客户占比 < 50%。这是一条**上界**证据，不是点估计，故只进缺口说明、不进评分。
+    single_50_check: Optional[str] = None   # not_applicable | applicable | None(未找到)
 
     @property
     def usable(self) -> bool:
@@ -120,8 +124,19 @@ _TOTAL_ROW = re.compile(r"合计\s*[/／]?\s*[-—–]{0,3}\s*([\d,]{3,}(?:\.\d+
 # 名称**不能排除数字**：很多公司把客户匿名化成「客户1…客户5」，
 # 排掉数字会让整张表一行都匹配不上，静默退化成"只有前五合计"（长盈通就栽在这）。
 # 错位风险改由三重约束挡：序号必须从 1 起严格递增、金额至少 3 位含分隔、占比 0~100。
+# 名称长度上限 40（原 24）：出口企业第 1 名常是英文全称，
+# 「Algihaz Contracting Company」就 26 字符，卡在 24 会把**第一名整整漏掉**
+# （阳光电源 300274 的 4.50% 就是这么丢的）。
 _ROW = re.compile(
-    r"(?<![\d.])([1-5])\s+(.{1,24}?)\s+([\d,]{3,}(?:\.\d+)?)\s+(\d{1,3}\.\d{1,2})(?![\d])"
+    r"(?<![\d.])([1-5])\s+(.{1,40}?)\s+([\d,]{3,}(?:\.\d+)?)\s+(\d{1,3}\.\d{1,2})(?![\d])"
+)
+# 客户表之后紧贴供应商表，序号同样从 1 到 5。一旦客户表有行漏匹配，
+# 循环会"接着数"把供应商当客户（阳光电源就是这样凑出 5 行：和 25.11 其实是
+# 供应商五行之和，而合计取的是客户表的 16.96 → 误判 table_inconsistent）。
+# 截断是第一道锁，序号断档即停是第二道锁，两道都要。
+_STOP_TABLE = re.compile(
+    r"公司主要供应商情况|公司前\s*5\s*名供应商资料|公司前\s*五\s*名供应商资料"
+    r"|前\s*5\s*大供应商资料|前\s*五\s*大供应商资料"
 )
 _SENT_TOTAL = re.compile(
     r"前五名客户销售额[^。；]{0,50}?占(年度销售总额|年度营业收入|年度主营业务收入|营业收入)"
@@ -133,6 +148,16 @@ _SENT_FIRST = re.compile(
     r"(\d{1,3}\.\d{1,2})\s*%\s*(?:和|与|及)\s*(\d{1,3}\.\d{1,2})\s*%"
 )
 
+# ---- B 段勾选项：唯一能给出的"单客户占比上界"证据 -------------------------
+# 命中锚点后再找勾选框，形态是「□适用 √不适用」，也可能反向。只要勾了"不适用"，
+# 就等于公司声明：不存在单客户 >50%，也不存在严重依赖少数客户。
+_SINGLE_50 = re.compile(r"向单个客户的销售比例超过总额的\s*50\s*%")
+_BOX_ITEM = re.compile(r"([\u25a1\u2610\u221a\u2611\u25a0\u2713\u2714\u25cf\u25cb])\s*(不?适用)")
+_CHECKED_BOX = frozenset("√☑■✓✔●")
+# 窗口在这里截断：B 段之后紧跟着"单个供应商"的同款表述与 C/D 段，
+# 若 B 段本身没有可识别的勾选（扫描件丢字符），不去隔壁借一个答案。
+_STOP_AT = ("单个供应商", "C.", "C．", "C、", "D.")
+
 
 def _parse_table(t: str) -> Optional[CustomerDisclosure]:
     """标准表：序号/客户名称/销售额/占比。"""
@@ -140,6 +165,13 @@ def _parse_table(t: str) -> Optional[CustomerDisclosure]:
     if not m:
         return None
     seg = t[m.end(): m.end() + TABLE_WINDOW]
+    stop_m = _STOP_TABLE.search(seg)
+    if stop_m:
+        trimmed = seg[: stop_m.start()]
+        # 只有截断后仍留得住序号 1，才认定"供应商锚点确实在客户表之后"；
+        # 否则说明这家公司把供应商情况排在客户明细前面，宁可不截断。
+        if any(h.group(1) == "1" for h in _ROW.finditer(trimmed)):
+            seg = trimmed
 
     unit_m = _UNIT.search(t[max(0, m.start() - 160): m.end() + 200])
     unit = (unit_m.group(1) or unit_m.group(2)) if unit_m else None
@@ -147,9 +179,11 @@ def _parse_table(t: str) -> Optional[CustomerDisclosure]:
     rows: List[Tuple[int, str, str, float]] = []
     for hit in _ROW.finditer(seg):
         no, name, amt, ratio = int(hit.group(1)), hit.group(2), hit.group(3), float(hit.group(4))
-        # 序号必须递增且从 1 开始，防止把金额误当成序号
+        # 序号必须从 1 起、逐行 +1。**断档就收手，不跳过继续找**：
+        # 跳过会让后面的供应商表（也从 1 开始）被当成客户表接上，
+        # 而这是静默填错值——比少取几行危险得多。缺失的行后面本来也用不上。
         if no != len(rows) + 1:
-            continue
+            break
         rows.append((no, name, amt, ratio))
         if len(rows) == 5:
             break
@@ -239,6 +273,32 @@ def _parse_sentence(t: str) -> Optional[CustomerDisclosure]:
     )
 
 
+def parse_single_50_check(page_text: str) -> Optional[str]:
+    """读「单个客户销售占比超 50%…」那一段的勾选结果。
+
+    返回 `"not_applicable"` / `"applicable"` / `None`（这段不在本页、或勾选框字符
+    在 PDF 转换中丢了）。勾"不适用"是一个真实约束：**单个客户 <50%**。
+
+    为什么值得单独解析：年报普遍不给单客户明细，"最大客户占比"只能空着；
+    而这条勾选能把空的语义从"完全不知道"收窄到"最坏不超过中档"。
+    反过来也要守住——勾"适用"只说明三者中至少一件成立，正文没量化就仍不知道是多少，
+    不能拿它推任何数。
+    """
+    t = normalize(page_text)
+    m = _SINGLE_50.search(t)
+    if not m:
+        return None
+    seg = t[m.end(): m.end() + 200]
+    for stop in _STOP_AT:
+        pos = seg.find(stop)
+        if pos != -1:
+            seg = seg[:pos]
+    for box in _BOX_ITEM.finditer(seg):
+        if box.group(1) in _CHECKED_BOX:
+            return "not_applicable" if box.group(2) == "不适用" else "applicable"
+    return None
+
+
 def parse_customer_section(page_text: str) -> Optional[CustomerDisclosure]:
     """从一页（或跨页拼接的）年报正文里抽客户集中度。
 
@@ -251,11 +311,13 @@ def parse_customer_section(page_text: str) -> Optional[CustomerDisclosure]:
         return None
     table = _parse_table(t)
     if table is not None and table.top_ratio is not None:
-        return table
-    sentence = _parse_sentence(t)
-    if sentence is not None:
-        return sentence
-    return table  # 表存在但不自洽：带出去，由上层决定是否降级
+        found = table
+    else:
+        found = _parse_sentence(t) or table  # 表存在但不自洽：带出去，由上层决定是否降级
+    if found is not None:
+        # 勾选段常与客户表同页但不在表内，所以在这里补一次；跨页的情形由 provider 全篇兜底
+        found.single_50_check = parse_single_50_check(t)
+    return found
 
 
 # ---------------------------------------------------------------- Provider
@@ -299,6 +361,14 @@ class CninfoProvider:
         pages = self._pages(ann["adjunctUrl"])
         self.endpoints.append("annual_pdf")
 
+        # B 段勾选可能不在客户表那一页（模板把"重要事项"与"客户情况"分开放），
+        # 所以整篇扫一次兜底：同样是一次正则，代价可忽略，但能把缺口语义收窄一档。
+        single50 = None
+        for text in pages:
+            single50 = parse_single_50_check(text)
+            if single50:
+                break
+
         # 一页页找锚点，逐页解析取第一个能用的：同一份年报里"前五名客户"可能先出现
         # 在财务报表附注（如永续债条款）里，那一页并不是客户集中度表，不能见了锚点就用。
         best: Optional[CustomerDisclosure] = None
@@ -322,6 +392,7 @@ class CninfoProvider:
                 "form": "absent", "top_ratio": None, "five_ratio": None,
                 "period": ann["period"], "notice_date": ann["notice_date"],
                 "title": ann["title"], "page": None, "rows": 0,
+                "single_50_check": single50,
                 "reason": "年报正文无「前五名客户」披露（银行/保险等不适用，或正文为扫描件无文本层）",
             }
 
@@ -333,8 +404,11 @@ class CninfoProvider:
             "page": hit_page,
             "url": CNINFO_STATIC + ann["adjunctUrl"],
             "pages_scanned": len(pages),
+            # 全篇扫到的优先：本页没这句时，别把 page 级解析出的 None 当成"没有勾选"
+            "single_50_check": single50 or best.single_50_check,
         })
         return out
+
 
     # ------------------------------------------------------------ 检索
     def _org(self, code: str) -> Tuple[str, str]:

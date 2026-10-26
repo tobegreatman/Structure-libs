@@ -20,6 +20,7 @@ from stockframe.sources.cninfo import (
     CustomerDisclosure,
     normalize,
     parse_customer_section,
+    parse_single_50_check,
 )
 
 from test_autobuild import raw_fixture
@@ -115,6 +116,50 @@ ICBC_UNRELATED = """
 本行前五名客户存款余额合计占各项存款的比例不重大。
 """
 
+# 阳光电源 2025 年报第 36 页（原文照抄）：第 1 名是英文全称，且客户表紧贴供应商表
+SUNGROW = """
+公司主要销售客户情况
+前五名客户合计销售金额（元） 15,123,390,977.62
+前五名客户合计销售金额占年度销售总额比例 16.96%
+前五名客户销售额中关联方销售额占年度销售总额比例 0.00%
+公司前 5大客户资料
+序号 客户名称 销售额（元） 占年度销售总额比例
+1 Algihaz Contracting Company 4,010,035,531.92 4.50%
+2 中国能源建设集团有限公司 3,133,290,738.68 3.51%
+3 中建投租赁股份有限公司 3,035,992,813.05 3.40%
+4 湖北联投集团有限公司 2,574,124,517.62 2.89%
+5 Larsen and Toubro Limited 2,369,947,376.35 2.66%
+合计 -- 15,123,390,977.62 16.96%
+主要客户其他情况说明
+□适用 √不适用
+公司主要供应商情况
+前五名供应商合计采购金额（元） 11,923,973,315.00
+前五名供应商合计采购金额占年度采购总额比例 25.12%
+前五名供应商采购额中关联方采购额占年度采购总额比例 0.00%
+公司前 5名供应商资料
+序号 供应商名称 采购额（元） 占年度采购总额比例
+1 供应商一 6,928,853,013.03 14.59%
+2 明阳新能源投资控股集团有限公司 1,343,123,078.47 2.83%
+3 供应商二 1,236,057,374.84 2.60%
+4 欣旺达电子股份有限公司 1,210,830,597.80 2.55%
+5 瑞浦兰钧能源股份有限公司 1,205,109,250.86 2.54%
+合计 -- 11,923,973,315.00 25.12%
+"""
+
+# 药明康德 2025 年报第 17 页（原文照抄）：只给前五合计 48.11%，但 B 段勾了"不适用"
+YAOMING = """
+(7). 主要销售客户及主要供应商情况
+A.公司主要销售客户及主要供应商情况
+√适用 □不适用
+前五名客户销售额人民币2,186,830.20万元，占年度销售总额48.11%；其中前五名客户销售额中关
+联方销售额0万元，占年度销售总额0% 。
+B.报告期内向单个客户的销售比例超过总额的 50%、前 5 名客户中存在新增客户的或严重依赖于
+少数客户的情形 □适用 √不适用
+报告期内向单个供应商的采购比例超过总额的 50%、前 5 名供应商中存在新增供应商的或严重依
+赖于少数供应商的情形 □适用 √不适用
+C. 报告期内公司股票被实施退市风险警示或其他风险警示
+"""
+
 
 # ---------------------------------------------------------------- 解析器
 
@@ -207,6 +252,40 @@ def test_inconsistent_table_is_rejected_not_guessed():
     assert d.top_ratio is None and d.usable is False
 
 
+def test_english_customer_name_is_not_dropped():
+    """阳光电源第 1 名是 26 字符的英文全称，名称列上限卡 24 会把第一名整行漏掉。"""
+    d = parse_customer_section(SUNGROW)
+    assert d.form == "table"
+    assert d.top_ratio == 4.5
+    assert d.top_name and "Algihaz" in d.top_name
+    assert d.rows == 5
+    assert d.cross_check["sum_ratio"] == 16.96 and d.cross_check["ok"] is True
+
+
+def test_supplier_table_is_never_counted_as_customer_table():
+    """客户表只解析到 3 行时，后面的供应商表（序号同样从 1 起）绝不能被接上。
+
+    串表的后果不是少一个数，而是把 14.59% 当成"最大客户占比"写进评分；
+    即便交叉校验碰巧拦住，也会把一份本来可用的年报判成 table_inconsistent。
+    """
+    only_three = SUNGROW.replace(
+        "4 湖北联投集团有限公司 2,574,124,517.62 2.89%\n"
+        "5 Larsen and Toubro Limited 2,369,947,376.35 2.66%\n", "")
+    d = parse_customer_section(only_three)
+    assert d is not None and d.form == "table"
+    assert d.rows == 3 and d.top_ratio == 4.5
+    assert d.cross_check["sum_ratio"] == 11.41
+    assert d.top_ratio != 14.59, "供应商第一大被当成了客户第一大"
+
+
+def test_first_row_missing_must_not_fall_through_to_suppliers():
+    """第 1 行整行无法解析时，宁可不认这张表，也不能拿第 2 名冒充最大客户。"""
+    long_name = "Algihaz International Contracting Holding Company LLC"
+    broken = SUNGROW.replace("Algihaz Contracting Company", long_name)
+    d = parse_customer_section(broken)
+    assert d is None or d.top_ratio is None, f"第 1 行丢了就不许硬凑：{d}"
+
+
 def test_sentence_form_keeps_its_own_denominator():
     """中芯国际的分母是「主营业务收入」，不能一律标成「年度销售总额」。"""
     d = parse_customer_section(SMIC)
@@ -232,6 +311,45 @@ def test_quote_is_kept_for_audit():
     d = parse_customer_section(NINGDE)
     assert "客户名称" in d.quote or "第一名" in d.quote
     assert normalize("  a\u3000 b ").strip() == "a b"
+
+
+# ---------------------------------------------------------------- B 段勾选
+
+def test_single_customer_check_not_applicable_is_read():
+    """药明康德只给前五合计，但 B 段勾"不适用"——这是一条真上界：单客户 <50%。"""
+    assert parse_single_50_check(YAOMING) == "not_applicable"
+    d = parse_customer_section(YAOMING)
+    assert d.form == "total_only" and d.five_ratio == 48.11
+    assert d.top_ratio is None
+    assert d.single_50_check == "not_applicable"
+
+
+def test_single_customer_check_applicable_is_read_but_gives_no_number():
+    """勾"适用"只说明三者中至少一件成立，正文没量化 → 不能推任何数，只留下"需读原文"。"""
+    text = YAOMING.replace("□适用 √不适用", "√适用 □不适用", 1)
+    assert parse_single_50_check(text) == "applicable"
+    d = parse_customer_section(text)
+    assert d.top_ratio is None, "勾了适用也不等于知道单客户占比"
+
+
+def test_no_checkbox_means_unknown_not_default():
+    """扫描件丢了勾选字符时，必须返回 None——默认成"不适用"就是把没读到当成了好消息。"""
+    text = YAOMING.replace("□适用 √不适用", "□适用 □不适用", 1)
+    assert parse_single_50_check(text) is None
+
+
+def test_supplier_checkboxes_are_never_borrowed():
+    """B 段自己的勾选丢了，不能去隔壁"单个供应商"那行借答案。"""
+    text = ("B.报告期内向单个客户的销售比例超过总额的 50%、前 5 名客户中存在新增客户的"
+            "或严重依赖于少数客户的情形 "
+            "报告期内向单个供应商的采购比例超过总额的 50%、前 5 名供应商中 □适用 √不适用")
+    assert parse_single_50_check(text) is None
+
+
+def test_absent_b_section_is_silent():
+    """很多年报模板没有这一段（茅台那页就没有），不许凭空造一个状态。"""
+    assert parse_single_50_check(MOUTAI) is None
+    assert parse_single_50_check(NINGDE) is None
 
 
 # ---------------------------------------------------------------- 填充分支
@@ -291,6 +409,51 @@ def test_absent_disclosure_explains_itself():
         reason="年报正文无「前五名客户」披露"), ASOF)
     g = next(g for g in out["fill"]["pending"] if FID in g["fields"])
     assert "没有这项披露" in g["why"]
+
+
+def test_gap_text_no_longer_asks_to_read_the_report_again():
+    """旧文案末尾写着"需要读一次年报填单客户口径"——读了也没有，会把研究者送去白跑一趟。"""
+    out = autobuild.build(_raw_with_customer(
+        form="total_only", top_ratio=None, five_ratio=10.10, rows=0,
+        title="贵州茅台 2025 年年度报告", page=11, cross_check=None), ASOF)
+    g = next(g for g in out["fill"]["pending"] if FID in g["fields"])
+    assert "需要读一次年报" not in g["why"]
+    assert "上界" in g["why"], f"留空必须说明只是上界：{g['why']}"
+
+
+def test_single_50_check_tightens_the_bound_and_the_worst_band():
+    """前五合计 62% 本来最坏是「差」，B 段勾"不适用"把上界压到 50% → 最坏「弱」。"""
+    out = autobuild.build(_raw_with_customer(
+        form="total_only", top_ratio=None, five_ratio=62.0, rows=0, page=17,
+        cross_check=None, single_50_check="not_applicable"), ASOF)
+    gap = next(g for g in out["fill"]["pending"] if FID in g["fields"])["why"]
+    ca = out["fill"]["customer_annual"]
+    assert ca["upper_bound_pct"] == 50.0, "上界取 min(前五合计, 50)，不是直接抄前五合计"
+    assert ca["upper_bound_band"] == "弱" and ca["upper_bound_score"] == 2.5
+    assert "50" in gap and "最坏" in gap and "不适用" in gap
+    assert "把上界收到 50" in ca["bound_note"], "两个数都要说清，否则读者以为上界还是 62%"
+    assert "customer_concentration" not in out["input"]["data"]["company"], "上界仍然不许当值填"
+
+
+def test_bound_note_is_short_enough_for_the_risk_row():
+    """风险维度那一行只放得下一句话：必须同时含上界与勾选结论，且不含换行。"""
+    out = autobuild.build(_raw_with_customer(
+        form="total_only", top_ratio=None, five_ratio=48.11, rows=0, page=17,
+        cross_check=None, single_50_check="not_applicable"), ASOF)
+    note = out["fill"]["customer_annual"]["bound_note"]
+    assert "48.11" in note and "≤ 此值" in note and "不适用" in note
+    assert "\n" not in note and len(note) <= 120, f"太长：{len(note)} {note}"
+
+
+def test_applicable_flag_never_invents_an_upper_bound():
+    """勾"适用"不能把前五合计当上界之外的东西，也不能推出 50% 这条线。"""
+    out = autobuild.build(_raw_with_customer(
+        form="total_only", top_ratio=None, five_ratio=82.0, rows=0, page=17,
+        cross_check=None, single_50_check="applicable"), ASOF)
+    ca = out["fill"]["customer_annual"]
+    assert ca["upper_bound_pct"] == 82.0, "勾了适用就没有 50% 这条线，上界仍是前五合计"
+    assert ca["upper_bound_band"] == "差"
+    assert "适用" in ca["bound_note"] and "仍需人工读一次" in ca["bound_note"]
 
 
 def test_report_published_after_asof_is_never_used():
