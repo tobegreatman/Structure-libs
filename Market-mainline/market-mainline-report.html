@@ -59,7 +59,7 @@ nav .wrap{display:flex;align-items:center;justify-content:space-between;height:1
 .hero-hint{margin-top:26px;font-size:12.5px;color:#6e6e73}
 
 /* ============ 章节通用 ============ */
-section{padding:92px 0}
+section{padding:66px 0}
 section.light{background:var(--canvas)}
 section.plain{background:var(--white)}
 .sec-kicker{font-size:13px;font-weight:600;color:var(--blue);letter-spacing:2.5px;text-transform:uppercase;margin-bottom:10px}
@@ -69,7 +69,7 @@ section h2{font-size:clamp(30px,4.6vw,42px);font-weight:600;letter-spacing:-.01e
 .reveal.in{opacity:1;transform:none}
 
 /* 卡片与芯片 */
-.card{background:var(--white);border:1px solid var(--border-soft);border-radius:var(--radius-card);padding:24px}
+.card{background:var(--white);border:1px solid var(--border-soft);border-radius:var(--radius-card);padding:20px}
 .plain .card{background:var(--canvas);border-color:transparent}
 .chip{display:inline-flex;align-items:center;gap:6px;font-size:12px;padding:5px 12px;border-radius:980px;background:#e8e8ed;color:var(--ink)}
 .chip.src{background:transparent;color:var(--gray);border:1px solid var(--border-soft);font-size:11px;padding:3px 9px}
@@ -127,7 +127,7 @@ section h2{font-size:clamp(30px,4.6vw,42px);font-weight:600;letter-spacing:-.01e
 .cand-count{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap}
 .cands-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:10px}
 .cand-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:16px}
-.cand-head h3{font-size:18px;font-weight:600;letter-spacing:-.01em}
+.cand-head h3{font-size:14px;font-weight:600;letter-spacing:-.01em}
 .cand-right{display:flex;align-items:center;gap:8px;flex:none}
 .cand-score{font-size:13px;font-weight:700;color:var(--blue);background:rgba(0,113,227,.08);border-radius:8px;padding:3px 9px;font-variant-numeric:tabular-nums}
 .cand-score small{font-size:11px;font-weight:500;color:var(--gray)}
@@ -137,7 +137,19 @@ section h2{font-size:clamp(30px,4.6vw,42px);font-weight:600;letter-spacing:-.01e
 .dim-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-top:1px solid var(--border-soft)}
 .dim-row .dk{font-size:12px;font-weight:700;color:var(--blue);width:26px}
 .dim-row .dn{font-size:13.5px;color:var(--ink);flex:1}
-.cand-note{margin-top:14px;font-size:13.5px;color:var(--gray);background:rgba(0,113,227,.05);border-left:3px solid rgba(0,113,227,.35);padding:10px 12px;border-radius:0 10px 10px 0}
+/* 四维档位：四态分层（实心蓝 → 浅琥珀描边 → 灰虚线框 → 斜纹空框）。用"实底 + 边界状态"拉开档差，不做同一底色的深浅微调 */
+.dims-bars{display:flex;gap:10px;padding:12px 0 0;border-top:1px solid var(--border-soft)}
+.dbar{position:relative;display:flex;flex-direction:column;align-items:center;gap:6px;flex:1;min-width:0}
+/* 四维之间的分隔：1px 细竖虚线（dash 3px / 空隙 3px）。用渐变画而不用 border:dashed，
+   dash 长度与间隔可精确控制，不受浏览器默认节距影响 */
+.dbar + .dbar::before{content:'';position:absolute;left:-5px;top:0;bottom:1px;width:1px;background:repeating-linear-gradient(to bottom,#c0c0c0 0 3px,transparent 3px 6px)}
+.dbar-lv{width:100%;box-sizing:border-box;text-align:center;font-size:13px;font-weight:700;line-height:1;padding:5px 0;border-radius:15px 15px 0 15px;color:#fff;background:var(--blue)}
+.dbar-lv.s-mid{color:#8a5200;background:#fdf0da;box-shadow:inset 0 0 0 1px rgba(255,159,10,.38)}
+.dbar-lv.s-weak{color:#5f5f66;background:#f4f4f6;border:1px dashed lightcyan;padding:4px 0}
+.dbar-lv.s-none{color:#a1a1a6;background:repeating-linear-gradient(45deg,rgba(0,0,0,.05) 0 3px,transparent 3px 7px);box-shadow:inset 0 0 0 1px #dcdce1;padding:4px 0}
+.dbar-name{font-size:11px;color:var(--gray);white-space:nowrap;letter-spacing:-.2px}
+.dims-legend{margin-left:auto;font-size:12px;color:var(--gray)}
+.cand-note{margin-top:14px;font-size:12px;color:var(--gray);background:rgba(0,113,227,.05);border-left:3px solid rgba(0,113,227,.35);padding:10px 12px;border-radius:0 10px 10px 0}
 
 /* ============ 证据链 ============ */
 .evid-grid{display:grid;grid-template-columns:1fr;gap:22px}
@@ -149,7 +161,7 @@ section h2{font-size:clamp(30px,4.6vw,42px);font-weight:600;letter-spacing:-.01e
 .ra-note{margin-top:12px;font-size:12.5px;color:var(--gray)}
 .rrow{display:flex;align-items:center;gap:12px;padding:10px 0}
 .rrow + .rrow{border-top:1px solid var(--border-soft)}
-.rname{font-size:14.5px;font-weight:500}
+.rname{font-size:13px;font-weight:500}
 .rbar{flex:1;height:6px;border-radius:3px;background:#e8e8ed;overflow:hidden}
 .rbar i{display:block;height:100%;width:0;border-radius:3px;background:var(--blue);transition:width 1.1s cubic-bezier(.2,.7,.2,1) .2s}
 .rbar.mid i{background:var(--amber)}
@@ -493,22 +505,53 @@ var WEEKLY_PROMPT = `你是专业的 A 股市场主线分析师，具备联网�
 
 输入附带：用户可能在提示词末尾附上「上期完整版 JSON 台账」。若附带，输出前必须执行第四步附的对账；若未附带，在 dataGaps 登记「无上期台账，对账跳过（首期或用户未提供）」。
 
+流程地图：取数（第一步，四节：取数 → 计算 → 纪律 → 降级）→ 三窗口分析（第二步）→ 四维评分（第三步）→ 主线定档与对账（第四步）→ 输出 JSON（第五步）。
+
 ▍第一步 · 数据获取（全部联网完成，禁止用训练记忆里的行情填充）
 
-按清单取数，每个数字必须标注 [来源｜日期]；关键数字（涨停家数、主力资金流向、炸板率）须尽量双源交叉验证，两源差异大时以行情软件原始数据为准并注明分歧；取不到的项目写入「数据缺口」，禁止编造：
+◇ 取数 · 清单与来源优先级
 
-| 优先级 | 数据 | 窗口 | 推荐来源 |
+按清单取数，每个数字必须标注 [来源｜日期]；取不到的项目写入「数据缺口」，禁止编造。
+
+数据源三级瀑布（每项数据按此顺序取数）：
+- L1 数据接口：具备代码执行能力时优先直连接口取原始序列/快照（HTTP 接口与 akshare 函数见「序列数据获取路径」）——最稳定，且可直接自算派生指标；
+- L2 权威财经媒体：财联社、证券时报、证券日报、东方财富、同花顺、新浪财经的原创报道与行情页面；
+- L3 二手汇总：自媒体、微博、头条号转引——仅作旁证与交叉验证，L1/L2 均不可得时才可引用并注明「二手」。
+
+关键数字（涨停家数、主力资金流向、炸板率）须尽量双源交叉验证，两源差异大时以行情软件原始数据为准并注明分歧：
+
+| 优先级 | 数据 | 窗口 | 推荐来源（首选 → 备选） |
 |---|---|---|---|
-| P0 | 行业与概念板块涨跌幅排名（逐日序列，不是只有当日快照） | 近 60 交易日 | 东方财富行情中心·板块排名、同花顺 |
-| P0 | 大盘指数日线（上证指数、沪深300，含成交额） | 近 60 交易日 | 东方财富、新浪财经 |
-| P1 | 板块成交额及其占全市场比重的变化 | 近 20 交易日 | 东方财富数据中心 |
-| P1 | 板块主力资金净流入（累计值） | 近 20 交易日 | 东方财富·资金流向、同花顺资金 |
-| P1 | 涨停家数、连板梯队（最高连板/晋级率）、炸板率 | 近 10 交易日 | 财联社复盘、证券时报、同花顺、开盘啦 |
-| P2 | 候选板块龙头股：板块内流通市值前 20% 且日均成交额前 10% 的标的，近 20 日涨幅、是否创新高 | 近 20 交易日 | 行情网站 |
-| P2 | 政策文件、产业事件、券商策略观点（取标题与核心逻辑） | 近 2 周 | 官方网站、财联社、券商研报摘要 |
-| P3 | 市场融资余额变化 | 近 20 交易日 | 可得时 |
+| P0 | 行业与概念板块涨跌幅排名（逐日序列，不是只有当日快照） | 近 60 交易日 | 当日排名：东方财富行情中心 → 同花顺；逐日序列：靠接口取（板块序列接口可达性差，取不到直接走降级代理） |
+| P0 | 大盘指数日线（上证指数、沪深300，含成交额） | 近 60 交易日 | 新浪财经 K线接口（稳定，见取数路径）→ 东方财富行情 |
+| P1 | 板块成交额及其占全市场比重的变化 | 近 20 交易日 | 东方财富数据中心 → 证券时报/新浪财经资金面报道 |
+| P1 | 板块主力资金净流入（累计值） | 近 20 交易日 | 证券时报·资金面 → 证券之星 → 东方财富·资金流向、同花顺资金（多源口径差异见「资金流口径纪律」） |
+| P1 | 涨停家数、连板梯队（最高连板/晋级率）、炸板率 | 近 10 交易日 | 韭研公社 → 财联社复盘 → 开盘啦、同花顺 |
+| P2 | 候选板块龙头股：板块内流通市值前 20% 且日均成交额前 10% 的标的，近 20 日涨幅、是否创新高 | 近 20 交易日 | 新浪 K线接口自算近 20 日涨幅 → 行情网站快照 |
+| P2 | 政策文件、产业事件、券商策略观点（取标题与核心逻辑） | 近 2 周 | 官方网站 → 财联社 → 券商研报摘要 |
+| P3 | 市场融资余额变化 | 近 20 交易日 | 东方财富数据中心 → 可得时 |
+
+◇ 计算 · 序列接口与派生指标自算
+
+序列数据获取路径（强制）：跑赢天数占比、大盘与板块均线、relativeStrength 曲线、gain20d 全部依赖逐日收盘序列，此类序列靠网页搜索基本无法直接返回——禁止因「搜索不到指标现值」记缺口或填 null，优先走数据接口取序列后自算，网页搜索仅作交叉验证；无代码执行能力时按下方「◇ 降级」节处理。
+
+接口清单（按环境可用性逐级尝试，稳定性为实测标注）：
+- 新浪财经 K线接口（HTTP 直连，实测稳定，指数/个股通用）：money.finance.sina.com.cn/quotes_service/api/json_v2.php/CN_MarketData.getKLineData?symbol=sh000300&scale=240&ma=no&datalen=120 —— symbol 依此替换：sh000300（沪深300）/ sh000001（上证）/ sh600xxx / sz00xxxx（个股），scale=240 为日线，datalen 控制根数，返回日期与收盘价序列；
+- 东方财富 K线接口（HTTP 直连，备选，部分环境被拦）：push2his.eastmoney.com/api/qt/stock/kline/get?secid=1.000300&klt=101&lmt=120 —— secid：沪深300=1.000300、上证=1.000001、沪市个股=1.60xxxxx、深市个股=0.00xxxxx；
+- akshare（Python 环境）：stock_zh_a_hist 取个股日线，stock_board_concept_hist_em / stock_board_industry_hist_em 取概念/行业板块指数日线，指数日线接口取沪深300。
+注意：概念/行业板块指数序列无稳定免鉴权接口（东财板块接口常被拦），板块序列取不到属常态——直接按「◇ 降级」节处理，不要反复尝试浪费时间。板块指数近 60 日收盘序列（若取得）一次取数、三处复用：D1 跑赢占比、板块 MA20/MA60、relativeStrength 曲线。
+
+派生指标自算口径（强制，替代搜索指标现值）：
+- MA20/MA60（大盘与板块指数）：最近 20/60 个收盘价算术平均，source 写「依据 [来源｜日期] 收盘序列计算」；禁止以年内跌幅等间接证据推断均线相对位置；
+- 跑赢天数占比（D1）：逐日比较板块与沪深300 涨幅统计得出；
+- gain20d（ladder 个股）：依个股近 20 日收盘序列计算；上市不足 20 日的新股按「上市以来」口径并在 note 注明；自算与来源快照均不可得时才填 null，并把实际可得口径写进 note；
+- relativeStrength：依板块与沪深300 收盘序列逐点计算近 60 日累计涨幅。
+
+◇ 纪律 · 时点、口径与质量分级
 
 数据截止时点（强制）：周度完整版必须使用收盘后数据；盘中快照只能标注「盘中」字样使用，且 meta.confidence 降一档、summary 注明「基于盘中数据，收盘后需复核」。禁止用盘中数据产出定调结论而不标注。
+
+资金流口径纪律（多源分歧处理）：各源板块主力净流入口径不同（概念板块 / 行业板块 / 成分股加总），数值不可直接比较——取与板块涨幅排名同源的口径为准；同口径仍分歧超 20% 时以行情软件（东方财富/同花顺）原始数据为准。各源方向一致（如均为净流入）时，分歧只影响量级、不影响 D2 方向性评分，在 dataGaps 注明分歧幅度即可；禁止自创「区间值/保守值」折中（如混合两个口径的「48.96—75 亿」）。
 
 数据质量分级（每项数据取数后自行定级，写入 dataGaps 或来源说明）：
 - A 级：逐日序列完整 → 正常参与评分；
@@ -516,6 +559,9 @@ var WEEKLY_PROMPT = `你是专业的 A 股市场主线分析师，具备联网�
 - C 级：二手汇总（自媒体转引、截图数据） → 只作旁证，不能单独支撑强评分；
 - D 级：取不到 → 记缺口，对应维度评分上限锁 1 分。
 整体降级规则：P0/P1 中出现 2 项及以上 C/D 级 → 总结论置信度自动降一档，并在 meta.summary 注明。
+推断值不参与评级：由间接证据推出的数值（如以年内跌幅推断均线位置）不属于 B 级快照——B 级必须是来源实际给出的区间数据；推断值一律视同 D 级：字段填 null，推断依据写入 dataGaps 作旁证。依来源收盘序列计算的派生值（如 MA20/MA60）按其序列的原始等级定级，source 写「依据 [来源｜日期] 收盘序列计算」。
+
+◇ 降级 · 代理指标与评分封顶（无代码执行能力、序列确不可得时）：D1 以「近 20 日区间累计涨幅 vs 沪深300」作代理——显著跑赢 → 最高「中」（占比口径无法验证，禁给强）；未跑赢 → 按弱评 0-1 分。D2 以「近 5/10 日主力净流入累计（板块资金流排行可得）+ 当日净流入」作旁证——净流入为正 → 最高 1 分；净流出 → 0 分。relativeStrength 快照降级必须按近 5/20/60 日三点口径（板块排行页周期切换可得），禁止以近 2 日两点冒充快照。ladder 个股当日涨跌幅/成交额/连板数为基础行情数据，逐只必取并标注来源，禁止因板块序列难取而跳过。
 
 ▍第二步 · 三窗口分析（时间粒度纪律）
 
@@ -534,12 +580,14 @@ D1 价格持续性
 - 1 分：跑赢占比 40%-60%，或均线多头未完全形成
 - 0 分：占比 <40%，或板块指数跌破 MA60
 - 辅助特征：近 20 日中 ≥1/3 交易日进涨幅前 10 = 反复上榜（加分旁证）；单日脉冲后消失 = 直接 0 分
+- 序列缺失时按第一步「◇ 降级」节执行：区间涨幅代理最高「中」
 
 D2 资金持续性
 - 2 分：W2 窗口主力资金累计净流入为正，且板块成交额占全市场比重趋势抬升
 - 1 分：净流入为正但占比持平或回落
 - 0 分：累计净流出
 - 结构质量：缩量回调后放量再攻 = 健康（旁证加分）；天量滞涨 = 警惕（评分不超过 1）
+- 板块 20 日资金序列缺失时按第一步「◇ 降级」节执行：近 5/10 日口径旁证，最高 1 分
 
 D3 赚钱效应（情绪结构）
 - 2 分：涨停梯队先锋—中军—跟风三层完整，且板块内存在 20 日涨幅 >50% 的标杆股
@@ -578,14 +626,19 @@ stage 字段只写单一标准词，五选一，禁止括号限定或箭头拼�
 
 字段规范（未获取的数据填 null 并写入 dataGaps；所有 value 字段必须带 source）：
 
+字段内容格式约束（防长文本污染渲染）：
+- source 统一紧凑格式「来源｜日期」（30 字内），多源对比、口径说明、计算细节一律写入 dataGaps，禁止塞进 source；
+- volumeTrend 填短语（如「放量+1700亿」「连续3日缩量」），禁止段落式描述；
+- maxConBoards.theme 只填题材名（如「机器人」），连板梯队细节写入 ladder 或对应 candidate.note。
+
 | 键 | 类型 | 内容 |
 |---|---|---|
 | meta | object | reportDate、mainline（无主线时填「无主线 · 轮动市」）、stage（生命周期阶段，**仅限启动期/发酵期/高潮期/分歧期/退潮期 五选一**，禁止括号或箭头拼接，无主线填 null）、stageNote（可选，一句过渡或反向信号说明，如「高位分歧初现」，无则填 null）、confidence（高/中/低）、environmentState（进攻/中性/防守）、verdict（确认主线 / 候补观察 / 无主线·轮动市）、summary（≤60 字结论逻辑） |
-| environment | object | limitUpCount{value,prev,source}（涨停家数与上日值；**prev 优先引用上期台账同字段值**，与其他来源不一致时须注明）；maxConBoards{value,theme,source}（最高连板与所属题材）；blastRate{value,source}（炸板率%）；breadth{value,source}（市场广度=上涨家数占比%）；index{name,vsMA20,vsMA60,volumeTrend,source}——**vsMA20/vsMA60 仅限填「上方 / 下方 / 附近」，取不到填 null 并登记 dataGaps，禁止「需进一步确认」类模糊词** |
+| environment | object | limitUpCount{value,prev,source}（涨停家数与上日值；**prev 优先引用上期台账同字段值**，与其他来源不一致时须注明）；maxConBoards{value,theme,source}（最高连板与所属题材）；blastRate{value,source}（炸板率%）；breadth{value,source}（市场广度=上涨家数占比%）；index{name,vsMA20,vsMA60,volumeTrend,source}——**vsMA20/vsMA60 仅限填「上方 / 下方 / 附近」，且必须基于来源实际给出的均线值、或依 P0 收盘序列计算的均线值（推断≠获取，禁止以年内跌幅等间接证据推断方向）；取不到填 null 并登记 dataGaps，禁止「需进一步确认」类模糊词** |
 | candidates | array | 每项：name、d1/d2/d3/d4（各为 强/中/弱，对应 2/1/0 分）、score（四项总分 0-8）、verdict（主线/候补/候选观察/轮动）、note（一句话证据摘要，含关键数字；处于冷却期的方向注明「冷却期第 N 日」） |
 | evidence | array | **单方向四维链，与 ladder 取同一方向**；每项：dim（D1-D4）、title、level（强/中/弱）、points[{fact, source}]——每个数字带 [来源｜日期]；同一 dim 只允许出现一条，其余候选的证据写在其 candidate.note，禁止追加重复维度块 |
-| relativeStrength | array | 可选：每项 {date, sector, benchmark}，跟踪板块与沪深300 的近 60 日累计涨幅%，用于相对强度曲线；**必须在 dataGaps 注明跟踪对象与计算口径；无 score ≥4 候选时置空数组 []**；取不到逐日序列时给近 5/20/60 日三点快照并在 dataGaps 注明 |
-| ladder | object | **单方向梯队**——取 score 最高候选方向：leaders[]（先锋）、core[]（中军）、followers[]（跟风），每项 {name, role, gain20d, note}；其余方向个股禁止混入，在其 candidate 的 note 中说明；中军须符合「板块内流通市值前 20% 且成交额前 10%」；gain20d 限 20 日口径，口径不符（如「9 月以来」累计涨幅）填 null 并把实际口径写进 note |
+| relativeStrength | array | 可选：每项 {date, sector, benchmark}，跟踪板块与沪深300 的近 60 日累计涨幅%，用于相对强度曲线；**必须在 dataGaps 注明跟踪对象与计算口径；无 score ≥4 候选时置空数组 []**；取不到逐日序列时给近 5/20/60 日三点快照并在 dataGaps 注明（禁止以近 2 日两点冒充快照） |
+| ladder | object | **单方向梯队**——取 score 最高候选方向：leaders[]（先锋）、core[]（中军）、followers[]（跟风），每项 {name, role, gain20d, note}；其余方向个股禁止混入，在其 candidate 的 note 中说明；中军须符合「板块内流通市值前 20% 且成交额前 10%」；gain20d 优先依个股近 20 日收盘序列自算（见第一步自算口径），上市不足 20 日按「上市以来」口径注明，自算与快照均不可得才填 null |
 | alerts | array | 2-3 条可观察的失效信号，每条写明触发后应重估什么 |
 | system | object | environmentState、signalPermission（本周信号 A/B 权限建议）、resonanceSectors[]（板块共振参考名单，供信号 A 第三锁复核） |
 | selfCheck | array | **强制演算记录**：逐 candidate 写「名称: d1+d2+d3+d4=score（强=2/中=1/弱=0）」算式，最后一条写 verdict 联动校验结论（见红线 9） |
@@ -618,7 +671,8 @@ JSON 骨架（结构参考，禁止照抄数字）：
 7. 冷却规则不可豁免：首次爆发方向即使分数达标，冷却期内也只能标「候选观察」。
 8. 输出 JSON 前必须完成强制演算并写入 selfCheck 字段：逐 candidate 列出「d1+d2+d3+d4=score」算式（强=2/中=1/弱=0），加总不等于 score 的必须修正其一，禁止带病输出。
 9. verdict 联动校验（写入 selfCheck 最后一条）：verdict=确认主线 → 必须存在 score ≥6 且 D1+D2 ≥3 且不在冷却期的候选，且其 evidence 有强级支撑；存在 score ≥4 的候选 → 禁止 verdict=无主线·轮动市（应填候补观察）；全部候选 score ≤3 → 才可填无主线·轮动市。
-10. 字段不齐全时宁可填 null 并登记 dataGaps，禁止凑数；枚举字段（vsMA20/vsMA60 等）禁止填枚举值外的模糊词。`;
+10. 宁缺毋滥：字段不齐全填 null 并登记 dataGaps，禁止凑数；枚举字段禁止模糊词、禁止间接推断值冒充足数（推断≠获取，细则见第一步「纪律」）。
+11. 序列指标禁止「搜不到即缺口」：必须走接口自算或降级代理（见第一步「计算」「降级」）；主力净流入多源分歧禁止跨口径混合数值与自创区间折中（见第一步「纪律」）。`;
 
 /* ================================================================ 工具函数 ================================================================ */
 var $ = function(s){ return document.querySelector(s); };
@@ -941,10 +995,11 @@ function renderCands(d){
   list.forEach(function(c){ counts[vRank(c.verdict)]++; });
   var nMain = counts[0], nAlt = counts[1], nWatch = counts[2], nRot = counts[3];
   var html = '<div class="cand-count">' +
-    '<span class="v v-main">主线 ' + nMain + '</span><span class="v v-alt">候补 ' + nAlt + '</span><span class="v v-watch">候选观察 ' + nWatch + '</span><span class="v v-rot">轮动 ' + nRot + '</span></div>';
+    '<span class="v v-main">主线 ' + nMain + '</span><span class="v v-alt">候补 ' + nAlt + '</span><span class="v v-watch">候选观察 ' + nWatch + '</span><span class="v v-rot">轮动 ' + nRot + '</span>' +
+    '<span class="dims-legend">四维三档：强 2 ／ 中 1 ／ 弱 0 · 满分 8 ｜ 斜纹＝未获取</span></div>';
   html += '<div class="cands-grid">';
+  var DIM_LBL = [['D1','价格','价格持续性'],['D2','资金','资金持续性'],['D3','赚钱','赚钱效应'],['D4','逻辑','逻辑驱动']];
   list.forEach(function(c){
-    var dims = [['D1','价格持续性', c.d1], ['D2','资金持续性', c.d2], ['D3','赚钱效应', c.d3], ['D4','逻辑驱动', c.d4]];
     var calc = scoreOf(c);
     var bad = (calc != null && typeof c.score === 'number' && c.score !== calc);
     var scCls = calc == null ? '' : (bad ? ' bad' : '');
@@ -954,9 +1009,18 @@ function renderCands(d){
         '<span class="v ' + verdictCls(c.verdict) + '">' + esc(c.verdict || '—') + '</span>' +
         '<span class="cand-score' + scCls + '" title="D1+D2+D3+D4 实算总分（强=2/中=1/弱=0）">' + scTxt + '<small>/8</small></span>' +
       '</div></div>';
-    dims.forEach(function(dt){
-      html += '<div class="dim-row"><span class="dk">' + esc(dt[0]) + '</span><span class="dn">' + esc(dt[1]) + '</span>' + lvChip(dt[2]) + '</div>';
+    /* 四维档位：色块内直接写「强/中/弱」，第一眼读字即可，不用拿柱高反推强弱 */
+    var bars = '', aria = [], PT = {'强':2, '中':1, '弱':0};
+    DIM_LBL.forEach(function(dt, i){
+      var val = c['d' + (i + 1)];
+      var k = val === '强' ? 'strong' : (val === '中' ? 'mid' : (val === '弱' ? 'weak' : 'none'));
+      aria.push(dt[0] + dt[2] + ' ' + (val || '未评级'));
+      var tip = dt[0] + ' ' + dt[2] + ' · ' + (val || '未评级') + (val ? '（' + PT[val] + ' 分）' : '');
+      bars += '<div class="dbar" title="' + esc(tip) + '">' +
+        '<span class="dbar-lv s-' + k + '">' + esc(val || '—') + '</span>' +
+        '<span class="dbar-name">' + esc(dt[0] + ' ' + dt[1]) + '</span></div>';
     });
+    html += '<div class="dims-bars" role="img" aria-label="' + esc(c.name + ' 四维评分：' + aria.join('，')) + '">' + bars + '</div>';
     if (bad) html += '<div class="cand-warn">算式不符：JSON 填 score=' + esc(c.score) + '，按 D1-D4 实算应为 ' + calc + '，请核对后重发。</div>';
     if (c.note) html += '<div class="cand-note">' + esc(c.note) + '</div>';
     html += '</div>';
