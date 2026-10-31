@@ -1,0 +1,387 @@
+{
+  "schema_version": "1.0.0",
+  "meta": {
+    "report_id": "AML-YYYYMMDD-01",
+    "as_of": "YYYY-MM-DD",
+    "generated_at": "YYYY-MM-DDTHH:mm:ss+08:00",
+    "title": "A股市场主线分析 · YYYY-MM-DD",
+    "data_mode": "live",
+    "confidence": 0.0,
+    "analyst": {
+      "model": "",
+      "prompt_version": "1.5.0",
+      "operator": ""
+    },
+    "tags": []
+  },
+  "window": {
+    "as_of": "YYYY-MM-DD",
+    "primary_days": 20,
+    "confirm_days": 5,
+    "context_days": 60,
+    "quantile_days": 250,
+    "effective_range": {
+      "start": "YYYY-MM-DD",
+      "end": "YYYY-MM-DD"
+    },
+    "rules": [],
+    "excluded": []
+  },
+  "data_quality": {
+    "status": "ok",
+    "coverage": 0.0,
+    "sources": [
+      {
+        "name": "",
+        "category": "",
+        "fields": [],
+        "as_of": "",
+        "reliability": "high",
+        "note": ""
+      }
+    ],
+    "missing": [
+      {
+        "field": "",
+        "reason": "",
+        "fallback": ""
+      }
+    ],
+    "notes": []
+  },
+  "market_regime": {
+    "label": "",
+    "phase": "structural",
+    "phase_label": "",
+    "risk_appetite": 50,
+    "liquidity": 50,
+    "breadth_score": 50,
+    "indices": [
+      {
+        "code": "000001.SH",
+        "name": "上证指数",
+        "close": 0,
+        "chg_1d": 0,
+        "chg_5d": 0,
+        "chg_20d": 0,
+        "turnover_yi": 0,
+        "pe_pct_250": 0.5
+      }
+    ],
+    "breadth": {
+      "up_ratio": 0.5,
+      "limit_up": 0,
+      "limit_down": 0,
+      "broken_board_rate": 0,
+      "advance_decline_ratio": 1,
+      "new_high": 0,
+      "new_low": 0
+    },
+    "narrative": ""
+  },
+  "verdict": {
+    "headline": "",
+    "core_thesis": "",
+    "stance": "balanced",
+    "stance_label": "",
+    "dominant_mainline_id": "",
+    "mainline_count": 0,
+    "confidence": 0.0,
+    "points": [
+      {
+        "title": "",
+        "detail": ""
+      }
+    ],
+    "horizon": {
+      "valid_until": "YYYY-MM-DD",
+      "review_trigger": ""
+    }
+  },
+  "mainlines": [
+    {
+      "id": "ml-example",
+      "rank": 1,
+      "rank_change": 0,
+      "name": "",
+      "aliases": [],
+      "sector_codes": [],
+      "theme_type": "concept",
+      "stage": "ignition",
+      "stage_label": "启动期",
+      "stage_confidence": 0.5,
+      "score": 0,
+      "score_breakdown": [
+        {
+          "key": "rs",
+          "label": "相对强度",
+          "raw": null,
+          "normalized": null,
+          "weight": 25,
+          "contribution": null,
+          "note": ""
+        },
+        {
+          "key": "persistence",
+          "label": "趋势持续性",
+          "raw": null,
+          "normalized": null,
+          "weight": 20,
+          "contribution": null,
+          "note": ""
+        },
+        {
+          "key": "volume",
+          "label": "量能聚集",
+          "raw": null,
+          "normalized": null,
+          "weight": 20,
+          "contribution": null,
+          "note": ""
+        },
+        {
+          "key": "breadth",
+          "label": "扩散度",
+          "raw": null,
+          "normalized": null,
+          "weight": 15,
+          "contribution": null,
+          "note": ""
+        },
+        {
+          "key": "fundflow",
+          "label": "资金流",
+          "raw": null,
+          "normalized": null,
+          "weight": 10,
+          "contribution": null,
+          "note": ""
+        },
+        {
+          "key": "narrative",
+          "label": "叙事与催化",
+          "raw": null,
+          "normalized": null,
+          "weight": 10,
+          "contribution": null,
+          "note": ""
+        }
+      ],
+      "penalty": 0,
+      "penalty_reason": "",
+      "metrics": {
+        "chg_1d": null,
+        "chg_5d": null,
+        "chg_20d": null,
+        "chg_60d": null,
+        "rs_5": null,
+        "rs_20": null,
+        "rs_60": null,
+        "turnover_share": null,
+        "turnover_share_chg_5": null,
+        "turnover_share_chg_20": null,
+        "turnover_share_pct_250": null,
+        "breadth_up_ratio": null,
+        "new_high_ratio": null,
+        "limit_up_count": null,
+        "limit_up_ratio": null,
+        "max_streak": null,
+        "max_streak_prev": null,
+        "seal_rate": null,
+        "leader_chg_5d": null,
+        "net_inflow_5_yi": null,
+        "net_inflow_20_yi": null,
+        "crowding_pct": null,
+        "volatility_20": null
+      },
+      "persistence": {
+        "days_top10_20": null,
+        "days_top5_20": null,
+        "consecutive_top10": null,
+        "pulse_check": {
+          "passed": false,
+          "rules_passed": 0,
+          "detail": ""
+        }
+      },
+      "drivers": [
+        {
+          "type": "industry",
+          "title": "",
+          "detail": "",
+          "date": "YYYY-MM-DD",
+          "source": "",
+          "verified": false
+        },
+        {
+          "type": "policy",
+          "title": "",
+          "detail": "",
+          "date": "YYYY-MM-DD",
+          "source": "",
+          "verified": false
+        }
+      ],
+      "narrative": {
+        "logic": "",
+        "catalyst": "",
+        "sustainability": "",
+        "bear_case": ""
+      },
+      "leaders": [
+        {
+          "code": "",
+          "name": "",
+          "role": "leader",
+          "chg_20d": null,
+          "turnover_yi": null,
+          "note": ""
+        }
+      ],
+      "ladder": {
+        "has_leader": true,
+        "tiers": 2,
+        "note": ""
+      },
+      "invalidation": [
+        {
+          "condition": "",
+          "threshold": "",
+          "note": ""
+        }
+      ],
+      "watch": [
+        {
+          "item": "",
+          "why": ""
+        }
+      ],
+      "related": []
+    }
+  ],
+  "rotation": {
+    "narrative": "",
+    "inflow": [
+      {
+        "name": "",
+        "delta_pct": 0,
+        "note": ""
+      }
+    ],
+    "outflow": [
+      {
+        "name": "",
+        "delta_pct": 0,
+        "note": ""
+      }
+    ],
+    "emerging": [
+      {
+        "name": "",
+        "score": 0,
+        "signal": ""
+      }
+    ],
+    "timeline": [
+      {
+        "date": "YYYY-MM-DD",
+        "event": "",
+        "impact": "neutral",
+        "mainline_id": ""
+      }
+    ]
+  },
+  "risks": [
+    {
+      "id": "r1",
+      "level": "medium",
+      "title": "",
+      "detail": "",
+      "trigger": "",
+      "mitigation": "",
+      "affected": []
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "s1",
+      "name": "乐观",
+      "probability": 0.3,
+      "assumption": "",
+      "impact": "",
+      "action": ""
+    },
+    {
+      "id": "s2",
+      "name": "中性",
+      "probability": 0.5,
+      "assumption": "",
+      "impact": "",
+      "action": ""
+    },
+    {
+      "id": "s3",
+      "name": "悲观",
+      "probability": 0.2,
+      "assumption": "",
+      "impact": "",
+      "action": ""
+    }
+  ],
+  "playbook": {
+    "stance": "",
+    "position_range": "",
+    "rules": [
+      {
+        "if": "",
+        "then": ""
+      }
+    ],
+    "checklist": [],
+    "disclaimer": "本报告不构成投资建议。"
+  },
+  "appendix": {
+    "method_summary": "",
+    "weights": [
+      {
+        "key": "rs",
+        "label": "相对强度",
+        "weight": 25,
+        "desc": ""
+      },
+      {
+        "key": "persistence",
+        "label": "趋势持续性",
+        "weight": 20,
+        "desc": ""
+      },
+      {
+        "key": "volume",
+        "label": "量能聚集",
+        "weight": 20,
+        "desc": ""
+      },
+      {
+        "key": "breadth",
+        "label": "扩散度",
+        "weight": 15,
+        "desc": ""
+      },
+      {
+        "key": "fundflow",
+        "label": "资金流",
+        "weight": 10,
+        "desc": ""
+      },
+      {
+        "key": "narrative",
+        "label": "叙事与催化",
+        "weight": 10,
+        "desc": ""
+      }
+    ],
+    "stage_rules": [],
+    "glossary": [],
+    "changelog": []
+  }
+}

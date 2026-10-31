@@ -1,0 +1,1496 @@
+{
+  "schema_version": "1.0.0",
+  "meta": {
+    "report_id": "AML-20261030-01",
+    "as_of": "2026-10-30",
+    "generated_at": "2026-10-31T09:12:00+08:00",
+    "title": "A股市场主线分析 · 2026-10-30",
+    "data_mode": "demo",
+    "confidence": 0.74,
+    "analyst": {
+      "model": "DeepSeek-V4",
+      "prompt_version": "1.5.0",
+      "operator": "Research Desk"
+    },
+    "tags": [
+      "结构性行情",
+      "AI算力",
+      "人形机器人",
+      "拥挤度抬升"
+    ]
+  },
+  "window": {
+    "as_of": "2026-10-30",
+    "primary_days": 20,
+    "confirm_days": 5,
+    "context_days": 60,
+    "quantile_days": 250,
+    "effective_range": {
+      "start": "2026-09-25",
+      "end": "2026-10-30"
+    },
+    "rules": [
+      "主判定窗口 20 个交易日（2026-09-25 至 2026-10-30），覆盖一个完整题材发酵周期",
+      "5 日窗口用于趋势确认与单日脉冲过滤，权重 20%",
+      "60 日窗口判定中期属性，区分「真主线」与「短炒」",
+      "250 日窗口仅用于拥挤度与估值历史分位，作为惩罚项，不进入正向打分",
+      "T 日数据仅进入描述字段，不单独构成主线判定依据"
+    ],
+    "excluded": [
+      {
+        "date_range": "2026-10-01 ~ 2026-10-08",
+        "reason": "国庆节休市"
+      }
+    ]
+  },
+  "data_quality": {
+    "status": "ok",
+    "coverage": 0.94,
+    "sources": [
+      {
+        "name": "上海/深圳证券交易所",
+        "category": "交易所官网",
+        "fields": [
+          "日线行情",
+          "成交额",
+          "融资融券余额"
+        ],
+        "as_of": "2026-10-30",
+        "reliability": "high",
+        "note": "两融数据 T+1 发布，已采用 10-29 数值"
+      },
+      {
+        "name": "东方财富 · 板块行情",
+        "category": "行情聚合",
+        "fields": [
+          "板块指数",
+          "成交额",
+          "换手率",
+          "成分股涨跌"
+        ],
+        "as_of": "2026-10-30",
+        "reliability": "high",
+        "note": "概念板块口径，与申万行业分类存在差异"
+      },
+      {
+        "name": "东方财富 · 涨停板行情",
+        "category": "情绪数据",
+        "fields": [
+          "涨停家数",
+          "连板数",
+          "封板资金",
+          "封板率"
+        ],
+        "as_of": "2026-10-30",
+        "reliability": "high",
+        "note": "收盘后更新"
+      },
+      {
+        "name": "东方财富 · 资金流",
+        "category": "资金数据",
+        "fields": [
+          "主力净额",
+          "超大单",
+          "大单"
+        ],
+        "as_of": "2026-10-30",
+        "reliability": "medium",
+        "note": "按单笔金额分档推断的算法测算值，与真实席位存在偏差，权重上限 10%"
+      },
+      {
+        "name": "中证指数有限公司",
+        "category": "指数与估值",
+        "fields": [
+          "指数点位",
+          "PE/PB",
+          "历史分位"
+        ],
+        "as_of": "2026-10-30",
+        "reliability": "high",
+        "note": ""
+      },
+      {
+        "name": "巨潮资讯 / 交易所公告",
+        "category": "公告",
+        "fields": [
+          "业绩预告",
+          "重大合同",
+          "产业政策原文"
+        ],
+        "as_of": "2026-10-30",
+        "reliability": "high",
+        "note": ""
+      }
+    ],
+    "missing": [
+      {
+        "field": "northbound_net_inflow",
+        "reason": "沪深港通自 2024-08 起不再披露日度净买入与实时额度余额",
+        "fallback": "改用陆股通持股变动（港交所 CCASS，周度），不纳入日度因子"
+      },
+      {
+        "field": "mainlines[2].metrics.seal_rate",
+        "reason": "固态电池概念当日封板样本仅 2 家，封板率统计意义不足",
+        "fallback": "置 null，阶段判定改用份额分位与连板高度"
+      }
+    ],
+    "notes": [
+      "资金流全部为算法测算值，不可等同于真实主力行为",
+      "板块成交额份额按「板块成交额 / 全 A 成交额」计算，已剔除当日停牌股",
+      "本轮分析未使用任何付费数据源，故无机构持仓与一致预期维度"
+    ]
+  },
+  "market_regime": {
+    "label": "指数震荡、主线高度集中的结构性行情",
+    "phase": "structural",
+    "phase_label": "结构性行情",
+    "risk_appetite": 62,
+    "liquidity": 57,
+    "breadth_score": 54,
+    "indices": [
+      {
+        "code": "000001.SH",
+        "name": "上证指数",
+        "close": 3542.18,
+        "chg_1d": 0.0062,
+        "chg_5d": 0.0183,
+        "chg_20d": 0.0342,
+        "turnover_yi": 6820,
+        "pe_pct_250": 0.61
+      },
+      {
+        "code": "399001.SZ",
+        "name": "深证成指",
+        "close": 11240.63,
+        "chg_1d": 0.0091,
+        "chg_5d": 0.0264,
+        "chg_20d": 0.0518,
+        "turnover_yi": 8640,
+        "pe_pct_250": 0.68
+      },
+      {
+        "code": "399006.SZ",
+        "name": "创业板指",
+        "close": 2318.42,
+        "chg_1d": 0.0142,
+        "chg_5d": 0.0381,
+        "chg_20d": 0.0862,
+        "turnover_yi": 3980,
+        "pe_pct_250": 0.74
+      },
+      {
+        "code": "000688.SH",
+        "name": "科创50",
+        "close": 1122.71,
+        "chg_1d": 0.0208,
+        "chg_5d": 0.0476,
+        "chg_20d": 0.112,
+        "turnover_yi": 960,
+        "pe_pct_250": 0.81
+      }
+    ],
+    "breadth": {
+      "up_ratio": 0.58,
+      "limit_up": 68,
+      "limit_down": 9,
+      "broken_board_rate": 0.22,
+      "advance_decline_ratio": 1.42,
+      "new_high": 214,
+      "new_low": 63
+    },
+    "narrative": "指数层面波澜不惊，20 日振幅收敛至 6% 以内，但结构分化达到近半年极值：资金未离场，只是从宽基向少数具备产业催化的方向高度集中。上涨家数占比 58%、涨跌比 1.42，说明赚钱效应存在但并不普惠，属于典型的「指数搭台、主线唱戏」。创业板与科创 50 相对强势，风格偏向成长。"
+  },
+  "verdict": {
+    "headline": "AI算力仍是唯一具备「业绩—资金—叙事」三重共振的主线",
+    "core_thesis": "当前市场不是普涨行情，而是围绕算力基础设施的单极结构。AI算力板块在 20 日相对强度、成交额份额、板块内扩散度三个维度同时处于全市场前 5%，且驱动来自可验证的订单与产能数据而非纯题材联想，这是它区别于其余候选的根本原因。但该板块成交额份额已升至 250 日 96% 分位，处于「逻辑最顺、位置最贵」的组合，主线成立不等于可以无条件追高——真正的风险不是方向错，而是节奏错。",
+    "stance": "offensive",
+    "stance_label": "结构性进攻",
+    "dominant_mainline_id": "ml-ai-compute",
+    "mainline_count": 5,
+    "confidence": 0.74,
+    "points": [
+      {
+        "title": "单极结构，而非轮动市",
+        "detail": "前三名主线成交额份额合计 34.6%，较 5 日前提升 5.1pct，资金集中度仍在上升。轮动市里份额此消彼长，此处是同步抬升，说明增量资金在流入同一方向。"
+      },
+      {
+        "title": "算力进入加速期，但拥挤度已近极值",
+        "detail": "20 日涨幅 22.7%、封板率 79%、连板高度 5 级，符合加速期特征。份额 250 日分位 0.96，历史上该分位对应后续 20 日收益中位数为负，需以「持有不追高」应对。"
+      },
+      {
+        "title": "机器人是唯一处于发酵期且梯队完整的方向",
+        "detail": "份额分位 0.78、连板高度 4 级、板块内 12 只个股创 20 日新高，处于风险收益比最优的阶段区间，是当前配置性价比最高的位置。"
+      },
+      {
+        "title": "固态电池进入分歧，创新药刚点火",
+        "detail": "固态电池 5 日涨幅仅为 20 日涨幅的 1/9，份额仍在高位但资金转为净流出，属典型高位分歧；创新药 20 日排名自 14 位跃升至第 6，成交额份额刚突破 3%，尚需 5 日确认。"
+      }
+    ],
+    "horizon": {
+      "valid_until": "2026-11-13",
+      "review_trigger": "算力板块成交额份额回落至 15% 以下，或 20 日相对强度排名跌出前 10，则本结论提前失效"
+    }
+  },
+  "mainlines": [
+    {
+      "id": "ml-ai-compute",
+      "rank": 1,
+      "rank_change": 0,
+      "name": "AI算力与国产芯片",
+      "aliases": [
+        "算力基础设施",
+        "国产替代",
+        "HBM/先进封装"
+      ],
+      "sector_codes": [
+        "BK1090",
+        "BK1036"
+      ],
+      "theme_type": "concept",
+      "stage": "acceleration",
+      "stage_label": "加速期",
+      "stage_confidence": 0.81,
+      "score": 84.8,
+      "score_breakdown": [
+        {
+          "key": "rs",
+          "label": "相对强度",
+          "raw": 1.213,
+          "normalized": 95,
+          "weight": 25,
+          "contribution": 23.75,
+          "note": "RS20 比值 1.213 的横截面百分位"
+        },
+        {
+          "key": "persistence",
+          "label": "趋势持续性",
+          "raw": 15,
+          "normalized": 92,
+          "weight": 20,
+          "contribution": 18.4,
+          "note": "20日内15天进入涨幅前10，连续6天"
+        },
+        {
+          "key": "volume",
+          "label": "量能聚集",
+          "raw": 0.183,
+          "normalized": 90,
+          "weight": 20,
+          "contribution": 18.0,
+          "note": "份额18.3%，5日+4.2pct"
+        },
+        {
+          "key": "breadth",
+          "label": "扩散度",
+          "raw": 0.71,
+          "normalized": 88,
+          "weight": 15,
+          "contribution": 13.2,
+          "note": "上涨占比71%，新高占比12.4%"
+        },
+        {
+          "key": "fundflow",
+          "label": "资金流",
+          "raw": 12.4,
+          "normalized": 84,
+          "weight": 10,
+          "contribution": 8.4,
+          "note": "5日主力净流入12.4亿（测算值）"
+        },
+        {
+          "key": "narrative",
+          "label": "叙事与催化",
+          "raw": 3,
+          "normalized": 90,
+          "weight": 10,
+          "contribution": 9.0,
+          "note": "3条高等级证据：产能扩张公告、招标落地、季度业绩超预期"
+        }
+      ],
+      "penalty": 6,
+      "penalty_reason": "R2 触发：份额 250 日分位 0.94 > 0.90 且 拥挤度分位 0.96 > 0.90 → −6",
+      "metrics": {
+        "chg_1d": 0.021,
+        "chg_5d": 0.064,
+        "chg_20d": 0.227,
+        "chg_60d": 0.318,
+        "rs_5": 1.048,
+        "rs_20": 1.213,
+        "rs_60": 1.186,
+        "turnover_share": 0.183,
+        "turnover_share_chg_5": 0.042,
+        "turnover_share_chg_20": 0.058,
+        "turnover_share_pct_250": 0.94,
+        "breadth_up_ratio": 0.71,
+        "new_high_ratio": 0.124,
+        "limit_up_count": 9,
+        "limit_up_ratio": 0.031,
+        "max_streak": 5,
+        "max_streak_prev": 5,
+        "seal_rate": 0.79,
+        "leader_chg_5d": 0.048,
+        "net_inflow_5_yi": 12.4,
+        "net_inflow_20_yi": 31.6,
+        "crowding_pct": 0.96,
+        "volatility_20": 0.318
+      },
+      "persistence": {
+        "days_top10_20": 15,
+        "days_top5_20": 9,
+        "consecutive_top10": 6,
+        "pulse_check": {
+          "passed": true,
+          "rules_passed": 3,
+          "detail": "P1 持续性 15/20 天且连续 6 天 ✓；P2 上涨占比 71%、新高占比 12.4% ✓；P3 份额 Δ5 +4.2pct、分位 0.96 ✓。三原则全过，可确认主线成立。"
+        }
+      },
+      "drivers": [
+        {
+          "type": "industry",
+          "title": "先进封装产能利用率连续三月满载",
+          "detail": "产业链调研显示主要封测厂 CoWoS 类产能利用率连续三个月维持满载，Q3 扩产设备招标金额同比翻倍。",
+          "date": "2026-10-21",
+          "source": "行业月度数据 + 公司投资者关系活动记录表",
+          "verified": true
+        },
+        {
+          "type": "earnings",
+          "title": "三季度板块整体盈利同比增速转正至 34%",
+          "detail": "已披露三季报的 38 家成分股中，26 家净利润同比正增长，板块整体增速由中报的 -6% 转正至 +34%，业绩兑现是本轮区别于上半年题材炒作的关键。",
+          "date": "2026-10-28",
+          "source": "巨潮资讯 · 三季报",
+          "verified": true
+        },
+        {
+          "type": "policy",
+          "title": "算力基础设施专项支持政策落地",
+          "detail": "相关政策明确对国产算力集群给予能耗指标与电价支持，直接改善数据中心运营成本结构。",
+          "date": "2026-10-16",
+          "source": "部委官网原文",
+          "verified": true
+        },
+        {
+          "type": "liquidity",
+          "title": "融资余额 20 日增加 48 亿元",
+          "detail": "板块两融余额由 612 亿升至 660 亿，杠杆资金同步进场，但需注意杠杆资金在分歧期退出速度更快。",
+          "date": "2026-10-29",
+          "source": "交易所融资融券数据（T+1）",
+          "verified": true
+        }
+      ],
+      "narrative": {
+        "logic": "算力是本轮唯一同时具备「订单可见、产能可验、政策可依」三重要素的方向。与纯主题炒作的区别在于，板块盈利在 Q3 出现实质性拐点，使得估值扩张有业绩兜底，这是资金敢于在 250 日 96% 分位继续持有的原因。",
+        "catalyst": "11 月上旬的行业大会与 Q4 招标结果，是短期最直接的验证窗口；若招标金额超预期，加速期可延续。",
+        "sustainability": "中期看，国产替代率仍处低位，产业空间足够支撑 2～3 个季度；但短期估值已透支未来一年一致预期，继续上行需新增催化而非存量博弈。",
+        "bear_case": "反面逻辑有三：一是海外算力资本开支若出现下修，国内配套订单将滞后一到两个季度承压；二是当前封板率 79% 属情绪高位，一旦龙头断板，板块内 12 只新高股将同步回落；三是份额 96% 分位意味着几乎没有增量资金空间，任何边际卖压都会被放大。"
+      },
+      "leaders": [
+        {
+          "code": "688xxx",
+          "name": "封测龙头A",
+          "role": "leader",
+          "chg_20d": 0.412,
+          "turnover_yi": 86.4,
+          "note": "5连板，板块情绪锚，换手率已达 28%"
+        },
+        {
+          "code": "002xxx",
+          "name": "设备中军B",
+          "role": "core",
+          "chg_20d": 0.286,
+          "turnover_yi": 52.1,
+          "note": "机构持仓集中，波动率低于龙头，是资金真实态度的观察窗口"
+        },
+        {
+          "code": "603xxx",
+          "name": "材料补涨C",
+          "role": "follower",
+          "chg_20d": 0.163,
+          "turnover_yi": 18.7,
+          "note": "补涨梯队刚启动，属扩散末端信号"
+        }
+      ],
+      "ladder": {
+        "has_leader": true,
+        "tiers": 3,
+        "note": "龙头-中军-补涨三层完整，但补涨层已开始活跃，按历史规律这通常出现在加速期中后段。"
+      },
+      "invalidation": [
+        {
+          "condition": "成交额份额回落",
+          "threshold": "全A占比 < 15%",
+          "note": "连续 3 日低于该值视为资金撤离"
+        },
+        {
+          "condition": "龙头断板",
+          "threshold": "龙头连续 2 日跌幅 > 7%",
+          "note": "情绪锚失效，梯队将同步坍塌"
+        },
+        {
+          "condition": "相对强度转弱",
+          "threshold": "20日相对强度排名跌出前 10",
+          "note": "主线属性丧失，降级为普通板块"
+        },
+        {
+          "condition": "业绩证伪",
+          "threshold": "Q4 预告板块增速 < 10%",
+          "note": "逻辑根基动摇，需整体重估"
+        }
+      ],
+      "watch": [
+        {
+          "item": "11 月首周招标公告金额",
+          "why": "直接决定 Q4 订单可见度"
+        },
+        {
+          "item": "板块换手率是否突破 30%",
+          "why": "历史上突破该阈值后 10 日内出现 5% 以上回撤的概率为 68%"
+        },
+        {
+          "item": "融资余额变化方向",
+          "why": "杠杆资金撤离通常领先价格 2～3 个交易日"
+        }
+      ],
+      "related": [
+        "ml-robot"
+      ]
+    },
+    {
+      "id": "ml-robot",
+      "rank": 2,
+      "rank_change": 1,
+      "name": "人形机器人",
+      "aliases": [
+        "具身智能",
+        "执行器",
+        "灵巧手"
+      ],
+      "sector_codes": [
+        "BK1150"
+      ],
+      "theme_type": "concept",
+      "stage": "expansion",
+      "stage_label": "发酵期",
+      "stage_confidence": 0.76,
+      "score": 81.1,
+      "score_breakdown": [
+        {
+          "key": "rs",
+          "label": "相对强度",
+          "raw": 1.134,
+          "normalized": 82,
+          "weight": 25,
+          "contribution": 20.5,
+          "note": "RS20 比值 1.134 的横截面百分位"
+        },
+        {
+          "key": "persistence",
+          "label": "趋势持续性",
+          "raw": 13,
+          "normalized": 86,
+          "weight": 20,
+          "contribution": 17.2,
+          "note": "20日内13天进入前10，连续4天"
+        },
+        {
+          "key": "volume",
+          "label": "量能聚集",
+          "raw": 0.092,
+          "normalized": 78,
+          "weight": 20,
+          "contribution": 15.6,
+          "note": "份额9.2%，5日+1.8pct"
+        },
+        {
+          "key": "breadth",
+          "label": "扩散度",
+          "raw": 0.66,
+          "normalized": 84,
+          "weight": 15,
+          "contribution": 12.6,
+          "note": "上涨占比66%，12只创新高"
+        },
+        {
+          "key": "fundflow",
+          "label": "资金流",
+          "raw": 6.8,
+          "normalized": 72,
+          "weight": 10,
+          "contribution": 7.2,
+          "note": "5日净流入6.8亿（测算值）"
+        },
+        {
+          "key": "narrative",
+          "label": "叙事与催化",
+          "raw": 3,
+          "normalized": 80,
+          "weight": 10,
+          "contribution": 8.0,
+          "note": "量产订单、供应链定点、展会催化"
+        }
+      ],
+      "penalty": 0,
+      "penalty_reason": "无触发：份额分位 0.78 与拥挤度 0.78 均低于阈值，60 日涨幅 52% 未达 60%",
+      "metrics": {
+        "chg_1d": 0.012,
+        "chg_5d": 0.041,
+        "chg_20d": 0.148,
+        "chg_60d": 0.521,
+        "rs_5": 1.021,
+        "rs_20": 1.134,
+        "rs_60": 1.289,
+        "turnover_share": 0.092,
+        "turnover_share_chg_5": 0.018,
+        "turnover_share_chg_20": 0.026,
+        "turnover_share_pct_250": 0.78,
+        "breadth_up_ratio": 0.66,
+        "new_high_ratio": 0.098,
+        "limit_up_count": 6,
+        "limit_up_ratio": 0.022,
+        "max_streak": 4,
+        "max_streak_prev": 3,
+        "seal_rate": 0.72,
+        "leader_chg_5d": 0.031,
+        "net_inflow_5_yi": 6.8,
+        "net_inflow_20_yi": 14.2,
+        "crowding_pct": 0.78,
+        "volatility_20": 0.286
+      },
+      "persistence": {
+        "days_top10_20": 13,
+        "days_top5_20": 7,
+        "consecutive_top10": 4,
+        "pulse_check": {
+          "passed": true,
+          "rules_passed": 3,
+          "detail": "P1 13/20 天、连续 4 天 ✓；P2 上涨占比 66%、新高占比 9.8% ✓；P3 份额 Δ5 +1.8pct、分位 0.78 ✓。三原则全过。"
+        }
+      },
+      "drivers": [
+        {
+          "type": "industry",
+          "title": "头部厂商公布首条千台级产线",
+          "detail": "量产节奏从「百台级验证」进入「千台级交付」，直接拉动执行器与减速器需求。",
+          "date": "2026-10-23",
+          "source": "公司公告 + 行业协会通稿",
+          "verified": true
+        },
+        {
+          "type": "event",
+          "title": "供应链定点密集落地",
+          "detail": "本月已有 5 家 A 股公司披露进入人形机器人供应链，定点通常领先收入确认 2 个季度，构成中期业绩线索。",
+          "date": "2026-10-27",
+          "source": "巨潮资讯 · 公司公告",
+          "verified": true
+        },
+        {
+          "type": "policy",
+          "title": "具身智能纳入制造业升级支持目录",
+          "detail": "政策层面给予研发费用加计与首台套补贴，降低厂商前期投入压力。",
+          "date": "2026-10-12",
+          "source": "部委官网原文",
+          "verified": true
+        }
+      ],
+      "narrative": {
+        "logic": "机器人当前处在「产业趋势确立、业绩尚未兑现」的最佳击球区。份额分位 0.78、连板高度 4 级、梯队完整且未出现补涨股集体涨停的过热信号，风险收益比优于已进入加速期的算力。",
+        "catalyst": "11 月的行业展会是密集催化窗口，历史规律显示展会前后板块波动率抬升但方向偏正。",
+        "sustainability": "中期确定性强，但短期涨幅已大（60日 +52%），需要以时间换空间，靠订单落地消化估值。",
+        "bear_case": "主要风险在于量产节奏不及预期——千台级产线若延期至明年，当前估值缺乏支撑；此外板块内多数公司机器人业务收入占比不足 5%，业绩与题材的错配在调整期会被放大。"
+      },
+      "leaders": [
+        {
+          "code": "002xxx",
+          "name": "执行器龙头D",
+          "role": "leader",
+          "chg_20d": 0.312,
+          "turnover_yi": 41.2,
+          "note": "4连板，订单确定性最高"
+        },
+        {
+          "code": "300xxx",
+          "name": "减速器中军E",
+          "role": "core",
+          "chg_20d": 0.187,
+          "turnover_yi": 26.8,
+          "note": "机构定价，回撤相对可控"
+        },
+        {
+          "code": "605xxx",
+          "name": "灵巧手F",
+          "role": "follower",
+          "chg_20d": 0.124,
+          "turnover_yi": 9.4,
+          "note": "弹性大但流动性偏弱"
+        }
+      ],
+      "ladder": {
+        "has_leader": true,
+        "tiers": 3,
+        "note": "梯队健康，补涨层尚未集体涨停，扩散仍在早中期。"
+      },
+      "invalidation": [
+        {
+          "condition": "量产节奏延期",
+          "threshold": "千台级产线延期超过 1 个季度",
+          "note": "核心逻辑失效"
+        },
+        {
+          "condition": "份额回落",
+          "threshold": "全A占比 < 7%",
+          "note": "资金关注度下降"
+        },
+        {
+          "condition": "龙头破位",
+          "threshold": "龙头跌破 20 日均线且 3 日不收回",
+          "note": "趋势转弱信号"
+        }
+      ],
+      "watch": [
+        {
+          "item": "11 月展会订单披露",
+          "why": "验证量产节奏的最直接证据"
+        },
+        {
+          "item": "补涨股是否集体涨停",
+          "why": "出现则说明进入加速期，需同步提高警惕"
+        }
+      ],
+      "related": [
+        "ml-ai-compute"
+      ]
+    },
+    {
+      "id": "ml-solid-battery",
+      "rank": 3,
+      "rank_change": -1,
+      "name": "固态电池",
+      "aliases": [
+        "半固态",
+        "硫化物路线"
+      ],
+      "sector_codes": [
+        "BK1078"
+      ],
+      "theme_type": "concept",
+      "stage": "divergence",
+      "stage_label": "分歧期",
+      "stage_confidence": 0.68,
+      "score": 68.8,
+      "score_breakdown": [
+        {
+          "key": "rs",
+          "label": "相对强度",
+          "raw": 1.078,
+          "normalized": 74,
+          "weight": 25,
+          "contribution": 18.5,
+          "note": "RS20 比值 1.078 的横截面百分位"
+        },
+        {
+          "key": "persistence",
+          "label": "趋势持续性",
+          "raw": 11,
+          "normalized": 70,
+          "weight": 20,
+          "contribution": 14.0,
+          "note": "20日内11天进入前10，但连续天数已断"
+        },
+        {
+          "key": "volume",
+          "label": "量能聚集",
+          "raw": 0.071,
+          "normalized": 70,
+          "weight": 20,
+          "contribution": 14.0,
+          "note": "份额7.1%，5日-0.6pct，首次转负"
+        },
+        {
+          "key": "breadth",
+          "label": "扩散度",
+          "raw": 0.48,
+          "normalized": 62,
+          "weight": 15,
+          "contribution": 9.3,
+          "note": "上涨占比降至48%，梯队断层"
+        },
+        {
+          "key": "fundflow",
+          "label": "资金流",
+          "raw": -2.1,
+          "normalized": 56,
+          "weight": 10,
+          "contribution": 5.6,
+          "note": "5日净流出2.1亿（测算值）"
+        },
+        {
+          "key": "narrative",
+          "label": "叙事与催化",
+          "raw": 2,
+          "normalized": 74,
+          "weight": 10,
+          "contribution": 7.4,
+          "note": "中试线投产，但量产时点仍模糊"
+        }
+      ],
+      "penalty": 0,
+      "penalty_reason": "无触发：份额分位 0.89 未过 0.90，连板 2 级远低于 5 级",
+      "metrics": {
+        "chg_1d": -0.008,
+        "chg_5d": 0.011,
+        "chg_20d": 0.092,
+        "chg_60d": 0.264,
+        "rs_5": 0.982,
+        "rs_20": 1.078,
+        "rs_60": 1.142,
+        "turnover_share": 0.071,
+        "turnover_share_chg_5": 0.006,
+        "turnover_share_chg_20": 0.004,
+        "turnover_share_pct_250": 0.92,
+        "breadth_up_ratio": 0.48,
+        "new_high_ratio": 0.042,
+        "limit_up_count": 2,
+        "limit_up_ratio": 0.008,
+        "max_streak": 2,
+        "max_streak_prev": 5,
+        "seal_rate": null,
+        "leader_chg_5d": -0.012,
+        "net_inflow_5_yi": -2.1,
+        "net_inflow_20_yi": 5.4,
+        "crowding_pct": 0.89,
+        "volatility_20": 0.342
+      },
+      "persistence": {
+        "days_top10_20": 11,
+        "days_top5_20": 5,
+        "consecutive_top10": 2,
+        "pulse_check": {
+          "passed": true,
+          "rules_passed": 2,
+          "detail": "P1 11/20 天且连续 2 天 ✓；P2 上涨占比 48%、新高占比 4.2% ✗（梯队已断层）；P3 份额 Δ5 +0.6pct 且分位 92 ✓ → 2/3 通过"
+        }
+      },
+      "drivers": [
+        {
+          "type": "industry",
+          "title": "首条中试线投产",
+          "detail": "硫化物路线中试线投产，良率数据未公开，量产时点仍取决于设备与材料配套。",
+          "date": "2026-10-19",
+          "source": "公司公告",
+          "verified": true
+        },
+        {
+          "type": "event",
+          "title": "车企装车验证计划公布",
+          "detail": "两家车企公布 2027 年装车验证计划，时间点晚于市场预期，是本周板块走弱的直接触发因素。",
+          "date": "2026-10-26",
+          "source": "车企发布会",
+          "verified": true
+        }
+      ],
+      "narrative": {
+        "logic": "固态电池的产业方向没有问题，问题出在节奏与预期差。市场此前按「2026 年小批量」定价，而最新的装车计划指向 2027 年，时间轴后移直接压缩了短期估值空间。",
+        "catalyst": "若后续有企业公布超预期的良率或成本数据，分歧可重新转为一致；但在此之前缺乏正向催化。",
+        "sustainability": "中期仍是重要方向，但短期进入「逻辑不变、筹码松动」的典型分歧状态，需要时间消化。",
+        "bear_case": "分歧期的风险在于「跌不深但也涨不动」，资金效率低；若算力与机器人继续吸金，本板块份额会被持续抽离，最终从分歧滑向退潮。"
+      },
+      "leaders": [
+        {
+          "code": "300xxx",
+          "name": "硫化物龙头G",
+          "role": "leader",
+          "chg_20d": 0.142,
+          "turnover_yi": 22.6,
+          "note": "高位放量滞涨，5日跌幅3.2%"
+        },
+        {
+          "code": "002xxx",
+          "name": "设备配套H",
+          "role": "core",
+          "chg_20d": 0.068,
+          "turnover_yi": 11.3,
+          "note": "跟随龙头，弹性减弱"
+        }
+      ],
+      "ladder": {
+        "has_leader": true,
+        "tiers": 2,
+        "note": "补涨层已消失，梯队由三层压缩至两层，是分歧期的典型特征。"
+      },
+      "invalidation": [
+        {
+          "condition": "份额持续流失",
+          "threshold": "全A占比 < 5%",
+          "note": "降级为普通板块"
+        },
+        {
+          "condition": "龙头破位",
+          "threshold": "龙头跌破 60 日均线",
+          "note": "中期趋势破坏"
+        }
+      ],
+      "watch": [
+        {
+          "item": "良率数据是否公开",
+          "why": "决定量产时点能否前移"
+        },
+        {
+          "item": "份额能否重回 8% 以上",
+          "why": "分歧转一致的资金标志"
+        }
+      ],
+      "related": []
+    },
+    {
+      "id": "ml-innovative-drug",
+      "rank": 4,
+      "rank_change": 2,
+      "name": "创新药出海",
+      "aliases": [
+        "License-out",
+        "ADC",
+        "双抗"
+      ],
+      "sector_codes": [
+        "BK1046"
+      ],
+      "theme_type": "industry",
+      "stage": "ignition",
+      "stage_label": "启动期",
+      "stage_confidence": 0.58,
+      "score": 63.9,
+      "score_breakdown": [
+        {
+          "key": "rs",
+          "label": "相对强度",
+          "raw": 1.046,
+          "normalized": 68,
+          "weight": 25,
+          "contribution": 17.0,
+          "note": "RS20 比值 1.046 的横截面百分位"
+        },
+        {
+          "key": "persistence",
+          "label": "趋势持续性",
+          "raw": 7,
+          "normalized": 58,
+          "weight": 20,
+          "contribution": 11.6,
+          "note": "20日内7天进入前10，刚过门槛"
+        },
+        {
+          "key": "volume",
+          "label": "量能聚集",
+          "raw": 0.031,
+          "normalized": 60,
+          "weight": 20,
+          "contribution": 12.0,
+          "note": "份额3.1%，5日+0.9pct，抬升明显但基数低"
+        },
+        {
+          "key": "breadth",
+          "label": "扩散度",
+          "raw": 0.62,
+          "normalized": 62,
+          "weight": 15,
+          "contribution": 9.3,
+          "note": "上涨占比62%，但新高个股仅3只"
+        },
+        {
+          "key": "fundflow",
+          "label": "资金流",
+          "raw": 4.2,
+          "normalized": 64,
+          "weight": 10,
+          "contribution": 6.4,
+          "note": "5日净流入4.2亿（测算值）"
+        },
+        {
+          "key": "narrative",
+          "label": "叙事与催化",
+          "raw": 3,
+          "normalized": 76,
+          "weight": 10,
+          "contribution": 7.6,
+          "note": "3笔海外授权，首付款合计超预期"
+        }
+      ],
+      "penalty": 0,
+      "penalty_reason": "无触发：份额分位 0.64、拥挤度 0.64，60 日涨幅 8.7% 未达阈值",
+      "metrics": {
+        "chg_1d": 0.016,
+        "chg_5d": 0.028,
+        "chg_20d": 0.061,
+        "chg_60d": 0.087,
+        "rs_5": 1.014,
+        "rs_20": 1.046,
+        "rs_60": 1.032,
+        "turnover_share": 0.031,
+        "turnover_share_chg_5": 0.009,
+        "turnover_share_chg_20": 0.014,
+        "turnover_share_pct_250": 0.64,
+        "breadth_up_ratio": 0.52,
+        "new_high_ratio": 0.031,
+        "limit_up_count": 3,
+        "limit_up_ratio": 0.011,
+        "max_streak": 2,
+        "max_streak_prev": 1,
+        "seal_rate": 0.66,
+        "leader_chg_5d": 0.021,
+        "net_inflow_5_yi": 4.2,
+        "net_inflow_20_yi": 6.1,
+        "crowding_pct": 0.64,
+        "volatility_20": 0.254
+      },
+      "persistence": {
+        "days_top10_20": 7,
+        "days_top5_20": 3,
+        "consecutive_top10": 3,
+        "pulse_check": {
+          "passed": true,
+          "rules_passed": 2,
+          "detail": "P1 7/20 天、连续 3 天 ✓；P2 上涨占比 52%（<55%）✗、新高占比 3.1%（<8%）✗；P3 份额 Δ5 +0.9pct 且分位 64 ✓ → 2/3 通过"
+        }
+      },
+      "drivers": [
+        {
+          "type": "industry",
+          "title": "三笔海外授权首付款合计超预期",
+          "detail": "本月三笔 License-out 首付款合计 8.6 亿美元，超过市场对全季度的预期，验证国内研发资产的国际定价能力。",
+          "date": "2026-10-24",
+          "source": "公司公告 + 交易对方披露",
+          "verified": true
+        },
+        {
+          "type": "earnings",
+          "title": "三季报亏损收窄速度快于预期",
+          "detail": "头部公司研发费用率下降、授权收入确认，单季亏损同比收窄 41%。",
+          "date": "2026-10-29",
+          "source": "巨潮资讯 · 三季报",
+          "verified": true
+        }
+      ],
+      "narrative": {
+        "logic": "创新药的逻辑与算力、机器人不同：它不依赖情绪扩散，而依赖单笔交易的定价重估。一笔成功的授权会直接改变市场对整条管线乃至整个平台的估值锚，因此启动往往悄无声息。",
+        "catalyst": "年底前后的国际学术会议与后续授权落地，是持续性催化的来源。",
+        "sustainability": "中期逻辑扎实，但个股分化极大，板块指数容易掩盖个体差异，需自下而上选择。",
+        "bear_case": "最大风险是「一日游」：单笔授权公告带来脉冲式上涨后缺乏后续，板块宽度不足（仅 3 只创新高）说明资金尚未形成合力，若 5 日内无新增催化，可能退回普通板块。"
+      },
+      "leaders": [
+        {
+          "code": "688xxx",
+          "name": "ADC平台I",
+          "role": "leader",
+          "chg_20d": 0.186,
+          "turnover_yi": 14.2,
+          "note": "授权交易直接受益方"
+        },
+        {
+          "code": "300xxx",
+          "name": "双抗平台J",
+          "role": "core",
+          "chg_20d": 0.092,
+          "turnover_yi": 8.6,
+          "note": "管线梯队厚，估值弹性中等"
+        }
+      ],
+      "ladder": {
+        "has_leader": true,
+        "tiers": 2,
+        "note": "仅两层，尚缺补涨层，属启动期正常形态。"
+      },
+      "invalidation": [
+        {
+          "condition": "催化中断",
+          "threshold": "连续 15 日无新增授权或临床数据",
+          "note": "启动期最怕没有后续"
+        },
+        {
+          "condition": "宽度不足",
+          "threshold": "创新高个股少于 5 只",
+          "note": "无法形成板块效应"
+        }
+      ],
+      "watch": [
+        {
+          "item": "12 月国际学术会议数据",
+          "why": "决定管线估值能否二次重估"
+        },
+        {
+          "item": "份额能否突破 4%",
+          "why": "进入主流视野的门槛"
+        }
+      ],
+      "related": []
+    },
+    {
+      "id": "ml-dividend",
+      "rank": 5,
+      "rank_change": -2,
+      "name": "红利低波",
+      "aliases": [
+        "高股息",
+        "防御资产"
+      ],
+      "sector_codes": [
+        "BK1050"
+      ],
+      "theme_type": "style",
+      "stage": "fade",
+      "stage_label": "退潮期",
+      "stage_confidence": 0.45,
+      "score": 43.1,
+      "score_breakdown": [
+        {
+          "key": "rs",
+          "label": "相对强度",
+          "raw": 0.971,
+          "normalized": 38,
+          "weight": 25,
+          "contribution": 9.5,
+          "note": "RS20 比值 0.971 的横截面百分位"
+        },
+        {
+          "key": "persistence",
+          "label": "趋势持续性",
+          "raw": 4,
+          "normalized": 52,
+          "weight": 20,
+          "contribution": 10.4,
+          "note": "20日内仅4天进入前10"
+        },
+        {
+          "key": "volume",
+          "label": "量能聚集",
+          "raw": 0.048,
+          "normalized": 44,
+          "weight": 20,
+          "contribution": 8.8,
+          "note": "份额4.8%，5日-1.4pct"
+        },
+        {
+          "key": "breadth",
+          "label": "扩散度",
+          "raw": 0.41,
+          "normalized": 40,
+          "weight": 15,
+          "contribution": 6.0,
+          "note": "上涨占比41%"
+        },
+        {
+          "key": "fundflow",
+          "label": "资金流",
+          "raw": -6.4,
+          "normalized": 34,
+          "weight": 10,
+          "contribution": 3.4,
+          "note": "5日净流出6.4亿（测算值）"
+        },
+        {
+          "key": "narrative",
+          "label": "叙事与催化",
+          "raw": 1,
+          "normalized": 50,
+          "weight": 10,
+          "contribution": 5.0,
+          "note": "仅有无风险利率下行的弱支撑"
+        }
+      ],
+      "penalty": 0,
+      "penalty_reason": "无触发：份额分位 0.22、拥挤度 0.22，处于低位",
+      "metrics": {
+        "chg_1d": -0.004,
+        "chg_5d": -0.012,
+        "chg_20d": -0.014,
+        "chg_60d": 0.021,
+        "rs_5": 0.972,
+        "rs_20": 0.971,
+        "rs_60": 0.994,
+        "turnover_share": 0.048,
+        "turnover_share_chg_5": -0.014,
+        "turnover_share_chg_20": -0.011,
+        "turnover_share_pct_250": 0.22,
+        "breadth_up_ratio": 0.41,
+        "new_high_ratio": 0.012,
+        "limit_up_count": 0,
+        "limit_up_ratio": 0,
+        "max_streak": 0,
+        "max_streak_prev": 0,
+        "seal_rate": null,
+        "leader_chg_5d": -0.092,
+        "net_inflow_5_yi": -6.4,
+        "net_inflow_20_yi": -18.2,
+        "crowding_pct": 0.22,
+        "volatility_20": 0.112
+      },
+      "persistence": {
+        "days_top10_20": 4,
+        "days_top5_20": 1,
+        "consecutive_top10": 0,
+        "pulse_check": {
+          "passed": false,
+          "rules_passed": 0,
+          "detail": "P1 4/20 天 ✗；P2 上涨占比 41% ✗；P3 份额 Δ5 −1.4pct ✗ → 0/3 通过。按 §3 存量豁免保留 1 期（stage=fade、置信度 0.45、已列入 rotation.outflow）"
+        }
+      },
+      "drivers": [
+        {
+          "type": "liquidity",
+          "title": "风险偏好回升，资金撤离防御资产",
+          "detail": "两融余额连续 8 日回升、成长板块成交占比提升，防御资产相对吸引力下降。",
+          "date": "2026-10-30",
+          "source": "交易所两融数据",
+          "verified": true
+        },
+        {
+          "type": "industry",
+          "title": "中报分红率见顶，股息吸引力边际走弱",
+          "detail": "已披露中报的银行、公用事业分红率中位数 3.9%，较去年回落 0.4pct，股息率对 10 年国债的溢价收窄至 1.1pct。",
+          "date": "2026-10-24",
+          "source": "上市公司公告汇总",
+          "verified": true
+        }
+      ],
+      "narrative": {
+        "logic": "红利低波不是「跌」，而是「被相对剥夺」。在风险偏好回升的结构性行情里，它的低波动特性反而成为劣势——资金需要弹性，不需要稳定。",
+        "catalyst": "只有当市场出现系统性回撤或利率快速下行时，防御属性才会重新被定价。",
+        "sustainability": "作为风格参照保留，不构成当期主线。若指数出现 5% 以上回撤，本板块可能重新进入视野。",
+        "bear_case": "反向风险是被过早判定退潮——若 11 月出现外部冲击，红利可能快速回归，届时需重新评估。"
+      },
+      "leaders": [
+        {
+          "code": "601xxx",
+          "name": "公用事业K",
+          "role": "core",
+          "chg_20d": 0.004,
+          "turnover_yi": 6.2,
+          "note": "波动极小，作为风格标尺"
+        }
+      ],
+      "ladder": {
+        "has_leader": false,
+        "tiers": 1,
+        "note": "风格板块无梯队概念，此项无意义。"
+      },
+      "invalidation": [
+        {
+          "condition": "市场回撤",
+          "threshold": "沪深300 20日跌幅 > 5%",
+          "note": "防御属性重新生效"
+        }
+      ],
+      "watch": [
+        {
+          "item": "十年期国债收益率",
+          "why": "利差是红利资产的核心定价变量"
+        }
+      ],
+      "related": []
+    }
+  ],
+  "rotation": {
+    "narrative": "资金呈现「单向集中」而非「高低切换」的特征。算力与机器人的份额同步抬升，来源是固态电池、红利低波与部分消费板块的流出，而非存量博弈下的此消彼长。这种结构通常意味着行情处于中段而非末段——真正的顶部往往伴随主线内部分化，而当前主线内部梯队仍然完整。",
+    "inflow": [
+      {
+        "name": "AI算力与国产芯片",
+        "delta_pct": 4.2,
+        "note": "份额抬升最快，但已近历史极值"
+      },
+      {
+        "name": "人形机器人",
+        "delta_pct": 1.8,
+        "note": "稳步抬升，尚未过热"
+      },
+      {
+        "name": "创新药出海",
+        "delta_pct": 0.9,
+        "note": "低基数抬升，处于早期"
+      }
+    ],
+    "outflow": [
+      {
+        "name": "红利低波",
+        "delta_pct": -1.4,
+        "note": "风险偏好回升的直接代价"
+      },
+      {
+        "name": "固态电池",
+        "delta_pct": -0.6,
+        "note": "预期差修正，资金撤离"
+      },
+      {
+        "name": "白酒消费",
+        "delta_pct": -1.1,
+        "note": "缺乏催化，持续失血"
+      }
+    ],
+    "emerging": [
+      {
+        "name": "商业航天",
+        "score": 52.4,
+        "signal": "份额连续 3 日抬升但未过 2%，涨停 2 家，尚未通过 P1 持续性检验"
+      },
+      {
+        "name": "电力设备出海",
+        "score": 49.8,
+        "signal": "订单数据改善，但板块内部涨幅离散度过高"
+      }
+    ],
+    "timeline": [
+      {
+        "date": "2026-09-25",
+        "event": "算力板块首次放量，份额突破 12%",
+        "impact": "positive",
+        "mainline_id": "ml-ai-compute"
+      },
+      {
+        "date": "2026-10-12",
+        "event": "具身智能支持政策落地",
+        "impact": "positive",
+        "mainline_id": "ml-robot"
+      },
+      {
+        "date": "2026-10-16",
+        "event": "算力基础设施专项政策发布",
+        "impact": "positive",
+        "mainline_id": "ml-ai-compute"
+      },
+      {
+        "date": "2026-10-23",
+        "event": "千台级产线公布，机器人进入发酵",
+        "impact": "positive",
+        "mainline_id": "ml-robot"
+      },
+      {
+        "date": "2026-10-26",
+        "event": "车企装车计划晚于预期，固态电池转分歧",
+        "impact": "negative",
+        "mainline_id": "ml-solid-battery"
+      },
+      {
+        "date": "2026-10-29",
+        "event": "算力三季报增速转正，业绩兑现",
+        "impact": "positive",
+        "mainline_id": "ml-ai-compute"
+      }
+    ]
+  },
+  "risks": [
+    {
+      "id": "r1",
+      "level": "high",
+      "title": "主线拥挤度处于历史极值",
+      "detail": "算力板块成交额份额 96% 分位、连板高度 5 级，属于「逻辑最顺、位置最贵」的组合。历史上该分位对应后续 20 日收益中位数为负。",
+      "trigger": "份额连续 3 日回落至 15% 以下，或龙头连续 2 日跌幅超 7%",
+      "mitigation": "不追高，以持有为主；新增仓位等待回调至 20 日均线附近",
+      "affected": [
+        "ml-ai-compute"
+      ]
+    },
+    {
+      "id": "r2",
+      "level": "high",
+      "title": "单极结构脆弱性",
+      "detail": "前三名主线占据 34.6% 成交额，市场缺乏第二条具备同等确定性的承接方向。一旦主线调整，资金无处可去，容易演变为系统性回撤而非良性轮动。",
+      "trigger": "主线板块单日跌幅超 4% 且无其他板块份额同步抬升",
+      "mitigation": "保留 20%～30% 现金，避免满仓单押",
+      "affected": [
+        "ml-ai-compute",
+        "ml-robot"
+      ]
+    },
+    {
+      "id": "r3",
+      "level": "medium",
+      "title": "业绩与题材错配",
+      "detail": "机器人板块内多数公司相关业务收入占比不足 5%，当前定价基于 2027 年后的想象空间，调整期估值支撑薄弱。",
+      "trigger": "三季报机器人业务收入占比低于 3% 的公司数量增加",
+      "mitigation": "优先选择已有定点公告、收入可验证的标的",
+      "affected": [
+        "ml-robot"
+      ]
+    },
+    {
+      "id": "r4",
+      "level": "medium",
+      "title": "资金流指标口径偏差",
+      "detail": "主力资金为按单笔金额分档的算法测算值，无法识别真实席位意图，在拆单普遍的中小市值股上失真更明显。",
+      "trigger": "资金流与价格、份额三者出现持续背离",
+      "mitigation": "以成交额份额与换手率为主，资金流仅作辅助验证",
+      "affected": []
+    },
+    {
+      "id": "r5",
+      "level": "low",
+      "title": "外部流动性扰动",
+      "detail": "海外利率若超预期上行，成长风格估值将承压，科创50 的 0.81 估值分位对利率敏感度高。",
+      "trigger": "美债 10 年期收益率单周上行超 30bp",
+      "mitigation": "关注风格再平衡，适度提高低估值权重",
+      "affected": [
+        "ml-ai-compute",
+        "ml-robot",
+        "ml-innovative-drug"
+      ]
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "s1",
+      "name": "乐观：扩散延续",
+      "probability": 0.35,
+      "assumption": "11 月招标金额超预期，机器人展会催化落地，成交额维持在 1.5 万亿以上",
+      "impact": "算力加速期延长 2～3 周，机器人由发酵转入加速，主线数量扩张至 6 条以上",
+      "action": "维持结构性进攻，重心放在发酵期板块而非加速期板块"
+    },
+    {
+      "id": "s2",
+      "name": "中性：高位震荡",
+      "probability": 0.45,
+      "assumption": "无新增催化，成交额回落至 1.2～1.4 万亿，主线内部出现分化",
+      "impact": "算力由加速转分歧，机器人接棒但难以独立支撑，指数区间震荡",
+      "action": "降低换手，聚焦梯队完整的方向，回避补涨股"
+    },
+    {
+      "id": "s3",
+      "name": "悲观：单极瓦解",
+      "probability": 0.2,
+      "assumption": "海外算力资本开支下修或龙头业绩不及预期，主线单日跌幅超 5%",
+      "impact": "无承接方向，指数回撤 6%～10%，红利低波重新占优",
+      "action": "提前降至半仓以下，等待份额重新聚集的信号"
+    }
+  ],
+  "playbook": {
+    "stance": "结构性进攻，但拒绝追高",
+    "position_range": "五至七成",
+    "rules": [
+      {
+        "if": "算力板块份额维持 15% 以上且龙头未断板",
+        "then": "持有，不做减法，但不新增仓位"
+      },
+      {
+        "if": "算力龙头连续 2 日跌幅超 7%",
+        "then": "减仓至三成，观察 3 个交易日再判断"
+      },
+      {
+        "if": "机器人份额突破 11% 且补涨股集体涨停",
+        "then": "视为进入加速期，同步执行止盈纪律"
+      },
+      {
+        "if": "创新药新增 1 笔以上海外授权",
+        "then": "可将该方向提升至战术配置级别"
+      },
+      {
+        "if": "沪深300 20 日跌幅超 5%",
+        "then": "切换至防御，提高红利低波权重"
+      }
+    ],
+    "checklist": [
+      "确认当日成交额是否高于 1.2 万亿（低于则降低所有仓位）",
+      "确认主线板块份额是否仍在前 3",
+      "确认龙头是否守住 20 日均线",
+      "确认是否有新的高等级催化（公告/政策原文）"
+    ],
+    "disclaimer": "本报告为市场结构研究，不构成投资建议，不承诺任何收益。所有资金流数据为算法测算值，与真实成交存在偏差。使用者应自行核验数据并独立承担决策责任。"
+  },
+  "appendix": {
+    "method_summary": "以 20 个交易日为主判定窗口、5 日确认、60 日定性、250 日取分位，通过相对强度、持续性、量能聚集、扩散度、资金流、叙事强度六因子加权打分，并对拥挤度施加惩罚，得到主线排序；再以反脉冲三原则过滤单日脉冲，最后按五阶段模型定位生命周期。",
+    "weights": [
+      {
+        "key": "rs",
+        "label": "相对强度",
+        "weight": 25,
+        "desc": "20 日涨幅减全 A 中位数，取横截面百分位"
+      },
+      {
+        "key": "persistence",
+        "label": "趋势持续性",
+        "weight": 20,
+        "desc": "前 10 天数、连续天数、60 日方向一致性"
+      },
+      {
+        "key": "volume",
+        "label": "量能聚集",
+        "weight": 20,
+        "desc": "成交额份额及其 5 日变化"
+      },
+      {
+        "key": "breadth",
+        "label": "扩散度",
+        "weight": 15,
+        "desc": "上涨占比、新高占比、涨停家数"
+      },
+      {
+        "key": "fundflow",
+        "label": "资金流",
+        "weight": 10,
+        "desc": "5/20 日主力净额占流通市值比（测算值）"
+      },
+      {
+        "key": "narrative",
+        "label": "叙事与催化",
+        "weight": 10,
+        "desc": "证据条数 × 来源等级，需注明出处"
+      }
+    ],
+    "stage_rules": [
+      {
+        "stage": "ignition",
+        "label": "启动期",
+        "rule": "份额 Δ5 ≥ +0.5pct，或 20 日排名自 10 名外跃入前 5"
+      },
+      {
+        "stage": "expansion",
+        "label": "发酵期",
+        "rule": "份额分位 60～85，涨停 ≥5 家，连板高度 3～4 级"
+      },
+      {
+        "stage": "acceleration",
+        "label": "加速期",
+        "rule": "20 日涨幅 >25%，拥挤分位 >85，封板率 >75%"
+      },
+      {
+        "stage": "divergence",
+        "label": "分歧期",
+        "rule": "5 日涨幅 < 20 日涨幅/4，份额分位 >90，连板高度回落 ≥2 级"
+      },
+      {
+        "stage": "fade",
+        "label": "退潮期",
+        "rule": "份额 Δ20 < −0.5pct，龙头 5 日跌幅 >8%，涨停数腰斩"
+      }
+    ],
+    "glossary": [
+      {
+        "term": "成交额份额",
+        "def": "板块成交额占全 A 成交额的比重，衡量资金关注度的核心指标，比绝对成交额更可比。"
+      },
+      {
+        "term": "拥挤度分位",
+        "def": "当前份额在过去 250 个交易日中的百分位。分位越高，意味着继续吸引增量资金的空间越小。"
+      },
+      {
+        "term": "反脉冲三原则",
+        "def": "持续性、广度、量能三项检验，用于排除由单日消息或调仓引发的伪主线信号。"
+      },
+      {
+        "term": "扩散度",
+        "def": "板块内上涨家数占比与创新高家数占比，衡量赚钱效应是集中在少数龙头还是普惠全板块。"
+      },
+      {
+        "term": "梯队完整度",
+        "def": "龙头、中军、补涨三层是否齐全。补涨层集体涨停通常意味着扩散进入末段。"
+      },
+      {
+        "term": "相对强度 RS",
+        "def": "板块涨幅减去基准（全 A 中位数）涨幅，正值表示跑赢。"
+      }
+    ],
+    "changelog": [
+      {
+        "version": "1.5.0",
+        "date": "2026-10-31",
+        "note": "判据可复算：补 3 个 metrics 字段、rs 改比值口径、fade 存量豁免"
+      }
+    ]
+  }
+}

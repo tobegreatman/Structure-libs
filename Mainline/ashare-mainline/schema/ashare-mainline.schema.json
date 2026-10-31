@@ -1,0 +1,1511 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://local/ashare-mainline.schema.json",
+  "title": "A股市场主线分析报告",
+  "description": "A股主线分析的标准化输出契约 v1.0。设计原则：字段扁平、枚举封闭、缺失用 null、百分比用小数、金额单位亿元。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "meta",
+    "window",
+    "data_quality",
+    "market_regime",
+    "verdict",
+    "mainlines",
+    "rotation",
+    "risks",
+    "scenarios",
+    "playbook",
+    "appendix"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "meta": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "report_id",
+        "as_of",
+        "generated_at",
+        "title",
+        "data_mode",
+        "confidence"
+      ],
+      "properties": {
+        "report_id": {
+          "type": "string",
+          "description": "唯一标识，建议 AML-YYYYMMDD-NN"
+        },
+        "as_of": {
+          "type": "string",
+          "format": "date",
+          "description": "基准交易日"
+        },
+        "generated_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "title": {
+          "type": "string"
+        },
+        "data_mode": {
+          "type": "string",
+          "enum": [
+            "live",
+            "delayed",
+            "demo"
+          ]
+        },
+        "confidence": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "整体结论置信度"
+        },
+        "analyst": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "model": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "prompt_version": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "operator": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          }
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "window": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "as_of",
+        "primary_days",
+        "confirm_days",
+        "context_days",
+        "quantile_days"
+      ],
+      "properties": {
+        "as_of": {
+          "type": "string",
+          "format": "date"
+        },
+        "primary_days": {
+          "type": "integer",
+          "const": 20
+        },
+        "confirm_days": {
+          "type": "integer",
+          "const": 5
+        },
+        "context_days": {
+          "type": "integer",
+          "const": 60
+        },
+        "quantile_days": {
+          "type": "integer",
+          "const": 250
+        },
+        "effective_range": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "start": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "format": "date"
+            },
+            "end": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "format": "date"
+            }
+          }
+        },
+        "rules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "本次分析实际采用的时间窗口规则"
+        },
+        "excluded": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "date_range": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "reason": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "data_quality": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": [
+            "ok",
+            "partial",
+            "degraded",
+            null
+          ]
+        },
+        "coverage": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 1
+        },
+        "sources": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "name": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "category": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "fields": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "as_of": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "reliability": {
+                "type": "string",
+                "enum": [
+                  "high",
+                  "medium",
+                  "low",
+                  null
+                ]
+              },
+              "note": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            }
+          }
+        },
+        "missing": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "field": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "reason": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "fallback": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            }
+          }
+        },
+        "notes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "market_regime": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "label": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "phase": {
+          "type": "string",
+          "enum": [
+            "risk_on",
+            "risk_off",
+            "structural",
+            "choppy",
+            null
+          ]
+        },
+        "phase_label": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "risk_appetite": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 100
+        },
+        "liquidity": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 100
+        },
+        "breadth_score": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 100
+        },
+        "indices": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "code": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "name": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "close": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "chg_1d": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "chg_5d": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "chg_20d": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "turnover_yi": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "pe_pct_250": {
+                "type": [
+                  "number",
+                  "null"
+                ],
+                "minimum": 0,
+                "maximum": 1
+              }
+            }
+          }
+        },
+        "breadth": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "up_ratio": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "limit_up": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "limit_down": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "broken_board_rate": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "advance_decline_ratio": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "new_high": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "new_low": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            }
+          }
+        },
+        "narrative": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "verdict": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "headline",
+        "core_thesis",
+        "stance",
+        "confidence"
+      ],
+      "properties": {
+        "headline": {
+          "type": "string",
+          "maxLength": 60
+        },
+        "core_thesis": {
+          "type": "string"
+        },
+        "stance": {
+          "type": "string",
+          "enum": [
+            "offensive",
+            "balanced",
+            "defensive"
+          ]
+        },
+        "stance_label": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "dominant_mainline_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "mainline_count": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "confidence": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "points": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "title": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "detail": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            }
+          }
+        },
+        "horizon": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "valid_until": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "format": "date"
+            },
+            "review_trigger": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          }
+        }
+      }
+    },
+    "mainlines": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "rank",
+          "name",
+          "stage",
+          "score"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^ml-[a-z0-9-]+$"
+          },
+          "rank": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "rank_change": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "description": "相对上一期排名变化，正数为上升"
+          },
+          "name": {
+            "type": "string"
+          },
+          "aliases": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "sector_codes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "theme_type": {
+            "type": "string",
+            "enum": [
+              "industry",
+              "concept",
+              "style",
+              null
+            ]
+          },
+          "stage": {
+            "type": "string",
+            "enum": [
+              "ignition",
+              "expansion",
+              "acceleration",
+              "divergence",
+              "fade"
+            ]
+          },
+          "stage_label": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "stage_confidence": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "minimum": 0,
+            "maximum": 1
+          },
+          "score": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "score_breakdown": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "key": {
+                  "type": "string",
+                  "enum": [
+                    "rs",
+                    "persistence",
+                    "volume",
+                    "breadth",
+                    "fundflow",
+                    "narrative",
+                    null
+                  ]
+                },
+                "label": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "raw": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                },
+                "normalized": {
+                  "type": [
+                    "number",
+                    "null"
+                  ],
+                  "minimum": 0,
+                  "maximum": 100
+                },
+                "weight": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                },
+                "contribution": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                },
+                "note": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              }
+            },
+            "minItems": 6,
+            "maxItems": 6
+          },
+          "penalty": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "minimum": 0,
+            "maximum": 12
+          },
+          "penalty_reason": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "metrics": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "chg_1d": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "chg_5d": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "chg_20d": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "chg_60d": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "rs_5": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "rs_20": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "rs_60": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "turnover_share": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "turnover_share_chg_5": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "turnover_share_chg_20": {
+                "type": [
+                  "number",
+                  "null"
+                ],
+                "description": "份额相对 20 个交易日前的变化，单位小数（0.012 = +1.2pct）"
+              },
+              "turnover_share_pct_250": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "breadth_up_ratio": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "new_high_ratio": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "limit_up_count": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              },
+              "limit_up_ratio": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "max_streak": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              },
+              "max_streak_prev": {
+                "type": [
+                  "integer",
+                  "null"
+                ],
+                "description": "5 个交易日前的连板高度，用于判定「连板高度回落 ≥2 级」"
+              },
+              "seal_rate": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "leader_chg_5d": {
+                "type": [
+                  "number",
+                  "null"
+                ],
+                "description": "板块内龙头个股的 5 日涨跌幅（小数），用于退潮判定"
+              },
+              "net_inflow_5_yi": {
+                "type": [
+                  "number",
+                  "null"
+                ],
+                "description": "主力净额，算法测算值"
+              },
+              "net_inflow_20_yi": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "crowding_pct": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "volatility_20": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              }
+            }
+          },
+          "persistence": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "days_top10_20": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              },
+              "days_top5_20": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              },
+              "consecutive_top10": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              },
+              "pulse_check": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "passed": {
+                    "type": [
+                      "boolean",
+                      "null"
+                    ]
+                  },
+                  "rules_passed": {
+                    "type": [
+                      "integer",
+                      "null"
+                    ],
+                    "minimum": 0,
+                    "maximum": 3
+                  },
+                  "detail": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "drivers": {
+            "type": "array",
+            "minItems": 2,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "type",
+                "title",
+                "date"
+              ],
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "enum": [
+                    "policy",
+                    "industry",
+                    "earnings",
+                    "event",
+                    "liquidity"
+                  ]
+                },
+                "title": {
+                  "type": "string"
+                },
+                "detail": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "date": {
+                  "type": "string",
+                  "format": "date"
+                },
+                "source": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "verified": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                }
+              }
+            },
+            "maxItems": 4
+          },
+          "narrative": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "logic": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "catalyst": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "sustainability": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "bear_case": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            }
+          },
+          "leaders": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "code": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "name": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "role": {
+                  "type": "string",
+                  "enum": [
+                    "leader",
+                    "core",
+                    "follower",
+                    null
+                  ]
+                },
+                "chg_20d": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                },
+                "turnover_yi": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                },
+                "note": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              }
+            }
+          },
+          "ladder": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "has_leader": {
+                "type": [
+                  "boolean",
+                  "null"
+                ]
+              },
+              "tiers": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              },
+              "note": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            }
+          },
+          "invalidation": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "condition": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "threshold": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "note": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              }
+            }
+          },
+          "watch": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "item": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "why": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              }
+            }
+          },
+          "related": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "maxItems": 5,
+      "description": "正式报告 3～5 条（{{TOP_N}}）；1 条仅用于空白模板与局部测试"
+    },
+    "rotation": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "narrative": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "inflow": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "name": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "delta_pct": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "note": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            }
+          }
+        },
+        "outflow": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "name": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "delta_pct": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "note": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            }
+          }
+        },
+        "emerging": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "name": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "score": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "signal": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            }
+          }
+        },
+        "timeline": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "date": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "format": "date"
+              },
+              "event": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "impact": {
+                "type": "string",
+                "enum": [
+                  "positive",
+                  "negative",
+                  "neutral",
+                  null
+                ]
+              },
+              "mainline_id": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "risks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "level",
+          "title"
+        ],
+        "properties": {
+          "id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "level": {
+            "type": "string",
+            "enum": [
+              "high",
+              "medium",
+              "low"
+            ]
+          },
+          "title": {
+            "type": "string"
+          },
+          "detail": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "trigger": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "mitigation": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "affected": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "scenarios": {
+      "type": "array",
+      "minItems": 3,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "probability"
+        ],
+        "properties": {
+          "id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "name": {
+            "type": "string"
+          },
+          "probability": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "assumption": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "impact": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "action": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "maxItems": 3
+    },
+    "playbook": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "stance": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "position_range": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "rules": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "if": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "then": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            }
+          }
+        },
+        "checklist": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "disclaimer": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "appendix": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "method_summary": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "weights": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "key": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "label": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "weight": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "desc": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            }
+          }
+        },
+        "stage_rules": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "stage": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "label": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "rule": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            }
+          }
+        },
+        "glossary": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "term": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "def": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            }
+          }
+        },
+        "changelog": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "version": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "date": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "note": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
