@@ -9,7 +9,7 @@
     "confidence": 0.0,
     "analyst": {
       "model": "",
-      "prompt_version": "1.5.0",
+      "prompt_version": "1.6.0",
       "operator": ""
     },
     "tags": []
@@ -47,7 +47,9 @@
         "fallback": ""
       }
     ],
-    "notes": []
+    "notes": [
+      "【模板提示】取数清单：板块日线 260 日、全 A 日线 260 日、成分股日线 ≥25 日、涨停池 ≥25 日、5/20 日资金流、两融 T-1、指数 PE 分位（可选）；导入后请替换为本期实际数据说明"
+    ]
   },
   "market_regime": {
     "label": "",

@@ -1,0 +1,26 @@
+{
+ "_note": "取数策略（唯一真源）。http.make_client() 读这里，run.py 把它原样写进 run.json 的 fetch_policy，审计端据此断言「并发 ≤4、速率 ≤4rps、整轮铺开 ≥40s」。改节奏只改这个文件，不要散落在各脚本的参数默认值里。",
+ "_why": [
+  "并发 4：2026-10-30 那轮用 12 workers，面板 129 次请求在 32 秒内集中冲东财，瞬时速率由 host 队列决定、全局无上限——WAF 501 与连接层 RST 都是这么来的。",
+  "全局 4 rps：单 host 限速挡不住「两个 host 同时开工」的叠加，必须有全局槽位。",
+  "min_span 40s：给定计划请求数后动态拉长 gap，让整轮请求均匀铺开而不是前 30 秒打完，这才是对上游真正友好的形态。",
+  "host 上限一律不高于全局上限，否则 host 值形同虚设。"
+ ],
+ "workers": 4,
+ "max_rps": 4.0,
+ "min_span_seconds": 40,
+ "jitter_seconds": [0.02, 0.18],
+ "timeout_seconds": 20,
+ "retries": 2,
+ "adaptive": true,
+ "cache_ttl_seconds": 0,
+ "max_workers_hard": 8,
+ "host_rps": {
+  "datacenter-web.eastmoney.com": 3.5,
+  "qt.gtimg.cn": 3.0,
+  "web.ifzq.gtimg.cn": 2.5,
+  "push2his.eastmoney.com": 2.0,
+  "push2ex.eastmoney.com": 2.0,
+  "money.finance.sina.com.cn": 2.0
+ }
+}

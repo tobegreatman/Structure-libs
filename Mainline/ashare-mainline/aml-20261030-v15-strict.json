@@ -1,0 +1,153 @@
+{
+  "schema_version": "1.0.0",
+  "meta": {"report_id": "aml-20261030-v15-strict", "as_of": "2026-10-30", "generated_at": "2026-10-31T15:10:00+08:00", "title": "A股市场主线分析 · 2026-10-30（闸门严格复算版）", "data_mode": "delayed", "confidence": 0.66, "analyst": {"model": "DeepSeek-V4.1-Flash", "prompt_version": "1.5.0", "operator": "使用者"}, "tags": ["白酒", "防御", "高低切换", "分化"]},
+  "window": {"as_of": "2026-10-30", "primary_days": 20, "confirm_days": 5, "context_days": 60, "quantile_days": 250, "effective_range": {"start": "2026-09-28", "end": "2026-10-30"}, "rules": ["主窗按交易日回溯 20 日，非自然日", "T 日仅用于描述字段，不参与阶段判定", "P1 的横截面为 128 个有效行业板块（剔除仅 90 日历史的汇总口径板块）", "60 日收益按 60 个可得交易日复合，缺失单日跳过并在 notes 说明"], "excluded": [{"date_range": "2026-10-01~2026-10-08", "reason": "国庆休市"}]},
+  "data_quality": {"status": "partial", "coverage": 0.83, "sources": [
+    {"name": "东方财富数据中心 · 行业板块资金流（RPT_INDUSTRY_FUNDFLOW）", "category": "行情与资金", "fields": ["涨跌幅", "主力净额", "净流入占比"], "as_of": "2026-10-30", "reliability": "high", "note": "分页回溯至 2025-10-09，128 个板块 258 个交易日，29311 行"},
+    {"name": "腾讯行情（qt.gtimg.cn / web.ifzq.gtimg.cn）", "category": "行情", "fields": ["收盘价", "涨跌幅", "成交额", "日K线"], "as_of": "2026-10-30", "reliability": "high", "note": "9 个宽基指数 260 日 K 线、264 只成分股 40 日 K 线，全部成功"},
+    {"name": "东方财富板块成分（RPT_BOARD_CONSTITUENT）", "category": "成分", "fields": ["板块代码", "成分股代码"], "as_of": "2026-10-30", "reliability": "high", "note": "19 个候选板块成分名单，其中 3 个板块成分股 K 线完整"},
+    {"name": "东方财富涨停复盘 / 新浪财经收评", "category": "情绪", "fields": ["涨停家数", "跌停家数", "封板率", "涨跌家数"], "as_of": "2026-10-30", "reliability": "medium", "note": "转引口径；不同平台跌停家数有 ±7 家差异，本报告取 86 家"},
+    {"name": "公司公告与主流财经媒体", "category": "业绩与事件", "fields": ["三季报营收", "归母净利", "同比", "公告日期"], "as_of": "2026-10-30", "reliability": "high", "note": "泸州老窖、药明康德、大参林、青岛食品、马士基等"}
+  ], "missing": [
+    {"field": "板块 250 日完整成交额序列", "reason": "二级行业板块历史仅回溯至 2026-02-13（白酒 168 个交易日）", "fallback": "turnover_share_pct_250 与 crowding_pct 按实际可得样本计算，不补 0"},
+    {"field": "概念板块历史序列", "reason": "RPT_CONCEPT_FUNDFLOW 只保留最新一日 410 行，无法回溯", "fallback": "持续性改用 128 个行业板块横截面计算，概念板块只用于定性描述"},
+    {"field": "板块级封板率（seal_rate）", "reason": "未取得板块成分股开板次数", "fallback": "写 null，acceleration 的封板率判据记「无法判定」"},
+    {"field": "两融余额 10-30 当日值", "reason": "交易所 T+1 发布，本期未取到", "fallback": "写 null，叙事中不使用杠杆数据，避免未证实结论"},
+    {"field": "指数 PE 250 日分位", "reason": "中证指数官网估值分位未取得", "fallback": "indices.pe_pct_250 全部写 null"},
+    {"field": "全 A 创 20 日新高/新低家数", "reason": "未取得全市场统计", "fallback": "market_regime.breadth.new_high/new_low 写 null"},
+    {"field": "白酒 2026-09-07 单日行情", "reason": "数据源当日缺行", "fallback": "chg_60d 按 60 个可得交易日复合，跳过失真单日"}
+  ], "notes": [
+    "板块成交额由 主力净额 ÷ 净流入占比 反推：128 个板块合计 16877 亿元，与全市场 16745 亿元差 0.8%，用作份额分母",
+    "crowding_pct = 成交额份额 250 日分位 × 0.5 + 20 日涨幅 250 日分位 × 0.5",
+    "rs 为比值：板块区间涨幅 ÷ 中证全指（sh000985）同期涨幅，1.0 = 与全 A 同步；全 A 20 日 -14.44%、60 日 -11.27%",
+    "P1 横截面为 128 个行业板块，前 10 名 ≈ 前 7.8%，口径偏严；本期仅白酒通过 2 条闸门，银行通过 2 条但阶段判据不足",
+    "breadth 的横截面百分位基于 9 个已取到完整成分股的板块样本，非全市场，仅用于 breadth 因子的归一化",
+    "资金流为东财按单笔金额分档的算法测算值，非真实席位数据，fundflow 权重上限 10%",
+    "indices.turnover_yi 中上证/深成为沪市/深市全市场成交额代理，创业板/科创50 为该板块总成交；全市场合计 16745 亿元",
+    "本期为 v1.5 严格闸门口径复算，无同口径上期基线，rank_change 统一记 0"
+  ]},
+  "market_regime": {"label": "成长杀跌、现金流避险的防御市", "phase": "risk_off", "phase_label": "风险偏好收缩", "risk_appetite": 18, "liquidity": 45, "breadth_score": 14, "indices": [
+    {"code": "000001.SH", "name": "上证指数", "close": 3599.02, "chg_1d": -0.0144, "chg_5d": -0.0248, "chg_20d": -0.0744, "turnover_yi": 7642.0, "pe_pct_250": null},
+    {"code": "399001.SZ", "name": "深证成指", "close": 10833.78, "chg_1d": -0.0273, "chg_5d": -0.0720, "chg_20d": -0.1865, "turnover_yi": 9102.0, "pe_pct_250": null},
+    {"code": "399006.SZ", "name": "创业板指", "close": 2413.63, "chg_1d": -0.0413, "chg_5d": -0.1008, "chg_20d": -0.2661, "turnover_yi": 4542.0, "pe_pct_250": null},
+    {"code": "000688.SH", "name": "科创50", "close": 1160.84, "chg_1d": -0.0548, "chg_5d": -0.1372, "chg_20d": -0.2843, "turnover_yi": 2358.0, "pe_pct_250": null},
+    {"code": "000985.CSI", "name": "中证全指", "close": 4952.50, "chg_1d": -0.0233, "chg_5d": -0.0573, "chg_20d": -0.1444, "turnover_yi": null, "pe_pct_250": null},
+    {"code": "000922.CSI", "name": "中证红利", "close": 5592.45, "chg_1d": 0.0082, "chg_5d": 0.0359, "chg_20d": 0.0225, "turnover_yi": null, "pe_pct_250": null}
+  ], "breadth": {"up_ratio": 0.1602, "limit_up": 49, "limit_down": 86, "broken_board_rate": 0.3951, "advance_decline_ratio": 0.1942, "new_high": null, "new_low": null}, "narrative": "指数继续下台阶：沪指 -1.44% 失守 3600 点，创业板指 -4.13%、科创50 -5.48%，科技四板块（半导体、通信设备、软件开发、消费电子）单日 -4.7%~-6.2%。全市场上涨 893 家、下跌 4598 家，涨停 49 家对跌停 86 家，封板率 60.49%。成交额放大到 1.67 万亿元，是换手不是增量。唯一逆势的是现金流资产：中证红利 +0.82%、白酒 +5.15%，资金在同一存量里从长久期成长搬到短久期确定性。"},
+  "verdict": {"headline": "杠杆退潮未止，全市场只剩白酒过了两道闸门", "core_thesis": "10-30 是一次典型的风险偏好收缩：科技四板块单日跌 4.7%~6.2%，创业板指 20 日已跌 26.6%，而成交额放大到 1.67 万亿，说明是存量换手而非资金离场。按反脉冲三原则实算，128 个行业板块中只有白酒同时通过 P2 广度与 P3 量能两条闸门（P1 只差 1 天），银行通过 P1/P2 但五阶段判据均只命中 1 项、无法赋值阶段，因此不进榜；医疗服务、休闲食品、航运港口各只有 1 条闸门，归入萌芽。白酒当日 +5.15%、4 家涨停、份额 5 日 +0.60pct 且分位 100，但只有 5 个交易日形成合力，判为启动期而非发酵期，并因拥挤度 0.949 触发 R2 扣 6 分。数据局限：250 日分位样本实际仅 168 个交易日，封板率与两融数据缺失，资金流为算法测算值。", "stance": "defensive", "stance_label": "防御为主，只跟踪一条主线", "dominant_mainline_id": "ml-baijiu", "mainline_count": 1, "confidence": 0.66, "points": [
+    {"title": "下跌的性质是风险偏好收缩，不是盈利崩塌", "detail": "科技四板块单日 -4.7%~-6.2%，科创50 20 日 -28.4%，但成交额反而放大至 1.67 万亿；86 家跌停对 49 家涨停，赚钱效应收缩到极少数板块。"},
+    {"title": "白酒是唯一通过两道闸门的板块，且只是启动期", "detail": "P2（上涨 95%、新高 45%）与 P3（份额 Δ5 +0.60pct、分位 100）成立；P1 仅 5/20 天、差 1 天未达标，说明合力只有 5 个交易日，判为 ignition 而非 expansion。"},
+    {"title": "银行过两道闸门却无法定阶段，因此不进主线榜", "detail": "银行 P1（8/20 天、连续 2 天）与 P2（上涨 69%、新高 43%）成立，但份额分位 96 已越过 expansion 的 60~85 区间，且无涨停、无连板，五阶段判据最多命中 1 项，如实不进榜。"},
+    {"title": "医药与航运只有 1 条闸门，属于萌芽不属于主线", "detail": "医疗服务 P3 成立但新高占比 3.77% 不足 8%；航运港口 P2 成立但份额 Δ5 +0.35pct 不足 0.5pct；休闲食品 P2 成立但 P3 差 0.37pct。按 §7 如实少写，不放宽阈值凑数。"}
+  ], "horizon": {"valid_until": "2026-11-20", "review_trigger": "白酒单日跌幅超 5% 且 5 日份额转负、或板块涨停家数连续 3 日 ≤1 家、或沪指失守 3500 点，任一触发即重估"}},
+  "mainlines": [{
+    "id": "ml-baijiu", "rank": 1, "rank_change": 0, "name": "白酒（低估值现金流修复）", "aliases": ["白酒Ⅱ", "酿酒", "食品饮料修复"], "sector_codes": ["BK1277"], "theme_type": "industry", "stage": "ignition", "stage_label": "启动期", "stage_confidence": 0.62, "score": 87.1,
+    "score_breakdown": [
+      {"key": "rs", "label": "相对强度", "raw": 1.2434, "normalized": 100, "weight": 25, "contribution": 25.0, "note": "rs_20=1.2434，全 A 20 日 -14.44%，横截面百分位 100"},
+      {"key": "persistence", "label": "趋势持续性", "raw": 5, "normalized": 78.6, "weight": 20, "contribution": 15.7, "note": "前10 5/20 天(98)、连续 2 天(100)、60 日阳线 28 天(37.9)，均值 78.6"},
+      {"key": "volume", "label": "量能聚集", "raw": 0.0145, "normalized": 92.2, "weight": 20, "contribution": 18.4, "note": "份额 1.45%(87.5)×0.6 + Δ5 分位 99.2×0.4"},
+      {"key": "breadth", "label": "扩散度", "raw": 0.95, "normalized": 97.2, "weight": 15, "contribution": 14.6, "note": "上涨 95%(100)、新高 45%(100)、涨停 4 家(88.9)，0.4/0.35/0.25 加权"},
+      {"key": "fundflow", "label": "资金流", "raw": 3.537, "normalized": 99.2, "weight": 10, "contribution": 9.9, "note": "5 日净额 27.93 亿 / 5 日成交额 = +3.54%，百分位 99.2（测算值）"},
+      {"key": "narrative", "label": "叙事与催化", "raw": 4, "normalized": 95, "weight": 10, "contribution": 9.5, "note": "4 条可验证(85) + 公司公告(+10) = 95"}
+    ],
+    "penalty": 6, "penalty_reason": "R2 触发：份额分位 1.00 > 0.90 且拥挤度 0.949 > 0.90 → −6；R1 未触发（连板 1 < 5）；R3 未触发（60 日涨幅 1.77% < 60%）",
+    "metrics": {"chg_1d": 0.0515, "chg_5d": 0.0428, "chg_20d": 0.0639, "chg_60d": 0.0177, "rs_5": 1.1062, "rs_20": 1.2434, "rs_60": 1.1470, "turnover_share": 0.0145, "turnover_share_chg_5": 0.0060, "turnover_share_chg_20": 0.0096, "turnover_share_pct_250": 1.00, "breadth_up_ratio": 0.95, "new_high_ratio": 0.45, "limit_up_count": 4, "limit_up_ratio": 0.20, "max_streak": 1, "max_streak_prev": 0, "seal_rate": null, "leader_chg_5d": 0.1159, "net_inflow_5_yi": 27.93, "net_inflow_20_yi": 55.38, "crowding_pct": 0.949, "volatility_20": 0.0189},
+    "persistence": {"days_top10_20": 5, "days_top5_20": 4, "consecutive_top10": 2, "pulse_check": {"passed": true, "rules_passed": 2, "detail": "P1 ✗ 5/20 天进前 10（需 ≥6），连续 2 天 ✓；P2 ✓ 上涨 95%（≥55%）、新高 45%（≥8%）；P3 ✓ 份额 Δ5 +0.60pct（≥+0.5pct）、分位 100（≥60）→ 2 条通过"}},
+    "drivers": [
+      {"type": "earnings", "title": "泸州老窖三季报环比大幅改善", "detail": "2026 三季报 Q3 归母净利 13.32 亿元，环比 +111.12%；前三季度降幅收窄", "date": "2026-10-29", "source": "泸州老窖公告 / 巨潮资讯", "verified": true},
+      {"type": "industry", "title": "白酒三季报出清、渠道库存实质回落", "detail": "渠道库存在五个旺季以来首次实质性下降，批价企稳，行业由被动去库存转向价格修复", "date": "2026-10-28", "source": "21 世纪经济报道 / 每日经济新闻", "verified": true},
+      {"type": "liquidity", "title": "科技高位回调，资金高低切换", "detail": "半导体 -5.45%、通信设备 -5.85%、科创50 -5.48%，资金由长久期成长转向低估值现金流资产", "date": "2026-10-30", "source": "新浪财经 / 东方财富行情", "verified": true},
+      {"type": "earnings", "title": "茅台放量上涨，权重端确认", "detail": "贵州茅台 +2.81%、成交 82.57 亿元居两市前列；板块 4 家涨停，龙头与补涨同向", "date": "2026-10-30", "source": "腾讯行情 / 东方财富行情", "verified": true}
+    ],
+    "narrative": {"logic": "估值与股息率处于低位、现金流确定，白酒在成长杀跌中承担类红利角色；三季报出清后行业进入库存与价格的双修复窗口", "catalyst": "10-26~10-30 三季报密集披露、渠道库存回落、批价企稳；科技回调迫使资金寻找低位承接", "sustainability": "仅 5 个交易日形成合力，份额 Δ5 +0.60pct、P1 5/20 天，持续性尚未被 20 日窗口确认，属启动期而非发酵期", "bear_case": "若科技止跌反弹，高低切资金会反向回流；白酒 60 日仍仅 +1.77%，中期趋势未成立，单日 +5.15% 后拥挤度 0.949，回撤 5% 就可能触发止损式抛售"},
+    "leaders": [
+      {"code": "603369.SH", "name": "今世缘", "role": "leader", "chg_20d": 0.2481, "turnover_yi": 6.77, "note": "20 日涨幅第一，10-30 +6.90%"},
+      {"code": "000568.SZ", "name": "泸州老窖", "role": "leader", "chg_20d": 0.0909, "turnover_yi": 31.16, "note": "当日涨停，三季报环比 +111%，成交额板块第二"},
+      {"code": "600519.SH", "name": "贵州茅台", "role": "core", "chg_20d": 0.1253, "turnover_yi": 82.57, "note": "权重锚，成交额 82.57 亿元居前"},
+      {"code": "603198.SH", "name": "迎驾贡酒", "role": "follower", "chg_20d": 0.1954, "turnover_yi": 3.90, "note": "涨停，区域酒补涨"}
+    ],
+    "ladder": {"has_leader": true, "tiers": 2, "note": "一线（茅台、老窖）与区域酒（今世缘、迎驾、古井）两层，补涨层仅 4 家涨停，梯队偏窄"},
+    "invalidation": [
+      {"condition": "白酒单日跌幅超 5% 且 5 日份额变化转负", "threshold": "chg_1d ≤ -0.05 且 turnover_share_chg_5 < 0", "note": "启动期最短的证伪路径"},
+      {"condition": "板块涨停家数连续 3 日 ≤1 家", "threshold": "limit_up_count ≤ 1 连续 3 个交易日", "note": "合力瓦解，回落为普通反弹"},
+      {"condition": "龙头泸州老窖跌破 20 日线", "threshold": "收盘 < 71.10 元（20 日线，10-30 收盘 77.07）", "note": "龙头破位即情绪破位"}
+    ],
+    "watch": [
+      {"item": "中证红利 5 日相对强度", "why": "红利继续跑赢而白酒跑输，说明只是防御轮动而非消费修复"},
+      {"item": "医疗服务新高占比", "why": "从 3.77% 升破 8% 即满足 P2，可与已通过的 P3 组成第 2 条主线"},
+      {"item": "两市跌停家数", "why": "86 家降至 20 家以下、涨停回到 70 家以上，才谈得上风险偏好修复"}
+    ],
+    "related": []
+  }],
+  "rotation": {"narrative": "存量博弈下的单向集中：资金从科技长久期资产撤出，一部分进白酒博弹性，一部分进银行/红利求稳定，两条避险路线互斥。科技四板块份额 5 日 -3.44pct，白酒 +0.60pct、银行 +0.04pct，抬升幅度远小于流出，说明仍有资金在场外等待。10 月 30 日不是风格切换的完成，而是切换的第一天。",
+    "inflow": [
+      {"name": "白酒Ⅱ", "delta_pct": 5.15, "note": "当日涨幅第一，4 家涨停，份额 Δ5 +0.60pct"},
+      {"name": "银行Ⅱ", "delta_pct": 0.77, "note": "份额分位 96，P1/P2 通过，无涨停"},
+      {"name": "航运港口", "delta_pct": 1.50, "note": "P2 通过，份额 Δ5 +0.35pct 未达 P3"},
+      {"name": "医药商业", "delta_pct": 0.84, "note": "新高占比 9.4%，高于 P2 门槛"}
+    ],
+    "outflow": [
+      {"name": "软件开发", "delta_pct": -6.15, "note": "科技四板块合计份额 Δ5 -3.44pct"},
+      {"name": "通信设备", "delta_pct": -5.85, "note": "20 日相对强度 0.85，弱于全 A"},
+      {"name": "半导体", "delta_pct": -5.45, "note": "5 日 -13.57%，杀跌最急"},
+      {"name": "影视院线", "delta_pct": -7.04, "note": "当日跌幅榜首，无承接"}
+    ],
+    "emerging": [
+      {"name": "银行（红利防御）", "score": 78.0, "signal": "P1/P2 两条闸门通过，但五阶段判据最多命中 1 项，阶段无法赋值，按规则不进榜"},
+      {"name": "医药（CRO 与医疗服务）", "score": 72.8, "signal": "仅 P3 通过；新高占比 3.77% < 8%，前 10 天数 5/20 < 6"},
+      {"name": "休闲食品", "score": 69.6, "signal": "仅 P2 通过；份额 Δ5 +0.13pct < 0.5pct，前 10 天数 4/20"},
+      {"name": "航运港口", "score": 66.0, "signal": "仅 P2 通过；前 10 天数 3/20，份额 Δ5 +0.35pct"}
+    ],
+    "timeline": [
+      {"date": "2026-10-26", "event": "药明康德三季报：营收 455.37 亿元 +38.59%、归母净利 193.98 亿元 +60.64%，上调全年指引", "impact": "positive", "mainline_id": null},
+      {"date": "2026-10-27", "event": "青岛食品控制权变更，青啤集团受让 29.24% 股份，此后 5 连板", "impact": "positive", "mainline_id": null},
+      {"date": "2026-10-29", "event": "泸州老窖三季报 Q3 归母净利 13.32 亿元、环比 +111.12%", "impact": "positive", "mainline_id": "ml-baijiu"},
+      {"date": "2026-10-29", "event": "马士基上调远东—北欧/地中海运价，11-16 生效", "impact": "positive", "mainline_id": null},
+      {"date": "2026-10-30", "event": "白酒 4 家涨停、板块 +5.15%；科技四板块跌 4.7%~6.2%，资金高低切换", "impact": "positive", "mainline_id": "ml-baijiu"}
+    ]},
+  "risks": [
+    {"id": "r1", "level": "high", "title": "科技去杠杆未止，指数仍有二次探底压力", "detail": "科创50 20 日 -28.4%、创业板指 -26.6%，软件/通信/半导体单日再跌 5% 以上；若继续杀跌，白酒的避险溢价也会被指数拖累", "trigger": "科创50 单日再跌 5% 或创业板指跌破 2350 点", "mitigation": "主线仓位不加，等跌停家数回落至 20 家以下再评估", "affected": ["ml-baijiu"]},
+    {"id": "r2", "level": "medium", "title": "白酒拥挤度已达 0.949，R2 扣 6 分", "detail": "份额分位 1.00 为近 168 个交易日最高，单日 +5.15% 后短期透支；启动期叠加高拥挤是最容易反复的组合", "trigger": "份额分位维持 1.00 且连板高度升至 5", "mitigation": "不追涨停，只在回踩 5 日线（71.83 元）附近观察", "affected": ["ml-baijiu"]},
+    {"id": "r3", "level": "medium", "title": "主线单一化，赚钱效应只有 1 个板块", "detail": "49 家涨停对 86 家跌停，128 个板块中仅 1 个通过 2 条闸门；单一主线的容错率低，一旦白酒回落，市场将没有承接方向", "trigger": "涨停家数连续 3 日低于 40 家", "mitigation": "总仓位控制在五成以内，不做板块内扩散交易", "affected": ["ml-baijiu"]},
+    {"id": "r4", "level": "low", "title": "数据局限可能放大或缩小结论", "detail": "250 日分位实际只有 168 个交易日样本，封板率缺失使 acceleration 判据无法验算，资金流为算法测算值", "trigger": "样本不足导致分位失真或资金流方向与价格背离", "mitigation": "以 P1/P2 这类硬指标为准，分位类指标只作辅助", "affected": ["ml-baijiu"]}
+  ],
+  "scenarios": [
+    {"id": "s1", "name": "乐观：消费修复扩散到医药与航运", "probability": 0.30, "assumption": "科技止跌、沪指守住 3550 点，医疗服务新高占比升破 8%、航运份额 Δ5 升破 0.5pct", "impact": "白酒由 ignition 进入 expansion，主线数量增至 2~3 条", "action": "白酒持有，医药与航运只在通过第二条闸门后加仓"},
+    {"id": "s2", "name": "中性：防御轮动延续，白酒独强", "probability": 0.50, "assumption": "指数弱势震荡，成交额维持 1.5~1.7 万亿，资金继续在白酒与银行之间摆动", "impact": "白酒维持启动期，份额分位维持高位，R2 惩罚持续", "action": "只做白酒一条主线，三至五成仓位，不扩散"},
+    {"id": "s3", "name": "悲观：指数破位，白酒补跌", "probability": 0.20, "assumption": "沪指失守 3500 点、跌停家数重回 100 家以上，避险资产被赎回换取流动性", "impact": "白酒单日跌幅超 5% 且份额 Δ5 转负，主线直接失效", "action": "跌破 71.10 元（老窖 20 日线）即减至两成以下"}
+  ],
+  "playbook": {"stance": "防御为主，只跟踪一条主线", "position_range": "三至五成", "rules": [
+    {"if": "白酒单日跌幅超 5% 且 5 日份额转负", "then": "主线失效，仓位降至两成以下"},
+    {"if": "医疗服务新高占比升破 8% 且份额 Δ5 ≥ 0.5pct", "then": "医药升级为第 2 条主线，可加至五成"},
+    {"if": "沪指失守 3500 点或跌停家数重回 100 家以上", "then": "停止加仓，只保留现金流类资产"},
+    {"if": "科技四板块单日转正且份额 Δ5 转正", "then": "高低切逻辑反转，白酒主线降级为普通反弹"}
+  ], "checklist": ["盘前看白酒板块前一日涨停家数与连板高度是否维持", "盘中看中证红利与白酒的相对强弱，判断是防御轮动还是消费修复", "收盘看两市跌停家数与成交额，跌停回落至 20 家以下才谈修复", "核对泸州老窖、贵州茅台是否守住 20 日线（71.10 / 1307.52）"], "disclaimer": "本报告为市场结构研究，不构成投资建议。所有资金流为算法测算值，与真实成交存在偏差。"},
+  "appendix": {"method_summary": "以 2026-10-30 为基准日，用东方财富 128 个行业板块 258 个交易日的历史数据重建成交额份额与横截面排名，配合腾讯行情指数与成分股 K 线计算广度、涨停与龙头指标；先做反脉冲三原则闸门（P1 持续性 / P2 广度 / P3 量能），通过 ≥2 条者进入打分，再按 fade→divergence→acceleration→expansion→ignition 的顺序判定阶段，最后按六因子加权并扣除 R1/R2/R3 拥挤惩罚。数据缺失一律写 null 并记入 missing，不用 0 填充。",
+    "weights": [
+      {"key": "rs", "label": "相对强度", "weight": 25, "desc": "20 日涨幅 ÷ 中证全指同期涨幅的横截面百分位"},
+      {"key": "persistence", "label": "趋势持续性", "weight": 20, "desc": "前 10 天数、连续天数、60 日阳线数的百分位均值"},
+      {"key": "volume", "label": "量能聚集", "weight": 20, "desc": "成交额份额分位 ×0.6 + 5 日份额变化分位 ×0.4"},
+      {"key": "breadth", "label": "扩散度", "weight": 15, "desc": "上涨占比、新高占比、涨停家数的加权百分位"},
+      {"key": "fundflow", "label": "资金流", "weight": 10, "desc": "5 日主力净额 ÷ 5 日成交额的百分位（测算值）"},
+      {"key": "narrative", "label": "叙事与催化", "weight": 10, "desc": "可验证驱动条数分档 + 最高等级来源加分"}
+    ],
+    "stage_rules": [
+      {"stage": "ignition", "label": "启动期", "rule": "份额 Δ5 ≥ +0.5pct；前 10 天数 ≤8；涨停 2~5 家（满足 2 项）"},
+      {"stage": "expansion", "label": "发酵期", "rule": "份额分位 60~85；涨停 ≥5 家；连板 3~4；上涨占比 ≥60%（满足 2 项）"},
+      {"stage": "acceleration", "label": "加速期", "rule": "20 日涨幅 >25%；拥挤度 >0.85；封板率 >75%（满足 2 项）"},
+      {"stage": "divergence", "label": "分歧期", "rule": "5 日涨幅 < 20 日涨幅/4；份额分位 >90；连板回落 ≥2 级（满足 2 项）"},
+      {"stage": "fade", "label": "退潮期", "rule": "份额 Δ20 < -0.5pct；龙头 5 日跌幅 >8%；上涨占比 <45%（满足 2 项）"}
+    ],
+    "glossary": [
+      {"term": "RS", "def": "相对强度比值 = 板块区间涨幅 ÷ 全 A 同期涨幅，1.0 表示与大盘同步"},
+      {"term": "P1 持续性", "def": "20 日进入涨幅前 10 的天数 ≥6 且最近连续 ≥2 天"},
+      {"term": "P2 广度", "def": "板块内上涨占比 ≥55% 且创 20 日新高占比 ≥8%"},
+      {"term": "P3 量能", "def": "成交额份额 5 日变化 ≥+0.5pct 且份额 250 日分位 ≥60"},
+      {"term": "拥挤度", "def": "份额分位 ×0.5 + 20 日涨幅分位 ×0.5，用于 R2 与加速期判定"},
+      {"term": "启动期", "def": "首次放量、龙头初现、广度抬升，胜率最低但赔率最高"}
+    ],
+    "changelog": [
+      {"version": "1.5.0", "date": "2026-10-30", "note": "v1.5 首次生成（同日早间版，3 条主线）"},
+      {"version": "1.5.0-strict", "date": "2026-10-31", "note": "闸门严格复算：只保留 ≥2 条通过且阶段可复算的主线，主线数由 3 条改为 1 条"}
+    ]}
+}
