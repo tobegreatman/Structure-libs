@@ -6,300 +6,649 @@
 <title>A股实时行情 · 行业资金流</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📈</text></svg>">
 <style>
-/* ================= 苹果风格设计系统 ================= */
+/* ================= 设计令牌（层级化） ================= */
 :root{
-  --bg:#f5f5f7; --card:rgba(255,255,255,.86); --card-solid:#fff;
-  --text:#1d1d1f; --text2:#86868b; --text3:#aeaeb2;
-  --red:#ff3b30; --red-soft:rgba(255,59,48,.10);
-  --green:#34c759; --green-soft:rgba(52,199,89,.12);
-  --blue:#007aff; --blue-soft:rgba(0,122,255,.10);
-  --line:rgba(0,0,0,.06); --line2:rgba(0,0,0,.10);
-  --shadow:0 8px 30px rgba(0,0,0,.06);
-  --shadow-lg:0 16px 48px rgba(0,0,0,.12);
-  --r-lg:22px; --r-md:16px; --r-sm:10px;
-  --font:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","PingFang SC","Helvetica Neue","Microsoft YaHei",sans-serif;
+  /* 表面：三级深度 —— 概览带 > 主工作区 > 支撑模块 */
+  --bg:#f5f5f7; --surface:#fff; --surface-2:#fafafc; --surface-sunken:#f2f2f5;
+  /* 文字三档（对比度按正文可读性校准） */
+  --text:#1d1d1f; --text2:#6e6e73; --text3:#86868b;
+  /* 分隔线 */
+  --line:#ececf0; --line2:#dededf;
+  /* 语义色：涨红跌绿（A 股口径）。ink 用于文字，vivid 用于填充 */
+  --red:#ff3b30; --red-ink:#d70015; --red-num:#e8231a; --red-soft:rgba(255,59,48,.10);
+  --green:#34c759; --green-ink:#0b7a4b; --green-num:#0a9b52; --green-soft:rgba(52,199,89,.14);
+  --blue:#0071e3; --blue-soft:rgba(0,113,227,.09);
+  /* 形状 */
+  --r-xl:18px; --r-lg:14px; --r-md:11px; --r-sm:8px;
+  /* 阴影只保留两级，且都很克制 */
+  --shadow:0 1px 2px rgba(0,0,0,.03),0 4px 16px rgba(0,0,0,.035);
+  --shadow-lg:0 2px 4px rgba(0,0,0,.04),0 16px 40px rgba(0,0,0,.08);
+  --font:-apple-system,BlinkMacSystemFont,"SF Pro Text","Inter","PingFang SC","Helvetica Neue","Microsoft YaHei",sans-serif;
 }
 *{margin:0;padding:0;box-sizing:border-box}
-html{scroll-behavior:smooth}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
 body{
   font-family:var(--font); color:var(--text); background:var(--bg);
-  min-height:100vh; position:relative; overflow-x:hidden;
-  background-image:
-    radial-gradient(1100px 460px at 8% -6%, rgba(255,59,48,.07), transparent 60%),
-    radial-gradient(900px 420px at 96% -4%, rgba(52,199,89,.07), transparent 60%),
-    radial-gradient(700px 380px at 50% -8%, rgba(0,122,255,.05), transparent 60%);
+  min-height:100vh; line-height:1.5; -webkit-font-smoothing:antialiased;
+  /* 背景只留一层极淡的顶光，去掉原先 4 层径向渐变造成的色斑 */
+  background-image:radial-gradient(1100px 380px at 50% -200px,rgba(0,113,227,.07),transparent 70%);
 }
-body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
-  background:radial-gradient(1200px 500px at 50% 108%, rgba(0,122,255,.04), transparent 60%);}
 main,header,footer{position:relative;z-index:1}
 button{font-family:var(--font);border:none;background:none;cursor:pointer;color:inherit}
-::-webkit-scrollbar{width:8px;height:8px}
-::-webkit-scrollbar-thumb{background:rgba(0,0,0,.15);border-radius:8px}
-::-webkit-scrollbar-thumb:hover{background:rgba(0,0,0,.25)}
+::-webkit-scrollbar{width:9px;height:9px}
+::-webkit-scrollbar-thumb{background:rgba(0,0,0,.14);border-radius:9px}
+::-webkit-scrollbar-thumb:hover{background:rgba(0,0,0,.24)}
 ::-webkit-scrollbar-track{background:transparent}
 
 /* ================= 顶栏 ================= */
-header{position:sticky;top:0;z-index:50;
-  background:rgba(245,245,247,.72);
-  backdrop-filter:blur(24px) saturate(180%);-webkit-backdrop-filter:blur(24px) saturate(180%);
+header{position:sticky;top:0;z-index:60;
+  background:rgba(250,250,252,.82);
+  backdrop-filter:blur(22px) saturate(180%);-webkit-backdrop-filter:blur(22px) saturate(180%);
   border-bottom:1px solid var(--line);}
-.header-inner{max-width:1280px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;gap:18px;flex-wrap:wrap}
-.brand{display:flex;align-items:center;gap:12px}
-.brand .logo{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;flex:none;
-  background:linear-gradient(135deg,#ff3b30,#ff9500);color:#fff;font-weight:800;font-size:15px;
-  box-shadow:0 6px 16px rgba(255,59,48,.35);}
-.brand h1{font-size:17px;font-weight:700;letter-spacing:-.02em;line-height:1.2}
-.brand .subtitle{font-size:11.5px;color:var(--text2);margin-top:2px}
-.header-right{margin-left:auto;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
-.status-pill{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-weight:600;
-  padding:6px 13px;border-radius:99px;background:#fff;box-shadow:var(--shadow);color:var(--text)}
-.status-pill .dot{width:8px;height:8px;border-radius:50%;background:#34c759;animation:breath 2s ease-in-out infinite}
-.status-pill.pre .dot{background:#007aff}
+.header-inner{max-width:1280px;margin:0 auto;padding:11px 24px;display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:11px;min-width:0}
+.brand .logo{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;flex:none;
+  background:linear-gradient(145deg,#ff5b52,#ff9500);color:#fff;font-weight:700;font-size:12.5px;
+  box-shadow:0 4px 12px rgba(255,59,48,.28);letter-spacing:.02em}
+.brand h1{font-size:15px;font-weight:650;letter-spacing:-.012em;line-height:1.25}
+.brand .subtitle{font-size:11px;color:var(--text3);margin-top:2px;line-height:1.3;letter-spacing:.01em}
+.header-right{margin-left:auto;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.hdr-meta{display:flex;align-items:center;gap:10px}
+.hdr-div{width:1px;height:20px;background:var(--line2);flex:none}
+.status-pill{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;
+  padding:5px 11px;border-radius:99px;background:var(--surface);color:var(--text);
+  box-shadow:inset 0 0 0 1px var(--line),0 1px 2px rgba(0,0,0,.03);white-space:nowrap}
+.status-pill .dot{width:7px;height:7px;border-radius:50%;background:var(--green);animation:breath 2s ease-in-out infinite}
+.status-pill.pre .dot{background:var(--blue)}
 .status-pill.closed .dot{background:#c7c7cc;animation:none}
 .status-pill.err .dot{background:var(--red);animation:none}
-@keyframes breath{0%,100%{box-shadow:0 0 0 0 rgba(52,199,89,.5)}50%{box-shadow:0 0 0 6px rgba(52,199,89,0)}}
-.update-time{font-size:12px;color:var(--text2);font-variant-numeric:tabular-nums;min-width:118px}
-.update-time b{color:var(--text);font-weight:600}
+@keyframes breath{0%,100%{box-shadow:0 0 0 0 rgba(52,199,89,.5)}50%{box-shadow:0 0 0 5px rgba(52,199,89,0)}}
+.update-time{font-size:11.5px;color:var(--text3);font-variant-numeric:tabular-nums;white-space:nowrap}
+.update-time b{color:var(--text2);font-weight:600}
 
 /* 分段控制器（苹果 Segmented） */
-.seg{display:inline-flex;background:#e9e9eb;border-radius:10px;padding:2.5px;gap:2px}
-.seg button{font-size:12px;font-weight:600;color:var(--text2);padding:5.5px 13px;border-radius:8px;
-  transition:all .22s ease;white-space:nowrap}
+.seg{display:inline-flex;background:#eeeef1;border-radius:9px;padding:2.5px;gap:2px;flex:none}
+.seg button{font-size:9px;font-weight:600;color:var(--text2);padding:5px 11px;border-radius:7px;
+  transition:color .2s ease,background .2s ease,box-shadow .2s ease;white-space:nowrap}
 .seg button:hover{color:var(--text)}
-.seg button.active{background:#fff;color:var(--text);box-shadow:0 2px 8px rgba(0,0,0,.12),0 0 0 .5px rgba(0,0,0,.04)}
+.seg button.active{background:#fff;color:var(--text);box-shadow:0 1px 2px rgba(0,0,0,.10),0 0 0 .5px rgba(0,0,0,.04)}
+.seg.sm button{font-size:9px;padding:4px 9px}
 
 /* 刷新按钮 + 倒计时环 */
-.refresh-btn{position:relative;width:38px;height:38px;border-radius:50%;background:#fff;
-  box-shadow:var(--shadow);display:grid;place-items:center;transition:transform .18s ease,box-shadow .22s ease}
-.refresh-btn:hover{transform:scale(1.06);box-shadow:var(--shadow-lg)}
+.refresh-btn{position:relative;width:34px;height:34px;border-radius:50%;background:#fff;flex:none;
+  box-shadow:0 1px 2px rgba(0,0,0,.06),inset 0 0 0 1px var(--line);display:grid;place-items:center;
+  transition:transform .18s ease,box-shadow .22s ease}
+.refresh-btn:hover{transform:scale(1.06);box-shadow:0 4px 14px rgba(0,0,0,.10),inset 0 0 0 1px var(--line)}
 .refresh-btn:active{transform:scale(.94)}
 .refresh-btn svg.cd{position:absolute;inset:0;transform:rotate(-90deg);pointer-events:none}
-.refresh-btn .cd .ring-bg{fill:none;stroke:rgba(0,0,0,.06);stroke-width:3}
-.refresh-btn .cd .ring-fg{fill:none;stroke:var(--blue);stroke-width:3;stroke-linecap:round;
+.refresh-btn .cd .ring-bg{fill:none;stroke:rgba(0,0,0,.06);stroke-width:2.6}
+.refresh-btn .cd .ring-fg{fill:none;stroke:var(--blue);stroke-width:2.6;stroke-linecap:round;
   stroke-dasharray:100.5;stroke-dashoffset:0;transition:stroke-dashoffset 1s linear}
-.refresh-btn .icon{width:15px;height:15px;color:var(--blue);transition:transform .5s cubic-bezier(.4,0,.2,1)}
+.refresh-btn .icon{width:14px;height:14px;color:var(--blue);transition:transform .5s cubic-bezier(.4,0,.2,1)}
 .refresh-btn.spinning .icon{transform:rotate(360deg)}
 
 /* ================= 布局 ================= */
-main{max-width:1280px;margin:0 auto;padding:22px 24px 10px;display:flex;flex-direction:column;gap:16px;zoom: 0.9}
-.panel{background:var(--card);border:1px solid rgba(255,255,255,.7);border-radius:var(--r-lg);
-  box-shadow:var(--shadow);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
-  animation:fadeUp .6s cubic-bezier(.2,.7,.3,1) both}
-@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
-.panel-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:18px 22px 0}
-.panel-head h2{font-size:15.5px;font-weight:700;letter-spacing:-.01em}
-.sector-head{flex-direction:column;align-items:flex-start;gap:10px;padding-bottom:10px}
-.head-row{display:flex;align-items:center;justify-content:space-between;width:100%;gap:8px}
-.seg-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.muted{font-size:12px;color:var(--text2)}
-.zoom-8{zoom:0.8}
+main{max-width:1280px;margin:0 auto;padding:20px 24px 8px;display:flex;flex-direction:column;gap:18px}
+/* 首屏簇：指数带与其下挂的 ETF 折叠条间距收到 10px，读作「同一个信息层」，不与主工作区的 18px 混淆 */
+.top-cluster{display:flex;flex-direction:column;gap:2px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);box-shadow:var(--shadow);
+  animation:fadeUp .5s cubic-bezier(.2,.7,.3,1) both}
+/* 支撑模块：不加阴影，只靠描边与背景分离 —— 视觉权重明确低于主工作区 */
+.panel.quiet{box-shadow:none;background:rgba(255,255,255,.74)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.panel-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:16px 20px 0}
+.panel-head h2{font-size:15px;font-weight:650;letter-spacing:-.012em;display:flex;align-items:center;gap:7px;min-width:0;flex-wrap:wrap}
+.panel.quiet .panel-head{padding:14px 20px 0}
+.panel.quiet .panel-head h2{font-size:13.5px}
+.sector-head{flex-direction:column;align-items:stretch;gap:10px;padding-bottom:10px}
+.head-row{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;flex-wrap:wrap}
+.seg-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.muted{font-size:9px;color:var(--text3);font-weight:500}
 
-/* ================= 指数卡 ================= */
-.index-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
-.index-card{background:var(--card);border:1px solid rgba(255,255,255,.7);border-radius:var(--r-lg);
-  box-shadow:var(--shadow);backdrop-filter:blur(20px);padding:18px 20px 14px;cursor:pointer;
-  transition:transform .22s ease,box-shadow .22s ease;position:relative;overflow:hidden;
-  animation:fadeUp .55s cubic-bezier(.2,.7,.3,1) both}
-.index-card:nth-child(2){animation-delay:.05s}.index-card:nth-child(3){animation-delay:.1s}.index-card:nth-child(4){animation-delay:.15s}
-.index-card:hover{transform:translateY(-3px);box-shadow:var(--shadow-lg)}
-.index-card.selected::after{content:"";position:absolute;inset:0;border:2px solid var(--blue);border-radius:var(--r-lg);pointer-events:none}
-.idx-top{display:flex;align-items:baseline;justify-content:space-between}
-.idx-name{font-size:13.5px;font-weight:700}
-.idx-code{font-size:10.5px;color:var(--text3);font-variant-numeric:tabular-nums}
-.idx-price{font-size:27px;font-weight:800;letter-spacing:-.03em;margin-top:6px;font-variant-numeric:tabular-nums;line-height:1.1;transition:color .3s}
-.idx-change{display:inline-flex;align-items:center;gap:6px;margin-top:5px;font-size:12px;font-weight:600;
-  padding:3px 9px;border-radius:99px;font-variant-numeric:tabular-nums;transition:background .3s}
-.idx-amount{font-size:10.5px;color:var(--text3);margin-left:8px;font-weight:500}
-.idx-spark{margin-top:8px;height:44px;display:block;width:100%}
-.up{color:var(--red)} .down{color:var(--green)} .flat{color:var(--text2)}
+/* ================= ① 大盘指数带（第一层级） ================= */
+/* 指数带：4 张指数卡 + 右端异动入口（共用同一张卡面，入口是第 5 个格子） */
+.index-band{display:grid;grid-template-columns:1fr auto;background:var(--surface);
+  border:1px solid var(--line);border-radius:var(--r-xl);box-shadow:var(--shadow-lg);overflow:hidden;
+  animation:fadeUp .5s cubic-bezier(.2,.7,.3,1) both}
+.index-row{display:grid;grid-template-columns:repeat(4,1fr);min-width:0}
+/* 异动入口：默认收起、不拉数据，点开才弹出完整面板 */
+.evt-trigger{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;
+  width:60px;padding:10px 4px;border-left:1px solid var(--line);background:transparent;color:var(--text2);
+  font-size:10px;font-weight:600;letter-spacing:.01em;transition:background .18s ease,color .18s ease}
+.evt-trigger:hover{background:var(--surface-2);color:var(--text)}
+.evt-trigger.is-open{background:var(--blue-soft);color:var(--blue)}
+/* 图标放进浅灰小方块，给这 60px 的竖向窄条一点「可点」的暗示 */
+.evt-trigger .et-ico{display:grid;place-items:center;width:28px;height:28px;border-radius:9px;
+  background:rgba(0,0,0,.05);transition:background .18s ease}
+.evt-trigger:hover .et-ico{background:rgba(0,0,0,.09)}
+.evt-trigger.is-open .et-ico{background:rgba(0,113,227,.14)}
+.evt-trigger svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:2.2;
+  stroke-linecap:round;stroke-linejoin:round}
+.evt-trigger .et-live{position:absolute;top:12px;right:13px;width:5px;height:5px;border-radius:50%;
+  background:var(--green);display:none}
+.evt-trigger.is-open .et-live{display:block;animation:breath 2s ease-in-out infinite}
+.index-card{padding:16px 20px 13px;cursor:pointer;position:relative;min-width:0;
+  border-left:1px solid var(--line);transition:background .2s ease}
+.index-card:first-child{border-left:0}
+.index-card:hover{background:var(--surface-2)}
+.index-card.selected{background:linear-gradient(180deg,rgba(0,113,227,.06),rgba(0,113,227,.015))}
+.index-card.selected::after{content:"";position:absolute;left:0;right:0;top:0;height:2.5px;background:var(--blue)}
+/* 标题与点位同一行：省下的一行高度全部让给下方迷你分时。
+   注意别给中间的包裹层加 overflow:hidden —— 那会让它退化成「合成基线」，名称会比数字浮高一截 */
+.idx-top{display:flex;align-items:baseline;gap:6px;min-width:0;overflow:hidden}
+.idx-name{font-size:12.5px;font-weight:600;color:var(--text2);white-space:nowrap}
+.idx-code{font-size:10px;color:var(--text3);font-variant-numeric:tabular-nums;white-space:nowrap;flex:none}
+.idx-price{font-size:20px;font-weight:650;letter-spacing:-.03em;margin-top:0;margin-left:auto;line-height:1;flex:none;
+  font-variant-numeric:tabular-nums;transition:color .3s}
+.idx-change{display:inline-flex;align-items:center;gap:5px;margin-top:0;font-size:12px;font-weight:650;
+  padding:2.5px 8px;border-radius:7px;font-variant-numeric:tabular-nums;transition:background .3s}
+.idx-chgrow{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:7px}
+.idx-amount{font-size:10.5px;color:var(--text3);font-weight:500;white-space:nowrap}
+.idx-spark{margin-top:10px;height:60px;display:block;width:100%}
+.up{color:var(--red-num)} .down{color:var(--green-num)} .flat{color:var(--text2)}
 .idx-change.up{background:var(--red-soft)} .idx-change.down{background:var(--green-soft)} .idx-change.flat{background:rgba(0,0,0,.05)}
 
-/* ================= 核心 ETF 分时（默认收起） ================= */
+/* ================= ② 核心 ETF 分时（指数带下挂的折叠条，默认收起） ================= */
 .etf-panel{padding:0;overflow:hidden}
-.etf-head{display:flex;align-items:center;gap:14px;padding:13px 20px 13px 22px;cursor:pointer;
+/* 首屏簇内：改用与指数带一致的实心卡面，读作指数带的下挂条，而不是又一个独立面板 */
+.top-cluster .etf-panel{background:var(--surface)}
+.etf-head{display:flex;align-items:center;gap:12px;padding:12px 20px;cursor:pointer;
   user-select:none;transition:background .2s ease}
-.etf-head:hover{background:rgba(0,0,0,.02)}
-.etf-h2{display:flex;align-items:center;gap:8px;font-size:15.5px;font-weight:700;letter-spacing:-.01em;flex:none}
+.etf-head:hover{background:rgba(0,0,0,.015)}
+.etf-h2{display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:650;letter-spacing:-.01em;flex:none}
 .etf-badge{font-size:9.5px;font-weight:700;color:var(--blue);background:var(--blue-soft);
-  padding:2px 7px;border-radius:99px;letter-spacing:.02em}
-.etf-sub{font-size:11.5px;color:var(--text2);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  padding:2px 6px;border-radius:5px;letter-spacing:.02em}
+.etf-sub{font-size:11.5px;color:var(--text3);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .etf-right{margin-left:auto;display:flex;align-items:center;gap:12px;flex:none}
-.etf-live{font-size:11.5px;color:var(--text3);font-variant-numeric:tabular-nums}
-.etf-toggle{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:650;color:var(--blue);
-  background:var(--blue-soft);padding:6px 11px 6px 13px;border-radius:99px;transition:background .2s ease,transform .18s ease}
-.etf-toggle:hover{background:rgba(0,122,255,.16)}
+.etf-live{font-size:11px;color:var(--text3);font-variant-numeric:tabular-nums}
+.etf-toggle{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;font-weight:600;color:var(--blue);
+  background:var(--blue-soft);padding:5px 10px 5px 12px;border-radius:99px;transition:background .2s ease,transform .18s ease}
+.etf-toggle:hover{background:rgba(0,113,227,.16)}
 .etf-toggle:active{transform:scale(.95)}
-.etf-toggle svg{width:12px;height:12px;transition:transform .32s cubic-bezier(.2,.7,.3,1)}
+.etf-toggle svg{width:11px;height:11px;transition:transform .32s cubic-bezier(.2,.7,.3,1)}
 .etf-panel.open .etf-toggle svg{transform:rotate(180deg)}
-.etf-body{border-top:1px solid var(--line);padding:14px 18px 18px}
+.etf-body{border-top:1px solid var(--line);padding:14px 16px 16px}
 .etf-body[hidden]{display:none}
-.etf-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}
-.etf-card{background:rgba(0,0,0,.018);border:1px solid var(--line);border-radius:var(--r-md);
-  padding:11px 13px 6px;cursor:pointer;position:relative;overflow:hidden;
-  transition:transform .2s cubic-bezier(.2,.7,.3,1),box-shadow .2s ease,background .2s ease;
+.etf-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}   /* 6 只：桌面一行排满 */
+.etf-card{background:var(--surface-sunken);border-radius:var(--r-md);padding:11px 13px 6px;cursor:pointer;
+  position:relative;overflow:hidden;transition:background .2s ease,box-shadow .2s ease;
   animation:popIn .42s cubic-bezier(.2,.7,.3,1) both}
-.etf-card:hover{transform:translateY(-2px);background:#fff;box-shadow:0 10px 24px rgba(0,0,0,.10);z-index:2}
-.etf-card.selected{background:#fff;box-shadow:0 0 0 2px var(--blue),0 10px 24px rgba(0,122,255,.16)}
+.etf-card:hover{background:#fff;box-shadow:0 8px 22px rgba(0,0,0,.09);z-index:2}
+.etf-card.selected{background:#fff;box-shadow:0 0 0 2px var(--blue),0 8px 22px rgba(0,113,227,.14)}
 .etf-top{display:flex;align-items:baseline;justify-content:space-between;gap:6px}
-.etf-name{font-size:12.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.etf-name{font-size:12.5px;font-weight:650;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .etf-code{font-size:9.5px;color:var(--text3);font-variant-numeric:tabular-nums;flex:none}
 .etf-line{display:flex;align-items:baseline;justify-content:space-between;gap:6px;margin-top:4px}
-.etf-price{font-size:17px;font-weight:800;letter-spacing:-.02em;font-variant-numeric:tabular-nums;line-height:1.15}
-.etf-pct{font-size:11px;font-weight:700;font-variant-numeric:tabular-nums;padding:2px 7px;border-radius:99px;
-  transition:background .3s ease}
+.etf-price{font-size:17px;font-weight:650;letter-spacing:-.02em;font-variant-numeric:tabular-nums;line-height:1.15}
+.etf-pct{font-size:11px;font-weight:650;font-variant-numeric:tabular-nums;padding:2px 7px;border-radius:6px;transition:background .3s ease}
 .etf-pct.up{background:var(--red-soft)} .etf-pct.down{background:var(--green-soft)} .etf-pct.flat{background:rgba(0,0,0,.05)}
 .etf-spark{display:block;width:100%;height:38px;margin-top:5px}
-@media (max-width:860px){ .etf-sub{display:none} }
-@media (max-width:520px){
-  .etf-head{padding:12px 14px}
-  .etf-grid{grid-template-columns:repeat(2,1fr);gap:10px}
-  .etf-body{padding:12px 12px 14px}
-}
+@keyframes popIn{from{opacity:0;transform:scale(.9)}to{opacity:1;transform:none}}
 
-/* ================= 主区 ================= */
-.main-grid{display:grid;grid-template-columns:minmax(360px,400px) 1fr;gap:16px;align-items:stretch}
+/* ================= ③ 主工作区：行业榜 + 分时 ================= */
+.main-grid{display:grid;grid-template-columns:396px 1fr;gap:18px;align-items:stretch}
 
 /* 行业板块榜 */
 .sector-panel{display:flex;flex-direction:column;min-height:0}
-.sector-list{flex:1;overflow-y:auto;max-height:648px;padding:10px 10px 14px;scrollbar-gutter:stable}
-.srow{display:flex;align-items:center;gap:10px;padding:6px 8px;border-radius:13px;cursor:pointer;
-  transition:background .18s ease,transform .18s ease;position:relative}
-.srow:hover{background:rgba(0,0,0,.04)}
+.sector-list{flex:1;overflow-y:auto;max-height:556px;padding:2px 10px 12px;scrollbar-gutter:stable}
+/* 列头：让右侧三列数字有明确归属（原先无表头，数字含义靠猜） */
+.srow.srow-head{display:flex;align-items:center;gap:8px;padding:0 29px 7px 20px;margin-bottom:2px;min-height:0;
+  border-bottom:1px solid var(--line);cursor:default}
+.srow.srow-head:hover{background:none}
+.srow-head .rank,.srow-head .s-main,.srow-head .s-pct,.srow-head .s-fund,.srow-head .s-breadth{
+  font-size:10.5px;font-weight:600;color:var(--text3);letter-spacing:.02em}
+.srow{display:flex;align-items:center;gap:8px;padding:4px 10px;border-radius:10px;cursor:pointer;
+  transition:background .16s ease;position:relative;min-height:40px;border-bottom: 1px dashed silver;}
+.srow:hover{background:rgba(0,0,0,.035)}
 .srow.selected{background:var(--blue-soft)}
-.srow.selected::before{content:"";position:absolute;left:0;top:22%;bottom:22%;width:3px;border-radius:3px;background:var(--blue)}
-.srow .rank{width:20px;font-size:11px;font-weight:700;color:var(--text3);font-variant-numeric:tabular-nums;flex:none}
-.srow .rank.top{color:#ff9500}
+.srow.selected::before{content:"";position:absolute;left:0;top:24%;bottom:24%;width:3px;border-radius:3px;background:var(--blue)}
+.srow .rank{width:22px;font-size:11px;font-weight:700;color:var(--text3);font-variant-numeric:tabular-nums;flex:none}
+.srow .rank.top{color:#e08600}
 .s-main{flex:1;min-width:0}
-.s-name{display:block;font-size:13.5px;font-weight:650;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.s-code{display:block;font-size:10px;color:var(--text3);font-variant-numeric:tabular-nums;margin-top:1px}
-.s-pct{width:62px;text-align:right;font-size:14px;font-weight:750;font-variant-numeric:tabular-nums;flex:none}
-.s-fund{width:88px;flex:none;text-align:right}
-.s-fund-v{display:block;font-size:11.5px;font-weight:650;font-variant-numeric:tabular-nums}
-.minibar{margin-top:4px;height:3.5px;border-radius:3px;background:rgba(0,0,0,.05);overflow:hidden;position:relative}
+.s-name{display:block;font-size:10px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.3}
+.s-code{display:block;font-size:8px;color:var(--text3);font-variant-numeric:tabular-nums;margin-top:1px;line-height:1.3}
+.s-pct{width:64px;text-align:right;font-size:12px;font-weight:700;font-variant-numeric:tabular-nums;flex:none;letter-spacing:-.02em}
+.s-fund{width:92px;flex:none;text-align:right}
+.s-fund-v{display:block;font-size:10px;font-weight:650;font-variant-numeric:tabular-nums;line-height:1.2}
+.minibar{margin-top:4px;height:3px;border-radius:3px;background:rgba(0,0,0,.05);overflow:hidden;position:relative}
 .minibar i{position:absolute;top:0;bottom:0;border-radius:3px;transition:all .5s cubic-bezier(.2,.7,.3,1);display:block}
 .minibar i.up{left:50%;background:linear-gradient(90deg,#ff6b60,#ff3b30)}
 .minibar i.down{right:50%;background:linear-gradient(270deg,#6dd58c,#34c759)}
-.s-breadth{width:52px;flex:none;font-size:10px;color:var(--text3);font-variant-numeric:tabular-nums;line-height:1.5;text-align:right}
-.s-fund-v i{font-style:normal;font-size:9.5px;color:var(--text3);margin-left:3px;font-weight:600}
-.s-tag{display:inline-block;font-size:9px;font-weight:700;padding:1px 5px;border-radius:5px;margin-left:5px;vertical-align:1px;letter-spacing:.02em}
-.s-tag.in{color:#007aff;background:var(--blue-soft)}
-.s-tag.out{color:#ff9500;background:rgba(255,149,0,.13)}
-.flash{animation:flashUp .7s ease-out}
+.s-breadth{width:52px;flex:none;font-size:10.5px;color:var(--text3);font-variant-numeric:tabular-nums;line-height:1.4;text-align:right}
+.s-fund-v i{font-style:normal;font-size:9.5px;color:var(--text3);margin-left:1px;font-weight:600}
+.s-tag{display:inline-block;font-size:9px;font-weight:700;padding:1px 5px;border-radius:5px;margin-left:5px;vertical-align:1.5px;letter-spacing:.02em}
+.s-tag.in{color:var(--blue);background:var(--blue-soft)}
+.s-tag.out{color:#b26b00;background:rgba(255,149,0,.14)}
 .flash.up{animation-name:flashUp}.flash.down{animation-name:flashDown}
+.flash{animation:flashUp .8s ease-out}
 @keyframes flashUp{0%{background:var(--red-soft)}100%{background:transparent}}
 @keyframes flashDown{0%{background:var(--green-soft)}100%{background:transparent}}
 
 /* 分时图 */
-.chart-panel{display:flex;flex-direction:column;min-height:520px}
+.chart-panel{display:flex;flex-direction:column;min-height:540px}
+.ph-quote{display:flex;flex-direction:column;gap:6px;min-width:0}
 .chart-quote{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
-.chart-quote .price{font-size:23px;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
-.chart-quote .chg{font-size:12.5px;font-weight:650;font-variant-numeric:tabular-nums;padding:3px 9px;border-radius:99px}
+.chart-quote .price{font-size:26px;font-weight:650;font-variant-numeric:tabular-nums;letter-spacing:-.03em;line-height:1.1}
+.chart-quote .chg{font-size:12px;font-weight:650;font-variant-numeric:tabular-nums;padding:2.5px 8px;border-radius:6px}
 .chart-quote .chg.up{background:var(--red-soft)}.chart-quote .chg.down{background:var(--green-soft)}.chart-quote .chg.flat{background:rgba(0,0,0,.05)}
-.tag{font-size:10.5px;font-weight:600;color:var(--blue);background:var(--blue-soft);padding:2.5px 9px;border-radius:99px;vertical-align:2px;margin-left:8px}
-.trend-wrap{position:relative;padding:6px 14px 2px}
+.tag{font-size:10px;font-weight:650;color:var(--blue);background:var(--blue-soft);padding:2px 7px;border-radius:5px}
+.trend-wrap{position:relative;padding:10px 16px 0}
 #trendSvg{width:100%;height:auto;display:block}
-.cross-tip{position:absolute;pointer-events:none;background:rgba(255,255,255,.92);backdrop-filter:blur(12px);
-  border-radius:12px;box-shadow:var(--shadow-lg);padding:9px 13px;font-size:11.5px;line-height:1.7;
+.trend-empty{position:absolute;inset:0;display:grid;place-items:center;font-size:12.5px;color:var(--text3);pointer-events:none}
+.trend-empty[hidden]{display:none}
+.cross-tip{position:absolute;pointer-events:none;background:rgba(255,255,255,.95);backdrop-filter:blur(12px);
+  border-radius:10px;box-shadow:var(--shadow-lg);padding:9px 12px;font-size:11.5px;line-height:1.7;
   font-variant-numeric:tabular-nums;opacity:0;transition:opacity .15s ease;z-index:5;white-space:nowrap;
-  border:1px solid rgba(0,0,0,.04)}
-/* 分时图入场动画（仅切换/首次加载时触发） */
+  border:1px solid var(--line)}
+.cross-tip.on{opacity:1}
+.cross-tip b{font-weight:700}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
 #trendSvg.anim .pl-avg{animation:fadeIn .9s ease .25s both}
 #trendSvg.anim .pl-price{animation:fadeIn .5s ease both}
-.cross-tip.on{opacity:1}
-.cross-tip b{font-weight:750}
-.legend{display:flex;gap:18px;padding:2px 22px 0;font-size:11px;color:var(--text2)}
-.legend i{display:inline-block;width:16px;height:2.5px;border-radius:2px;vertical-align:middle;margin-right:6px}
+.legend{display:flex;gap:16px;padding:6px 20px 0;font-size:10.5px;color:var(--text3);flex-wrap:wrap}
+.legend i{display:inline-block;width:14px;height:2.5px;border-radius:2px;vertical-align:middle;margin-right:5px}
 /* 资金分时（主力净流入走势，仅行业选中时显示） */
-.flow-wrap{position:relative;padding:8px 14px 0}
-.flow-head{display:flex;align-items:baseline;justify-content:space-between;padding:0 8px 3px;font-size:11px;color:var(--text2)}
-.flow-head .fh-title{font-weight:650;color:var(--text)}
-.flow-head .fh-val{font-weight:700;font-variant-numeric:tabular-nums}
-.flow-head .fh-val b{font-weight:750}
+.flow-wrap{position:relative;padding:12px 16px 0;margin-top:10px;border-top:1px solid var(--line)}
+.flow-head{display:flex;align-items:baseline;justify-content:space-between;padding:0 6px 5px;font-size:11px;color:var(--text3)}
+.flow-head .fh-title{font-weight:600;color:var(--text2)}
+.flow-head .fh-val{font-weight:650;font-variant-numeric:tabular-nums;color:var(--text2)}
+.flow-head .fh-val b{font-weight:700}
 #flowSvg{width:100%;height:auto;display:block}
 @keyframes flowIn{from{opacity:0}to{opacity:1}}
 #flowSvg.anim .pl-flow{animation:flowIn .5s ease both}
 /* 资金分解 */
-.fund-detail{padding:14px 22px 20px}
-.fund-detail h3{font-size:13px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between}
-.fund-detail h3 .lead{font-weight:550;font-size:11.5px;color:var(--text2)}
-.fb-row{display:grid;grid-template-columns:56px 1fr 84px;align-items:center;gap:12px;margin-bottom:9px}
+.fund-detail{padding:14px 20px 18px;margin-top:12px;border-top:1px solid var(--line)}
+.fund-detail h3{font-size:12.5px;font-weight:650;margin-bottom:12px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.fund-detail h3 .lead{font-weight:500;font-size:11px;color:var(--text3);margin-left:auto}
+.fb-row{display:grid;grid-template-columns:54px 1fr 84px;align-items:center;gap:12px;margin-bottom:8px}
 .fb-row:last-child{margin-bottom:0}
-.fb-label{font-size:12px;color:var(--text2);font-weight:600}
-.fb-track{height:14px;border-radius:7px;background:rgba(0,0,0,.045);position:relative}
-.fb-zero{position:absolute;left:50%;top:-3px;bottom:-3px;width:1px;background:rgba(0,0,0,.14)}
+.fb-label{font-size:11.5px;color:var(--text2);font-weight:550}
+.fb-track{height:12px;border-radius:6px;background:rgba(0,0,0,.045);position:relative}
+.fb-zero{position:absolute;left:50%;top:-3px;bottom:-3px;width:1px;background:rgba(0,0,0,.12)}
 .fb-bar{position:absolute;top:2px;bottom:2px;border-radius:5px;min-width:2px;
   transition:width .6s cubic-bezier(.2,.7,.3,1),left .6s cubic-bezier(.2,.7,.3,1),right .6s cubic-bezier(.2,.7,.3,1)}
 .fb-bar.up{background:linear-gradient(90deg,#ff8b82,#ff3b30)}
 .fb-bar.down{background:linear-gradient(270deg,#7bd894,#34c759)}
-.fb-val{font-size:12px;font-weight:700;text-align:right;font-variant-numeric:tabular-nums}
-.fund-empty{font-size:12.5px;color:var(--text3);text-align:center;padding:14px 0;background:rgba(0,0,0,.02);
-  border-radius:var(--r-md);border:1px dashed rgba(0,0,0,.08)}
-.fund-summary{text-align:right;font-size:12px;color:var(--text2);font-variant-numeric:tabular-nums}
-.fund-summary b{font-size:14px;font-weight:800}
+.fb-val{font-size:11.5px;font-weight:650;text-align:right;font-variant-numeric:tabular-nums}
+.fund-empty{font-size:12px;color:var(--text3);text-align:center;padding:14px 12px;background:var(--surface-sunken);
+  border-radius:var(--r-md);line-height:1.6}
+.fund-summary{text-align:right;font-size:11px;color:var(--text3);font-variant-numeric:tabular-nums;line-height:1.6}
+.fund-summary b{font-size:13px;font-weight:700}
 
-/* ================= 全市场资金 KPI ================= */
-.market-panel .market-funds{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;padding:16px 22px 4px}
-.market-flow{padding:0 22px 20px}
+/* ================= ④ 全市场资金（去掉嵌套卡片，改为分隔线排列） ================= */
+.market-panel .market-funds{display:grid;grid-template-columns:repeat(5,1fr);padding:14px 8px 0}
+.market-flow{padding:6px 20px 18px;margin-top:14px;border-top:1px solid var(--line)}
 #mflowSvg{width:100%;height:auto;display:block}
 #mflowSvg.anim .pl-flow{animation:flowIn .5s ease both}
-.mf-card{background:rgba(0,0,0,.022);border:1px solid var(--line);border-radius:var(--r-md);padding:13px 16px;
-  transition:transform .2s ease,background .2s ease}
-.mf-card:hover{transform:translateY(-2px);background:#fff}
-.mf-label{display:block;font-size:11.5px;color:var(--text2);font-weight:600}
-.mf-val{display:block;font-size:19px;font-weight:800;margin-top:4px;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
-.mf-card:first-child{background:linear-gradient(135deg,rgba(255,59,48,.06),rgba(255,59,48,.02));border-color:rgba(255,59,48,.12)}
-.breadth-pill{display:inline-flex;align-items:center;gap:8px;font-size:12px;color:var(--text2);font-variant-numeric:tabular-nums}
-.breadth-pill b{font-weight:750}
-.mkt-temp{display:flex;align-items:center;gap:14px;padding:14px 22px 0}
-.mt-bar{flex:1;height:6px;border-radius:4px;overflow:hidden;display:flex;background:rgba(0,0,0,.05)}
+.mf-card{background:none;border:0;border-radius:0;padding:2px 16px;border-left:1px solid var(--line)}
+.mf-card:first-child{border-left:0}
+.mf-label{display:block;font-size:11.5px;color:var(--text2);font-weight:550;letter-spacing:.01em}
+.mf-val{display:block;font-size:20px;font-weight:700;margin-top:5px;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.mf-card:first-child .mf-val{font-size:21px}
+.breadth-pill{display:inline-flex;align-items:center;gap:7px;font-size:11.5px;color:var(--text3);font-variant-numeric:tabular-nums;flex-wrap:wrap}
+.breadth-pill b{font-weight:700}
+.mkt-temp{display:flex;align-items:center;gap:12px;padding:14px 20px 0}
+.mt-bar{flex:1;height:5px;border-radius:3px;overflow:hidden;display:flex;background:rgba(0,0,0,.05)}
 .mt-bar .up{background:linear-gradient(90deg,#ff6b60,#ff3b30);transition:width .6s cubic-bezier(.2,.7,.3,1)}
 .mt-bar .down{background:linear-gradient(270deg,#6dd58c,#34c759);transition:width .6s cubic-bezier(.2,.7,.3,1)}
-.mt-label{font-size:11.5px;color:var(--text2);white-space:nowrap;font-variant-numeric:tabular-nums}
+.mt-label{font-size:11px;color:var(--text3);white-space:nowrap;font-variant-numeric:tabular-nums}
+.mt-label b{font-weight:700}
 
-/* ================= 热力图 ================= */
-.heatmap{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:10px;padding:14px 22px 22px}
-.hm-cell{border:none;border-radius:var(--r-md);padding:8px 6px;text-align:center;position:relative;
-  transition:transform .2s cubic-bezier(.2,.7,.3,1),box-shadow .2s ease;animation:popIn .45s cubic-bezier(.2,.7,.3,1) both}
-@keyframes popIn{from{opacity:0;transform:scale(.86)}to{opacity:1;transform:none}}
-.hm-cell:hover{transform:scale(1.055);box-shadow:0 10px 26px rgba(0,0,0,.16);z-index:2}
-.hm-cell.selected{outline:2.5px solid var(--blue);outline-offset:2px}
-.hm-name{display:block;font-size:12px;font-weight:700;color:rgba(0,0,0,.82);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.hm-pct{display:block;font-size:15.5px;font-weight:800;margin-top:3px;font-variant-numeric:tabular-nums}
-.hm-pct.up{color:#d70015}.hm-pct.down{color:#04744a}.hm-pct.flat{color:var(--text2)}
-.hm-dot{position:absolute;top:6px;right:6px;width:6px;height:6px;border-radius:50%;display:none}
-.hm-dot.in{display:block;background:#007aff;box-shadow:0 0 0 2px rgba(0,122,255,.25)}
-.hm-dot.out{display:block;background:#ff9500;box-shadow:0 0 0 2px rgba(255,149,0,.25)}
+/* ================= ⑤ 异动监控（默认收起 · 由指数带右端图标唤起弹层） ================= */
+.evt-head{padding-bottom:10px}
+.evt-title{display:flex;align-items:center;gap:8px;min-width:0}
+.evt-pulse{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--green);
+  vertical-align:middle;animation:breath 2s ease-in-out infinite;flex:none}
+.evt-toolbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  padding:0 20px 10px;border-bottom:1px solid var(--line)}
+.evt-filters{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.evt-side{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.evt-mood{display:inline-flex;align-items:center;gap:7px;font-size:11px;color:var(--text3);
+  font-variant-numeric:tabular-nums;margin-left:auto}
+.evt-mood .mm-bar{width:80px;height:5px;border-radius:3px;background:rgba(0,0,0,.05);overflow:hidden;display:flex}
+.evt-mood .mm-bar i{display:block;height:100%;transition:width .5s cubic-bezier(.2,.7,.3,1)}
+.evt-mood .mm-up{background:linear-gradient(90deg,#ff8b82,#ff3b30)}
+.evt-mood .mm-down{background:linear-gradient(270deg,#7bd894,#34c759)}
+.evt-mood b{font-weight:700}
+.evt-list{margin:8px 12px 0;max-height:322px;overflow-y:auto;scrollbar-gutter:stable;
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 20px;align-content:start;padding:0 8px}
+/* 个股流水是时间序列：两列网格是「先行后列」，会把时间读成左右跳，故单列 */
+.evt-list.stock{grid-template-columns:1fr;gap:0}
+/* 个股流水：东财官网口径 时间 | 名称 | 类型 | 相关信息 四列（相关信息按类型换单位：元 / 手 / %）
+   表格整体限宽居中：四列紧挨着读，比让「名称」列把 1fr 吃成 800px 再隔一大片空白要好 */
+.evt-list.stock{align-self:center;width:100%;max-width:700px;box-sizing:border-box}
+.ev-head,.evt-list.stock .ev-row{grid-template-columns:62px minmax(0,1fr) 92px 88px;gap:10px}
+.ev-head{position:sticky;top:0;z-index:1;display:grid;
+  align-items:center;height:28px;padding:0 8px;font-size:10.5px;font-weight:600;color:var(--text3);
+  text-align:right;background:rgba(255,255,255,.96);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);
+  border-bottom:1px solid var(--line)}
+.ev-head span:nth-child(-n+3){text-align:left}
+.evt-list.stock .ev-row{border-radius:0;border-bottom:1px solid var(--line);padding:7px 8px;min-height:34px}
+.evt-list.stock .ev-row:last-of-type{border-bottom:0}
+.ev-rel{font-size:12px;font-weight:600;text-align:right;font-variant-numeric:tabular-nums;color:var(--text2);letter-spacing:-.01em}
+.ev-rel.up{color:var(--red-num)} .ev-rel.down{color:var(--green-num)}
+.ev-row{display:grid;grid-template-columns:52px 62px minmax(0,1fr) 58px 56px;align-items:center;gap:8px;
+  padding:6px 8px;border-radius:8px;cursor:pointer;transition:background .16s ease;min-height:32px}
+.ev-row:hover{background:rgba(0,0,0,.035)}
+.ev-row.selected{background:var(--blue-soft)}
+.ev-time{font-size:10.5px;color:var(--text3);font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+/* 类型按东财样式做成纯色文字（不再用胶囊底色），颜色只区分拉升 / 跳水两个方向 */
+.ev-tag{font-size:10.5px;font-weight:650;padding:0;text-align:left;white-space:nowrap;
+  letter-spacing:-.01em;overflow:hidden;text-overflow:ellipsis}
+.ev-tag.up{color:var(--red-ink)}
+.ev-tag.down{color:var(--green-ink)}
+.ev-tag.mid{color:var(--blue)}
+.ev-name{font-size:12.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ev-name i{font-style:normal;font-size:9.5px;color:var(--text3);margin-left:5px;font-variant-numeric:tabular-nums;font-weight:500}
+.ev-row.is-new{animation:evIn 1.1s ease-out}
+@keyframes evIn{0%{background:rgba(255,159,10,.24)}60%{background:rgba(255,159,10,.09)}100%{background:transparent}}
+.evt-empty{grid-column:1/-1;text-align:center;font-size:12px;color:var(--text3);padding:28px 0}
+.evt-legend{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;
+  margin:8px 20px 2px;padding-top:10px;border-top:1px solid var(--line);font-size:10.5px;color:var(--text3);line-height:1.6}
+.seg[hidden],.evt-mood[hidden]{display:none}
+.evt-list.market{display:block;gap:0;max-height:436px}
+/* 大盘异动：盘面播报时间线（左列时间、中列竖轴圆点、右列标题摘要） */
+.evt-list.pulse{padding:0 16px 8px}
+.pl-day{position:sticky;top:0;z-index:2;display:flex;align-items:center;gap:6px;
+  padding:12px 0 7px;font-size:11px;font-weight:700;color:var(--text2);
+  background:linear-gradient(180deg,#fff 72%,rgba(255,255,255,0))}
+.pl-day b{font-weight:700;color:var(--text3);font-size:10.5px}
+.pl-day em{font-style:normal;font-weight:500;color:var(--text3);font-size:10.5px;margin-left:auto}
+.pl-sub{display:flex;align-items:center;gap:5px;padding:7px 0 3px;
+  font-size:10.5px;font-weight:600;color:var(--text3);letter-spacing:.01em}
+.pl-sub b{font-weight:600;font-size:10px;opacity:.85}
+.pl-item{display:grid;grid-template-columns:40px 14px minmax(0,1fr);gap:0 10px}
+.pl-time{padding-top:9px;font-size:11.5px;font-weight:650;color:var(--text2);
+  text-align:right;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.pl-rail{position:relative}
+.pl-rail::before{content:'';position:absolute;left:50%;top:0;bottom:0;width:2px;margin-left:-1px;
+  border-radius:1px;background:rgba(0,0,0,.07)}
+.pl-rail i{position:absolute;left:50%;top:13px;z-index:1;width:7px;height:7px;border-radius:50%;
+  background:#fff;border:2px solid var(--blue);transform:translateX(-50%);box-sizing:content-box}
+.pl-item:first-of-type .pl-rail::before{top:13px}
+.pl-main{padding:7px 0 11px;border-bottom:1px solid var(--line)}
+.pl-item:last-of-type .pl-main{border-bottom:0}
+.pl-title{margin:0;font-size:13px;font-weight:650;line-height:1.55;color:var(--text);letter-spacing:-.01em}
+.pl-sum{margin-top:5px;padding:8px 10px;border-radius:8px;background:rgba(0,0,0,.028);
+  font-size:12px;line-height:1.65;color:var(--text2)}
+.pl-more{display:inline-flex;align-items:center;gap:1px;margin-top:6px;font-size:11px;
+  font-weight:600;color:var(--text3);text-decoration:none;transition:color .15s ease}
+.pl-more:hover{color:var(--blue)}
+.pl-more:hover svg{stroke:var(--blue)}
+.pl-more svg{width:12px;height:12px;fill:none;stroke:currentColor;stroke-width:2.2;
+  stroke-linecap:round;stroke-linejoin:round}
+/* 大盘异动：上证指数分时 + 板块异动时刻标注（对标东财 App 大盘异动的图区） */
+.mkt-chart{margin:2px 4px 4px;border:1px solid var(--line);border-radius:12px;overflow:hidden;
+  background:linear-gradient(180deg,#fbfcfe,#f6f8fb)}
+.mc-head{display:flex;align-items:baseline;gap:9px;flex-wrap:wrap;padding:10px 14px 0}
+.mc-name{font-size:12.5px;font-weight:700;color:var(--text);letter-spacing:-.01em}
+.mc-price{font-size:19px;font-weight:750;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.mc-chg{font-size:12px;font-weight:650;font-variant-numeric:tabular-nums}
+.mc-note{margin-left:auto;font-size:10px;color:var(--text3);white-space:nowrap}
+.mc-body{position:relative;height:150px;margin-top:7px}
+.mc-body svg{position:absolute;inset:0;width:100%;height:100%;display:block}
+.mc-empty{position:absolute;inset:0;display:grid;place-items:center;font-size:11px;color:var(--text3)}
+.mc-tag{position:absolute;transform:translateX(-50%);z-index:2;max-width:110px;white-space:nowrap;
+  overflow:hidden;text-overflow:ellipsis;font-style:normal;font-size:10px;font-weight:650;
+  padding:2.5px 8px;border-radius:99px;cursor:pointer;background:#fff;border:1px solid var(--line2);
+  box-shadow:0 1px 4px rgba(0,0,0,.10);transition:transform .15s ease,box-shadow .15s ease}
+.mc-tag:hover{transform:translateX(-50%) scale(1.06);box-shadow:0 3px 10px rgba(0,0,0,.16)}
+.mc-tag.up{color:var(--red-ink);border-color:rgba(255,59,48,.34);background:linear-gradient(180deg,#fff,#fff4f3)}
+.mc-tag.down{color:var(--green-ink);border-color:rgba(52,199,89,.38);background:linear-gradient(180deg,#fff,#f1fbf4)}
+.mc-dot{position:absolute;width:7px;height:7px;border-radius:50%;transform:translate(-50%,-50%);
+  font-style:normal;z-index:1;box-shadow:0 0 0 2px #fff;pointer-events:none}
+.mc-dot.up{background:var(--red)} .mc-dot.down{background:var(--green)}
+.mc-line{position:absolute;width:1px;background:rgba(0,0,0,.18);transform:translateX(-50%);
+  font-style:normal;z-index:1;pointer-events:none}
+/* 大盘异动：时间线里的板块异动条目（对标东财「通信设备走强」卡） */
+.pl-title b{font-weight:750}
+.pl-title .tt-pct{font-style:normal;font-size:12px;font-weight:700;font-variant-numeric:tabular-nums;
+  margin-left:5px;letter-spacing:-.01em}
+.pl-title .tt-pct.up{color:var(--red-num)} .pl-title .tt-pct.down{color:var(--green-num)}
+.pl-rail i.up{border-color:var(--red)} .pl-rail i.down{border-color:var(--green)}
+.mbk-card{margin-top:7px;border:1px solid var(--line);border-radius:10px;background:var(--surface);
+  cursor:pointer;transition:border-color .15s ease,background .15s ease;min-width:0}
+.mbk-card:hover{border-color:rgba(0,113,227,.38);background:rgba(0,113,227,.028)}
+.mbk-stats{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;padding:8px 12px 7px;
+  font-size:11px;color:var(--text3);line-height:1.6}
+.mbk-stats b{font-weight:700;color:var(--text2);font-variant-numeric:tabular-nums}
+.mbk-stats b.up{color:var(--red-num)} .mbk-stats b.down{color:var(--green-num)}
+.mbk-stocks{display:flex;gap:8px;flex-wrap:wrap;padding:0 12px 9px}
+.mbk-stock{display:inline-flex;align-items:baseline;gap:5px;padding:4px 9px;border-radius:7px;
+  background:rgba(0,0,0,.032);cursor:pointer;min-width:0;transition:background .15s ease}
+.mbk-stock:hover{background:rgba(0,113,227,.08)}
+.mbk-stock b{font-size:11.5px;font-weight:650;color:var(--text);white-space:nowrap}
+.mbk-stock i{font-style:normal;font-size:9.5px;color:var(--text3);font-variant-numeric:tabular-nums}
+.mbk-stock em{font-style:normal;font-size:12px;font-weight:750;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.mbk-stock em.up{color:var(--red-num)} .mbk-stock em.down{color:var(--green-num)}
+/* 大盘异动：未定位到时刻的活跃板块词条 */
+.mkt-chips{display:flex;flex-wrap:wrap;gap:6px;padding:2px 0 12px}
+.mkt-chip{display:inline-flex;align-items:baseline;gap:6px;padding:4px 11px;border:1px solid var(--line);
+  border-radius:99px;background:var(--surface);cursor:pointer;font-size:11px;color:var(--text3);
+  transition:border-color .15s ease,background .15s ease;min-width:0}
+.mkt-chip:hover{border-color:rgba(0,113,227,.38);background:rgba(0,113,227,.028)}
+.mkt-chip b{font-weight:650;color:var(--text);white-space:nowrap}
+.mkt-chip em{font-style:normal;font-weight:700;font-variant-numeric:tabular-nums}
+.mkt-chip em.up{color:var(--red-num)} .mkt-chip em.down{color:var(--green-num)}
+/* 播报视图没有筛选器，用一个静态标签占位，避免工具条只剩日期下拉显得空 */
+.evt-scope{font-size:11px;font-weight:600;color:var(--text3);
+  padding:3px 10px;border:1px solid var(--line);border-radius:999px;white-space:nowrap}
+.evt-scope[hidden]{display:none}
+/* 大盘异动：当日板块异动表（东财「当日异动板块监控」口径） */
+.bk-head,.bk-row{display:grid;grid-template-columns:30px minmax(0,1fr) 76px 100px 96px minmax(0,1.35fr);
+  align-items:center;gap:10px;padding:0 6px}
+.bk-head{position:sticky;top:0;z-index:1;height:30px;font-size:10.5px;font-weight:600;color:var(--text3);
+  background:rgba(255,255,255,.96);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);
+  border-bottom:1px solid var(--line);text-align:right}
+.bk-head span:nth-child(2){text-align:left}
+.bk-row{height:46px;border-bottom:1px solid var(--line);font-size:12px;cursor:pointer;
+  transition:background .15s ease;min-width:0}
+.bk-row:hover{background:rgba(0,0,0,.028)}
+.bk-row.selected{background:var(--blue-soft)}
+.bk-rank{font-size:10.5px;color:var(--text3);font-variant-numeric:tabular-nums;text-align:right}
+.bk-main{min-width:0}
+.bk-title{display:flex;align-items:baseline;gap:6px;min-width:0}
+.bk-title b{font-size:12.5px;font-weight:650;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bk-title i{font-style:normal;font-size:9.5px;color:var(--text3);font-variant-numeric:tabular-nums;flex:none}
+.bk-lead{display:block;font-size:10px;color:var(--text3);margin-top:1px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bk-lead em{font-style:normal;font-weight:700;font-variant-numeric:tabular-nums;margin-left:3px}
+.bk-lead i{font-style:normal;margin-left:4px;color:var(--text3)}
+.bk-pct,.bk-flow{text-align:right;font-weight:650;font-variant-numeric:tabular-nums;white-space:nowrap}
+.bk-cnt{display:flex;align-items:center;justify-content:flex-end;gap:6px;font-variant-numeric:tabular-nums}
+.bk-cnt b{font-size:12px;font-weight:700}
+.bk-cnt .bar{width:38px;height:5px;border-radius:3px;background:rgba(0,0,0,.08);overflow:hidden;flex:none}
+.bk-cnt .bar i{display:block;height:100%;border-radius:3px;background:#aeaeb4}
+.bk-types{display:flex;gap:4px;overflow:hidden;min-width:0}
+.bk-type{font-size:10px;color:var(--text2);background:rgba(0,0,0,.05);border-radius:5px;
+  padding:2px 5px;white-space:nowrap;flex:none}
+.bk-type b{font-weight:700;color:var(--text);margin-left:3px;font-variant-numeric:tabular-nums}
+.bk-type.up{color:var(--red-ink);background:var(--red-soft)}
+.bk-type.down{color:var(--green-ink);background:var(--green-soft)}
+.bk-type.more{color:var(--text3)}
+/* 个股流水：加载更早的异动 */
+.evt-more{grid-column:1/-1;margin:10px auto 12px;padding:6px 16px;border-radius:99px;
+  background:rgba(0,0,0,.05);color:var(--text2);font-size:11.5px;font-weight:600;
+  transition:background .18s ease,color .18s ease}
+.evt-more:hover{background:rgba(0,0,0,.09);color:var(--text)}
+.evt-more[disabled]{opacity:.5;cursor:default}
+/* 日期切换：今日 / 本机留存的历史交易日 */
+.evt-datesel{position:relative;margin-left:auto}
+.evt-date{display:inline-flex;align-items:center;gap:6px;height:27px;padding:0 10px 0 8px;border-radius:8px;
+  border:1px solid var(--line2);background:var(--surface);color:var(--text2);
+  font-family:var(--font);font-size:11.5px;font-weight:600;cursor:pointer;transition:border-color .15s ease,color .15s ease}
+.evt-date svg{width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:1.9;
+  stroke-linecap:round;stroke-linejoin:round;flex:none;opacity:.75}
+.evt-date:hover{border-color:var(--text3)}
+.evt-date.is-arch{color:var(--blue);border-color:rgba(0,113,227,.4);background:var(--blue-soft)}
+/* 日历弹层：只列出本机有数据的交易日，其余日期置灰 */
+.dcal{position:absolute;right:0;top:33px;z-index:20;width:236px;padding:10px 10px 8px;
+  background:var(--surface);border:1px solid var(--line);border-radius:12px;
+  box-shadow:0 8px 24px rgba(0,0,0,.10),0 20px 48px rgba(0,0,0,.10)}
+.dcal[hidden]{display:none}
+.dcal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.dcal-head b{font-size:12px;font-weight:700;color:var(--text);letter-spacing:-.01em}
+.dcal-nav{width:22px;height:22px;border:0;border-radius:6px;background:transparent;color:var(--text2);
+  cursor:pointer;font-size:13px;line-height:1}
+.dcal-nav:hover{background:rgba(0,0,0,.05)}
+.dcal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
+.dcal-grid span{height:22px;display:flex;align-items:center;justify-content:center;
+  font-size:10px;font-weight:650;color:var(--text3)}
+.dcal-grid button{height:26px;border:0;border-radius:6px;background:transparent;cursor:pointer;
+  font-family:var(--font);font-size:11.5px;font-weight:600;color:var(--text3);
+  font-variant-numeric:tabular-nums;transition:background .12s ease,color .12s ease}
+.dcal-grid button.has{color:var(--text);background:rgba(0,113,227,.07)}
+.dcal-grid button.has:hover{background:rgba(0,113,227,.16)}
+.dcal-grid button.on{color:#fff;background:var(--blue);font-weight:700}
+.dcal-grid button:disabled{opacity:.32;cursor:default}
+.dcal-foot{display:flex;align-items:center;justify-content:space-between;gap:8px;
+  margin-top:7px;padding-top:7px;border-top:1px solid var(--line)}
+.dcal-today{height:24px;padding:0 8px;border:1px solid var(--line2);border-radius:6px;
+  background:var(--surface);color:var(--text2);font-family:var(--font);font-size:11px;
+  font-weight:600;cursor:pointer}
+.dcal-today:hover{border-color:var(--text3)}
+.dcal-tip{font-size:10px;color:var(--text3);line-height:1.3;text-align:right;flex:1 1 auto}
+
+/* ---- 弹层：由指数带右端的图标唤起，脱离文档流，不挤压下面的版块 ---- */
+.evt-pop{position:fixed;inset:0;z-index:90;display:flex;align-items:flex-start;justify-content:center;
+  padding:80px 24px 32px}
+.evt-pop[hidden]{display:none}
+.evt-veil{position:absolute;inset:0;background:rgba(22,22,24,.30);
+  -webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);animation:veilIn .2s ease both}
+@keyframes veilIn{from{opacity:0}to{opacity:1}}
+.evt-pop-card{position:relative;display:flex;flex-direction:column;width:min(1140px,100%);
+  max-height:min(78vh,780px);background:var(--surface);border:1px solid var(--line);border-radius:var(--r-xl);
+  box-shadow:0 12px 28px rgba(0,0,0,.12),0 40px 80px rgba(0,0,0,.16);overflow:hidden;
+  animation:popIn .24s cubic-bezier(.2,.8,.3,1) both}
+@keyframes popIn{from{opacity:0;transform:translateY(-12px) scale(.985)}to{opacity:1;transform:none}}
+.evt-pop-card .evt-head{padding:14px 12px 12px 20px;border-bottom:1px solid var(--line);gap:10px}
+.evt-pop-card .evt-title{flex:1 1 auto}
+.evt-pop-card:focus{outline:none}   /* 打开时把焦点移进弹层（Esc 才有着落），但不画焦点框 */
+.evt-close{display:grid;place-items:center;width:30px;height:30px;flex:none;border-radius:9px;
+  color:var(--text2);background:rgba(0,0,0,.045);transition:background .18s ease,color .18s ease}
+.evt-close:hover{background:rgba(0,0,0,.09);color:var(--text)}
+.evt-close svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2.6;stroke-linecap:round}
+.evt-pop-card .evt-toolbar{padding:10px 20px}
+/* 弹层里列表吃掉剩余高度（内部滚动），不再用固定 max-height */
+.evt-pop-card .evt-list,.evt-pop-card .evt-list.market{flex:1;min-height:0;max-height:none;margin:10px 12px 0}
+.evt-pop-card .evt-legend{margin:10px 20px 14px}
+
+/* ================= ⑥ 热力图 ================= */
+.heatmap{display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:8px;padding:14px 20px 20px}
+.hm-cell{border:none;border-radius:9px;padding:6px;text-align:center;position:relative;
+  transition:transform .18s cubic-bezier(.2,.7,.3,1),box-shadow .18s ease;animation:popIn .45s cubic-bezier(.2,.7,.3,1) both}
+.hm-cell:hover{transform:scale(1.05);box-shadow:0 8px 22px rgba(0,0,0,.14);z-index:2}
+.hm-cell.selected{outline:2px solid var(--blue);outline-offset:2px}
+.hm-name{display:block;font-size:10px;font-weight:600;color:rgba(0,0,0,.80);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hm-pct{display:block;font-size:12px;font-weight:700;margin-top:3px;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.hm-pct.up{color:var(--red-ink)}.hm-pct.down{color:#04744a}.hm-pct.flat{color:var(--text2)}
+.hm-dot{position:absolute;top:6px;right:6px;width:5px;height:5px;border-radius:50%;display:none}
+.hm-dot.in{display:block;background:var(--blue);box-shadow:0 0 0 2px rgba(0,113,227,.22)}
+.hm-dot.out{display:block;background:#ff9500;box-shadow:0 0 0 2px rgba(255,149,0,.22)}
 
 /* ================= 空态 / 骨架 ================= */
-.skeleton{background:linear-gradient(100deg,rgba(0,0,0,.05) 40%,rgba(0,0,0,.09) 50%,rgba(0,0,0,.05) 60%);
-  background-size:200% 100%;animation:shimmer 1.4s infinite;border-radius:8px}
+.skeleton{background:linear-gradient(100deg,rgba(0,0,0,.05) 40%,rgba(0,0,0,.085) 50%,rgba(0,0,0,.05) 60%);
+  background-size:200% 100%;animation:shimmer 1.4s infinite;border-radius:8px;border:0!important}
 @keyframes shimmer{from{background-position:120% 0}to{background-position:-80% 0}}
-.error-box{text-align:center;padding:44px 20px;color:var(--text2)}
-.error-box .btn{margin-top:14px;background:var(--blue);color:#fff;font-size:13px;font-weight:650;
-  padding:9px 22px;border-radius:99px;transition:transform .18s ease,box-shadow .2s}
-.error-box .btn:hover{transform:translateY(-1px);box-shadow:0 8px 20px rgba(0,122,255,.35)}
+.error-box{text-align:center;padding:40px 20px;color:var(--text3);font-size:12.5px}
+.error-box .btn{margin-top:14px;background:var(--blue);color:#fff;font-size:12.5px;font-weight:600;
+  padding:8px 20px;border-radius:99px;transition:transform .18s ease,box-shadow .2s}
+.error-box .btn:hover{transform:translateY(-1px);box-shadow:0 8px 20px rgba(0,113,227,.32)}
 
-footer{max-width:1280px;margin:0 auto;padding:6px 24px 34px;text-align:center;font-size:11px;color:var(--text3);line-height:1.9}
+footer{max-width:1280px;margin:0 auto;padding:10px 24px 32px;font-size:10.5px;color:var(--text3);line-height:1.9}
 
 /* ================= 响应式 ================= */
-@media (max-width:1080px){
+@media (max-width:1120px){
   .main-grid{grid-template-columns:1fr}
-  .sector-list{max-height:420px}
-  .market-funds{grid-template-columns:repeat(3,1fr)}
+  .index-card{padding:15px 16px 12px}   /* 标题与点位同行后横向更紧，收窄内边距换出空间 */
+  .idx-price{font-size:20px}   /* 四列在平板宽度下变窄，价格字号同步收一档 */
+  .sector-list{max-height:460px}
+  .etf-grid{grid-template-columns:repeat(3,1fr)}   /* 平板一行放不下 6 张：改两行三列，不留单张孤儿 */
+  .market-panel .market-funds{grid-template-columns:repeat(3,1fr);row-gap:14px}
+  .mf-card:nth-child(4){border-left:0}
+  .evt-list{grid-template-columns:1fr}
+  /* 平板：板块表去掉「异动构成」（最占宽又最不影响判断的一列） */
+  .bk-head,.bk-row{grid-template-columns:26px minmax(0,1fr) 72px 92px 84px}
+  .bk-types{display:none}
+}
+@media (max-width:860px){
+  .etf-sub{display:none}
+  .brand .subtitle{display:none}
 }
 @media (max-width:760px){
   .index-row{grid-template-columns:repeat(2,1fr)}
-  .market-funds{grid-template-columns:repeat(2,1fr)}
+  /* 窄屏：异动入口从右侧竖条改为指数带底部的一条横杠 */
+  .index-band{grid-template-columns:1fr}
+  .evt-trigger{flex-direction:row;width:auto;gap:7px;justify-content:center;padding:9px 10px;
+    border-left:0;border-top:1px solid var(--line);font-size:11px}
+  .evt-trigger .et-live{position:static}
+  /* 弹层在窄屏铺满整屏 */
+  .evt-pop{padding:0}
+  .evt-pop-card{width:100%;height:100%;max-height:100%;border:0;border-radius:0}
+  .evt-pop-card .evt-head{padding:12px 10px 10px 14px}
+  /* 窄屏头部拆两行：标题 + 关闭在第一行，视图切换独占第二行（否则关闭按钮会被挤到左侧单独一行） */
+  .evt-pop-card .evt-title{flex:1 1 auto;order:1;min-width:0}
+  .evt-pop-card .evt-close{order:2}
+  .evt-pop-card #evtMode{order:3;flex-basis:100%;margin-top:2px}
+  .evt-pop-card .evt-toolbar{padding:8px 14px}
+  .evt-pop-card .evt-list,.evt-pop-card .evt-list.market{margin:8px 6px 0}
+  .evt-pop-card .evt-legend{margin:8px 14px 12px}
+  .index-card:nth-child(3){border-left:0}
+  .index-card:nth-child(n+3){border-top:1px solid var(--line)}
+  .index-card{padding:15px 18px 12px}
+  .idx-price{font-size:20px}
+  .market-panel .market-funds{grid-template-columns:repeat(2,1fr)}
+  .mf-card:nth-child(3),.mf-card:nth-child(5){border-left:0}
   .s-breadth{display:none}
+  .srow-head .s-breadth{display:none}
+  .s-pct{width:58px}
+  .s-fund{width:82px}
   .chart-panel{min-height:auto}
+  .evt-mood{display:none}
+  .evt-list{max-height:280px}
+  .evt-toolbar{padding-right:14px;padding-left:14px}
 }
 @media (max-width:520px){
-  main{padding:16px 14px}
-  .header-inner{padding:12px 14px}
-  .index-row{grid-template-columns:1fr}
+  main{padding:14px 12px 8px;gap:14px}
+  /* 手机上顶栏拆两行：品牌一行、状态/刷新设置一行，避免右侧控件被挤出屏幕 */
+  .header-inner{padding:10px 12px;gap:8px}
+  .brand h1{font-size:13.5px}
+  .header-right{flex-basis:100%;margin-left:0;justify-content:space-between;gap:8px}
   .update-time{display:none}
-  .hm-grid{grid-template-columns:repeat(auto-fill,minmax(96px,1fr))}
+  .hdr-div{display:none}
+  .panel-head,.panel.quiet .panel-head{padding:14px 14px 0}
+  .index-card{padding:13px 12px 11px}
+  .idx-code{display:none}   /* 手机上二列更窄：先舍代码，保住「名称 + 点位」同一行 */
+  .idx-name{font-size:11.5px}
+  .idx-price{font-size:22px}
+  .idx-spark{height:52px}
+  .heatmap{grid-template-columns:repeat(auto-fill,minmax(94px,1fr));gap:5px;padding:12px 14px 16px}
+  .sector-list{padding:2px 8px 10px}
+  .srow.srow-head{padding:0 25px 7px 16px}
+  .srow{padding:7px 8px;gap:6px}
+  .ev-row{grid-template-columns:46px minmax(0,1fr) 62px 54px;gap:6px;padding:6px 4px}
+  .ev-head{display:none}
+  .evt-list.stock .ev-row{grid-template-columns:44px minmax(0,1fr) 74px 62px;gap:7px;padding:7px 5px}
+  .ev-tag{font-size:9.5px}
+  .ev-rel{font-size:11.5px}
+  /* 播报在手机上：时间压窄，摘要有更多行宽 */
+  .evt-list.pulse{padding:0 8px 6px}
+  .pl-item{grid-template-columns:34px 12px minmax(0,1fr);gap:0 8px}
+  .pl-title{font-size:12.5px}
+  .pl-sum{padding:7px 9px;font-size:11.5px}
+  .evt-scope{display:none}
+  .evt-list{margin:8px 4px 0;padding:0 2px;max-height:260px}
+  /* 手机：再收一档，只留 板块 / 涨跌幅 / 异动次数 三列 */
+  .bk-head,.bk-row{grid-template-columns:22px minmax(0,1fr) 62px 74px;gap:6px;padding:0 2px}
+  .bk-flow{display:none}
+  .bk-head span:nth-child(4){display:none}
+  .evt-date{margin-left:0;max-width:150px}
+  .evt-legend span:last-child{display:none}
+  .etf-head{padding:11px 14px}
+  .etf-grid{grid-template-columns:repeat(2,1fr);gap:8px}
+  .etf-body{padding:12px 12px 14px}
+  .market-panel .market-funds{padding:12px 4px 0}
+  .mf-card{padding:2px 12px}
 }
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.001s!important;transition-duration:.001s!important}
@@ -314,12 +663,15 @@ footer{max-width:1280px;margin:0 auto;padding:6px 24px 34px;text-align:center;fo
       <div class="logo">A股</div>
       <div>
         <h1>盘中实时行情 · 行业资金流</h1>
-        <div class="subtitle">行业涨跌 · 主力资金进出 · 分时走势 · 热力全景</div>
+        <div class="subtitle">指数概览 · 行业轮动 · 主力资金 · 异动监控 · 热力全景</div>
       </div>
     </div>
     <div class="header-right">
-      <span class="status-pill" id="statusPill"><i class="dot"></i><span id="statusText">加载中</span></span>
-      <span class="update-time">更新于 <b id="lastUpdate">--:--:--</b></span>
+      <div class="hdr-meta">
+        <span class="status-pill" id="statusPill"><i class="dot"></i><span id="statusText">加载中</span></span>
+        <span class="update-time">更新于 <b id="lastUpdate">--:--:--</b></span>
+      </div>
+      <i class="hdr-div"></i>
       <div class="seg" id="intervalSeg">
         <button data-int="15">15秒</button>
         <button data-int="30">30秒</button>
@@ -335,16 +687,47 @@ footer{max-width:1280px;margin:0 auto;padding:6px 24px 34px;text-align:center;fo
 </header>
 
 <main>
-  <!-- 指数卡 -->
-  <section class="index-row" id="indexRow"></section>
+  <!-- 首屏簇：指数带 + 核心 ETF 折叠条（紧邻排列，形成「大盘 → 宽基/行业」的第一信息层） -->
+  <div class="top-cluster">
+  <!-- ① 大盘指数（首屏第一信息层）+ 异动入口（同一张卡面，异动默认收起） -->
+  <section class="index-band">
+    <div class="index-row" id="indexRow">
+      <div class="index-card">
+        <div class="skeleton" style="height:25px;width:74%"></div>
+        <div class="skeleton" style="height:15px;width:46%;margin-top:7px"></div>
+        <div class="skeleton" style="height:60px;margin-top:10px"></div>
+      </div>
+      <div class="index-card">
+        <div class="skeleton" style="height:25px;width:74%"></div>
+        <div class="skeleton" style="height:15px;width:46%;margin-top:7px"></div>
+        <div class="skeleton" style="height:60px;margin-top:10px"></div>
+      </div>
+      <div class="index-card">
+        <div class="skeleton" style="height:25px;width:74%"></div>
+        <div class="skeleton" style="height:15px;width:46%;margin-top:7px"></div>
+        <div class="skeleton" style="height:60px;margin-top:10px"></div>
+      </div>
+      <div class="index-card">
+        <div class="skeleton" style="height:25px;width:74%"></div>
+        <div class="skeleton" style="height:15px;width:46%;margin-top:7px"></div>
+        <div class="skeleton" style="height:60px;margin-top:10px"></div>
+      </div>
+    </div>
+    <button class="evt-trigger" id="evtTrigger" aria-expanded="false" aria-controls="evtPop"
+            title="异动监控 · 大盘异动 / 个股异动（点击展开）">
+      <span class="et-ico"><svg viewBox="0 0 24 24"><polyline points="3 13 7.5 13 10 5.5 14 18.5 16.5 13 21 13"/></svg></span>
+      <span>异动</span>
+      <i class="et-live"></i>
+    </button>
+  </section>
 
-  <!-- 核心 ETF 分时（默认收起，展开后才按需拉取） -->
-  <section class="panel etf-panel" id="etfPanel" style="animation-delay:.16s">
+  <!-- ② 核心 ETF 分时：紧跟指数带，一张折叠条即可展开，不占首屏高度 -->
+  <section class="panel quiet etf-panel" id="etfPanel" style="animation-delay:.06s">
     <div class="etf-head" id="etfHead">
       <div class="etf-h2">核心 ETF 分时<span class="etf-badge">宽基 · 行业</span></div>
       <span class="etf-sub">中证A50 · 沪深300 · 创业50 · 中证1000 · 证券 · 银行</span>
       <div class="etf-right">
-        <span class="etf-live" id="etfLive">默认收起 · 不占刷新额度</span>
+        <span class="etf-live" id="etfLive">默认收起 · 展开才拉分时</span>
         <button class="etf-toggle" id="etfToggle" aria-expanded="false" aria-controls="etfBody">
           <span class="etf-toggle-label">展开</span>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
@@ -355,40 +738,49 @@ footer{max-width:1280px;margin:0 auto;padding:6px 24px 34px;text-align:center;fo
       <div class="etf-grid" id="etfGrid"></div>
     </div>
   </section>
+  </div><!-- /top-cluster -->
 
-  <!-- 行业榜 + 分时图 -->
+  <!-- ③ 主工作区：行业板块榜（含列头） + 分时/资金分解 -->
   <section class="main-grid">
-    <div class="panel sector-panel" style="animation-delay:.18s">
+    <div class="panel sector-panel" style="animation-delay:.1s">
       <div class="panel-head sector-head">
         <div class="head-row">
-          <h2>行业板块 <span class="muted" id="sectorHint" style="font-size:11.5px;font-weight:500"></span></h2>
+          <h2>行业板块 <span class="muted" id="sectorHint"></span></h2>
           <div class="seg" id="levelSeg">
             <button data-lv="1">一级</button>
             <button data-lv="2" class="active">二级</button>
             <button data-lv="3">三级</button>
           </div>
         </div>
-        <div class="seg-row zoom-8">
-          <div class="seg" id="periodSeg">
+        <div class="seg-row">
+          <div class="seg sm" id="periodSeg">
             <button data-p="today" class="active">今日</button>
             <button data-p="d5">5日</button>
             <button data-p="d10">10日</button>
           </div>
-          <div class="seg" id="sortSeg">
-            <button data-sort="f3" class="active">按涨跌幅</button>
-            <button data-sort="f62">按主力净流入</button>
-            <button data-sort="rate">按净流入率</button>
+          <div class="seg sm" id="sortSeg">
+            <button data-sort="f3" class="active" title="按涨跌幅排序">涨跌幅</button>
+            <button data-sort="f62" title="按主力净额排序">主力净流入</button>
+            <button data-sort="rate" title="按主力净流入率排序">净流入率</button>
           </div>
         </div>
       </div>
+      <!-- 列头：给右侧三列数字明确的归属 -->
+      <div class="srow srow-head" aria-hidden="true">
+        <span class="rank">#</span>
+        <div class="s-main">板块</div>
+        <div class="s-pct">涨跌幅</div>
+        <div class="s-fund">主力净额</div>
+        <div class="s-breadth">涨/跌</div>
+      </div>
       <div class="sector-list" id="sectorList">
-        <div class="error-box"><div style="font-size:13px">正在加载行业板块行情…</div></div>
+        <div class="error-box">正在加载行业板块行情…</div>
       </div>
     </div>
 
-    <div class="panel chart-panel" style="animation-delay:.26s">
+    <div class="panel chart-panel" style="animation-delay:.14s">
       <div class="panel-head">
-        <div>
+        <div class="ph-quote">
           <h2 id="chartTitle">上证指数<span class="tag" id="chartTag" hidden>行业板块</span></h2>
           <div class="chart-quote">
             <span class="price flat" id="chartPrice">--</span>
@@ -398,7 +790,8 @@ footer{max-width:1280px;margin:0 auto;padding:6px 24px 34px;text-align:center;fo
         <div class="fund-summary" id="fundSummary"></div>
       </div>
       <div class="trend-wrap">
-        <svg id="trendSvg" viewBox="0 0 920 430" preserveAspectRatio="none"></svg>
+        <svg id="trendSvg" viewBox="0 0 920 520" preserveAspectRatio="none"></svg>
+        <div class="trend-empty" id="trendEmpty">分时数据加载中…</div>
         <div class="cross-tip" id="crossTip"></div>
       </div>
       <div class="flow-wrap" id="flowWrap" hidden>
@@ -407,14 +800,14 @@ footer{max-width:1280px;margin:0 auto;padding:6px 24px 34px;text-align:center;fo
       </div>
       <div class="legend"><span><i style="background:#ff3b30"></i>价格</span><span><i style="background:#8e8e93"></i>均价</span><span>柱状：分钟成交量（红高于昨收 / 绿低于昨收）</span></div>
       <div class="fund-detail">
-        <h3>资金流向分解 <span style="font-size:11px;font-weight:500;color:var(--text3)" id="fundHint"></span><span class="lead" id="leadStock"></span></h3>
+        <h3>资金流向分解 <span class="muted" id="fundHint"></span><span class="lead" id="leadStock"></span></h3>
         <div id="fundBars"><div class="fund-empty">正在加载…</div></div>
       </div>
     </div>
   </section>
 
-  <!-- 全市场资金 -->
-  <div class="panel market-panel" style="animation-delay:.34s">
+  <!-- ④ 全市场资金（KPI 改为分隔线排列，去掉卡内套卡） -->
+  <div class="panel quiet market-panel" style="animation-delay:.24s">
     <div class="panel-head">
       <h2>全市场资金速览</h2>
       <span class="breadth-pill" id="breadth">--</span>
@@ -424,16 +817,16 @@ footer{max-width:1280px;margin:0 auto;padding:6px 24px 34px;text-align:center;fo
       <span class="mt-label">--</span>
     </div>
     <div class="market-funds" id="marketFunds">
-      <div class="mf-card skeleton" style="height:64px"></div><div class="mf-card skeleton" style="height:64px"></div><div class="mf-card skeleton" style="height:64px"></div><div class="mf-card skeleton" style="height:64px"></div><div class="mf-card skeleton" style="height:64px"></div>
+      <div class="mf-card skeleton" style="height:56px"></div><div class="mf-card skeleton" style="height:56px"></div><div class="mf-card skeleton" style="height:56px"></div><div class="mf-card skeleton" style="height:56px"></div><div class="mf-card skeleton" style="height:56px"></div>
     </div>
     <div class="market-flow" id="marketFlow" hidden>
       <div class="flow-head"><span class="fh-title">两市主力资金 · 分时净流入</span><span class="fh-val" id="mflowNow">--</span></div>
-      <svg id="mflowSvg" viewBox="0 0 920 200" preserveAspectRatio="none"></svg>
+      <svg id="mflowSvg" viewBox="0 0 920 172" preserveAspectRatio="none"></svg>
     </div>
   </div>
 
-  <!-- 热力图 -->
-  <div class="panel heatmap-panel" style="animation-delay:.42s">
+  <!-- ⑤ 热力图 -->
+  <div class="panel quiet heatmap-panel" style="animation-delay:.3s">
     <div class="panel-head">
       <h2>行业热力全景</h2>
       <span class="muted" id="heatHint">按涨跌幅着色 · 点击查看分时走势</span>
@@ -442,8 +835,62 @@ footer{max-width:1280px;margin:0 auto;padding:6px 24px 34px;text-align:center;fo
   </div>
 </main>
 
+<!-- 异动监控弹层：默认收起，由指数带右端的图标唤起；收起时不拉任何异动数据 -->
+<div class="evt-pop" id="evtPop" hidden>
+  <div class="evt-veil" data-close="1"></div>
+  <div class="evt-pop-card" role="dialog" aria-modal="true" aria-labelledby="evtPopTitle" tabindex="-1">
+    <div class="panel-head evt-head">
+      <div class="evt-title">
+        <h2 id="evtPopTitle">异动监控 <i class="evt-pulse" title="实时检测中"></i></h2>
+        <span class="muted" id="evtHint">· 加载中…</span>
+      </div>
+      <div class="seg" id="evtMode">
+        <button data-m="market" class="active">大盘异动</button>
+        <button data-m="stock">个股异动</button>
+        <button data-m="sector">板块异动</button>
+      </div>
+      <button class="evt-close" id="evtClose" title="收起（Esc）">
+        <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+    <div class="evt-toolbar">
+      <div class="evt-filters">
+        <div class="seg sm" id="mktSeg" hidden>
+          <button data-s="cnt" class="active">异动次数</button>
+          <button data-s="pct">涨跌幅</button>
+          <button data-s="flow">主力净流入</button>
+        </div>
+        <div class="seg sm" id="evtSeg" hidden>
+          <button data-f="all" class="active">全部</button>
+          <button data-f="up">拉升</button>
+          <button data-f="down">跳水</button>
+          <button data-f="big">大单</button>
+          <button data-f="limit">涨跌停</button>
+        </div>
+        <span class="evt-scope" id="evtScope" hidden>异动详情</span>
+      </div>
+      <div class="evt-datesel">
+        <button class="evt-date" id="evtDate" title="切换查看的交易日">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.2" y="5" width="17.6" height="15.6" rx="2.6"/><path d="M8 3v3.6M16 3v3.6M3.2 10h17.6"/></svg>
+          <span id="evtDateTxt">今日 · 实时</span>
+        </button>
+        <div class="dcal" id="dcal" hidden></div>
+      </div>
+      <span class="evt-mood" id="evtMood" hidden>
+        <span class="mm-bar"><i class="mm-up"></i><i class="mm-down"></i></span>
+        <span class="mm-text">--</span>
+      </span>
+    </div>
+    <div class="evt-list market" id="evtList"><div class="evt-empty">正在加载异动流水…</div></div>
+    <div class="evt-legend">
+      <span id="evtLegendL">正在载入…</span>
+      <span id="evtLegendR">--</span>
+    </div>
+  </div>
+</div>
+
 <footer>
-  行业分类口径：申万行业体系（支持一级 / 二级 / 三级切换，层级映射基于板块成分与所属行业链构建）· 数据来源：东方财富公开行情接口（实时拉取，页面内直接运行，无需任何后端）<br>
+  行业分类口径：申万行业体系（支持一级 / 二级 / 三级切换，层级映射基于板块成分与所属行业链构建）· 大盘异动为东财「盘口异动 · 大盘异动」口径：上证指数分时图上标注板块异动时刻，「异动详情」由板块异动条目（涨跌家数 / 主力净流入 / 领涨股，时刻取该板块最活跃个股最近一次异动）与盘面播报按时刻倒序合并，右上角日期可回看已留存的交易日 · 个股异动为东财 22 类盘口异动口径，表格为 时间 / 名称 / 类型 / 相关信息 四列，其中「相关信息」按类型取价格（元）、手数或涨跌幅 · 板块异动为东财「当日异动板块监控」口径：一天累计的板块异动次数、类型分布与主力净流入 · 数据来源：东方财富公开行情与资讯接口（实时拉取，页面内直接运行，无需任何后端）<br>
   自动刷新策略：盘中按所选间隔定时拉取，非交易时段可手动刷新 · 数据仅供学习研究参考，不构成任何投资建议
 </footer>
 
@@ -456,13 +903,32 @@ footer{max-width:1280px;margin:0 auto;padding:6px 24px 34px;text-align:center;fo
 
 const API = 'https://push2.eastmoney.com/api/qt';
 const UT  = 'bd1d9ddb04089700cf9c27f6f7426281';
+/* ---------- 行情域名池 ----------
+   东财 push2 主域在刷新偏密时会直接掐断连接：浏览器里是 net::ERR_EMPTY_RESPONSE（无响应体），
+   curl 侧是 HTTP 000 —— 不是页面 bug，也不是本地断网，而是该出口 IP 被节点风控。
+   同一套 /api/qt 接口在东财几个行情域名上都能用，逐级换道即可恢复：
+     push2      主域（HTTPS，默认）
+     push2his   历史行情域，实时口径一致，支持 ulist / trends2 / fflow
+     push2/http 主域 80 端口，与 443 走不同链路（file:// 打开时实测不受混合内容限制）
+     push2delay 延时行情域，最后兜底（行情可能滞后）
+   失败即换下一条道；某条道连成两次就钉住，避免偶发失败导致来回抖动。 */
+const HOSTS = [
+  { base: 'https://push2.eastmoney.com',      tag: 'push2' },
+  { base: 'https://push2his.eastmoney.com',   tag: 'push2his' },
+  { base: 'http://push2.eastmoney.com',       tag: 'push2-http' },
+  { base: 'https://push2delay.eastmoney.com', tag: 'push2delay' },
+];
+/* 页面若被放到 https 站点下，http 那条道会被浏览器按混合内容拦掉：直接跳过，别浪费一次失败 */
+const hostUsable = (k) => !(location.protocol === 'https:' && HOSTS[k].base.startsWith('http:'));
+const hostOf = (url) => url.replace(/^https?:\/\/push2\.eastmoney\.com/,
+  HOSTS[hostUsable(state.hostIdx) ? state.hostIdx : 0].base);
 const INDEXES = [
   { secid:'1.000001', name:'上证指数', code:'000001' },
   { secid:'0.399001', name:'深证成指', code:'399001' },
   { secid:'0.399006', name:'创业板指', code:'399006' },
   { secid:'1.000688', name:'科创50',  code:'000688' },
 ];
-const SECTOR_FIELDS = 'f12,f14,f2,f3,f6,f62,f66,f72,f78,f84,f104,f105,f128,f140,f164,f174';
+const SECTOR_FIELDS = 'f12,f14,f2,f3,f6,f22,f62,f66,f72,f78,f84,f104,f105,f128,f140,f164,f174';
 /* 核心 ETF（宽基各取规模/流动性居前的单只 + 券商、银行两只行业龙头）：分时数据仅在展开面板后按需拉取，默认收起时零额外请求 */
 const ETFS = [
   { secid:'0.159593', name:'中证A50',  full:'中证A50ETF',  code:'159593' },
@@ -472,11 +938,109 @@ const ETFS = [
   { secid:'1.512880', name:'证券',     full:'证券ETF',     code:'512880' },
   { secid:'1.512800', name:'银行',     full:'银行ETF',     code:'512800' },
 ];
-const ETF_EVERY = 2;              // 展开状态下 ETF 分时每 2 轮刷新一次（与指数卡 spark 同频）
+const ETF_EVERY = 3;              // 展开状态下 ETF 分时每 3 轮刷新一次（ETF 走势慢，降频省请求配额）
 const SPARK_EVERY = 2;           // 指数迷你分时每 2 轮刷新一次
 const FLOW_EVERY = 2;            // 两市资金分时每 2 轮刷新一次
-const INDUSTRY_GAP = 120;         // 行业板块数据固定 120 秒（2 分钟）更新一次：与页面刷新周期（15/30/60 秒）解耦，数据不完整时下轮强制补拉
+const INDUSTRY_GAP = 60;         // 行业板块数据固定 60 秒（1 分钟）更新一次：与页面刷新周期（15/30/60 秒）解耦，数据不完整时下轮强制补拉
 const MKT_FLOW = ['1.000001', '0.399106'];   // 两市资金口径：上证指数（沪全样本）+ 深证综指（深全样本）
+
+/* ---------- 盘口异动（东方财富 push2ex，22 类异动口径） ----------
+   type 编码与东财「盘口异动」一致；dir=+1 偏多 / -1 偏空 / 0 中性，用于多空情绪条与「拉升 / 跳水」筛选 */
+const CHANGE_API = 'https://push2ex.eastmoney.com/getAllStockChanges';
+const CHANGE_UT  = '7eea3edcaed734bea9cbfc24409ed989';
+const CHANGE_TYPES = {
+  8201:{label:'火箭发射',   dir: 1}, 8202:{label:'快速反弹', dir: 1}, 8193:{label:'大笔买入', dir: 1},
+  8207:{label:'竞价上涨',   dir: 1}, 8209:{label:'高开5日线', dir: 1}, 8211:{label:'向上缺口', dir: 1},
+  8213:{label:'60日新高',   dir: 1}, 8215:{label:'60日大涨', dir: 1}, 64:  {label:'有大买盘', dir: 1},
+  4:   {label:'封涨停板',   dir: 1}, 32:  {label:'打开跌停', dir: 1},
+  8203:{label:'高台跳水',   dir:-1}, 8204:{label:'加速下跌', dir:-1}, 8194:{label:'大笔卖出', dir:-1},
+  8208:{label:'竞价下跌',   dir:-1}, 8210:{label:'低开5日线', dir:-1}, 8212:{label:'向下缺口', dir:-1},
+  8214:{label:'60日新低',   dir:-1}, 8216:{label:'60日大跌', dir:-1}, 128: {label:'有大卖盘', dir:-1},
+  8:   {label:'封跌停板',   dir:-1}, 16:  {label:'打开涨停', dir:-1},
+};
+const CHANGE_TYPES_CSV = Object.keys(CHANGE_TYPES).join(',');
+const EVT_LIMIT_KEYS = [4, 8, 16, 32];          // 涨跌停相关
+const EVT_BIG_KEYS   = [8193, 8194, 64, 128];   // 大单类
+/* i 字段模板（东财各类型结构不一致，必需按类型解析，否则价格/涨跌幅会串位）：
+   seal → 价格,封单量(股),价格,涨跌幅      big → 量(股),价格,涨跌幅,成交额(元)
+   pp2  → 价格,涨跌幅                      def → 涨速,价格,涨跌幅（火箭发射/高台跳水/60日新高等） */
+const EVT_TPL = { 4:'seal', 8:'seal', 16:'pp2', 32:'pp2', 8193:'big', 8194:'big', 64:'big', 128:'big' };
+/* 「相关信息」列：东财同一列按异动类型换单位 —— 封板/新高低看价格（元），大单类看手数，其余看涨跌幅。
+   对应官网 时间|名称|类型|相关信息 四列（报价类显示「4.88元」，大单类显示「208手」，涨跌类显示「0.73%」） */
+function evtRel(tpl, price, pct, vol, amt) {
+  if (tpl === 'seal') return price === null ? '--' : fmt2(price) + '元';
+  if (tpl === 'big') {
+    if (vol) return fmtHand(vol) + '手';
+    if (amt) return amt >= 1e8 ? (amt / 1e8).toFixed(2) + '亿' : (amt / 1e4).toFixed(0) + '万';
+    return '--';
+  }
+  /* 东财这一列不带正号（「0.73%」「-0.60%」），只有负号——跟随其口径，颜色仍按正负 */
+  if (pct !== null) return fmt2(pct) + '%';
+  if (price !== null) return fmt2(price) + '元';
+  return '--';
+}
+
+/* ---------- 大盘异动（当日板块异动监控，对标东财「当日异动板块监控」） ----------
+   东财口径是「一天累计」而不是「当下这一刻的涨速快照」：一次 getAllBKChanges 就拿到当日全部有异动的
+   板块（服务端按异动次数降序），每条带 异动总次数 / 类型分布 / 最频繁个股 / 主力净流入 / 涨跌幅。
+   原来靠四个排行榜每轮取快照再自己判定「走强 / 走弱」，只有页面开着的这段时间有记录，关掉重开就清零——
+   这正是「只看到当下的异动」的根因。 */
+const BK_CHANGE_API = 'https://push2ex.eastmoney.com/getAllBKChanges';
+const BK_PULL_SIZE  = 200;      // 服务端按异动次数降序，取前 200 个板块（约 120KB），足够覆盖当日活跃板块
+const BK_TYPE_SHOW  = 4;        // 每行展示的异动类型个数（其余折叠成 +N）
+/* 统计型「伪板块」不入表：昨日涨停/连板、历史新高、百元股、融资融券、沪深股通、指数成分、机构重仓等
+   只是当日统计口径或持仓属性，不是真实题材，排在前面会把真正的题材板块挤下去 */
+const BD_SKIP = /昨日|连板|多板|首板|炸板|打开涨停|历史新高|历史新低|近期新高|百日新高|新高|新低|百元股|低价股|高价股|破净股|破发|破增发|融资融券|融资|沪股通|深股通|转债标的|MSCI|富时罗素|标普|标准普尔|道琼斯|次新股|ST股|B股|AH股|科创板做市商|注册制次新|重仓|增仓|减仓|专精特新|小盘|中盘|大盘|微盘|成长|价值|风格|趋势股|超跌股|创业板综|创业成份|深成|深证成指|上证|沪深300|中证500|科创50|北证50|成份|成分|题材股|热股|人气|关注度|龙虎榜|高股息|高送转|预盈|预亏|预减|预增|首亏|扭亏|业绩|股权转让|股权分散|股权激励|私募|举牌|国企改革|证金持股|养老金|社保|QFII|基金|券商|保险|信托|参股|市净率|市盈率|转融通|板块$/;
+/* 本地归档：东财接口只提供「当日」，历史日期只能靠自己留存 —— 页面在某个交易日打开过，就把那天的
+   板块异动表与个股流水存进 localStorage，之后可从日期下拉里回看 */
+const ARCH_KEY  = 'aq_evt_v1_';
+const ARCH_DAYS = 6;            // 最多留存天数（超出按日期淘汰最旧）
+const ARCH_ST   = 600;          // 每日归档的个股流水条数上限
+
+/* ---------- 大盘异动：盘面播报（对标东财 App「盘口异动 · 大盘异动 · 异动详情」） ----------
+   东财的「大盘异动」不是板块表，而是一条按时间倒序盘面播报流：「A股三大指数反弹…」「沪深两市成交额
+   突破1.5万亿」「人形机器人概念涨势扩大…」，每条带摘要与「查看更多」原文链接，日期可回看历史。
+   数据取自东财快讯的「盘面播报」栏目（column=104）——正是这些条目的来源，时间与标题都与 App 对得上。
+   该接口只返回 JSON 且无 CORS 头，但老版地址返回的是 `var ajaxResult={…}`，可用 script 标签加载，
+   不受同源限制。翻页靠 URL 里的 _{page}_，无法按时间戳定位，历史日期用「加载更早」逐步回溯。 */
+const PULSE_TPL   = 'https://newsapi.eastmoney.com/kuaixun/v1/getlist_104_ajaxResult_{n}_{p}_.html';
+const PULSE_N     = 50;         // 每页条数（一天约 50-70 条，一页刚好一个交易日）
+const PULSE_MAXP  = 12;         // 最多回溯 12 页（约 10 个交易日）
+const PULSE_EVERY = 180000;     // 盘中播报刷新间隔（3 分钟，源本身约 5-10 分钟一条）
+/* script 标签串行加载：每次都会覆盖全局 ajaxResult，并发会互相踩 */
+let pulseChain = Promise.resolve();
+function loadPulsePage(page) {
+  pulseChain = pulseChain.catch(() => {}).then(() => gate(() => new Promise((resolve) => {
+    const s = document.createElement('script');
+    let done = false;
+    const fin = (v) => { if (done) return; done = true; clearTimeout(to); s.remove(); resolve(v); };
+    const to = setTimeout(() => fin(null), 10000);
+    s.onload = () => {
+      const r = window.ajaxResult;
+      fin(r && Array.isArray(r.LivesList) ? r.LivesList : null);
+    };
+    s.onerror = () => fin(null);
+    s.src = PULSE_TPL.replace('{n}', PULSE_N).replace('{p}', page) + '?r=' + Date.now();
+    document.head.appendChild(s);
+  })));
+  return pulseChain;
+}
+/* 解析：showtime=YYYY-MM-DD HH:MM:SS；digest 为摘要正文；url_w 为原文链接 */
+function parsePulse(list) {
+  return (list || []).map(x => {
+    const st = String(x.showtime || '');
+    return {
+      id: String(x.id || x.sort || ''),
+      sort: Number(x.sort) || 0,
+      day: st.slice(0, 10),
+      time: st.slice(11, 16),
+      title: String(x.title || x.simtitle || '').trim(),
+      digest: String(x.digest || '').replace(/\s+/g, ' ').trim(),
+      url: x.url_w || x.url_unique || '',
+      col: String(x.column || ''),
+    };
+  }).filter(x => x.day && x.title);
+}
 
 /* 行业层级映射（申万体系 1=一级 2=二级 3=三级，key=板块代码）
    构建依据：①名称精确匹配申万31个一级行业→一级；②东财行业板块扩容批次 BK1289 起为
@@ -512,6 +1076,16 @@ const state = {
   countdown: 60,
   failStreak: 0,                 // 核心接口（指数+分时）连续失败轮数（全局退避用，行业失败不计入）
   nextDelay: 0,                  // 全局退避等待秒数（>0 时下轮到点不刷新，改为轻探；仅核心接口全挂时触发）
+  cooling: false,                // 退避中：状态徽章与异动面板显示「N 秒后重试」，避免看着像卡死
+  probe: false,                  // 退避结束后的第一轮：只轻探核心两路，成功才恢复正常请求量
+  hostIdx: 0,                    // 当前使用的行情域名（HOSTS 下标）
+  hostFail: [0,0,0,0],           // 各域名失败次数（换道打分）
+  hostBad: [0,0,0,0],            // 各域名上次失败时刻（90 秒内失败过的降权，防来回跳）
+  roundFails: 0,                 // 本轮已失败请求数（轮内熔断用）
+  abortRound: false,             // 本轮已熔断：剩余排队的请求一律不再发出
+  coreDown: 0,                   // 核心接口（指数+选中分时）连续失败轮数，用于判定是否整体切腾讯通道
+  txUntil: 0,                    // 腾讯备用通道启用截止时刻（东财恢复后自动回切）
+  txHits: 0,                     // 腾讯兜底累计生效次数（诊断用）
   indFailStreak: 0,              // 行业数据连续失败次数（独立退避账，不影响其他刷新节奏）
   indNextAt: 0,                  // 行业退避解除时间戳（退避期内不拉行业，指数/分时/资金照常刷新）
   trendScale: null,              // 分时图 Y 轴全天口径 {key,mid,half}：刻度一天固定，切换标的时重建
@@ -535,6 +1109,36 @@ const state = {
   idxCards: {},
   etfOpen: false,                // 核心 ETF 分时面板是否展开（默认收起）
   etfBusy: false,                // ETF 分时拉取中（防展开展开/刷新重复并发）
+  evtOpen: false,                // 异动监控弹层是否展开（默认收起；收起时不拉任何异动数据）
+  evtFeed: [],                   // 盘口异动流水（时间倒序，最多保留 EVT_KEEP 条）
+  evtSeen: new Set(),            // 已入库异动去重键（tm|code|type|i，同秒同值只入一次）
+  evtFilter: 'all',              // 异动筛选：all / up / down / big / limit
+  evtTotal: 0,                   // 接口返回的当日异动总条数
+  mktMode: 'market',             // 异动视图：market 大盘异动（盘面播报）/ stock 个股异动（22 类流水）/ sector 板块异动（当日累计表）
+  pulse: [],                     // 盘面播报条目（东财「异动详情」栏目，时间倒序，跨天累积）
+  pulsePage: 1,                  // 播报已翻到第几页（每页 50 条）
+  pulseBusy: false,              // 播报翻页中（script 串行加载，避免 ajaxResult 互相覆盖）
+  pulseAt: 0,                    // 上次拉播报的时间戳
+  /* 个股代码 → 当日最近一条异动的时刻与涨跌幅。用来给「板块异动」条目定位领涨幅：
+     东财板块异动接口不返回时刻，但每个板块带一个「异动最频繁个股」，拿它在流水里的最近一条补齐。 */
+  stockMap: new Map(),
+  /* 个股代码 → 腾讯实时涨幅。东财板块异动接口只给「异动最频繁个股」的名称与代码、不给涨幅，
+     而 push2 行情域在本机不可达，故用腾讯行情批量补这一列（板块卡片与板块表都用它）。 */
+  txMap: new Map(),
+  txTry: new Map(),              // 代码 → 上次请求时刻（失败也记，防止每轮重试打成死循环）
+  txBusy: false,
+  mktTrend: null,                // 大盘异动图区：上证指数分时缓存 {pts, pre, at}
+  mktTrendBusy: false,           // 图区分时拉取中（主刷新队列与独立兜底共用一把锁）
+  mktMembers: new Map(),         // 大盘异动明细卡：板块代码 → {at, up, down, flat, tops}（成分数据，3 分钟缓存）
+  bkRows: [],                    // 当日板块异动表（东财 getAllBKChanges，按异动次数降序）
+  archBk: [],                    // 切到历史日期时，归档里的板块异动表
+  bkBusy: false,                 // 板块异动表拉取中
+  bkMeta: { tc: 0, dt: 0 },      // tc=当日有异动的板块数，dt=数据时间戳（YYYYMMDDHHMMSS）
+  bkSort: 'cnt',                 // 板块表排序：cnt 异动次数 / pct 涨跌幅 / flow 主力净流入
+  evtPageSize: 400,              // 个股流水单次拉取条数（「加载更多」每次 +400）
+  evtDate: '',                   // '' = 今日实时；'YYYY-MM-DD' = 查看本地归档的那一天
+  archAt: 0,                     // 上次写归档的时间戳（节流，避免每轮都序列化上百 KB）
+  shIdx: null,                   // 上证指数快照 {price, pct}（面板标题显示大盘点位）
   loading: false,
 };
 
@@ -552,30 +1156,194 @@ const yiShort = (v) => v === null ? '--' : (v > 0 ? '+' : '') + fmt2(v/1e8);
 const fmtFlowTick = (v) => Math.abs(v) >= 1e8 ? (Math.abs(v) / 1e8).toFixed(1) + '亿' : (Math.abs(v) / 1e4).toFixed(0) + '万';
 const cls3 = (v) => v > 0 ? 'up' : v < 0 ? 'down' : 'flat';
 const pad = (n) => String(n).padStart(2, '0');
+/* 股数 → 手（≥1万手缩写），用于封单量展示 */
+const fmtHand = (shares) => { const h = shares / 100; return h >= 1e4 ? (h / 1e4).toFixed(1) + '万' : Math.round(h).toLocaleString(); };
+
+/* ---------- 全局请求闸门 ----------
+   所有出网请求（东财 JSONP、腾讯行情、播报页）都从这里排队，相邻两次「发起」至少间隔 REQ_GAP。
+   目的是不让任何一批请求同时打出：突发并发既最容易触发风控，也让日志里一屏红字分不清是哪一路挂的。
+   注意闸门只管「发起时刻」，一个请求还没回来时下一个也要等满间隔，因此整轮时长 ≈ 请求数 × 1 秒。 */
+const REQ_GAP = 1050;                  // 1 秒间隔 + 50ms 余量：setTimeout 有毫秒级取整误差，不留余量会偶发 999ms
+let reqChain = Promise.resolve();
+let reqLast = 0;                       // 上一次真正发起请求的时刻
+const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+const reqStats = { sent: 0, at: 0 };    // 诊断用：累计发起数 / 最近一次发起时刻
+function gate(fn) {
+  const run = async () => {
+    const wait = reqLast + REQ_GAP - Date.now();
+    if (wait > 0) await sleep(wait);
+    reqLast = Date.now();
+    reqStats.sent++; reqStats.at = reqLast;
+    return fn();
+  };
+  const p = reqChain.then(run, run);
+  reqChain = p.catch(() => {});         // 单次失败不能把整条链堵死
+  return p;
+}
 
 /* ---------- JSONP 数据层（script 方式，无 CORS 限制） ---------- */
+/* 域名记分：失败 → 换道（把「90 秒内失败过」的域降权，防止两条坏道来回弹）；成功 → 该域清零 */
+function hostBad(i) {
+  state.hostFail[i] = (state.hostFail[i] || 0) + 1;
+  state.hostBad[i] = Date.now();
+  if (i !== state.hostIdx) return;
+  const now = Date.now();
+  let best = -1, bestN = Infinity;
+  HOSTS.forEach((h, k) => {
+    if (k === i || !hostUsable(k)) return;
+    const recent = now - (state.hostBad[k] || 0) < 90000;
+    const n = (state.hostFail[k] || 0) + (recent ? 100 : 0);
+    if (n < bestN) { bestN = n; best = k; }
+  });
+  if (best >= 0) state.hostIdx = best;
+}
+function hostGood(i) { state.hostFail[i] = 0; state.hostBad[i] = 0; }
+
 function jsonp(url, timeout = 9000) {
-  return new Promise((resolve, reject) => {
+  let lastHost = -1;
+  /* 单次尝试：建 script 等它回来。必须经闸门发起 —— 换道重试也要重新排队，重试之间同样隔满 1 秒 */
+  const once = () => new Promise((res, rej) => {
+    lastHost = state.hostIdx;
     const cb = '_edcb_' + Math.random().toString(36).slice(2);
     const script = document.createElement('script');
-    const timer = setTimeout(() => { cleanup(); reject(new Error('timeout')); }, timeout);
-    function cleanup() { clearTimeout(timer); try { delete window[cb]; } catch(e) { window[cb] = undefined; } script.remove(); }
-    window[cb] = (data) => { cleanup(); resolve(data); };
-    script.onerror = () => { cleanup(); reject(new Error('network')); };
-    script.src = url + (url.includes('?') ? '&' : '?') + 'cb=' + cb;
+    let done = false;
+    const fin = (fn, v) => {
+      if (done) return; done = true; clearTimeout(timer);
+      try { delete window[cb]; } catch(e) { window[cb] = undefined; }
+      script.remove(); fn(v);
+    };
+    const timer = setTimeout(() => { state.roundFails++; fin(rej, new Error('timeout')); }, timeout);
+    window[cb] = (data) => { hostGood(lastHost); fin(res, data); };
+    script.onerror = () => { state.roundFails++; hostBad(lastHost); fin(rej, new Error('network')); };
+    script.src = hostOf(url) + (url.includes('?') ? '&' : '?') + 'cb=' + cb;
     document.head.appendChild(script);
   });
+  return new Promise((resolve, reject) => {
+    let attempt = 0;
+    const start = () => {
+      const used = state.hostIdx;
+      gate(once).then(resolve, () => {
+        /* 刚好换到了新通道 → 在新道上再试一次，本轮即可恢复。但新道若 60 秒内也失败过
+           （四条道全被风控），就没必要再撞，交给备用通道 */
+        const nt = state.hostIdx;
+        const ntFresh = !(state.hostBad[nt] && Date.now() - state.hostBad[nt] < 60000);
+        if (++attempt < 2 && nt !== used && ntFresh) start();
+        else reject(new Error('network'));
+      });
+    };
+    start();
+  });
 }
-const apiIndexList = () =>
-  jsonp(`${API}/ulist.np/get?ut=${UT}&fltt=2&invt=2&fields=f12,f14,f2,f3,f4,f6&secids=${INDEXES.map(i => i.secid).join(',')}`);
+
+/* ---------- 备用通道：腾讯行情（东财整域被风控时接管） ----------
+   东财连续两轮掐断连接后，指数与分时改走腾讯，页面就不会空着：
+     qt.gtimg.cn/q=sh000001,sz399001            实时快照（GBK 的 JS 赋值，txQuote 已实现）
+     web.ifzq.gtimg.cn/appstock/app/minute/query 当日分时，_var 参数让它输出「变量=JSON」
+   两者结构都与东财不同，这里统一适配成东财形状（{data:{diff}} / {data:{preClose,trends}}），
+   下游渲染层一行都不用改。腾讯通道有 2 分钟有效期，到期自动回切东财探一次。 */
+const TX_MINUTE = 'https://web.ifzq.gtimg.cn/appstock/app/minute/query';
+const txActive = () => Date.now() < state.txUntil;
+/* 四条行情道在 60 秒内全失败过 → 判定整域被风控，直接挂腾讯，不再拿东财试错
+   （否则每轮都要把四条道各撞一遍，既慢又延长封禁）。仍保留 15 秒一次的短探测，东财一恢复就自动回切。 */
+const emDown = () => HOSTS.every((h, k) => !hostUsable(k) || (state.hostBad[k] && Date.now() - state.hostBad[k] < 60000));
+function shouldTx() {
+  if (txActive()) return true;
+  if (emDown()) { state.txUntil = Date.now() + 15000; state.txHits++; return true; }
+  return false;
+}
+/* secid → 腾讯代码：1.=沪 0.=深；90.BK 板块腾讯没有对应分时，返回 null 走原逻辑 */
+const txSec = (secid) => {
+  const p = String(secid).split('.');
+  if (p[0] === '1') return 'sh' + p[1];
+  if (p[0] === '0') return 'sz' + p[1];
+  return null;
+};
+function txMinute(secid) {
+  const id = txSec(secid);
+  if (!id) return Promise.reject(new Error('unsupported'));
+  const v = '_txm_' + Math.random().toString(36).slice(2);
+  /* 同样经闸门发起：腾讯虽不容易限流，但一起并发打出仍会让日志与网络面板难以对照 */
+  return gate(() => new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    const fin = (data) => {
+      clearTimeout(t);
+      try { delete window[v]; } catch (e) { window[v] = undefined; }
+      try { s.remove(); } catch (e) {}
+      const node = data && data.data && data.data[id];
+      const arr = node && node.data && node.data.data;
+      if (!Array.isArray(arr) || !arr.length) { reject(new Error('empty')); return; }
+      const qt = (node.qt && node.qt[id]) || [];
+      const pre = num(qt[4]);
+      const dstr = String(node.data.date || '');
+      const day = dstr.length === 8 ? `${dstr.slice(0,4)}-${dstr.slice(4,6)}-${dstr.slice(6)}` : '';
+      let lastV = 0;
+      /* 腾讯每行是「HHMM 价 累计量 累计额」；东财分时给的是分钟量，差分后同一口径（量柱才对得上） */
+      const trends = arr.map(line => {
+        const p = String(line).split(' ');
+        const cum = num(p[2]) || 0;
+        const vol = Math.max(0, cum - lastV); lastV = cum;
+        return `${day} ${String(p[0]).slice(0,2)}:${String(p[0]).slice(2,4)},${p[1]},${vol},0`;
+      }).filter(x => x.split(',')[1] !== 'undefined');
+      if (!trends.length) { reject(new Error('empty')); return; }
+      resolve({ data: { code: String(secid).split('.')[1], preClose: pre, trends } });
+    };
+    const t = setTimeout(() => fin(null), 9000);
+    s.onload = () => fin(window[v]);
+    s.onerror = () => fin(null);
+    s.src = `${TX_MINUTE}?_var=${v}&code=${id}&_=${Date.now()}`;
+    document.head.appendChild(s);
+  }));
+}
+/* 腾讯快照 → 东财 diff 形状（f12 代码 / f14 名称 / f2 现价 / f3 涨跌幅 / f4 涨跌额 / f6 成交额） */
+async function txIndexList() {
+  /* 必须按 secid 转成带市场前缀的 id：上证 000001 / 科创 000688 都是沪市，靠 6 位代码猜会查到深市同码个股 */
+  const got = await txQuote(INDEXES.map(i => txSec(i.secid)));
+  const diff = INDEXES.map(i => {
+    const q = got[i.code];
+    if (!q || q.price === null || !Number.isFinite(q.price)) return null;
+    const pre = Number.isFinite(q.pre) ? q.pre : null;
+    return {
+      f12: i.code, f14: i.name, f2: q.price, f3: q.pct,
+      f4: pre === null ? null : q.price - pre, f6: q.amt,
+    };
+  }).filter(Boolean);
+  if (!diff.length) throw new Error('empty');
+  return diff;
+}
+/* 指数批量：f6=成交额（沪市/深市全样本）、f104/f105=上涨/下跌家数 */
+const apiIndexList = () => {
+  if (shouldTx()) return txIndexList().then(diff => ({ data: { diff } }));
+  return jsonp(`${API}/ulist.np/get?ut=${UT}&fltt=2&invt=2&fields=f12,f14,f2,f3,f4,f6,f104,f105&secids=${INDEXES.map(i => i.secid).join(',')}`)
+    .catch(err => txIndexList().then(diff => {   /* 东财断连 → 腾讯接管 2 分钟 */
+      state.txUntil = Date.now() + 120000; state.txHits++;
+      return { data: { diff } };
+    }).catch(() => { throw err; }));
+};
+/* 当日板块异动全量表：一次请求拿到当日所有有异动的板块（ct=异动总次数，ydl=类型分布，ms=最频繁个股） */
+const apiBkChanges = () =>
+  jsonp(`${BK_CHANGE_API}?ut=${CHANGE_UT}&dpt=wzchanges&pageindex=0&pagesize=${BK_PULL_SIZE}`);
+/* 板块成分股（按涨幅降序、一次取全）：用于领涨 / 领跌 3 只 + 涨平跌家数 + 涨停家数 */
+const apiBoardMembers = (bk) =>
+  jsonp(`${API}/clist/get?pn=1&pz=300&po=1&np=1&ut=${UT}&fltt=2&invt=2&fid=f3&fs=b:${bk}&fields=f12,f13,f14,f2,f3`);
 /* 行业数据：按层级 secid 清单 ulist 单请求批量拉取（单请求原子性，无分页缺页中间态） */
 const apiSectorBySecids = (secids) =>
   jsonp(`${API}/ulist.np/get?ut=${UT}&fltt=2&invt=2&fields=${SECTOR_FIELDS}&secids=${secids}`);
-const apiTrend = (secid) =>
-  jsonp(`${API}/stock/trends2/get?secid=${secid}&ut=${UT}&fields1=f1,f2,f3,f8,f9,f10,f11,f12,f13&fields2=f51,f53,f56,f58&iscr=0&ndays=1`);
+/* 分时：东财断连 → 腾讯接管（板块 90.BK 腾讯没有对应源，只能等东财恢复） */
+const apiTrend = (secid) => {
+  const canTx = !!txSec(secid);
+  if (canTx && shouldTx()) return txMinute(secid);
+  return jsonp(`${API}/stock/trends2/get?secid=${secid}&ut=${UT}&fields1=f1,f2,f3,f8,f9,f10,f11,f12,f13&fields2=f51,f53,f56,f58&iscr=0&ndays=1`)
+    .catch(err => {
+      if (!canTx) throw err;
+      return txMinute(secid).then(r => { state.txUntil = Date.now() + 120000; state.txHits++; return r; });
+    });
+};
 /* 板块级分钟资金流：klines=「时间,主力,小单,中单,大单,超大单」当日累计净流入（元），仅 90.BK 板块有数据 */
 const apiFlow = (secid) =>
   jsonp(`${API}/stock/fflow/kline/get?secid=${secid}&ut=${UT}&klt=1&lmt=0&fields1=f1,f2,f3,f7&fields2=f51,f52,f53,f54,f55,f56`);
+/* 盘口异动流水：allstock 按时间倒序返回，i 字段逗号串（f[1]=价、f[2]=涨跌幅小数；四段式 f[0]=成交量(股)、f[3]=成交额(元)） */
+const apiChanges = (size = 400) =>
+  jsonp(`${CHANGE_API}?ut=${CHANGE_UT}&type=${CHANGE_TYPES_CSV}&pageindex=0&pagesize=${size}&dpt=wzchanges&_=${Date.now()}`);
 
 /* ---------- 交易日 / 时段判断 ---------- */
 function marketPhase() {
@@ -609,10 +1377,10 @@ function settleIndustry(lv, rows) {
     else if (isCur) $('#sectorHint').textContent = '· 行业拉取失败 · 下轮重试';
   }
 }
-/* 层级切换触发的定向拉取：快照缺失/过期时立即拉取该层级（不等 3 分钟节拍）；退避闸门 + 800ms 防抖（防快速切换连发请求） */
+/* 层级切换触发的定向拉取：快照缺失/过期时立即拉取该层级（不等 3 分钟节拍）；退避闸门 + 1 秒防抖（防快速切换连发请求） */
 let indPullAt = 0;
 async function fetchIndustryNow() {
-  if (Date.now() - indPullAt < 800 || Date.now() < (state.indNextAt || 0)) return;
+  if (Date.now() - indPullAt < REQ_GAP || Date.now() < (state.indNextAt || 0)) return;
   indPullAt = Date.now();
   const lv = state.level;
   try {
@@ -627,39 +1395,87 @@ async function fetchIndustryNow() {
 async function refresh(manual = false) {
   if (state.loading) return;
   state.loading = true;
+  state.roundFails = 0;          /* 轮内熔断计数：每轮清零 */
+  state.abortRound = false;
   state.loadStamp = Date.now();   /* 保险丝起点：一轮超 45 秒未归（挂起叠加后台节流等异常环境）由 tick 强制复位 */
   const btn = $('#refreshBtn');
   btn.classList.add('spinning');
+  /* 播报流独立节流：盘中每 3 分钟补一次（源本身 5-10 分钟才出一条），与行情刷新解耦 */
+  if (state.evtOpen && state.mktMode === 'market' && !state.pulseBusy
+      && Date.now() - state.pulseAt > PULSE_EVERY) loadPulse(true);
   try {
-    /* 全部请求统一错峰发出（瞬时并发=1），规避突发并发触发的限流断连 */
-    /* 行业数据独立节流：固定 3 分钟拉一次当前层级（板块资金异动慢于指数）——按层级快照锚点判定；数据不完整下轮强制补拉 */
+    /* 本轮请求一律串行排队：实际发起节奏由全局闸门（gate）控制，相邻两次至少 1 秒。
+       这里只维护执行顺序与熔断判定，不再自己算错峰时长。 */
     const tasks = [];
-    let queueT = 0;
-    const queue = (fn, gap = 300) => { queueT += gap; tasks.push(new Promise(res => setTimeout(() => res(fn().catch(() => null)), queueT))); };
+    let chain = Promise.resolve();
+    const queue = (fn) => {
+      const p = chain.then(() => {
+        if (state.abortRound) return null;            /* 本轮已熔断：不发请求，直接给空 */
+        return fn().catch(() => {
+          /* 轮内熔断：连续 4 次失败就把后面排队的请求丢掉——越打风控越久。
+             阈值留到 4 是给「换道重试」留空间（一个请求失败会算 2 次：原道 + 新道）；
+             备用通道已接管时不熔断：后面的请求会自动改走腾讯，掐掉反而让页面空着 */
+          if (state.roundFails >= 4 && !txActive()) state.abortRound = true;
+          return null;
+        });
+      });
+      chain = p.catch(() => {});
+      tasks.push(p);
+    };
+    /* 退避刚结束的第一轮只轻探核心两路：全量重发一轮若仍被拦，等于把刚恢复的配额又打空 */
+    const probe = state.probe;
+    state.probe = false;
     queue(() => apiIndexList());
     queue(() => apiTrend(state.selected.secid));
+    const skip = probe ? 1 : 0;
+    /* 备用通道接管期间，纯东财接口（行业板块 / 资金流）先不试：腾讯没有对应源，打过去只能失败。
+       txUntil 到期后会自动回切探测，东财一恢复这几路就跟着回来 */
+    const emOk = !txActive() && !skip;
     const snap = state.indSnap[state.level];
-    const doInd = (Date.now() - (snap ? snap.at : 0) >= INDUSTRY_GAP * 1000 || state.indMiss) && Date.now() >= (state.indNextAt || 0);   /* 3 分钟节流（层级快照锚点）+ 行业独立退避闸门（退避期内一律不拉行业） */
+    const doInd = emOk && (Date.now() - (snap ? snap.at : 0) >= INDUSTRY_GAP * 1000 || state.indMiss) && Date.now() >= (state.indNextAt || 0);   /* 3 分钟节流（层级快照锚点）+ 行业独立退避闸门（退避期内一律不拉行业） */
     const indLv = state.level;   /* 拉取时层级快照：异步期间切层级防串账 */
     let indIdx = -1;
-    if (doInd) { indIdx = tasks.length; queue(() => apiSectorBySecids(LEVEL_SECIDS[indLv].join(','))); }
+    if (doInd) { indIdx = tasks.length; queue(() => (txActive() ? Promise.resolve(null) : apiSectorBySecids(LEVEL_SECIDS[indLv].join(',')))); }
     let sparkStart = -1;
-    if (state.round % SPARK_EVERY === 0) { sparkStart = tasks.length; INDEXES.forEach(i => queue(() => apiTrend(i.secid))); }
+    const selIsIdx = INDEXES.findIndex(i => i.secid === state.selected.secid && !state.selected.isSector);   /* 选中标的就是某个指数：它的分时主图那路已经在拉，卡上直接复用，省一个请求 */
+    if (!skip && state.round % SPARK_EVERY === 0) {
+      sparkStart = tasks.length;
+      INDEXES.forEach((i, k) => queue(() => (k === selIsIdx ? Promise.resolve(null) : apiTrend(i.secid))));
+    }
     let flowIdx = -1;
-    if (state.selected.isSector) { flowIdx = tasks.length; queue(() => apiFlow(state.selected.secid)); }   /* 行业资金分时：仅行业选中时请求 */
+    if (emOk && state.selected.isSector) { flowIdx = tasks.length; queue(() => (txActive() ? Promise.resolve(null) : apiFlow(state.selected.secid))); }   /* 行业资金分时：仅行业选中时请求 */
     let mflowIdx = -1;
-    if (state.round % FLOW_EVERY === 0) { mflowIdx = tasks.length; MKT_FLOW.forEach(s => queue(() => apiFlow(s))); }   /* 两市资金分时：降频拉取（沪+深综） */
+    if (emOk && state.round % FLOW_EVERY === 0) { mflowIdx = tasks.length; MKT_FLOW.forEach(s => queue(() => (txActive() ? Promise.resolve(null) : apiFlow(s)))); }   /* 两市资金分时：降频拉取（沪+深综） */
     let etfIdx = -1;
-    if (state.etfOpen && (manual || state.round % ETF_EVERY === 0)) {   /* ETF 分时：仅展开时拉取，展开面板不占默认刷新预算 */
+    if (!skip && state.etfOpen && (manual || state.round % ETF_EVERY === 0)) {   /* ETF 分时：仅展开时拉取，展开面板不占默认刷新预算 */
       etfIdx = tasks.length;
-      ETFS.forEach(e => queue(() => apiTrend(e.secid), 260));
+      ETFS.forEach(e => queue(() => apiTrend(e.secid)));
+    }
+    /* 大盘异动图区：上证指数分时（弹层开着且停在今日才拉，与指数卡迷你分时同频） */
+    let mktTrIdx = -1;
+    if (!skip && state.evtOpen && state.mktMode === 'market' && !state.evtDate && state.round % SPARK_EVERY === 0
+        && !(state.mktTrend && Date.now() - state.mktTrend.at < MKT_TREND_TTL)) {   /* 缓存还新鲜就别重复拉（图区自己有 2 分钟 TTL） */
+      mktTrIdx = tasks.length; state.mktTrendBusy = true; queue(() => apiTrend('1.000001'));
+    }
+    /* 异动：仅在弹层展开、停在「今日」、且当前视图确实用到时才拉（大盘播报走自己的 3 分钟节流） */
+    let evtIdx = -1;
+    /* 大盘异动也要个股流水：用它反推每个板块最近一次异动的时刻 */
+    if (!skip && state.evtOpen && !state.evtDate && (state.mktMode === 'stock' || state.mktMode === 'market')) {
+      evtIdx = tasks.length; queue(() => apiChanges(state.evtPageSize));
+    }
+    let bdIdx = -1;
+    /* 大盘异动也要这张板块表（板块异动条目 = 时间线里的指标卡），两个视图共用一份数据 */
+    if (!skip && state.evtOpen && !state.evtDate && (state.mktMode === 'sector' || state.mktMode === 'market')) {
+      bdIdx = tasks.length; queue(() => apiBkChanges());
     }
     const results = await Promise.all(tasks);
-    const idxRes = results[0], trendRes = results[1];
+    let idxRes = results[0], trendRes = results[1];
     /* 行业单请求解析（仅本轮实际拉取时）：失败/超时 → null → 空数组走独立退避记账 */
     const indRes = indIdx >= 0 ? results[indIdx] : null;
     const sectorRows = (indRes && indRes.data && Array.isArray(indRes.data.diff)) ? indRes.data.diff : [];
     const sparkRes = sparkStart >= 0 ? results.slice(sparkStart, sparkStart + 4) : [];
+    /* 选中标的就是某个指数时，它的分时已经从主图那一路拿到：直接顶上去，不重复请求 */
+    if (selIsIdx >= 0 && sparkStart >= 0 && !sparkRes[selIsIdx] && trendRes && trendRes.data && trendRes.data.trends) sparkRes[selIsIdx] = trendRes;
     const flowRes = flowIdx >= 0 ? results[flowIdx] : null;
     const mflowA = mflowIdx >= 0 ? results[mflowIdx] : null;
     const mflowB = mflowIdx >= 0 ? results[mflowIdx + 1] : null;
@@ -675,11 +1491,20 @@ async function refresh(manual = false) {
         state.flowScale = null;
         state.mflowScale = null;
         state.tradingDate = d0;
+        state.evtFeed = [];          /* 跨天清空异动流水（去重键集合保留，当日键不会重复出现） */
+        state.evtSeen = new Set();
+        state.stockMap = new Map();  /* 板块异动条目靠它反推时刻：昨天的时刻不能留到今天 */
+        state.mktMembers = new Map();/* 成分明细卡同理：昨天的涨跌家数作废 */
+        state.bkRows = [];           /* 板块异动同为当日累计口径：整表换代 */
+        state.bkMeta = { tc: 0, dt: 0 };
+        state.evtPageSize = EVT_PULL_SIZE;
+        state.archAt = 0;
+        if (state.evtDate) { state.evtDate = ''; renderDateOptions(); }   /* 跨天后旧的「今日」归档应变成历史 */
       }
     }
 
     if (idxRes && idxRes.data && idxRes.data.diff) renderIndexes(idxRes.data.diff, sparkRes);
-    else failed++;
+    else { failed++; if (!$('#indexRow').dataset.built) renderIndexes([], []); }   /* 首轮失败：退回 "--" 占位，避免骨架常驻像一直在加载 */
 
     if (trendRes && trendRes.data && trendRes.data.trends) renderTrend(trendRes.data, state.round === 0 || manual ? true : false);
     else failed++;
@@ -695,11 +1520,32 @@ async function refresh(manual = false) {
     /* 核心 ETF 分时（仅展开时存在本轮数据）：失败不重绘，保留上一轮曲线，不计入全局退避 */
     if (etfIdx >= 0) renderEtfs(results.slice(etfIdx, etfIdx + ETFS.length));
 
-    /* 行业结算（与其他刷新解耦）：渲染+快照锚点+独立退避账全在 settleIndustry 内，失败不拖累全局 failed */
-    if (indIdx >= 0) settleIndustry(indLv, sectorRows);
-    /* 全局退避：仅核心接口（指数+分时）同轮全挂才限制整体刷新节奏（行业失败已独立记账，不再拖累全局） */
-    if (failed >= 2) { if (++state.failStreak >= 2) state.nextDelay = 240; }
-    else if (failed === 0) { state.failStreak = 0; state.nextDelay = 0; }
+    /* 盘口异动：增量入队 + 高亮新条目；失败只更新提示，不重绘已有流水 */
+    if (evtIdx >= 0) settleChanges(results[evtIdx]);
+
+    /* 大盘异动：当日板块累计表，成功即整表替换；失败保留上一版，不计入全局退避 */
+    if (bdIdx >= 0) { settleBk(results[bdIdx]); saveArch(); }
+    /* 大盘异动图区：上证指数分时结算（失败仅清锁，下轮再补） */
+    if (mktTrIdx >= 0) settleMktTrend(results[mktTrIdx]);
+
+    /* 行业结算（与其他刷新解耦）：渲染+快照锚点+独立退避账全在 settleIndustry 内，失败不拖累全局 failed。
+       备用通道接管期间的空结果是「主动跳过」而不是「接口失败」，不记退避账，免得东财恢复后还要多等几分钟 */
+    if (indIdx >= 0 && (sectorRows.length || !txActive())) settleIndustry(indLv, sectorRows);
+    /* 全局退避：核心接口（指数+选中分时）同轮全挂即停。第 1 轮就退——ERR_EMPTY_RESPONSE 是风控
+       断连的信号，按原节奏继续打只会把封禁时间拖长。连续失败按 60 → 100 → 160 秒递增，
+       退避结束后的第一轮只轻探核心两路（state.probe），确认通道通了再放全量。 */
+    if (failed >= 2) {
+      state.failStreak = Math.min(3, state.failStreak + 1);
+      state.nextDelay = [60, 100, 160][state.failStreak - 1];
+      state.cooling = true;
+      state.probe = true;
+      state.coreDown++;
+    } else {
+      state.failStreak = 0;
+      state.coreDown = 0;
+      state.nextDelay = 0;
+      state.cooling = false;
+    }
 
     updateStatus(failed >= 2 ? 'err' : (failed > 0 ? 'degraded' : 'ok'));   /* 行业失败已独立记账，failed 仅含核心接口 */
     const n = new Date();
@@ -719,11 +1565,37 @@ function updateStatus(mode) {
   pill.classList.remove('pre','closed','err');
   let phase = marketPhase();
   if (state.tradingDate && state.tradingDate !== localDateStr()) phase = 'closed'; // 接口数据非今日 → 休市
-  if (mode === 'err') { pill.classList.add('err'); txt.textContent = '刷新失败 · 重试中'; return; }
+  /* 标题挂一份通道诊断：鼠标悬停就能看到当前走哪条道、有没有切腾讯、累计发了多少请求 */
+  pill.title = (txActive()
+    ? '东财行情域被限流，已切腾讯行情备用通道（指数 / 分时可用，资金流待恢复）'
+    : `行情通道：${HOSTS[state.hostIdx].tag}`)
+    + `｜请求逐个发出，间隔 ≥1 秒 · 已发 ${reqStats.sent} 次`;
+  if (mode === 'err' && !state.cooling) { pill.classList.add('err'); txt.textContent = '刷新失败 · 重试中'; return; }
+  if (state.cooling) { pill.classList.add('err'); txt.textContent = coolingText(); return; }
   if (phase === 'trading') { txt.textContent = '交易中'; }
   else if (phase === 'pre') { pill.classList.add('pre'); txt.textContent = '待开盘'; }
   else { pill.classList.add('closed'); txt.textContent = '已收盘'; }
+  if (txActive()) txt.textContent += ' · 备用源';
   if (mode === 'degraded') txt.textContent += ' · 部分数据待刷新';
+  syncFallbackHint();
+}
+/* 备用源模式下东财板块接口还没通：把行业区空态说清楚，别让人以为页面卡在「正在加载」 */
+function syncFallbackHint() {
+  const wrap = $('#sectorList');
+  if (!wrap || wrap.dataset.built || !txActive()) return;
+  const box = wrap.querySelector('.error-box');
+  if (box) box.textContent = '东财行情域被限流，行业板块数据待通道恢复后自动补上（指数与分时已切腾讯备用通道）';
+}
+/* 退避倒计时文案：让用户知道是「等重试」而不是「页面卡死」 */
+function coolingText() {
+  const n = Math.max(0, Math.round(state.countdown));
+  return `接口限流 · ${n} 秒后重试` + (state.failStreak > 1 ? `（${state.failStreak}/3）` : '');
+}
+/* 退避期间同步徽章与异动面板提示（由 tick 每秒调用） */
+function syncCoolingUI() {
+  if (!state.cooling) return;
+  $('#statusText').textContent = coolingText();
+  if (state.mktMode !== 'market') $('#evtHint').textContent = `· 暂停拉取 · ${Math.max(0, Math.round(state.countdown))} 秒后重试`;
 }
 
 /* ---------- 指数卡 ---------- */
@@ -732,9 +1604,11 @@ function renderIndexes(diff, sparks) {
   if (!row.dataset.built) {
     row.innerHTML = INDEXES.map((i, k) => `
       <div class="index-card" data-i="${k}">
-        <div class="idx-top"><span class="idx-name">${i.name}</span><span class="idx-code">${i.code}</span></div>
-        <div class="idx-price flat" data-f="price">--</div>
-        <div><span class="idx-change flat" data-f="chg">--</span><span class="idx-amount" data-f="amt"></span></div>
+        <div class="idx-top">
+          <span class="idx-name">${i.name}</span><span class="idx-code">${i.code}</span>
+          <span class="idx-price flat" data-f="price">--</span>
+        </div>
+        <div class="idx-chgrow"><span class="idx-change flat" data-f="chg">--</span><span class="idx-amount" data-f="amt"></span></div>
         <svg class="idx-spark" viewBox="0 0 100 44" preserveAspectRatio="none" data-f="spark"></svg>
       </div>`).join('');
     row.dataset.built = '1';
@@ -756,6 +1630,7 @@ function renderIndexes(diff, sparks) {
     const pct = d ? num(d.f3) : null;
     const chg = d ? num(d.f4) : null;
     const amt = d ? num(d.f6) : null;
+    if (i.code === '000001' && price !== null) state.shIdx = { price, pct };   /* 供异动面板标题显示大盘点位 */
     card.classList.toggle('selected', state.selected.code === i.code && !state.selected.isSector);
     const pEl = card.querySelector('[data-f="price"]');
     pEl.textContent = price === null ? '--' : fmt2(price);
@@ -793,13 +1668,17 @@ function drawSpark(svg, pts, raw, key) {
   if (!svg || !pts.length) return;
   const pre = num(raw.preClose ?? raw.prePrice) ?? pts[0].p;
   const mn = Math.min(pre, ...pts.map(x => x.p)), mx = Math.max(pre, ...pts.map(x => x.p));
-  /* Y 轴全天口径：以昨收为锚对称展开，日内只扩不缩（各指数卡独立记忆）；
-     昨收变化（跨天）→ 该卡整卡重锚（防主图数据失败时 spark 沿用旧口径画偏） */
+  /* Y 轴口径：以昨收为参照，但不再强制对称——只给「没波动的那一侧」留约 1/3 空白，
+     曲线就能吃掉大部分高度。强制对称时单边行情只占半个格子，卡再高也没用。
+     日内只扩不缩（各卡独立记忆），刷新时曲线不跳；昨收变化（跨天）→ 该卡整卡重锚 */
   const sc = state.sparkScales[key];
-  if (!sc || sc.pre !== pre) state.sparkScales[key] = { pre, mid: pre, half: 0 };
+  if (!sc || sc.pre !== pre) state.sparkScales[key] = { pre, lo: null, hi: null };
   const s2 = state.sparkScales[key];
-  s2.half = Math.max(s2.half, Math.max(s2.mid - mn, mx - s2.mid) * 1.12, mx * 0.001 || 1e-6);
-  const yMin = s2.mid - s2.half, yMax = s2.mid + s2.half;
+  const side = Math.max(mx - pre, pre - mn, 0) * 0.34 + (pre * 0.0006 || 1e-6);   /* 末项兜底：极端窄幅也给一点余量，免得曲线贴边 */
+  const lo = Math.min(mn, pre - side), hi = Math.max(mx, pre + side);
+  s2.lo = s2.lo === null ? lo : Math.min(s2.lo, lo);
+  s2.hi = s2.hi === null ? hi : Math.max(s2.hi, hi);
+  const yMin = s2.lo, yMax = s2.hi;
   const step = Math.max(1, Math.floor(pts.length / 60));
   const pts2 = pts.filter((_, i) => i % step === 0);
   const last = pts[pts.length - 1].p;
@@ -836,6 +1715,7 @@ function buildEtfCards() {
       const e = ETFS[+card.dataset.i];
       selectTarget({ secid: e.secid, name: e.full, isSector: false, code: e.code });
       syncSelectedUI();
+      revealChart();   /* ETF 条在首屏顶部，主图可能在视野外，点了要能看到分时 */
     });
   });
 }
@@ -887,7 +1767,761 @@ function setEtfOpen(open) {
   btn.setAttribute('aria-expanded', state.etfOpen ? 'true' : 'false');
   btn.querySelector('.etf-toggle-label').textContent = state.etfOpen ? '收起' : '展开';
   if (state.etfOpen) { buildEtfCards(); fetchEtfs(); }
-  else $('#etfLive').textContent = '默认收起 · 不占刷新额度';
+  else $('#etfLive').textContent = '默认收起 · 展开才拉分时';
+}
+
+/* ---------- 盘口异动 ---------- */
+const EVT_KEEP = 4000;       // 内存中保留的异动条数（一天一万多条，4000 条足够翻到上午）
+const EVT_PULL_SIZE = 400;   // 首屏拉取条数（约 40KB）；「加载更多」每次 +400
+/* 解析：tm=HHMMSS 数字；i 为逗号串，字段位置随类型不同（见 EVT_TPL），统一输出 价 / 涨跌幅 / 额外信息 */
+function parseChanges(res) {
+  const d = res && res.data;
+  if (!d || !Array.isArray(d.allstock)) return null;
+  const items = d.allstock.map(raw => {
+    const meta = CHANGE_TYPES[raw.t];
+    if (!meta) return null;
+    const f = String(raw.i || '').split(',');
+    const tpl = EVT_TPL[raw.t] || 'def';
+    let price = null, pct = null, vol = null, amt = null;
+    if (tpl === 'seal') { price = num(f[0]); vol = num(f[1]); pct = num(f[3]); }
+    else if (tpl === 'pp2') { price = num(f[0]); pct = num(f[1]); }
+    else if (tpl === 'big') { vol = num(f[0]); price = num(f[1]); pct = num(f[2]); amt = num(f[3]); }
+    else { price = num(f[1]); pct = num(f[2]); }
+    if (price === null) price = num(f[1]) ?? num(f[0]);
+    const tm = String(raw.tm).padStart(6, '0');
+    /* 额外信息：大单类看成交额，封板类看封单量（手），其余留空 */
+    let extra = '';
+    if (tpl === 'seal' && vol) extra = fmtHand(vol) + '手';
+    else if (amt !== null) extra = amt >= 1e8 ? (amt / 1e8).toFixed(2) + '亿' : (amt / 1e4).toFixed(0) + '万';
+    return {
+      key: `${raw.tm}|${raw.c}|${raw.t}|${raw.i}`,
+      tm: Number(raw.tm),
+      time: `${tm.slice(0,2)}:${tm.slice(2,4)}:${tm.slice(4,6)}`,
+      code: String(raw.c || ''), mkt: Number(raw.m) === 1 ? '1.' : '0.',
+      name: raw.n || String(raw.c || ''),
+      type: Number(raw.t), tpl, label: meta.label, dir: meta.dir,
+      price, pct: pct === null ? null : pct * 100, extra,
+      rel: evtRel(tpl, price, pct === null ? null : pct * 100, vol, amt),
+    };
+  }).filter(x => x && x.code);
+  return { total: Number(d.tc) || 0, items };
+}
+const evtPass = it => state.evtFilter === 'all' ? true
+  : state.evtFilter === 'up'   ? it.dir > 0
+  : state.evtFilter === 'down' ? it.dir < 0
+  : state.evtFilter === 'big'  ? EVT_BIG_KEYS.includes(it.type)
+  : EVT_LIMIT_KEYS.includes(it.type);
+function evtRowHtml(it, isNew) {
+  const cls = it.dir > 0 ? 'up' : it.dir < 0 ? 'down' : 'mid';
+  /* 涨跌幅一律按数值正负着色：「打开涨停」的 +10% 不该因为是“打开”就显示成绿色 */
+  const pcls = it.pct === null ? '' : (it.pct > 0 ? 'up' : it.pct < 0 ? 'down' : '');
+  const on = it.mkt + it.code === state.selected.secid ? ' selected' : '';
+  return `<div class="ev-row${on}${isNew ? ' is-new' : ''}" data-secid="${it.mkt + it.code}" data-code="${it.code}" data-name="${esc(it.name)}">
+    <span class="ev-time">${it.time}</span>
+    <span class="ev-name">${esc(it.name)}<i>${it.code}</i></span>
+    <span class="ev-tag ${cls}">${it.label}</span>
+    <span class="ev-rel ${pcls}">${it.rel}</span>
+  </div>`;
+}
+function renderChanges(newKeys) {
+  const list = $('#evtList');
+  const fresh = newKeys && newKeys.length ? new Set(newKeys) : null;
+  const items = state.evtFeed.filter(evtPass);
+  const sc = list.scrollTop;   /* 重绘保位：向上翻看历史时不被打回顶部 */
+  if (!items.length) {
+    list.innerHTML = `<div class="evt-empty">${state.evtFeed.length ? '当前筛选下暂无记录'
+      : state.evtDate ? `${state.evtDate} 没有本机留存的个股异动` : '正在载入今日异动流水…'}</div>`;
+  } else {
+    const left = Math.max(0, state.evtTotal - state.evtFeed.length);
+    const more = (!state.evtDate && left > 0)
+      ? `<button class="evt-more" id="evtMore">加载更早的异动 · 还剩 ${left.toLocaleString()} 条</button>` : '';
+    const head = '<div class="ev-head"><span>时间</span><span>名称</span><span>类型</span>'
+      + '<span>相关信息</span></div>';
+    list.innerHTML = head + items.map(it => evtRowHtml(it, fresh ? fresh.has(it.key) : false)).join('') + more;
+    list.scrollTop = sc;
+  }
+  /* 多空情绪条：以已入库的近期异动为样本（拉升类 : 跳水类） */
+  const bull = state.evtFeed.filter(x => x.dir > 0).length;
+  const bear = state.evtFeed.filter(x => x.dir < 0).length;
+  const mood = $('#evtMood');
+  if (bull + bear > 0) {
+    mood.hidden = false;
+    const upW = bull / (bull + bear) * 100;
+    mood.querySelector('.mm-up').style.width = upW.toFixed(1) + '%';
+    mood.querySelector('.mm-down').style.width = (100 - upW).toFixed(1) + '%';
+    mood.querySelector('.mm-text').innerHTML = `拉升 <b class="up">${bull}</b> : 跳水 <b class="down">${bear}</b>`;
+  }
+}
+function settleChanges(res) {
+  const parsed = parseChanges(res);
+  if (!parsed) {
+    if (state.mktMode === 'stock') {
+      $('#evtHint').textContent = '· 异动接口异常 · 下轮重试';
+      if (!state.evtFeed.length) $('#evtList').innerHTML = '<div class="evt-empty">异动数据拉取失败 · 下轮自动重试</div>';
+    }
+    return;
+  }
+  state.evtTotal = parsed.total;
+  const wasEmpty = !state.evtFeed.length;   /* 首屏载入时全是“新”，逐行高亮会糊成一片橙色，故不标 */
+  const freshKeys = [];
+  parsed.items.forEach(it => {
+    /* 记录该股当日最近一条异动的时刻：板块异动条目靠它定位时间与领涨幅度 */
+    const hit = state.stockMap.get(it.code);
+    if (!hit || it.tm > hit.tm) state.stockMap.set(it.code, { tm: it.tm, t: it.time.slice(0, 5), pct: it.pct });
+    if (state.evtSeen.has(it.key)) return;
+    state.evtSeen.add(it.key);
+    state.evtFeed.push(it);
+    freshKeys.push(it.key);
+  });
+  if (freshKeys.length) {
+    /* 时间倒序（HH:MM:SS 等长可直接字典序比较），同秒内保持接口返回顺序（新在前） */
+    state.evtFeed.sort((a, b) => b.tm - a.tm || b.time.localeCompare(a.time));
+    if (state.evtFeed.length > EVT_KEEP) state.evtFeed.length = EVT_KEEP;
+    if (state.mktMode === 'stock') renderChanges(wasEmpty ? null : freshKeys);
+  } else if (!state.evtFeed.length && state.mktMode === 'stock') renderChanges(null);
+  if (state.mktMode === 'market') { renderPulse(); hintPulse(); return; }
+  if (state.mktMode !== 'stock') return;
+  hintStock();
+}
+
+/* ---------- 大盘异动：盘面播报时间线 ---------- */
+const WEEK = ['周日','周一','周二','周三','周四','周五','周六'];
+function pulseDays() {
+  const m = new Map();
+  state.pulse.forEach(x => { if (!m.has(x.day)) m.set(x.day, 0); m.set(x.day, m.get(x.day) + 1); });
+  return [...m.entries()].sort((a, b) => b[0].localeCompare(a[0]));
+}
+const pulseShown = () => state.evtDate ? state.pulse.filter(x => x.day === state.evtDate) : state.pulse;
+function dayLabel(d) {
+  const [y, m, dd] = d.split('-').map(Number);
+  const w = WEEK[new Date(y, m - 1, dd).getDay()];
+  return `${m} 月 ${dd} 日 ${w}`;
+}
+function pulseItemHtml(x) {
+  const sum = x.digest && x.digest !== x.title ? `<div class="pl-sum">${esc(x.digest)}</div>` : '';
+  const more = x.url
+    ? `<a class="pl-more" href="${esc(x.url)}" target="_blank" rel="noopener">查看更多
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></a>` : '';
+  return `<article class="pl-item">
+    <div class="pl-time">${x.time}</div>
+    <div class="pl-rail"><i></i></div>
+    <div class="pl-main">
+      <h3 class="pl-title">${esc(x.title)}</h3>
+      ${sum}${more}
+    </div>
+  </article>`;
+}
+/* ---------- 大盘异动：板块异动条目 + 盘面播报，混成一条时间线 ---------- */
+/* 状态词按当日涨跌幅给，和东财 App 的「XX走强 / XX震荡走强」写法对齐 */
+function bkStateWord(p) {
+  if (p === null || p === undefined) return '异动活跃';
+  if (p >= 5) return '大涨';
+  if (p >= 2) return '走强';
+  if (p >= 0.8) return '震荡走强';
+  if (p > -0.8) return '窄幅震荡';
+  if (p > -2) return '震荡走弱';
+  if (p > -5) return '走弱';
+  return '大跌';
+}
+const fmtFlow = (v) => {
+  if (v === null || v === undefined) return '--';
+  const a = Math.abs(v);
+  const s = a >= 1e8 ? (a / 1e8).toFixed(2) + '亿' : a >= 1e4 ? (a / 1e4).toFixed(0) + '万' : a.toFixed(0);
+  return (v > 0 ? '+' : v < 0 ? '-' : '') + s;
+};
+const fmtCnt = (v) => {
+  const n = Number(v) || 0;
+  return n >= 10000 ? (n / 10000).toFixed(1) + '万' : String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+};
+const signCls = (v) => v === null || v === undefined ? '' : v > 0 ? 'up' : v < 0 ? 'down' : '';
+/* ---------- 大盘异动：图区常量（对标东财 App：上证指数分时 + 板块异动时刻标注 + 异动详情时间线） ---------- */
+const MKT_TOP    = 24;                    // 参与合并与词条的板块上限（按活跃度）
+const MKT_CARD_N = 4;                     // 时间线里带「成分明细卡」的板块条数（涨跌家数 + 领涨前三，按需拉成分）
+const MKT_TAG_N  = 14;                    // 分时图上最多标注的板块个数
+const MKT_LANES  = [7, 31, 55, 79];       // 标注泳道（距图区顶部 px，错层防压字）
+const MKT_BODY_H = 150;                   // 图区高度（CSS .mc-body 固定值，连线定位用）
+const MKT_TREND_TTL  = 120000;            // 上证指数分时缓存 2 分钟
+const MKT_MEMBER_TTL = 180000;            // 板块成分缓存 3 分钟
+const bkScore = (r) => (r.cnt || 0) + Math.abs(r.pct || 0) * 400;
+
+/* 图区分时结算：主刷新队列与独立兜底共用一把锁 */
+function settleMktTrend(res) {
+  state.mktTrendBusy = false;
+  const d = res && res.data;
+  if (d && d.trends && d.trends.length) {
+    state.mktTrend = { pts: parseTrends(d), pre: num(d.preClose ?? d.prePrice) ?? null, at: Date.now() };
+    if (state.evtOpen && state.mktMode === 'market' && !state.evtDate) renderPulse();
+  }
+}
+function ensureMktTrend() {
+  if (state.evtDate || state.mktTrendBusy) return;
+  if (state.mktTrend && Date.now() - state.mktTrend.at < MKT_TREND_TTL) return;
+  state.mktTrendBusy = true;
+  apiTrend('1.000001').then(settleMktTrend).catch(() => { state.mktTrendBusy = false; });
+}
+/* 板块成分明细卡：涨跌家数 + 领涨（领跌）前三。只给时间线里最活跃的几个板块拉。
+   间隔一律交给全局闸门（1 秒一道），这里只管按顺序提交，不再自己错峰 */
+function ensureMktMembers(rows) {
+  if (state.evtDate || !rows.length) return;   // 历史归档日没有「当日」成分快照，不拉
+  const now = Date.now();
+  rows.forEach(r => {
+    const c = state.mktMembers.get(r.code);
+    if (c && (c.busy || now - c.at < (c.failed ? 600000 : MKT_MEMBER_TTL))) return;   // 失败冷却 10 分钟（原来 3 分钟，会一直重打）
+    state.mktMembers.set(r.code, { at: now, busy: true });
+    apiBoardMembers(r.code).then(res => {
+      const diff = res && res.data && Array.isArray(res.data.diff) ? res.data.diff : [];
+      let up = 0, down = 0, flat = 0;
+      const list = diff.map(d => ({
+        name: d.f14 || '', code: String(d.f12 || ''), mkt: Number(d.f13) === 1 ? '1.' : '0.', pct: num(d.f3),
+      })).filter(x => x.code);
+      list.forEach(x => { if (x.pct === null) return; if (x.pct > 0) up++; else if (x.pct < 0) down++; else flat++; });
+      const dirUp = (r.pct ?? 0) >= 0;   // 走强板块看领涨前三，走弱看领跌前三（与东财卡片一致）
+      const tops = list.filter(x => x.pct !== null)
+        .sort((a, b) => dirUp ? b.pct - a.pct : a.pct - b.pct).slice(0, 3);
+      state.mktMembers.set(r.code, { at: Date.now(), up, down, flat, tops });
+    }).catch(() => {
+      state.mktMembers.set(r.code, { at: Date.now(), failed: true });   // 失败也记账，冷却 10 分钟再试
+    }).then(() => {
+      if (state.evtOpen && state.mktMode === 'market') renderPulse();
+    });
+  });
+}
+/* 板块异动条目：东财接口不返回板块级时刻，用「该板块最活跃个股最近一次异动」的时刻近似（图例注明口径） */
+function mktBkEntries() {
+  const day = state.evtDate || todayKey();
+  return bkList().slice().sort((a, b) => bkScore(b) - bkScore(a)).slice(0, MKT_TOP).map(r => {
+    const hit = r.lead ? state.stockMap.get(r.lead.code) : null;
+    const tx = (!state.evtDate && r.lead) ? state.txMap.get(r.lead.code) : null;   // 腾讯实时涨幅只在「今日」可信
+    return {
+      kind: 'bk', day: hit ? day : null, t: hit ? hit.t : null,
+      name: r.name, code: r.bk, pct: r.pct, flow: r.flow, cnt: r.cnt,
+      types: r.types, lead: r.lead,
+      leadPct: tx ? tx.pct : (hit ? hit.pct : null),   // 腾讯实时涨幅优先，其次用异动流水里的涨跌幅
+    };
+  });
+}
+/* 异动详情 = 板块异动（带近似时刻）+ 盘面播报，按 日期 × 时刻 倒序合并成一条时间线 */
+function mktEntries() {
+  const bk = mktBkEntries();
+  const news = pulseShown().map(x => ({ kind: 'news', day: x.day, t: x.time, raw: x }));
+  const items = bk.filter(e => e.t).concat(news)
+    .sort((a, b) => b.day.localeCompare(a.day) || b.t.localeCompare(a.t));
+  return { bk, items, chips: bk.filter(e => !e.t) };
+}
+/* 图区：上证指数分时 + 板块异动时刻标注（仅「今日」；历史分时不留存） */
+function mktChartHtml(tags) {
+  if (state.evtDate) return '';
+  const idx = state.shIdx;
+  const pc = cls3(idx ? idx.pct : null);
+  const head = `<div class="mc-head">
+      <span class="mc-name">上证指数</span>
+      <b class="mc-price ${pc}">${idx && idx.price !== null ? fmt2(idx.price) : '--'}</b>
+      <span class="mc-chg ${pc}">${idx && idx.pct !== null ? fmtPct(idx.pct) : '--'}</span>
+      <span class="mc-note">盘中标注 = 板块异动时刻 · 点击看板块分时</span>
+    </div>`;
+  const tr = state.mktTrend;
+  if (!tr || !tr.pts.length) {
+    return `<div class="mkt-chart">${head}<div class="mc-body"><div class="mc-empty">上证指数分时载入中…</div></div></div>`;
+  }
+  const W = 100, H = 40, VH = 9, TOP = 2;   // viewBox：上 31 格价格区 + 下 9 格成交量带
+  const pre = tr.pre ?? tr.pts[0].p;
+  const mn = Math.min(pre, ...tr.pts.map(x => x.p)), mx = Math.max(pre, ...tr.pts.map(x => x.p));
+  const pad = (mx - mn) * 0.08 || pre * 0.001 || 0.1;
+  const yMin = mn - pad, yMax = mx + pad;
+  const X = pt => POS_OF_DAY(pt.t) * W;
+  const Y = p => TOP + (1 - (p - yMin) / (yMax - yMin)) * (H - VH - TOP);
+  const step = Math.max(1, Math.floor(tr.pts.length / 120));
+  const pts2 = tr.pts.filter((_, i) => i % step === 0);
+  const xy = pts2.map(x => `${X(x).toFixed(2)},${Y(x.p).toFixed(2)}`);
+  const endX = X(pts2[pts2.length - 1]).toFixed(2);
+  const base = (H - VH).toFixed(2);
+  const vMax = Math.max(1, ...tr.pts.map(x => x.v || 0));
+  let bars = '', prevP = pre;
+  tr.pts.forEach((x, i) => {
+    if (i % step) return;
+    const h = (x.v || 0) / vMax * (VH - 1);
+    if (h > 0.05) {
+      bars += `<rect x="${(X(x) - 0.18).toFixed(2)}" y="${(H - h).toFixed(2)}" width="0.36" height="${h.toFixed(2)}"
+        fill="${x.p >= prevP ? '#ff8b82' : '#6dd58c'}"/>`;
+    }
+    prevP = x.p;
+  });
+  const yPre = Y(pre).toFixed(2);
+  const svg = `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-hidden="true">
+      <defs><linearGradient id="mktArea" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#0071e3" stop-opacity=".13"/><stop offset="1" stop-color="#0071e3" stop-opacity="0"/>
+      </linearGradient></defs>
+      <line x1="0" x2="${endX}" y1="${yPre}" y2="${yPre}" stroke="rgba(0,0,0,.15)" stroke-width=".2"
+        stroke-dasharray="1 1.4" vector-effect="non-scaling-stroke"/>
+      <polygon points="0,${base} ${xy.join(' ')} ${endX},${base}" fill="url(#mktArea)"/>
+      <polyline points="${xy.join(' ')}" fill="none" stroke="#0071e3" stroke-width="1.4"
+        vector-effect="non-scaling-stroke" stroke-linejoin="round" stroke-linecap="round"/>
+      ${bars}
+    </svg>`;
+  /* 标注：按 x 贪心分配泳道，放不下就丢弃；圆点钉在该时刻的指数点位上 */
+  const lanes = MKT_LANES.map(y => ({ y, end: -100 }));
+  let overlay = '';
+  tags.forEach(tag => {
+    const x = Math.min(99.5, Math.max(0.5, POS_OF_DAY(tag.t) * 100));
+    const w = Math.min(34, tag.name.length * 1.9 + 9);   // 标签估宽（容器百分比）
+    const lane = lanes.find(l => x - w / 2 > l.end + 1.4);
+    if (!lane) return;
+    lane.end = x + w / 2;
+    const lx = Math.min(Math.max(x, w / 2), 100 - w / 2);
+    const up = (tag.pct ?? 0) >= 0;
+    let pt = null;
+    for (let i = 0; i < tr.pts.length; i++) { if (tr.pts[i].t <= tag.t) pt = tr.pts[i]; else break; }
+    overlay += `<i class="mc-tag ${up ? 'up' : 'down'}" style="left:${lx.toFixed(1)}%;top:${lane.y}px"
+      data-bk="${esc(tag.code)}" data-name="${esc(tag.name)}"
+      title="${esc(tag.name)}${tag.pct === null || tag.pct === undefined ? '' : ' ' + fmtPct(tag.pct)} · ${tag.t} · 点击查看板块分时">${esc(tag.name)}</i>`;
+    if (pt) {
+      const dotTop = Y(pt.p) / H * 100;
+      overlay += `<i class="mc-dot ${up ? 'up' : 'down'}" style="left:${x.toFixed(1)}%;top:${dotTop.toFixed(1)}%"></i>`;
+      const h = dotTop / 100 * MKT_BODY_H - (lane.y + 19);
+      if (h > 2 && Math.abs(lx - x) < 0.8)
+        overlay += `<i class="mc-line" style="left:${x.toFixed(1)}%;top:${lane.y + 19}px;height:${Math.round(h)}px"></i>`;
+    }
+  });
+  return `<div class="mkt-chart">${head}<div class="mc-body">${svg}${overlay}</div></div>`;
+}
+/* 时间线里的板块异动条目：标题（名称 + 状态词 + 涨幅）+ 成分明细卡（涨跌家数 / 主力净流入 / 领涨前三） */
+function bkEntryHtml(e) {
+  const hasPct = e.pct !== null && e.pct !== undefined;
+  const m = state.evtDate ? null : state.mktMembers.get(e.code);
+  let card = '';
+  if (m && !m.busy && !m.failed && (m.up + m.down + m.flat) > 0) {
+    const stocks = (m.tops || []).map(s =>
+      `<span class="mbk-stock" data-secid="${esc(s.mkt + s.code)}" data-code="${esc(s.code)}" data-name="${esc(s.name)}"
+         title="点击查看 ${esc(s.name)} 分时">
+         <b>${esc(s.name)}</b><i>${esc(s.code)}</i><em class="${signCls(s.pct)}">${s.pct === null ? '--' : fmtPct(s.pct)}</em>
+       </span>`).join('');
+    card = `<div class="mbk-card" data-bk="${esc(e.code)}" data-name="${esc(e.name)}" title="点击查看该板块分时">
+        <div class="mbk-stats">
+          <span>涨跌 <b class="up">${m.up}</b> / <b class="down">${m.down}</b> / <b>${m.flat}</b></span>
+          <span>主力净流入 <b class="${signCls(e.flow)}">${fmtFlow(e.flow)}</b></span>
+          <span>异动 <b>${fmtCnt(e.cnt)}</b> 次</span>
+          ${e.lead ? `<span>最活跃 ${esc(e.lead.name)}${e.leadPct === null || e.leadPct === undefined ? '' : ` <b class="${signCls(e.leadPct)}">${fmtPct(e.leadPct)}</b>`}</span>` : ''}
+        </div>
+        ${stocks ? `<div class="mbk-stocks">${stocks}</div>` : ''}
+      </div>`;
+  }
+  return `<article class="pl-item">
+    <div class="pl-time">${e.t}</div>
+    <div class="pl-rail"><i class="${signCls(e.pct) || ''}"></i></div>
+    <div class="pl-main">
+      <h3 class="pl-title"><b>${esc(e.name)}</b>${bkStateWord(e.pct)}${hasPct ? ` <em class="tt-pct ${signCls(e.pct)}">${fmtPct(e.pct)}</em>` : ''}</h3>
+      ${card}
+    </div>
+  </article>`;
+}
+function renderPulse() {
+  const list = $('#evtList');
+  if (!list) return;
+  const { bk, items, chips } = mktEntries();
+  ensureTx(bk);                                                 /* 最活跃个股的实时涨幅（腾讯行情） */
+  ensureMktMembers(bk.filter(e => e.t).slice(0, MKT_CARD_N));   /* 明细卡：只给排最前的几个板块拉成分 */
+  const sc = list.scrollTop;
+  if (!items.length && !chips.length) {
+    list.innerHTML = state.pulseBusy || state.bkBusy
+      ? '<div class="evt-empty">正在载入异动详情…</div>'
+      : '<div class="evt-empty">异动详情拉取失败 · 点「加载更早」重试</div>';
+    return;
+  }
+  let html = '';
+  /* ① 图区：上证指数分时 + 板块异动时刻标注（仅「今日」；历史分时不留存） */
+  html += mktChartHtml(bk.filter(e => e.t).slice(0, MKT_TAG_N));
+  /* ② 异动详情：板块异动 + 盘面播报按时刻倒序合并成一条时间线，跨天时插日期分隔 */
+  if (items.length) {
+    const perDay = {};
+    items.forEach(x => { perDay[x.day] = (perDay[x.day] || 0) + 1; });
+    html += `<div class="pl-day">异动详情<b>${items.length}</b> 条`
+      + `<em>${state.evtDate ? dayLabel(state.evtDate) : '板块异动 + 盘面播报 · 按时刻倒序'}</em></div>`;
+    const multiDay = Object.keys(perDay).length > 1;
+    let lastDay = '';
+    items.forEach(x => {
+      if (multiDay && x.day !== lastDay) {
+        lastDay = x.day;
+        html += `<div class="pl-sub">${dayLabel(x.day)}<b>${perDay[x.day]}</b> 条</div>`;
+      }
+      html += x.kind === 'bk' ? bkEntryHtml(x) : pulseItemHtml(x.raw);
+    });
+  }
+  /* ③ 未定位到时刻的活跃板块：紧凑词条（时刻靠代表股流水反推，流水没覆盖到就落在这里） */
+  if (chips.length) {
+    html += `<div class="pl-day">盘中活跃板块<b>${chips.length}</b> 个<em>未定位到异动时刻 · 点击看分时</em></div>`
+      + `<div class="mkt-chips">${chips.map(c => `<button class="mkt-chip" data-bk="${esc(c.code)}" data-name="${esc(c.name)}" title="点击查看该板块分时">
+          <b>${esc(c.name)}</b>${c.pct === null || c.pct === undefined ? '' : `<em class="${signCls(c.pct)}">${fmtPct(c.pct)}</em>`}
+        </button>`).join('')}</div>`;
+  }
+  /* ④ 翻页按钮一直在：即便按日期筛选，也能继续往前把这一天补全 */
+  if (state.pulsePage <= PULSE_MAXP) {
+    html += `<button class="evt-more" id="plMore">加载更早的播报${state.pulseBusy ? ' · 载入中…' : ''}</button>`;
+  }
+  list.innerHTML = html;
+  list.scrollTop = sc;
+}
+/* 拉一页播报：reset=true 从第 1 页重新拉（刷新用），否则续拉更早一页 */
+async function loadPulse(reset) {
+  if (state.pulseBusy) return;
+  state.pulseBusy = true;
+  if (state.mktMode === 'market' && !state.pulse.length) renderPulse();
+  const page = reset ? 1 : state.pulsePage;
+  const raw = await loadPulsePage(page);
+  state.pulseBusy = false;
+  if (!raw) {
+    if (state.mktMode === 'market') { renderPulse(); $('#evtHint').textContent = '· 播报拉取失败 · 稍后重试'; }
+    return;
+  }
+  const items = parsePulse(raw);
+  if (items.length) {
+    const seen = new Set(state.pulse.map(x => x.id));
+    items.forEach(x => { if (x.id && !seen.has(x.id)) { seen.add(x.id); state.pulse.push(x); } });
+    state.pulse.sort((a, b) => b.sort - a.sort);
+    if (state.pulse.length > 1200) state.pulse.length = 1200;
+    state.pulsePage = Math.max(reset ? 2 : page + 1, state.pulsePage);
+  }
+  state.pulseAt = Date.now();
+  renderDateOptions();
+  if (state.mktMode === 'market') { renderPulse(); hintPulse(); }
+}
+function hintPulse() {
+  const { items } = mktEntries();
+  if (!items.length) { $('#evtHint').textContent = '· 正在载入异动详情…'; return; }
+  const d = new Date(state.pulseAt || Date.now());
+  $('#evtHint').textContent = `· ${state.evtDate ? dayLabel(state.evtDate) + ' 归档' : '今日'}`
+    + ` · 异动详情 ${items.length} 条 · 最新 ${items[0].t}`
+    + ` · ${pad(d.getHours())}:${pad(d.getMinutes())} 更新`;
+}
+
+/* ---------- 代表个股行情：给「板块 → 异动个股」补涨幅 ----------
+   东财 getAllBKChanges 的 ms 字段只给出每个板块「异动最频繁的个股」（代码 + 名称），不含涨幅；
+   涨幅走 push2 行情域，而该域在本机被阻断（HTTP 000，浏览器里同样不通）。
+   腾讯行情 qt.gtimg.cn 可用：返回 v_sz300308="51~中际旭创~300308~现价~昨收~…~涨跌~涨跌幅~…"，
+   是合法 JS 赋值，script 标签即可加载（GBK，需指定 charset），不受同源 / CORS 限制，且支持一次查多只。 */
+const TX_API   = 'https://qt.gtimg.cn/q=';
+const TX_TTL   = 60000;          // 涨幅缓存 60 秒
+const TX_RETRY = 40000;          // 请求失败后 40 秒内不重试同一只，避免每轮刷新重打
+function txId(code) {
+  if (/^(4|8|92)/.test(code)) return 'bj' + code;  // 北交所：43x/83x/87x 与 2024 年起的 920xxx
+  if (/^[69]/.test(code)) return 'sh' + code;      // 沪市 600/601/603/605/688/900
+  return 'sz' + code;                               // 深市 000/001/002/003/300/301/200
+}
+/* 腾讯把结果写成 window.v_xxx 全局变量，并发请求会互相覆盖 —— 一律串行 */
+let txChain = Promise.resolve();
+/* codes 可传 6 位代码（按代码段自动判市场）或已是 sh/sz/bj 前缀的完整 id。
+   上证 000001 与平安银行 000001 同码，指数只能靠前缀区分，光看数字会把指数取成个股。 */
+function txQuote(codes) {
+  const ids = [...new Set(codes.map(c => {
+    if (/^\d{6}$/.test(c)) return txId(c);
+    return /^(sh|sz|bj)\d{6}$/.test(c) ? c : null;
+  }).filter(Boolean))];
+  if (!ids.length) return Promise.resolve({});
+  const run = () => new Promise(resolve => {
+    const s = document.createElement('script');
+    s.charset = 'GBK';
+    s.src = TX_API + ids.join(',') + '&_=' + Date.now();   // 带时间戳，绕开 HTTP 缓存拿到最新价
+    const done = (ok) => {
+      const out = {};
+      if (ok) ids.forEach(id => {
+        const raw = window['v_' + id];
+        if (typeof raw !== 'string') return;
+        const f = raw.split('~');
+        const pct = parseFloat(f[32]);        // 32=涨跌幅% 31=涨跌额 3=现价 4=昨收 1=名称 2=代码
+        if (!Number.isFinite(pct)) return;
+        const amtW = parseFloat(f[37]);       // 37=成交额（万元），指数与个股同口径
+        out[f[2]] = {
+          name: f[1], pct, price: parseFloat(f[3]), pre: parseFloat(f[4]),
+          amt: Number.isFinite(amtW) ? amtW * 1e4 : null,
+        };
+      });
+      try { s.remove(); } catch (e) {}
+      resolve(out);
+    };
+    s.onload = () => done(true);
+    s.onerror = () => done(false);
+    document.head.appendChild(s);
+  });
+  txChain = txChain.then(() => gate(run), () => gate(run));
+  return txChain;
+}
+/* 只补当前要显示的那批板块（≤24 只），带缓存与失败冷却 */
+function ensureTx(rows) {
+  if (state.evtDate) return;                    // 看历史归档时腾讯返回的是「此刻」涨幅，补上去会串味
+  const now = Date.now();
+  const need = [];
+  rows.forEach(r => {
+    const c = r.lead && r.lead.code;
+    if (!c) return;
+    const hit = state.txMap.get(c);
+    if (hit && now - hit.at < TX_TTL) return;
+    if (now - (state.txTry.get(c) || 0) < TX_RETRY) return;
+    need.push(c);
+  });
+  if (!need.length || state.txBusy) return;
+  state.txBusy = true;
+  need.forEach(c => state.txTry.set(c, now));
+  txQuote(need).then(got => {
+    state.txBusy = false;
+    const n = Object.keys(got).length;
+    Object.keys(got).forEach(c => state.txMap.set(c, { ...got[c], at: Date.now() }));
+    if (!n) return;
+    if (state.mktMode === 'market') renderPulse();
+    else if (state.mktMode === 'sector') renderBkTable();
+  }, () => { state.txBusy = false; });
+}
+
+/* ---------- 板块异动：当日板块异动表（东财「当日异动板块监控」口径） ---------- */
+const fmtHms = (dt) => { const s = String(dt || '').padStart(14, '0'); return `${s.slice(8, 10)}:${s.slice(10, 12)}`; };
+
+/* 解析：u=涨跌幅字符串，zjl=主力净流入（万元），ct=异动总次数，ydl=类型分布，ms=最频繁个股 */
+function parseBk(res) {
+  const d = res && res.data;
+  if (!d || !Array.isArray(d.allbk)) return null;
+  const rows = d.allbk.map(r => {
+    const name = String(r.n || r.c || '');
+    if (!name || BD_SKIP.test(name)) return null;              // 统计型 / 指数成分 / 持仓属性类：不是题材，不进表
+    const ydl = (r.ydl || []).filter(x => CHANGE_TYPES[x.t]).sort((a, b) => b.ct - a.ct);
+    if (!ydl.length) return null;                              // 与东财一致：没有任何已知类型异动的板块不展示
+    const ms = r.ms || {};
+    const msMeta = CHANGE_TYPES[ms.t] || null;
+    return {
+      bk: String(r.c || ''), name,
+      pct: num(r.u),
+      flow: num(r.zjl) === null ? null : num(r.zjl) * 1e4,     // 万元 → 元，与全站金额口径统一
+      cnt: num(r.ct) || 0,
+      types: ydl.slice(0, BK_TYPE_SHOW + 3).map(x => ({
+        t: x.t, ct: x.ct, label: CHANGE_TYPES[x.t].label, dir: CHANGE_TYPES[x.t].dir,
+      })),
+      lead: ms.n ? {
+        name: ms.n, code: String(ms.c || ''), mkt: Number(ms.m) === 1 ? '1.' : '0.',
+        label: msMeta ? msMeta.label : '',
+      } : null,
+      dir: CHANGE_TYPES[ydl[0].t].dir,                         // 红绿以最高频类型的方向为准
+    };
+  }).filter(Boolean);
+  return { tc: Number(d.tc) || rows.length, dt: Number(d.dt) || 0, rows };
+}
+
+/* 当前该看哪份板块异动表：看历史日期时是归档，否则是今日实时 */
+const bkList = () => state.evtDate ? (state.archBk || []) : state.bkRows;
+function bkSorted() {
+  const rows = bkList().slice();
+  if (state.bkSort === 'pct') rows.sort((a, b) => (b.pct ?? -99) - (a.pct ?? -99));
+  else if (state.bkSort === 'flow') rows.sort((a, b) => (b.flow ?? -9e17) - (a.flow ?? -9e17));
+  else rows.sort((a, b) => b.cnt - a.cnt);
+  return rows;
+}
+
+function bkRowHtml(r, rank, maxCnt) {
+  const sel = state.selected.isSector && state.selected.secid === '90.' + r.bk ? ' selected' : '';
+  const tags = r.types.slice(0, BK_TYPE_SHOW).map(t =>
+    `<span class="bk-type ${t.dir > 0 ? 'up' : t.dir < 0 ? 'down' : ''}">${t.label}<b>${t.ct}</b></span>`).join('');
+  const rest = r.types.length > BK_TYPE_SHOW
+    ? `<span class="bk-type more">+${r.types.length - BK_TYPE_SHOW}</span>` : '';
+  const w = maxCnt ? Math.max(3, Math.round(r.cnt / maxCnt * 100)) : 0;
+  /* 代表个股带上实时涨幅：东财只给个股名，涨幅要自己补 */
+  const tx = r.lead ? state.txMap.get(r.lead.code) : null;
+  const hit = r.lead ? state.stockMap.get(r.lead.code) : null;
+  const leadPct = tx ? tx.pct : (hit ? hit.pct : null);
+  const lead = r.lead
+    ? `最频繁 ${esc(r.lead.name)}`
+      + (leadPct === null || leadPct === undefined ? '' : ` <em class="${cls3(leadPct)}">${fmtPct(leadPct)}</em>`)
+      + (r.lead.label ? `<i>${esc(r.lead.label)}</i>` : '')
+    : '';
+  return `<div class="bk-row${sel}" data-bk="${r.bk}" data-name="${esc(r.name)}" title="点击查看该板块分时">
+    <span class="bk-rank">${rank}</span>
+    <div class="bk-main">
+      <div class="bk-title"><b>${esc(r.name)}</b><i>${r.bk}</i></div>
+      <span class="bk-lead">${lead}</span>
+    </div>
+    <span class="bk-pct ${cls3(r.pct)}">${fmtPct(r.pct)}</span>
+    <span class="bk-flow ${cls3(r.flow)}">${r.flow === null ? '--' : fmtYi(r.flow)}</span>
+    <span class="bk-cnt"><span class="bar"><i style="width:${w}%"></i></span><b>${r.cnt.toLocaleString()}</b></span>
+    <div class="bk-types">${tags}${rest}</div>
+  </div>`;
+}
+
+function renderBkTable() {
+  const list = $('#evtList');
+  if (!list) return;
+  const rows = bkSorted();
+  ensureTx(rows);                    /* 代表个股的涨幅要另外补，回来再重绘 */
+  const sc = list.scrollTop;
+  if (!rows.length) {
+    list.innerHTML = `<div class="evt-empty">${state.evtDate
+      ? `${state.evtDate} 没有本地归档的板块异动`
+      : '正在载入今日板块异动…'}</div>`;
+    return;
+  }
+  const maxCnt = rows[0].cnt || 1;
+  list.innerHTML = `<div class="bk-head"><span></span><span>板块</span><span>涨跌幅</span>`
+    + `<span>主力净流入</span><span>异动次数</span><span>异动构成（次数）</span></div>`
+    + rows.map((r, k) => bkRowHtml(r, k + 1, maxCnt)).join('');
+  list.scrollTop = sc;
+  syncSelectedUI();
+}
+
+/* 结算：一天累计口径，成功即整表替换（无需增量合并）；失败保留上一版表，只更新提示 */
+function settleBk(res) {
+  const parsed = parseBk(res);
+  if (!parsed) {
+    if (state.mktMode === 'sector' && !state.bkRows.length) {
+      $('#evtList').innerHTML = '<div class="evt-empty">板块异动拉取失败 · 稍后自动重试</div>';
+    }
+    return;
+  }
+  state.bkRows = parsed.rows;
+  state.bkMeta = { tc: parsed.tc, dt: parsed.dt };
+  if (state.mktMode === 'sector') renderBkTable();
+  if (state.mktMode === 'market' && !state.evtDate) { renderPulse(); hintPulse(); }
+  else hintMarket();
+}
+
+/* ---------- 本地归档：东财只提供当日数据，历史日期靠页面自己留存 ---------- */
+const todayKey = () => state.tradingDate || localDateStr();
+function archDates() {
+  const out = [];
+  try {
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k && k.indexOf(ARCH_KEY) === 0) out.push(k.slice(ARCH_KEY.length));
+    }
+  } catch (e) { /* 隐私模式禁用 localStorage：退化为只看今日 */ }
+  return out.sort().reverse();
+}
+function readArch(d) {
+  try { const s = localStorage.getItem(ARCH_KEY + d); return s ? JSON.parse(s) : null; } catch (e) { return null; }
+}
+/* 归档当日快照：板块异动表 + 个股流水前 600 条。2 分钟一次即可，避免每轮都序列化上百 KB */
+function saveArch() {
+  if (state.evtDate) return;
+  if (!state.bkRows.length && !state.evtFeed.length) return;
+  if (Date.now() - state.archAt < 120000) return;
+  state.archAt = Date.now();
+  const day = todayKey();
+  const rec = {
+    at: Date.now(), dt: state.bkMeta.dt, tc: state.bkMeta.tc,
+    bk: state.bkRows.slice(0, BK_PULL_SIZE),
+    st: { total: state.evtTotal, items: state.evtFeed.slice(0, ARCH_ST) },
+  };
+  try {
+    localStorage.setItem(ARCH_KEY + day, JSON.stringify(rec));
+    archDates().slice(ARCH_DAYS).forEach(d => { try { localStorage.removeItem(ARCH_KEY + d); } catch (e) {} });
+    renderDateOptions();
+  } catch (e) { /* 配额满：放弃归档，不打扰主流程 */ }
+}
+/* 有数据的交易日：本机归档 + 已载入的播报日（日历上只有这些可点） */
+function availDates() {
+  const s = new Set([todayKey()]);
+  archDates().forEach(d => s.add(d));
+  pulseDays().forEach(([d]) => s.add(d));
+  return s;
+}
+let calCursor = '';
+function renderDateOptions() {
+  const btn = $('#evtDate'), txt = $('#evtDateTxt');
+  if (!btn || !txt) return;
+  txt.textContent = state.evtDate || '今日 · 实时';
+  btn.classList.toggle('is-arch', !!state.evtDate);
+  btn.title = state.evtDate ? `正在查看 ${state.evtDate} 的归档，点此切换` : '切换查看的交易日';
+  renderCal();
+}
+function renderCal() {
+  const box = $('#dcal');
+  if (!box || box.hidden) return;
+  const [y, m] = calCursor.split('-').map(Number);
+  const start = (new Date(y, m - 1, 1).getDay() + 6) % 7;   /* 周一为首列 */
+  const days = new Date(y, m, 0).getDate();
+  const today = todayKey();
+  const avail = availDates();
+  let cells = ['一', '二', '三', '四', '五', '六', '日'].map(w => `<span>${w}</span>`).join('');
+  for (let i = 0; i < start; i++) cells += '<span></span>';
+  for (let d = 1; d <= days; d++) {
+    const key = `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+    const usable = avail.has(key);
+    const cls = [usable ? 'has' : '', key === state.evtDate ? 'on' : ''].filter(Boolean).join(' ');
+    cells += `<button data-d="${key}" class="${cls}"${usable ? '' : ' disabled'}>${d}</button>`;
+  }
+  box.innerHTML = `<div class="dcal-head">
+      <button class="dcal-nav" data-nav="-1" title="上个月">‹</button>
+      <b>${y} 年 ${m} 月</b>
+      <button class="dcal-nav" data-nav="1" title="下个月"${calCursor >= today.slice(0, 7) ? ' disabled' : ''}>›</button>
+    </div>
+    <div class="dcal-grid">${cells}</div>
+    <div class="dcal-foot">
+      <button class="dcal-today" id="calToday">回到今日</button>
+      <span class="dcal-tip" title="东财接口只提供当日数据，历史日期靠页面当天打开过才留下归档">灰掉的日期没有留存</span>
+    </div>`;
+}
+function openCal() {
+  const box = $('#dcal');
+  if (!box) return;
+  if (!box.hidden) { box.hidden = true; return; }
+  calCursor = (state.evtDate || todayKey()).slice(0, 7);
+  box.hidden = false;
+  renderCal();
+}
+/* 切到历史日期：读本地归档渲染；读不到就明确告知（东财不提供历史接口） */
+function setEvtDate(v) {
+  const prev = state.evtDate;
+  state.evtDate = v || '';
+  if (state.evtDate) {
+    const rec = readArch(state.evtDate);
+    state.archBk = rec ? (rec.bk || []) : [];
+    state.bkMeta = { tc: rec ? (rec.tc || state.archBk.length) : 0, dt: rec ? (rec.dt || 0) : 0 };
+    state.evtFeed = rec && rec.st ? (rec.st.items || []) : [];
+    state.evtTotal = rec && rec.st ? (rec.st.total || state.evtFeed.length) : 0;
+    state.evtSeen = new Set(state.evtFeed.map(x => x.key));
+    /* 板块条目的时刻要从归档流水反推：把 stockMap 重建为「那一天」的版本，今日的实时值不能混用 */
+    state.stockMap = new Map();
+    state.evtFeed.forEach(it => {
+      const hit = state.stockMap.get(it.code);
+      if (!hit || it.tm > hit.tm) state.stockMap.set(it.code, { tm: it.tm, t: it.time.slice(0, 5), pct: it.pct });
+    });
+  } else if (prev) {
+    /* 切回今日：清空归档态，让实时数据重新灌进来 */
+    state.archBk = [];
+    state.bkRows = []; state.bkMeta = { tc: 0, dt: 0 };
+    state.evtFeed = []; state.evtTotal = 0; state.evtSeen = new Set();
+    state.evtPageSize = 400;
+    state.stockMap = new Map();
+  }
+  const box = $('#dcal'); if (box) box.hidden = true;
+  renderDateOptions();
+  applyEvtMode();
+  if (!state.evtDate) pumpEvents();   /* 切回今日：立刻补一轮实时数据 */
+  /* 大盘异动：选中的是已载入播报里最旧的一天时，它多半只是被上一页截断的前半段，自动再翻一页补齐 */
+  if (state.mktMode === 'market' && state.evtDate) {
+    const ds = pulseDays();
+    if (ds.length && state.evtDate === ds[ds.length - 1][0]
+        && state.pulsePage <= PULSE_MAXP && !state.pulseBusy) loadPulse(false);
+  }
+}
+
+/* ---------- 面板提示 ---------- */
+function hintMarket() {
+  const m = state.bkMeta, n = bkList().length;
+  if (state.evtDate) {
+    $('#evtHint').textContent = `· ${state.evtDate} 归档 · ${n} 个题材板块有异动`;
+    return;
+  }
+  const tail = m.dt ? ` · ${fmtHms(m.dt)} 更新` : '';
+  const scope = m.tc ? `（全市场 ${m.tc} 个板块，已滤掉统计型与地域型）` : '';
+  $('#evtHint').textContent = `· 今日 ${n} 个题材板块有异动${scope}${tail}`;
+}
+function hintStock() {
+  const total = state.evtTotal, got = state.evtFeed.length;
+  if (state.evtDate) {
+    $('#evtHint').textContent = `· ${state.evtDate} 归档 · 共 ${total} 条 · 本机留存 ${got} 条`;
+    return;
+  }
+  const n = new Date();
+  /* 首屏还没回来时不要显示「已载入 0 条」，读着像出错了 */
+  if (!got) {
+    $('#evtHint').textContent = total ? `· 今日 ${total} 条 · 正在载入…` : '· 正在载入今日异动…';
+    return;
+  }
+  $('#evtHint').textContent = `· 今日 ${total} 条 · 已载入 ${got} 条 · ${pad(n.getHours())}:${pad(n.getMinutes())}:${pad(n.getSeconds())} 更新`;
 }
 
 /* ---------- 行业板块 ---------- */
@@ -907,7 +2541,7 @@ function renderSectorsData(diff) {
   state.sectorRaw = diff || [];   /* 保留原始数据，供层级切换时重新映射 */
   const list = (diff || []).map(d => ({
     code: String(d.f12 || ''), name: d.f14 || d.f12,
-    price: num(d.f2), pct: num(d.f3), amt: num(d.f6),
+    price: num(d.f2), pct: num(d.f3), amt: num(d.f6), speed: num(d.f22),
     f62: num(d.f62), f66: num(d.f66), f72: num(d.f72), f78: num(d.f78), f84: num(d.f84),
     f164: num(d.f164), f174: num(d.f174),
     up: num(d.f104), down: num(d.f105),
@@ -980,7 +2614,7 @@ function updateSectorRow(row, s, visSet, maxAbs) {
   const rt = fundRate(s);
   const fv = fundOf(s);
   const fundEl = row.querySelector('.s-fund-v');
-  fundEl.innerHTML = fmtYi(fv) + (rt !== null ? `<i>${(rt * 100).toFixed(1)}%</i>` : '');
+  fundEl.innerHTML = fmtYi(fv) + (rt !== null ? ` <i>${(rt * 100).toFixed(1)}%</i>` : '');
   fundEl.className = 's-fund-v ' + cls3(fv);
   const bar = row.querySelector('.minibar i');
   const w = Math.max(1.5, Math.min(100, Math.abs(fv || 0) / (maxAbs || 1e8) * 100));
@@ -1065,7 +2699,7 @@ function renderMarketFlow(da, db) {
   if (!pts.length) return;
   const wrap = $('#marketFlow'), svg = $('#mflowSvg');
   wrap.hidden = false;
-  const W = 920, H = 200, L = 8, R = 66, T = 8, B = 8;   /* 带高加大：全宽渲染下避免超扁长条把走势拉成"长坡" */
+  const W = 920, H = 172, L = 8, R = 66, T = 8, B = 8;   /* 高度取中：全宽下既不扁成"长坡"，也不至于占掉半屏 */
   const plotW = W - L - R, plotH = H - T - B;
   const N = pts.length;
   /* Y 轴全天固定口径：数据自适应范围（开盘即大额净流入时不强压 0 锚对称，消除曲线"拉升感"），0 仅作边界锚，日内只扩不缩 */
@@ -1090,9 +2724,9 @@ function renderMarketFlow(da, db) {
     grid += `<line x1="${x}" x2="${x}" y1="${T}" y2="${(T+plotH).toFixed(1)}" stroke="rgba(0,0,0,.035)"/>`;
   });
   const mid = (lo + hi) / 2;
-  const labels = `<text x="${W-R+8}" y="${Y(hi)+4}" font-size="10.5" fill="#aeaeb2">${hi > 0 ? '+' + fmtFlowTick(hi) : '0'}</text>
+  const labels = `<text x="${W-R+8}" y="${Y(hi)+4}" font-size="10.5" fill="#8e8e93">${hi > 0 ? '+' + fmtFlowTick(hi) : '0'}</text>
                   <text x="${W-R+8}" y="${Y(mid)+4}" font-size="10.5" fill="#86868b" font-weight="600">${mid >= 0 ? '+' + fmtFlowTick(mid) : '-' + fmtFlowTick(mid)}</text>
-                  <text x="${W-R+8}" y="${Y(lo)+4}" font-size="10.5" fill="#aeaeb2">${lo < 0 ? '-' + fmtFlowTick(lo) : '0'}</text>`;
+                  <text x="${W-R+8}" y="${Y(lo)+4}" font-size="10.5" fill="#8e8e93">${lo < 0 ? '-' + fmtFlowTick(lo) : '0'}</text>`;
   const pline = pts.map((x, i) => `${X(i).toFixed(1)},${Y(x.v).toFixed(1)}`).join(' ');
   const area = `M ${X(0).toFixed(1)},${Y(0).toFixed(1)} L ${pline.split(' ').join(' L ')} L ${X(N-1).toFixed(1)},${Y(0).toFixed(1)} Z`;
   svg.innerHTML = `
@@ -1197,8 +2831,9 @@ function renderTrend(data, animate) {
 }
 function drawTrendSvg(pts, pre, animate) {
   const svg = $('#trendSvg');
-  const W = 920, H = 430, L = 8, R = 66, T = 14, B = 34;
-  const plotW = W - L - R, plotH = 280, volTop = T + plotH + 22, volH = H - volTop - B;
+  const ph = $('#trendEmpty'); if (ph) ph.hidden = true;   /* 首帧到位后撤掉占位文案 */
+  const W = 920, H = 520, L = 8, R = 66, T = 14, B = 34;
+  const plotW = W - L - R, plotH = 365, volTop = T + plotH + 22, volH = H - volTop - B;
   const N = pts.length;
   const mn = Math.min(pre ?? Infinity, ...pts.map(x => x.p));
   const mx = Math.max(pre ?? -Infinity, ...pts.map(x => x.p));
@@ -1229,14 +2864,15 @@ function drawTrendSvg(pts, pre, animate) {
     grid += `<line x1="${L}" x2="${W-R}" y1="${y}" y2="${y}" stroke="rgba(0,0,0,${v === mid && pre ? '.14' : '.05'})" ${v===mid&&pre?'stroke-dasharray="5 4"':''}/>`;
   });
   grid += `<line x1="${L}" x2="${W-R}" y1="${T+plotH}" y2="${T+plotH}" stroke="rgba(0,0,0,.08)"/>`;
-  labels += `<text x="${W-R+8}" y="${Y(yMax)+4}" font-size="11" fill="#aeaeb2">${yMax.toFixed(2)}</text>
+  labels += `<text x="${W-R+8}" y="${Y(yMax)+4}" font-size="11" fill="#8e8e93">${yMax.toFixed(2)}</text>
              <text x="${W-R+8}" y="${Y(mid)+4}" font-size="11" fill="#86868b" font-weight="600">${mid.toFixed(2)}</text>
-             <text x="${W-R+8}" y="${Y(yMin)+4}" font-size="11" fill="#aeaeb2">${yMin.toFixed(2)}</text>`;
+             <text x="${W-R+8}" y="${Y(yMin)+4}" font-size="11" fill="#8e8e93">${yMin.toFixed(2)}</text>`;
   /* 时间刻度全天固定（9:30 ~ 15:00），不随当日进度变化 */
   [[0, '9:30'], [.25, '10:30'], [.5, '11:30 | 13:00'], [.75, '14:00'], [1, '15:00']].forEach(([f, lab]) => {
     const x = L + f * plotW;
     grid += `<line x1="${x}" x2="${x}" y1="${T}" y2="${T+plotH}" stroke="rgba(0,0,0,.035)"/>`;
-    labels += `<text x="${x}" y="${H-12}" font-size="10.5" fill="#86868b" text-anchor="middle">${lab}</text>`;
+    const anchor = f === 0 ? 'start' : f === 1 ? 'end' : 'middle';   /* 首尾刻度贴边：改用 start/end，避免 9:30 被裁成 ":30" */
+    labels += `<text x="${x}" y="${H-12}" font-size="10.5" fill="#86868b" text-anchor="${anchor}">${lab}</text>`;
   });
   let bars = '';
   const bw = Math.max(1, plotW / 241 * 0.62);   /* 每分钟一格，柱宽全天固定 */
@@ -1351,9 +2987,9 @@ function renderFlow(data, animate) {
     const x = (L + f * plotW).toFixed(1);
     grid += `<line x1="${x}" x2="${x}" y1="${T}" y2="${(T+plotH).toFixed(1)}" stroke="rgba(0,0,0,.035)"/>`;
   });
-  const labels = `<text x="${W-R+8}" y="${Y(half)+4}" font-size="10.5" fill="#aeaeb2">+${fmtFlowTick(half)}</text>
+  const labels = `<text x="${W-R+8}" y="${Y(half)+4}" font-size="10.5" fill="#8e8e93">+${fmtFlowTick(half)}</text>
                   <text x="${W-R+8}" y="${Y(0)+4}" font-size="10.5" fill="#86868b" font-weight="600">0</text>
-                  <text x="${W-R+8}" y="${Y(-half)+4}" font-size="10.5" fill="#aeaeb2">-${fmtFlowTick(half)}</text>`;
+                  <text x="${W-R+8}" y="${Y(-half)+4}" font-size="10.5" fill="#8e8e93">-${fmtFlowTick(half)}</text>`;
   /* 曲线 + 面积（面积以 0 轴为基线，正流入向上凸 / 负流入向下凹） */
   const pline = pts.map((x, i) => `${X(i).toFixed(1)},${Y(x.v).toFixed(1)}`).join(' ');
   const area = `M ${X(0).toFixed(1)},${Y(0).toFixed(1)} L ${pline.split(' ').join(' L ')} L ${X(N-1).toFixed(1)},${Y(0).toFixed(1)} Z`;
@@ -1378,7 +3014,7 @@ function renderFlow(data, animate) {
 function renderFundBars(sector) {
   const box = $('#fundBars');
   if (!sector) {
-    box.innerHTML = `<div class="fund-empty">当前为大盘指数 · <b style="font-weight:650">点击左侧行业板块</b>查看主力 / 超大单 / 大单 / 中单 / 小单资金流向分解</div>`;
+    box.innerHTML = `<div class="fund-empty">当前为指数 / ETF / 个股 · <b style="font-weight:650">点击左侧行业板块</b>查看主力 / 超大单 / 大单 / 中单 / 小单资金流向分解</div>`;
     $('#fundHint').textContent = '';
     $('#leadStock').textContent = '';
     return;
@@ -1420,13 +3056,18 @@ function syncSelectedUI() {
     c.classList.toggle('selected', !!ETFS[k] && !state.selected.isSector && ETFS[k].secid === state.selected.secid));
   Object.entries(state.hmCells).forEach(([code, cell]) =>
     cell.classList.toggle('selected', state.selected.isSector && code === state.selected.code));
+  document.querySelectorAll('.ev-row').forEach(r =>
+    r.classList.toggle('selected', r.dataset.secid === state.selected.secid));
+  document.querySelectorAll('.bk-row').forEach(el =>
+    el.classList.toggle('selected', state.selected.isSector && state.selected.secid === '90.' + el.dataset.bk));
 }
 
 /* ---------- 定时器 ---------- */
 function tick() {
   if (state.interval > 0) {
-    /* loading 保险丝：一轮超 45 秒未结束（请求挂起超时叠加重度节流等异常）→ 强制复位，保证刷新循环不永久停摆 */
-    if (state.loading && Date.now() - (state.loadStamp || 0) > 45000) { state.loading = false; state.loadStamp = 0; }
+    /* loading 保险丝：一轮超 90 秒未结束（请求闸门串行排队 + 挂起超时叠加）→ 强制复位，保证刷新循环不永久停摆。
+       闸门是 1 秒一道，请求多的一轮本身就要十几秒，这里留足余量 */
+    if (state.loading && Date.now() - (state.loadStamp || 0) > 90000) { state.loading = false; state.loadStamp = 0; }
     state.countdown--;
     const ring = $('#cdRing');
     const p = Math.min(1, Math.max(0, state.countdown / state.interval));
@@ -1435,6 +3076,7 @@ function tick() {
       if (state.nextDelay > 0) { state.countdown = state.nextDelay; state.nextDelay = 0; }   /* 退避：本轮跳过不请求，等一个轻探间隔 */
       else { state.countdown = state.interval; refresh(); }
     }
+    syncCoolingUI();   /* 退避倒计时：徽章 + 异动面板提示每秒走字，避免误判「不更新」 */
   }
 }
 function setIntervalValue(v) {
@@ -1493,6 +3135,199 @@ $('#refreshBtn').addEventListener('click', () => {
 });
 /* 核心 ETF 分时：整条头部可点（包含收起/展开按钮，事件向上冒泡到头部只触发一次） */
 $('#etfHead').addEventListener('click', () => setEtfOpen(!state.etfOpen));
+/* 只拉异动相关的两路（当日板块异动表 + 个股流水），不动指数/行业/分时：
+   这样「打开弹层」不会拖一轮全页刷新，也不必等主刷新空档。看历史归档时不发请求。 */
+async function pumpEvents() {
+  if (state.evtDate) return;
+  /* 按当前视图只拉它需要的那几路；播报走自己的 3 分钟节流 */
+  if (state.mktMode === 'market') {
+    if (!state.pulse.length || Date.now() - state.pulseAt > PULSE_EVERY) loadPulse(!state.pulse.length);
+    if (!state.bkRows.length) {
+      const r = await apiBkChanges().catch(() => null);
+      settleBk(r);
+      if (state.bkRows.length) saveArch();
+    }
+    if (!state.stockMap.size) {
+      const r = await apiChanges(state.evtPageSize).catch(() => null);
+      settleChanges(r);
+      if (state.mktMode === 'market') { renderPulse(); hintPulse(); }
+    }
+    return;
+  }
+  if (state.mktMode === 'stock') {
+    const r = await apiChanges(state.evtPageSize).catch(() => null);
+    settleChanges(r);
+    if (state.bkRows.length) saveArch();
+    return;
+  }
+  const r = await apiBkChanges().catch(() => null);
+  settleBk(r);
+  if (state.evtFeed.length) saveArch();
+}
+/* 异动监控：默认收起，点指数带右端的图标弹出；展开即拉一轮（收起时完全不请求异动数据） */
+function setEvtOpen(open) {
+  if (state.evtOpen === open) return;
+  state.evtOpen = open;
+  const pop = $('#evtPop'), btn = $('#evtTrigger');
+  pop.hidden = !open;
+  btn.classList.toggle('is-open', open);
+  btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+  document.body.style.overflow = open ? 'hidden' : '';   /* 弹层打开时锁背景滚动 */
+  if (open) {
+    renderDateOptions();     /* 日期下拉：今日 + 本机留存过的历史交易日 */
+    applyEvtMode();          /* 按当前视图重绘筛选器与列表（用已有数据先占位，不空白） */
+    pop.querySelector('.evt-pop-card').focus({ preventScroll: true });   /* 焦点移进弹层：Esc 关闭才有着落 */
+    pumpEvents();            /* 展开即拉一轮异动数据 */
+  }
+}
+$('#evtTrigger').addEventListener('click', () => setEvtOpen(!state.evtOpen));
+$('#evtClose').addEventListener('click', () => setEvtOpen(false));
+$('#evtPop').addEventListener('click', e => { if (e.target.dataset.close) setEvtOpen(false); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && state.evtOpen) setEvtOpen(false); });
+/* 异动监控：大盘 / 个股 / 板块 三视图切换（切换时换筛选器、图例与列表，各视图数据各自缓存） */
+function applyEvtMode() {
+  const m = state.mktMode;
+  $('#mktSeg').hidden  = m !== 'sector';
+  $('#evtSeg').hidden  = m !== 'stock';
+  $('#evtScope').hidden = m !== 'market';
+  if (m !== 'stock') $('#evtMood').hidden = true;
+  const list = $('#evtList');
+  list.classList.toggle('market', m !== 'stock');
+  list.classList.toggle('pulse',  m === 'market');
+  list.classList.toggle('stock',  m === 'stock');
+  $('#evtLegendL').textContent = m === 'market'
+    ? '东财「盘口异动 · 大盘异动」口径：上证指数分时图上标注板块异动时刻；「异动详情」= 板块异动条目（涨跌家数 / 主力净流入 / 领涨股）+ 盘面播报，按时刻倒序合并；板块时刻取该板块最活跃个股的最近一次异动'
+    : m === 'sector'
+      ? (state.evtDate
+          ? '本地留存的历史快照：当日板块异动累计（东财接口只提供当日，历史日期靠页面当天打开过才留下）'
+          : '东财「当日异动板块监控」口径：一天累计，不是此刻的快照。异动次数越多说明该板块越活跃')
+      : (state.evtDate
+          ? '本地留存的历史快照：当日盘口异动流水（22 类，时间倒序）'
+          : '东财盘口异动口径（22 类，时间倒序）：先载入最新 400 条，可继续「加载更多」翻到开盘');
+  $('#evtLegendR').textContent = m === 'market'
+    ? '点图表标注 / 板块卡 / 卡内个股看对应分时 · 播报「查看更多」跳东财原文'
+    : m === 'sector'
+      ? '已剔除融资融券 / 股通 / 重仓等统计型伪板块 · 点行看板块分时'
+      : '点任意一条查看该股分时';
+  if (m === 'market') {
+    hintPulse();
+    renderPulse();
+    if (!state.pulse.length && !state.pulseBusy) loadPulse(true);
+    ensureMktTrend();   /* 图区分时：独立兜底拉取（之后由主刷新每 2 轮带一次） */
+    /* 板块异动条目要这份当日板块表，没有就补一次（成功后会自己重绘时间线） */
+    if (!state.evtDate && !state.bkRows.length && !state.bkBusy) {
+      state.bkBusy = true;
+      apiBkChanges()
+        .then(r => { state.bkBusy = false; settleBk(r); saveArch(); })
+        .catch(() => { state.bkBusy = false; renderPulse(); });
+    }
+  } else if (m === 'sector') { hintMarket(); renderBkTable(); }
+  else { hintStock(); renderChanges(null); }
+  renderDateOptions();
+}
+$('#evtMode').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  if (b.dataset.m === state.mktMode) return;
+  $('#evtMode').querySelectorAll('button').forEach(x => x.classList.remove('active'));
+  b.classList.add('active');
+  state.mktMode = b.dataset.m;
+  /* 换视图时把上一视图的「历史日期」清掉：三个视图的口径不同，混着看容易误读 */
+  if (state.evtDate) {
+    state.evtDate = '';
+    state.archBk = [];
+    state.bkRows = []; state.bkMeta = { tc: 0, dt: 0 };
+    state.evtFeed = []; state.evtTotal = 0; state.evtSeen = new Set();
+  }
+  renderDateOptions();
+  applyEvtMode();
+  /* 切到还没数据的视图时补一轮（大盘异动由 applyEvtMode 内部自己触发） */
+  if (state.mktMode === 'stock' && !state.evtFeed.length) pumpEvents();
+  if (state.mktMode === 'sector' && !state.bkRows.length) pumpEvents();
+  if (state.mktMode === 'market' && !state.bkRows.length) pumpEvents();
+});
+/* 大盘异动：按 异动次数 / 涨跌幅 / 主力净流入 排序（表格内重排，不重新请求） */
+$('#mktSeg').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  $('#mktSeg').querySelectorAll('button').forEach(x => x.classList.remove('active'));
+  b.classList.add('active');
+  state.bkSort = b.dataset.s || 'cnt';
+  renderBkTable();
+});
+/* 日期切换：今日实时 / 本机留存的历史交易日 */
+$('#evtDate').addEventListener('click', e => { e.stopPropagation(); openCal(); });
+$('#dcal').addEventListener('click', e => {
+  e.stopPropagation();
+  const nav = e.target.closest('[data-nav]');
+  if (nav) {
+    const [y, m] = calCursor.split('-').map(Number);
+    const t = new Date(y, m - 1 + Number(nav.dataset.nav), 1);
+    calCursor = `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, '0')}`;
+    renderCal();
+    return;
+  }
+  if (e.target.closest('#calToday')) { setEvtDate(''); return; }
+  const b = e.target.closest('button[data-d]');
+  if (b && !b.disabled) setEvtDate(b.dataset.d);
+});
+document.addEventListener('click', e => {
+  const box = $('#dcal');
+  if (box && !box.hidden && !e.target.closest('.evt-datesel')) box.hidden = true;
+});
+/* 盘口异动：筛选 + 点选个股看分时（行由 innerHTML 重建，故用事件委托） */
+$('#evtSeg').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  $('#evtSeg').querySelectorAll('button').forEach(x => x.classList.remove('active'));
+  b.classList.add('active');
+  state.evtFilter = b.dataset.f;
+  renderChanges(null);
+});
+/* 主图不在视野内时才滚过去：面板通常比视口高，用 bottom 判据会无谓跳动，
+   改用「主图顶边已经落到视口下沿附近」，点了确实看不到才滚 */
+function revealChart() {
+  const el = document.querySelector('.chart-panel');
+  if (!el) return;
+  const r = el.getBoundingClientRect();
+  if (r.top < 0 || r.top > window.innerHeight - 120) el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+}
+/* 从弹层里点选标的后收起弹层，并把主图区滚进视野（否则用户看不到刚点的分时） */
+function evtPick(t) {
+  selectTarget(t);
+  setEvtOpen(false);
+  revealChart();
+}
+$('#evtList').addEventListener('click', e => {
+  if (e.target.closest('#plMore')) {   /* 大盘异动：往前翻一页播报（每页约覆盖一个交易日） */
+    const btn = e.target.closest('#plMore');
+    btn.disabled = true; btn.textContent = '载入中…';
+    loadPulse(false);
+    return;
+  }
+  if (e.target.closest('#evtMore')) {   /* 加载更早的个股流水：条数递增后重拉（接口按时间倒序，无需翻页游标） */
+    state.evtPageSize = Math.min(4000, state.evtPageSize + 400);
+    const btn = e.target.closest('#evtMore');
+    btn.disabled = true; btn.textContent = '加载中…';
+    pumpEvents();
+    return;
+  }
+  const st = e.target.closest('.mbk-stock');
+  if (st && st.dataset.secid) {   /* 大盘异动 · 明细卡里的领涨股：点个股看个股分时 */
+    evtPick({ secid: st.dataset.secid, name: st.dataset.name, isSector: false, code: st.dataset.code });
+    return;
+  }
+  const card = e.target.closest('.mbk-card, .mkt-chip, .mc-tag');
+  if (card && card.dataset.bk) {   /* 大盘异动：点图表标注 / 板块卡 / 活跃词条 → 该板块分时 */
+    evtPick({ secid: '90.' + card.dataset.bk, name: card.dataset.name, isSector: true, code: card.dataset.bk });
+    return;
+  }
+  const bk = e.target.closest('.bk-row');
+  if (bk) {   /* 大盘异动：点行 → 该板块分时 + 资金流 */
+    evtPick({ secid: '90.' + bk.dataset.bk, name: bk.dataset.name, isSector: true, code: bk.dataset.bk });
+    return;
+  }
+  const row = e.target.closest('.ev-row'); if (!row) return;
+  evtPick({ secid: row.dataset.secid, name: row.dataset.name, isSector: false, code: row.dataset.code });
+  syncSelectedUI();
+});
 
 /* ---------- 启动 ---------- */
 renderFundBars(null);

@@ -1,0 +1,1724 @@
+{
+  "meta": {
+    "report_id": "FL-20261102-001",
+    "schema_version": "1.1",
+    "market": "A股",
+    "generated_at": "2026-11-02T08:23:12+08:00",
+    "data_cutoff": "2026-10-30",
+    "analyst": "WorkBuddy 多资产研究代理（AI）",
+    "confidence": 0.72,
+    "overall_position": "中性偏低——权益仓位 30%-40%，以高股息防御为底仓，不追高、不接刀",
+    "cycle_stage": "滞胀",
+    "previous_version": "1.0",
+    "revision_note": "v1.1 为可审计性修订：拆分估值分位/性价比、补评分权重与变换、补排序区间与入榜频率、补缺失值插补披露、数据源可靠性改枚举、修正减仓触发距离。结论方向未变。",
+    "confidence_detail": {
+      "rule": "overall = 1 - Σ(缺失项权重)；impact=mid 记 0.07，impact=low 记 0.035",
+      "missing_weight_sum": 0.28,
+      "by_layer": {
+        "data_overview": {
+          "value": 0.875,
+          "basis": "fields_received / fields_expected"
+        },
+        "macro": {
+          "value": 0.93,
+          "basis": "扣除出口同比缺失(0.07)"
+        },
+        "market": {
+          "value": 0.86,
+          "basis": "扣除两融/基差/隐波缺失(0.07+0.035+0.035)"
+        },
+        "industry": {
+          "value": 1.0,
+          "basis": "无关键字段缺失；排序不确定性另由 top3_freq 表达"
+        },
+        "company": {
+          "value": 0.93,
+          "basis": "扣除个股3年PE分位缺失(0.07)"
+        }
+      },
+      "note": "industry 层置信度=1 仅表示「字段齐全」，不代表排序稳定；稳定性见 industry.score_table[*].top3_freq。"
+    }
+  },
+  "data_overview": {
+    "collected_at": "2026-11-02T08:10:00+08:00",
+    "trade_date": "2026-10-30",
+    "sources": [
+      {
+        "name": "国家统计局",
+        "tier": "L1",
+        "type": "宏观",
+        "fields": [
+          "制造业PMI及分项",
+          "CPI",
+          "PPI",
+          "工业企业利润",
+          "产成品库存"
+        ],
+        "status": "正常",
+        "as_of": "2026-10-31",
+        "note": "",
+        "confidence_basis": "official_primary",
+        "reliability_note": "原 v1.0 的 reliability 百分比无推导口径，v1.1 已移除"
+      },
+      {
+        "name": "中国人民银行",
+        "tier": "L1",
+        "type": "宏观",
+        "fields": [
+          "社融存量同比",
+          "M1/M2同比",
+          "DR007",
+          "LPR",
+          "MLF操作"
+        ],
+        "status": "正常",
+        "as_of": "2026-10-14",
+        "note": "社融与货币供应为 2026-09 数据，10 月数据未发布",
+        "confidence_basis": "official_primary",
+        "reliability_note": "原 v1.0 的 reliability 百分比无推导口径，v1.1 已移除"
+      },
+      {
+        "name": "中债估值中心",
+        "tier": "L1",
+        "type": "利率",
+        "fields": [
+          "国债收益率曲线"
+        ],
+        "status": "正常",
+        "as_of": "2026-10-30",
+        "note": "",
+        "confidence_basis": "official_primary",
+        "reliability_note": "原 v1.0 的 reliability 百分比无推导口径，v1.1 已移除"
+      },
+      {
+        "name": "海关总署",
+        "tier": "L1",
+        "type": "宏观",
+        "fields": [
+          "进出口累计值/贸易顺差"
+        ],
+        "status": "部分",
+        "as_of": "2026-10-07",
+        "note": "仅取到累计顺差，出口同比未披露，已登记 missing",
+        "confidence_basis": "official_partial",
+        "reliability_note": "原 v1.0 的 reliability 百分比无推导口径，v1.1 已移除"
+      },
+      {
+        "name": "腾讯自选股行情接口",
+        "tier": "L2",
+        "type": "行情",
+        "fields": [
+          "指数收盘/成交额",
+          "涨跌家数",
+          "涨跌停",
+          "新高新低",
+          "指数PE分位",
+          "个股估值"
+        ],
+        "status": "正常",
+        "as_of": "2026-10-30",
+        "note": "批量接口取数，未触发限流",
+        "confidence_basis": "exchange_feed",
+        "reliability_note": "原 v1.0 的 reliability 百分比无推导口径，v1.1 已移除"
+      },
+      {
+        "name": "申万/聚源行业接口",
+        "tier": "L2",
+        "type": "行业",
+        "fields": [
+          "申万一级涨跌幅",
+          "行业成交额",
+          "行业PE分位",
+          "行业TTM财务"
+        ],
+        "status": "正常",
+        "as_of": "2026-10-30",
+        "note": "行业成交额为聚源二级口径，用于集中度近似",
+        "confidence_basis": "index_provider",
+        "reliability_note": "原 v1.0 的 reliability 百分比无推导口径，v1.1 已移除"
+      },
+      {
+        "name": "公司定期报告（上交所/深交所）",
+        "tier": "L1",
+        "type": "财报",
+        "fields": [
+          "2026三季报营收/归母净利",
+          "ROE",
+          "经营现金流"
+        ],
+        "status": "正常",
+        "as_of": "2026-09-30",
+        "note": "",
+        "confidence_basis": "official_primary",
+        "reliability_note": "原 v1.0 的 reliability 百分比无推导口径，v1.1 已移除"
+      },
+      {
+        "name": "券商一致预期（聚合）",
+        "tier": "L3",
+        "type": "预期",
+        "fields": [
+          "2026-2028E 营收/净利/EPS"
+        ],
+        "status": "部分",
+        "as_of": "2026-10-30",
+        "note": "非一手来源，需核实原文；机构覆盖数未返回",
+        "confidence_basis": "consensus_aggregate",
+        "reliability_note": "原 v1.0 的 reliability 百分比无推导口径，v1.1 已移除"
+      },
+      {
+        "name": "美国财政部/ICE",
+        "tier": "L2",
+        "type": "海外",
+        "fields": [
+          "美债10Y收益率",
+          "美元指数"
+        ],
+        "status": "正常",
+        "as_of": "2026-10-30",
+        "note": "",
+        "confidence_basis": "official_primary",
+        "reliability_note": "原 v1.0 的 reliability 百分比无推导口径，v1.1 已移除"
+      }
+    ],
+    "completeness": {
+      "fields_expected": 40,
+      "fields_received": 35,
+      "ratio": 0.875,
+      "missing": [
+        {
+          "field": "出口同比",
+          "reason": "海关接口仅返回累计顺差与储备，未披露当月/累计出口同比",
+          "impact": "中",
+          "proxy": "出口交货值分行业累计同比（未汇总）",
+          "imputed": true,
+          "method": "neutral_zero_contribution",
+          "effective_weight": 0.1,
+          "score_if_excluded": 33.3
+        },
+        {
+          "field": "两融余额/融资买入占比",
+          "reason": "市场两融汇总接口当日返回空，个股两融仅 T-1 单只",
+          "impact": "中",
+          "proxy": "成交额与换手率分位",
+          "imputed": true,
+          "method": "component_dropped",
+          "effective_weight": 0.0,
+          "score_if_excluded": null
+        },
+        {
+          "field": "股指期货基差",
+          "reason": "数据源未覆盖境内股指期货基差",
+          "impact": "低",
+          "proxy": "20日动量分位与指数位置",
+          "imputed": true,
+          "method": "component_dropped",
+          "effective_weight": 0.0,
+          "score_if_excluded": null
+        },
+        {
+          "field": "期权隐含波动率",
+          "reason": "数据源未覆盖 50ETF/300ETF 期权隐波",
+          "impact": "低",
+          "proxy": "无（权重归一化剔除）",
+          "imputed": true,
+          "method": "component_dropped",
+          "effective_weight": 0.0,
+          "score_if_excluded": null
+        },
+        {
+          "field": "个股3年PE分位",
+          "reason": "仅有不复权价缺失、复权价会系统性压低历史PE，测算偏差大，故不采用",
+          "impact": "中",
+          "proxy": "行业PE十年分位 + 个股PB",
+          "imputed": false,
+          "method": "not_used",
+          "effective_weight": 0.0,
+          "score_if_excluded": null
+        }
+      ],
+      "checks": [
+        {
+          "name": "时点一致性",
+          "result": "通过",
+          "note": "行情统一 2026-10-30 收盘；宏观按各自发布日；财报报告期 2026-09-30",
+          "result_code": "pass"
+        },
+        {
+          "name": "口径一致性",
+          "result": "通过",
+          "note": "PE 统一 TTM；同比按自然年；行业为申万一级；指数估值取中证全指",
+          "result_code": "pass"
+        },
+        {
+          "name": "跨源抽检",
+          "result": "通过",
+          "note": "上证收盘 3599.02、成交额 7642 亿在两套接口一致（差异 <0.01%）；沪+深成交额合计 16744.7 亿与市场总览一致",
+          "result_code": "pass"
+        },
+        {
+          "name": "极值检验",
+          "result": "警示",
+          "note": "钢铁 PE 387x（98%分位）、商贸零售 PE -96x、农林牧渔 PE -54x 属盈利异常，行业估值改用 PB 分位并标注",
+          "result_code": "warn"
+        }
+      ],
+      "quality_gate": {
+        "threshold": 0.9,
+        "ratio": 0.875,
+        "status": "failed",
+        "consequence": "触发置信度自动下调至 0.72，并在市场层与总结论中披露影响"
+      }
+    }
+  },
+  "macro": {
+    "position": {
+      "level": "中性偏低",
+      "score": 35,
+      "range": "30%-45%",
+      "rationale": "PMI 连续 3 月低于 50、社融同比连降至 7.1%，信用脉冲下行；仅利率下行与上游盈利支撑，故给中性偏低而非防守。",
+      "score_if_excluded": 33.3
+    },
+    "duration": {
+      "stance": "拉长久期",
+      "score": 72,
+      "rationale": "10Y 国债 1.65% 较年初 1.83% 下行 18bp，DR007 1.38%、货币政策偏宽，名义增长下行支撑久期；但绝对利率低位，久期杠杆需克制。"
+    },
+    "cycle": {
+      "stage": "滞胀",
+      "evidence": [
+        "社融存量同比由年初 8.2% 降至 9 月 7.1%，信用脉冲持续下行",
+        "制造业 PMI 连续 3 个月低于 50（8 月 49.8→9 月 49.5→10 月 49.3），新订单 49.4",
+        "PPI 同比 +5.0%、CPI +0.9%，剪刀差 -4.1pct，涨价集中在上游",
+        "工业企业利润累计 +15.5%，但地产投资 -27.2%、社零 +1.1%，增长与盈利背离"
+      ],
+      "confidence": 0.55
+    },
+    "judgments": [
+      {
+        "name": "制造业 PMI",
+        "value": "49.3",
+        "reference": "50 荣枯线",
+        "trend": "下行",
+        "signal": "negative",
+        "weight": 0.15,
+        "source": "国家统计局 2026-10-31",
+        "as_of": "2026-10-31",
+        "imputed": false,
+        "effective_weight": 0.15
+      },
+      {
+        "name": "社融存量同比",
+        "value": "7.1%",
+        "reference": "年初 8.2%",
+        "trend": "下行",
+        "signal": "negative",
+        "weight": 0.15,
+        "source": "中国人民银行 2026-10-14",
+        "as_of": "2026-09-30",
+        "imputed": false,
+        "effective_weight": 0.15
+      },
+      {
+        "name": "M1-M2 剪刀差",
+        "value": "-4.0pct（M1 3.2%/M2 7.2%）",
+        "reference": "0",
+        "trend": "走平",
+        "signal": "negative",
+        "weight": 0.1,
+        "source": "中国人民银行 2026-10-14",
+        "as_of": "2026-09-30",
+        "imputed": false,
+        "effective_weight": 0.1
+      },
+      {
+        "name": "货币政策取向",
+        "value": "中性偏宽（DR007 1.38%，5Y LPR 3.5%）",
+        "reference": "中性",
+        "trend": "走平",
+        "signal": "positive",
+        "weight": 0.1,
+        "source": "中国人民银行/全国银行间同业拆借中心 2026-10-31",
+        "as_of": "2026-10-31",
+        "imputed": false,
+        "effective_weight": 0.1
+      },
+      {
+        "name": "10Y 国债收益率",
+        "value": "1.65%",
+        "reference": "年初 1.83%",
+        "trend": "下行",
+        "signal": "positive",
+        "weight": 0.1,
+        "source": "中债估值中心 2026-10-30",
+        "as_of": "2026-10-30",
+        "imputed": false,
+        "effective_weight": 0.1
+      },
+      {
+        "name": "CPI / PPI",
+        "value": "0.9% / +5.0%",
+        "reference": "3% / 0",
+        "trend": "上行",
+        "signal": "neutral",
+        "weight": 0.1,
+        "source": "国家统计局 2026-10-14",
+        "as_of": "2026-09-30",
+        "imputed": false,
+        "effective_weight": 0.1
+      },
+      {
+        "name": "出口同比",
+        "value": null,
+        "reference": "—",
+        "trend": "走平",
+        "signal": "neutral",
+        "weight": 0.1,
+        "source": "海关总署 2026-10-07（仅累计顺差，同比缺失）",
+        "as_of": "2026-09-30",
+        "imputed": true,
+        "effective_weight": 0.0
+      },
+      {
+        "name": "库存周期位置",
+        "value": "主动去库（产成品库存 47.5、新订单 49.4）",
+        "reference": "—",
+        "trend": "下行",
+        "signal": "negative",
+        "weight": 0.1,
+        "source": "国家统计局 2026-10-31",
+        "as_of": "2026-10-31",
+        "imputed": false,
+        "effective_weight": 0.1
+      },
+      {
+        "name": "美元指数 / 美债10Y",
+        "value": "101.96 / 4.94%",
+        "reference": "100 / 4.0%",
+        "trend": "走平",
+        "signal": "neutral",
+        "weight": 0.1,
+        "source": "ICE/美国财政部 2026-10-30",
+        "as_of": "2026-10-30",
+        "imputed": false,
+        "effective_weight": 0.1
+      }
+    ],
+    "liquidity": {
+      "dr007": "1.38%",
+      "m1_m2_gap": "-4.0pct",
+      "social_financing_yoy": "7.1%",
+      "policy_stance": "宽松"
+    },
+    "narrative": "结论：滞胀，权益中性偏低（30%-45%）。论据：PMI 连续 3 月低于 50 且逐月走低、社融同比由 8.2% 降至 7.1%，信用脉冲下行；PPI +5.0% 而 CPI 仅 +0.9%，涨价集中在上游，工业企业利润 +15.5% 与地产投资 -27.2% 背离。10Y 国债 1.65%、DR007 1.38%，货币偏宽托估值但不改盈利分化。出口同比缺失，外需判断置信度下调。",
+    "risks": [
+      "油价回落至 65 美元/桶以下 → PPI 与上游利润同步回落，滞胀转向衰退",
+      "地产投资（-27.2%）继续深跌 → 信用收缩加剧，社融同比跌破 7%",
+      "美债 10Y 重新站上 5.2% → 人民币与外资承压，压制估值修复"
+    ],
+    "scoring": {
+      "formula": "score = 50 + 50 * Σ(signal_i * weight_i),  signal ∈ {+1, 0, -1}",
+      "weights_sum": 1.0,
+      "weighted_signal": -0.3,
+      "recomputable": true,
+      "imputation_note": "出口同比缺失，按 signal=neutral(0) 插补，权重 0.10 保留；若剔除并重归一化，加权信号 -0.333，得分 33.3",
+      "granularity_note": "判据二值化为 +1/0/-1，忽略幅度；PMI 49.3 与社融 7.1% 同权，因此本分数只宜作档位判别，不宜作精细比较"
+    }
+  },
+  "market": {
+    "sentiment": {
+      "coefficient": 38,
+      "label": "偏冷",
+      "components": [
+        {
+          "name": "成交量20日分位",
+          "value": 56.9,
+          "weight": 0.2308,
+          "as_of": "2026-10-30",
+          "unit": "percentile_0_100",
+          "note": "值为历史分位，非原始比率；原始比率见 market.breadth"
+        },
+        {
+          "name": "换手率分位",
+          "value": 49.3,
+          "weight": 0.2308,
+          "as_of": "2026-10-30",
+          "unit": "percentile_0_100",
+          "note": "值为历史分位，非原始比率；原始比率见 market.breadth"
+        },
+        {
+          "name": "涨跌家数比分位",
+          "value": 16.0,
+          "weight": 0.2308,
+          "as_of": "2026-10-30",
+          "unit": "percentile_0_100",
+          "note": "值为历史分位，非原始比率；原始比率见 market.breadth"
+        },
+        {
+          "name": "涨停/跌停比分位",
+          "value": 55.0,
+          "weight": 0.1538,
+          "as_of": "2026-10-30",
+          "unit": "percentile_0_100",
+          "note": "值为历史分位，非原始比率；原始比率见 market.breadth"
+        },
+        {
+          "name": "新高/新低比分位",
+          "value": 5.8,
+          "weight": 0.1538,
+          "as_of": "2026-10-30",
+          "unit": "percentile_0_100",
+          "note": "值为历史分位，非原始比率；原始比率见 market.breadth"
+        }
+      ],
+      "recomputable": true,
+      "components_weight_sum": 1.0
+    },
+    "temperature": {
+      "value": 35,
+      "zone": "偏冷",
+      "history_percentile": 29,
+      "history_percentile_label": "温度自身近三年分位",
+      "components": [
+        {
+          "name": "情绪系数",
+          "value": 38,
+          "weight": 0.6,
+          "available": true
+        },
+        {
+          "name": "全A估值分位",
+          "value": null,
+          "weight": 0.2,
+          "available": false
+        },
+        {
+          "name": "指数动量分位",
+          "value": 0.8,
+          "weight": 0.2,
+          "available": true
+        }
+      ],
+      "recomputable": false,
+      "note": "估值分位未采集，温度 35 无法在文件内复算；已知两项贡献 0.6×38 + 0.2×0.8 = 22.96，其余来自缺失项。下一版须补全 A 股指数 PE 十年序列。"
+    },
+    "regime": "普遍转弱",
+    "breadth": {
+      "up_down_ratio": 0.19,
+      "new_high_20d": 195,
+      "new_low_20d": 3163,
+      "industries_up_pct": 12.9
+    },
+    "style": {
+      "size": "大盘占优",
+      "growth_value": "价值占优",
+      "rotation": "风险偏好收缩，资金从高估值成长撤向高股息价值；上证50 20 日仅 -3.5%，中证1000 -18.6%，大盘价值占优已持续 4 周，红利端拥挤度同步上升。",
+      "evidence": "上证50 20日 -3.54% vs 中证1000 -18.61%；全指价值 20日 +2.82% vs 沪深300 -10.22%；全指成长 10日 -6.35% vs 全指价值 +0.93%"
+    },
+    "herding": {
+      "index": 63,
+      "label": "偏高",
+      "top_sectors_concentration": "22.8%",
+      "interpretation": "龙头/中位股 20 日涨幅差 15.1pct，资金向少数高股息权重集中；半导体+通信设备+元件成交占全市场 22.8%，已从 AI 链高位回落，但防御端抱团正在形成。",
+      "concentration_scope": "半导体 + 通信设备 + 元件",
+      "concentration_label": "成长链成交占比",
+      "defensive_concentration": null,
+      "recomputable": false,
+      "drivers": [
+        "龙头/中位股 20 日涨幅差 15.1pct",
+        "成长链成交占比 22.8%"
+      ],
+      "note": "22.8% 度量的是正在退潮的成长抱团，不等于防御端拥挤；指数 63 为人工合成，未落库成分，不可复算。"
+    },
+    "position_advice": {
+      "action": "维持",
+      "target_range": "30%-40%",
+      "trigger_up": "上证收复 20 日线 3736 且行业上涨占比 >50%、成交额回升至 1.8 万亿以上 → 上移至 40%-45%",
+      "trigger_down": "上证跌破 3520（距现价 -2.19%，低于 52 周盘中低点 3574.27）且 3 日未收复 → 降至 25%-30%",
+      "reconcile": "P1 中性偏低 30%-45% 与 P2 偏冷、普遍转弱方向一致，取区间下沿 30%-40%。温度 35 未进入冰冷区（<20）、跌停仅 11 只，未到逆向加仓条件，故不提前加仓；抱团度 63 偏高，防御端同样不追高。",
+      "previous_trigger_down": "上证跌破 3574（距现价 -0.69%）且 3 日未收复 → 降至 25%-30%",
+      "reentry_rule": "减仓触发后，若上证重新站上 20 日线且连续 3 日行业上涨占比 >45%、成交额回升至 1.6 万亿以上，则分两批恢复至 30%-35%",
+      "trigger_geometry": {
+        "spot": 3599.02,
+        "ma20": 3735.8,
+        "low_52w": 3574.27,
+        "up_distance_pct": 3.8,
+        "down_distance_pct": -2.19,
+        "asymmetry_ratio": 1.74,
+        "note": "v1.0 减仓线距现价仅 -0.69%，而当日振幅 -1.44%，动作却为「维持」；v1.1 将减仓线移至 52 周低点下方，使加减仓距离量级相当"
+      }
+    },
+    "narrative": "结论：情绪 38、温度 35 偏冷，行情性质为普遍转弱。论据：82.5% 个股下跌、20 日新低 3163 只、行业上涨占比仅 12.9%；上证 20 日动量处近三年 0.8% 分位。但跌停仅 11 只、成交额为 20 日均值 1.06 倍，属有序降仓而非流动性危机。两融与期指基差缺失，情绪系数按 5 项归一（权重 0.2308/0.1538），置信度下调。"
+  },
+  "industry": {
+    "score_table": [
+      {
+        "industry": "石油石化",
+        "prosperity": 72,
+        "policy": 55,
+        "crowding": 68,
+        "momentum": 90,
+        "composite": 68,
+        "trend": "上行",
+        "position_stage": "主升演绎",
+        "pe_percentile": 19.5,
+        "valuation_score": 80.5,
+        "anti_crowding": 32,
+        "composite_interval": [
+          64.0,
+          71.7
+        ],
+        "top3_freq": 0.98,
+        "first_place_freq": 0.744,
+        "rank_confidence": "high",
+        "rank": 1
+      },
+      {
+        "industry": "银行",
+        "prosperity": 58,
+        "policy": 60,
+        "crowding": 72,
+        "momentum": 100,
+        "composite": 66,
+        "trend": "上行",
+        "position_stage": "主升演绎",
+        "pe_percentile": 13.8,
+        "valuation_score": 86.2,
+        "anti_crowding": 28,
+        "composite_interval": [
+          61.4,
+          69.6
+        ],
+        "top3_freq": 0.835,
+        "first_place_freq": 0.169,
+        "rank_confidence": "mid",
+        "rank": 2
+      },
+      {
+        "industry": "交通运输",
+        "prosperity": 60,
+        "policy": 50,
+        "crowding": 45,
+        "momentum": 79,
+        "composite": 64,
+        "trend": "上行",
+        "position_stage": "启动确认",
+        "pe_percentile": 24.2,
+        "valuation_score": 75.8,
+        "anti_crowding": 55,
+        "composite_interval": [
+          60.4,
+          67.1
+        ],
+        "top3_freq": 0.565,
+        "first_place_freq": 0.044,
+        "rank_confidence": "low",
+        "rank": 3
+      },
+      {
+        "industry": "有色金属",
+        "prosperity": 72,
+        "policy": 55,
+        "crowding": 45,
+        "momentum": 31,
+        "composite": 63,
+        "trend": "走平",
+        "position_stage": "退潮修复",
+        "pe_percentile": 18.0,
+        "valuation_score": 82.0,
+        "anti_crowding": 55,
+        "composite_interval": [
+          59.1,
+          66.3
+        ],
+        "top3_freq": 0.378,
+        "first_place_freq": 0.035,
+        "rank_confidence": "low",
+        "rank": 4
+      },
+      {
+        "industry": "煤炭",
+        "prosperity": 62,
+        "policy": 45,
+        "crowding": 58,
+        "momentum": 83,
+        "composite": 62,
+        "trend": "走平",
+        "position_stage": "主升演绎",
+        "pe_percentile": 25.9,
+        "valuation_score": 74.1,
+        "anti_crowding": 42,
+        "composite_interval": [
+          58.4,
+          65.6
+        ],
+        "top3_freq": 0.201,
+        "first_place_freq": 0.006,
+        "rank_confidence": "low",
+        "rank": 5
+      },
+      {
+        "industry": "食品饮料",
+        "prosperity": 35,
+        "policy": 40,
+        "crowding": 65,
+        "momentum": 100,
+        "composite": 52,
+        "trend": "走平",
+        "position_stage": "退潮修复",
+        "pe_percentile": 34.7,
+        "valuation_score": 65.3,
+        "anti_crowding": 35,
+        "composite_interval": [
+          47.2,
+          55.2
+        ],
+        "top3_freq": 0.0,
+        "first_place_freq": 0.0,
+        "rank_confidence": "low",
+        "rank": 15
+      },
+      {
+        "industry": "医药生物",
+        "prosperity": 58,
+        "policy": 65,
+        "crowding": 42,
+        "momentum": 62,
+        "composite": 56,
+        "trend": "走平",
+        "position_stage": "低位预热",
+        "pe_percentile": 60.1,
+        "valuation_score": 39.9,
+        "anti_crowding": 58,
+        "composite_interval": [
+          52.7,
+          59.2
+        ],
+        "top3_freq": 0.0,
+        "first_place_freq": 0.0,
+        "rank_confidence": "low",
+        "rank": 12
+      },
+      {
+        "industry": "非银金融",
+        "prosperity": 42,
+        "policy": 55,
+        "crowding": 45,
+        "momentum": 62,
+        "composite": 58,
+        "trend": "走平",
+        "position_stage": "低位预热",
+        "pe_percentile": 13.8,
+        "valuation_score": 86.2,
+        "anti_crowding": 55,
+        "composite_interval": [
+          54.1,
+          61.3
+        ],
+        "top3_freq": 0.004,
+        "first_place_freq": 0.0,
+        "rank_confidence": "low",
+        "rank": 7
+      },
+      {
+        "industry": "公用事业",
+        "prosperity": 28,
+        "policy": 70,
+        "crowding": 40,
+        "momentum": 75,
+        "composite": 54,
+        "trend": "下行",
+        "position_stage": "退潮修复",
+        "pe_percentile": 33.9,
+        "valuation_score": 66.1,
+        "anti_crowding": 60,
+        "composite_interval": [
+          49.9,
+          57.5
+        ],
+        "top3_freq": 0.0,
+        "first_place_freq": 0.0,
+        "rank_confidence": "low",
+        "rank": 14
+      },
+      {
+        "industry": "家用电器",
+        "prosperity": 40,
+        "policy": 50,
+        "crowding": 45,
+        "momentum": 77,
+        "composite": 57,
+        "trend": "走平",
+        "position_stage": "启动确认",
+        "pe_percentile": 22.9,
+        "valuation_score": 77.1,
+        "anti_crowding": 55,
+        "composite_interval": [
+          53.0,
+          60.3
+        ],
+        "top3_freq": 0.001,
+        "first_place_freq": 0.0,
+        "rank_confidence": "low",
+        "rank": 8
+      },
+      {
+        "industry": "电力设备",
+        "prosperity": 68,
+        "policy": 70,
+        "crowding": 40,
+        "momentum": 30,
+        "composite": 57,
+        "trend": "下行",
+        "position_stage": "退潮修复",
+        "pe_percentile": 55.9,
+        "valuation_score": 44.1,
+        "anti_crowding": 60,
+        "composite_interval": [
+          53.1,
+          60.1
+        ],
+        "top3_freq": 0.003,
+        "first_place_freq": 0.001,
+        "rank_confidence": "low",
+        "rank": 9
+      },
+      {
+        "industry": "基础化工",
+        "prosperity": 68,
+        "policy": 45,
+        "crowding": 40,
+        "momentum": 37,
+        "composite": 57,
+        "trend": "走平",
+        "position_stage": "退潮修复",
+        "pe_percentile": 39.3,
+        "valuation_score": 60.7,
+        "anti_crowding": 60,
+        "composite_interval": [
+          53.9,
+          60.6
+        ],
+        "top3_freq": 0.001,
+        "first_place_freq": 0.0,
+        "rank_confidence": "low",
+        "rank": 10
+      },
+      {
+        "industry": "计算机",
+        "prosperity": 62,
+        "policy": 65,
+        "crowding": 45,
+        "momentum": 42,
+        "composite": 48,
+        "trend": "下行",
+        "position_stage": "高位拥挤",
+        "pe_percentile": 88.9,
+        "valuation_score": 11.1,
+        "anti_crowding": 55,
+        "composite_interval": [
+          44.4,
+          51.9
+        ],
+        "top3_freq": 0.0,
+        "first_place_freq": 0.0,
+        "rank_confidence": "low",
+        "rank": 21
+      },
+      {
+        "industry": "电子",
+        "prosperity": 90,
+        "policy": 70,
+        "crowding": 62,
+        "momentum": 0,
+        "composite": 55,
+        "trend": "下行",
+        "position_stage": "退潮修复",
+        "pe_percentile": 63.9,
+        "valuation_score": 36.1,
+        "anti_crowding": 38,
+        "composite_interval": [
+          50.8,
+          59.6
+        ],
+        "top3_freq": 0.001,
+        "first_place_freq": 0.0,
+        "rank_confidence": "low",
+        "rank": 13
+      },
+      {
+        "industry": "通信",
+        "prosperity": 50,
+        "policy": 60,
+        "crowding": 55,
+        "momentum": 0,
+        "composite": 46,
+        "trend": "下行",
+        "position_stage": "退潮修复",
+        "pe_percentile": 37.9,
+        "valuation_score": 62.1,
+        "anti_crowding": 45,
+        "composite_interval": [
+          42.0,
+          49.7
+        ],
+        "top3_freq": 0.0,
+        "first_place_freq": 0.0,
+        "rank_confidence": "low",
+        "rank": 23
+      },
+      {
+        "industry": "国防军工",
+        "prosperity": 45,
+        "policy": 75,
+        "crowding": 35,
+        "momentum": 40,
+        "composite": 47,
+        "trend": "下行",
+        "position_stage": "退潮修复",
+        "pe_percentile": 79.8,
+        "valuation_score": 20.2,
+        "anti_crowding": 65,
+        "composite_interval": [
+          43.0,
+          50.6
+        ],
+        "top3_freq": 0.0,
+        "first_place_freq": 0.0,
+        "rank_confidence": "low",
+        "rank": 22
+      },
+      {
+        "industry": "机械设备",
+        "prosperity": 45,
+        "policy": 60,
+        "crowding": 38,
+        "momentum": 24,
+        "composite": 45,
+        "trend": "下行",
+        "position_stage": "退潮修复",
+        "pe_percentile": 62.3,
+        "valuation_score": 37.7,
+        "anti_crowding": 62,
+        "composite_interval": [
+          41.7,
+          48.7
+        ],
+        "top3_freq": 0.0,
+        "first_place_freq": 0.0,
+        "rank_confidence": "low",
+        "rank": 24
+      },
+      {
+        "industry": "汽车",
+        "prosperity": 42,
+        "policy": 60,
+        "crowding": 40,
+        "momentum": 54,
+        "composite": 52,
+        "trend": "下行",
+        "position_stage": "退潮修复",
+        "pe_percentile": 42.7,
+        "valuation_score": 57.3,
+        "anti_crowding": 60,
+        "composite_interval": [
+          49.0,
+          55.7
+        ],
+        "top3_freq": 0.0,
+        "first_place_freq": 0.0,
+        "rank_confidence": "low",
+        "rank": 16
+      },
+      {
+        "industry": "商贸零售",
+        "prosperity": 45,
+        "policy": 50,
+        "crowding": 30,
+        "momentum": 60,
+        "composite": 60,
+        "trend": "走平",
+        "position_stage": "低位预热",
+        "pe_percentile": 15.7,
+        "valuation_score": 84.3,
+        "anti_crowding": 70,
+        "composite_interval": [
+          56.1,
+          63.2
+        ],
+        "top3_freq": 0.028,
+        "first_place_freq": 0.001,
+        "rank_confidence": "low",
+        "rank": 6
+      },
+      {
+        "industry": "建筑装饰",
+        "prosperity": 22,
+        "policy": 55,
+        "crowding": 30,
+        "momentum": 50,
+        "composite": 50,
+        "trend": "下行",
+        "position_stage": "退潮修复",
+        "pe_percentile": 21.0,
+        "valuation_score": 79.0,
+        "anti_crowding": 70,
+        "composite_interval": [
+          45.9,
+          53.5
+        ],
+        "top3_freq": 0.0,
+        "first_place_freq": 0.0,
+        "rank_confidence": "low",
+        "rank": 19
+      },
+      {
+        "industry": "房地产",
+        "prosperity": 20,
+        "policy": 60,
+        "crowding": 35,
+        "momentum": 45,
+        "composite": 52,
+        "trend": "下行",
+        "position_stage": "退潮修复",
+        "pe_percentile": 2.0,
+        "valuation_score": 98.0,
+        "anti_crowding": 65,
+        "composite_interval": [
+          47.8,
+          55.9
+        ],
+        "top3_freq": 0.0,
+        "first_place_freq": 0.0,
+        "rank_confidence": "low",
+        "rank": 17
+      },
+      {
+        "industry": "环保",
+        "prosperity": 55,
+        "policy": 65,
+        "crowding": 28,
+        "momentum": 38,
+        "composite": 57,
+        "trend": "走平",
+        "position_stage": "低位预热",
+        "pe_percentile": 42.8,
+        "valuation_score": 57.2,
+        "anti_crowding": 72,
+        "composite_interval": [
+          53.4,
+          60.4
+        ],
+        "top3_freq": 0.004,
+        "first_place_freq": 0.0,
+        "rank_confidence": "low",
+        "rank": 11
+      },
+      {
+        "industry": "传媒",
+        "prosperity": 40,
+        "policy": 50,
+        "crowding": 38,
+        "momentum": 59,
+        "composite": 45,
+        "trend": "走平",
+        "position_stage": "低位预热",
+        "pe_percentile": 72.5,
+        "valuation_score": 27.5,
+        "anti_crowding": 62,
+        "composite_interval": [
+          41.7,
+          48.6
+        ],
+        "top3_freq": 0.0,
+        "first_place_freq": 0.0,
+        "rank_confidence": "low",
+        "rank": 25
+      },
+      {
+        "industry": "钢铁",
+        "prosperity": 12,
+        "policy": 35,
+        "crowding": 30,
+        "momentum": 56,
+        "composite": 29,
+        "trend": "下行",
+        "position_stage": "退潮修复",
+        "pe_percentile": 98.5,
+        "valuation_score": 1.5,
+        "anti_crowding": 70,
+        "composite_interval": [
+          24.8,
+          32.9
+        ],
+        "top3_freq": 0.0,
+        "first_place_freq": 0.0,
+        "rank_confidence": "low",
+        "rank": 30
+      },
+      {
+        "industry": "建筑材料",
+        "prosperity": 15,
+        "policy": 45,
+        "crowding": 25,
+        "momentum": 18,
+        "composite": 27,
+        "trend": "下行",
+        "position_stage": "退潮修复",
+        "pe_percentile": 96.0,
+        "valuation_score": 4.0,
+        "anti_crowding": 75,
+        "composite_interval": [
+          22.6,
+          31.1
+        ],
+        "top3_freq": 0.0,
+        "first_place_freq": 0.0,
+        "rank_confidence": "low",
+        "rank": 31
+      },
+      {
+        "industry": "轻工制造",
+        "prosperity": 25,
+        "policy": 40,
+        "crowding": 25,
+        "momentum": 41,
+        "composite": 36,
+        "trend": "下行",
+        "position_stage": "退潮修复",
+        "pe_percentile": 82.8,
+        "valuation_score": 17.2,
+        "anti_crowding": 75,
+        "composite_interval": [
+          31.6,
+          39.3
+        ],
+        "top3_freq": 0.0,
+        "first_place_freq": 0.0,
+        "rank_confidence": "low",
+        "rank": 29
+      },
+      {
+        "industry": "农林牧渔",
+        "prosperity": 8,
+        "policy": 55,
+        "crowding": 30,
+        "momentum": 64,
+        "composite": 44,
+        "trend": "下行",
+        "position_stage": "退潮修复",
+        "pe_percentile": 35.0,
+        "valuation_score": 65.0,
+        "anti_crowding": 70,
+        "composite_interval": [
+          40.1,
+          48.1
+        ],
+        "top3_freq": 0.0,
+        "first_place_freq": 0.0,
+        "rank_confidence": "low",
+        "rank": 26
+      },
+      {
+        "industry": "纺织服饰",
+        "prosperity": 40,
+        "policy": 40,
+        "crowding": 25,
+        "momentum": 55,
+        "composite": 52,
+        "trend": "走平",
+        "position_stage": "低位预热",
+        "pe_percentile": 38.8,
+        "valuation_score": 61.2,
+        "anti_crowding": 75,
+        "composite_interval": [
+          48.3,
+          55.1
+        ],
+        "top3_freq": 0.0,
+        "first_place_freq": 0.0,
+        "rank_confidence": "low",
+        "rank": 18
+      },
+      {
+        "industry": "美容护理",
+        "prosperity": 40,
+        "policy": 40,
+        "crowding": 25,
+        "momentum": 56,
+        "composite": 50,
+        "trend": "走平",
+        "position_stage": "低位预热",
+        "pe_percentile": 46.3,
+        "valuation_score": 53.7,
+        "anti_crowding": 75,
+        "composite_interval": [
+          47.0,
+          54.0
+        ],
+        "top3_freq": 0.0,
+        "first_place_freq": 0.0,
+        "rank_confidence": "low",
+        "rank": 20
+      },
+      {
+        "industry": "社会服务",
+        "prosperity": 35,
+        "policy": 45,
+        "crowding": 30,
+        "momentum": 43,
+        "composite": 42,
+        "trend": "下行",
+        "position_stage": "退潮修复",
+        "pe_percentile": 71.6,
+        "valuation_score": 28.4,
+        "anti_crowding": 70,
+        "composite_interval": [
+          38.1,
+          45.1
+        ],
+        "top3_freq": 0.0,
+        "first_place_freq": 0.0,
+        "rank_confidence": "low",
+        "rank": 27
+      },
+      {
+        "industry": "综合",
+        "prosperity": 12,
+        "policy": 30,
+        "crowding": 20,
+        "momentum": 25,
+        "composite": 37,
+        "trend": "下行",
+        "position_stage": "退潮修复",
+        "pe_percentile": 37.1,
+        "valuation_score": 62.9,
+        "anti_crowding": 80,
+        "composite_interval": [
+          32.9,
+          41.2
+        ],
+        "top3_freq": 0.0,
+        "first_place_freq": 0.0,
+        "rank_confidence": "low",
+        "rank": 28
+      }
+    ],
+    "top3": [
+      {
+        "rank": 1,
+        "industry": "石油石化",
+        "thesis": "PPI 石油加工业同比 +16.3%、INE 原油 727.6 元高位，上游盈利与现金流确定性最强；板块 PE 13.9x 处历史 19.5% 分位、股息率 3.2%-3.7%，20 日超额 +13.2pct。逻辑是「油价高位+高股息」双支撑，不是需求扩张。",
+        "catalysts": [
+          {
+            "type": "硬催化",
+            "desc": "冬季油气需求旺季叠加 OPEC+ 减产执行，油价维持 70 美元以上",
+            "eta": "未来 1-2 个季度"
+          },
+          {
+            "type": "硬催化",
+            "desc": "年报季龙头提高分红率或特别分红",
+            "eta": "2027 年 3-4 月"
+          },
+          {
+            "type": "软催化",
+            "desc": "资金从成长撤向红利，被动配置需求",
+            "eta": "持续"
+          }
+        ],
+        "leaders": [
+          {
+            "code": "600938",
+            "name": "中国海油"
+          },
+          {
+            "code": "601857",
+            "name": "中国石油"
+          }
+        ],
+        "risk": "油价跌破 65 美元/桶则盈利与股息双杀；20 日超额 13pct，短期拥挤",
+        "composite": 68,
+        "composite_interval": [
+          64.0,
+          71.7
+        ],
+        "top3_freq": 0.98,
+        "rank_confidence": "high",
+        "status": "确认"
+      },
+      {
+        "rank": 2,
+        "industry": "银行",
+        "thesis": "净利 TTM +4.1%、不良率 1.23%、拨备覆盖率 202.9%，资产质量稳定；PE 7.9x 处历史 13.8% 分位、股息率 3.9%，对 10Y 国债 1.65% 的利差 226bp。逻辑是资产荒下的股息重估，而非规模扩张。",
+        "catalysts": [
+          {
+            "type": "硬催化",
+            "desc": "11-12 月信贷投放与明年开门红预期",
+            "eta": "未来 1 个季度"
+          },
+          {
+            "type": "硬催化",
+            "desc": "中期分红落地，提升股息吸引力",
+            "eta": "2026 年报季"
+          },
+          {
+            "type": "软催化",
+            "desc": "风险偏好收缩，红利基金申购放量",
+            "eta": "持续"
+          }
+        ],
+        "leaders": [
+          {
+            "code": "600036",
+            "name": "招商银行"
+          },
+          {
+            "code": "601398",
+            "name": "工商银行"
+          }
+        ],
+        "risk": "净息差继续收窄；5 日 +5.0%，反弹时相对收益易回吐",
+        "composite": 66,
+        "composite_interval": [
+          61.4,
+          69.6
+        ],
+        "top3_freq": 0.835,
+        "rank_confidence": "mid",
+        "status": "确认"
+      },
+      {
+        "rank": 3,
+        "industry": "交通运输",
+        "thesis": "集装箱吞吐量 +9.5%、BDI 2714、物流业景气 50.9，量端平稳；PE 17.3x 处历史 24.2% 分位、股息率 2.7%，20 日超额 +9.5pct。逻辑是低波动类债资产在利率下行期的替代价值。",
+        "catalysts": [
+          {
+            "type": "硬催化",
+            "desc": "四季度集运旺季与港口费率调整",
+            "eta": "未来 1 个季度"
+          },
+          {
+            "type": "软催化",
+            "desc": "类债资产配置需求，保险资金增配",
+            "eta": "持续"
+          }
+        ],
+        "leaders": [
+          {
+            "code": "600377",
+            "name": "宁沪高速"
+          },
+          {
+            "code": "601006",
+            "name": "大秦铁路"
+          }
+        ],
+        "risk": "收费年限与费率政策；利率反弹时类债估值承压",
+        "composite": 64,
+        "composite_interval": [
+          60.4,
+          67.1
+        ],
+        "top3_freq": 0.565,
+        "rank_confidence": "low",
+        "status": "待确认",
+        "status_reason": "入榜频率 56.5%，与第 4 名有色金属（37.8%）不可分辨"
+      }
+    ],
+    "avoid": [
+      {
+        "industry": "建筑材料",
+        "reason": "净利 TTM -38.3%、毛利 -9.9%，PE 185.9x 处 96% 分位；地产投资 -27.2% 未见底，景气与估值双杀",
+        "severity": "高"
+      },
+      {
+        "industry": "钢铁",
+        "reason": "净利 TTM -53.1%，PE 387x（98% 分位）、PB 0.88 但盈利仍探底，典型价值陷阱",
+        "severity": "高"
+      },
+      {
+        "industry": "电子",
+        "reason": "20 日 -30.5%、PB 4.97x 仍处 85% 分位，机构降仓未完成；净利 +87% 是滞后指标，一致预期面临下修",
+        "severity": "中"
+      },
+      {
+        "industry": "通信",
+        "reason": "20 日 -35.7% 全市场最差，算力链订单能见度下降；PE 降至 38% 分位但盈利下修未止",
+        "severity": "中"
+      },
+      {
+        "industry": "轻工制造",
+        "reason": "净利 -23.9%、PE 73x 处 83% 分位，地产后周期需求疲弱",
+        "severity": "中"
+      }
+    ],
+    "ranking": {
+      "short_term": [
+        "石油石化",
+        "银行",
+        "交通运输"
+      ],
+      "mid_term": [
+        "银行",
+        "石油石化",
+        "交通运输"
+      ],
+      "detail": {
+        "short_term": {
+          "order": [
+            "石油石化",
+            "银行",
+            "交通运输"
+          ],
+          "scores": [
+            68,
+            66,
+            64
+          ],
+          "interval": [
+            [
+              64.0,
+              71.7
+            ],
+            [
+              61.4,
+              69.6
+            ],
+            [
+              60.4,
+              67.1
+            ]
+          ],
+          "margin_to_next": 1,
+          "next_out": {
+            "industry": "有色金属",
+            "score": 63,
+            "top3_freq": 0.378
+          },
+          "rank_confidence": [
+            "high",
+            "mid",
+            "low"
+          ],
+          "third_place_freq": 0.565,
+          "verdict": "第 3 名（交通运输）入榜频率仅 56.5%，与第 4 名 有色金属（37.8%）不可分辨，列为「待确认」",
+          "noise_band": 4.0
+        },
+        "mid_term": {
+          "order": [
+            "银行",
+            "石油石化",
+            "交通运输"
+          ],
+          "scores": null,
+          "basis": "qualitative_only",
+          "note": "中期优先级基于分红可持续性与负债成本弹性的定性判断，未建立评分模型，不得与短期排序（有 composite 支撑）等同看待"
+        }
+      },
+      "method": "短期=composite 降序；名次仅在分差 ≥ min_resolvable_gap(4分) 时视为可分辨"
+    },
+    "narrative": "排序：短期石油石化 > 银行 > 交通运输；中期银行 > 石油石化 > 交通运输。共性不是成长，而是「低估值+高股息+盈利未下修」：石油 PE 13.9x/19.5% 分位、银行 7.9x/13.8%、交运 17.3x/24.2%。有色净利 +89% 但 20 日 -16.6%，综合 63 列第四，属左侧。电子、通信动量归零且估值仍高，列规避。",
+    "scoring": {
+      "version": "1.1",
+      "weights": {
+        "prosperity": 0.35,
+        "policy": 0.15,
+        "valuation_score": 0.2,
+        "anti_crowding": 0.15,
+        "momentum": 0.15
+      },
+      "transforms": {
+        "valuation_score": "100 - pe_percentile",
+        "anti_crowding": "100 - crowding"
+      },
+      "formula": "0.35*prosperity + 0.15*policy + 0.20*valuation_score + 0.15*anti_crowding + 0.15*momentum",
+      "input_type": "analyst_integer_0_100",
+      "noise_sigma": 4.0,
+      "monte_carlo": {
+        "n": 3000,
+        "seed": 20261102,
+        "score_sigma": 4.0,
+        "weight_jitter": 0.05,
+        "method": "权重加 U(-0.05,0.05) 后归一，打分加 N(0,4) 后截断至 [0,100]；记录 5-95 分位区间与进入 Top3 的频率"
+      },
+      "reproduce": "python .workbuddy/tmp/build_v11.py（固定 seed，结果可复现）",
+      "min_resolvable_gap": 4.0,
+      "note": "valuation_score 越高越便宜；crowding 越高越拥挤。两列方向相反，务必按 transforms 解读。",
+      "deprecated_fields": {
+        "valuation_pct": "已于 v1.1 移除。原名暗示『高分位＝贵』，实际存的是 100−PE分位，语义相反；改用 valuation_score。"
+      },
+      "compat_note": "旧版渲染器请用 valuation_score，或回退读取 pe_percentile 后自行取 100−x。"
+    }
+  },
+  "company": {
+    "picks": [
+      {
+        "code": "600938",
+        "name": "中国海油",
+        "industry": "石油石化",
+        "three_high": {
+          "prosperity": 68,
+          "growth": 78,
+          "certainty": 84
+        },
+        "composite": 77,
+        "valuation": {
+          "pe_ttm": 12.36,
+          "pb": 2.09,
+          "pe_percentile_3y": null,
+          "peg": null,
+          "method": "PE+股息率（周期资源，参考油价中枢）",
+          "verdict": "中性",
+          "priced_in": "当前价对应 2026E PE 10.4x，隐含布伦特 70-75 美元/桶中枢；一致预期 2027 年净利 -1.7%，即市场已按油价持平定价，未计入成本下降或产量增长"
+        },
+        "risk_control": {
+          "stop_loss": "-9%（32.7 元，按现价回撤 9% 计）",
+          "max_position": "8%",
+          "risk_level": "中",
+          "warnings": [
+            "短期：油价跌破 65 美元/桶，盈利与股息同步下修",
+            "中期：2027 年产量增速放缓、资本开支上升压制自由现金流"
+          ]
+        },
+        "thesis": "买的是低成本海上油气资产在 70 美元油价下仍能维持 3.6% 股息与 16% ROE 的现金牛属性",
+        "catalysts": [
+          "冬季油气需求旺季与油价季节性走强",
+          "圭亚那/渤海新项目投产",
+          "分红率提升"
+        ],
+        "tracking": [
+          "布伦特油价与桶油成本",
+          "季度产量与资本开支",
+          "股息率相对 10Y 国债利差"
+        ],
+        "source_note": "2026 三季报（上交所，报告期 2026-09-30）+ 腾讯行情估值（2026-10-30）+ 一致预期（L3，需核实原文）",
+        "composite_basis": "0.3*industry_composite(高景气) + 0.4*growth + 0.3*certainty",
+        "valuation_in_composite": false,
+        "industry_beta_double_count": true,
+        "known_issue": "个股分中 0.3 权重直接引用 P3 行业 composite，行业 β 与 P3 排序信息重复计入；且估值结论未进入综合分，判定「偏高」不影响排序。计划在 v1.2 修正。"
+      },
+      {
+        "code": "601857",
+        "name": "中国石油",
+        "industry": "石油石化",
+        "three_high": {
+          "prosperity": 68,
+          "growth": 74,
+          "certainty": 80
+        },
+        "composite": 74,
+        "valuation": {
+          "pe_ttm": 13.67,
+          "pb": 1.55,
+          "pe_percentile_3y": null,
+          "peg": null,
+          "method": "PE+股息率（一体化能源）",
+          "verdict": "偏高",
+          "priced_in": "2026E PE 13.0x，20 日股价 +26.4% 已计入油价上行与炼化价差修复；2027 年一致预期净利 -0.5%，继续上行需油价突破 80 美元"
+        },
+        "risk_control": {
+          "stop_loss": "-10%（12.5 元，按现价回撤 10% 计）",
+          "max_position": "6%",
+          "risk_level": "中",
+          "warnings": [
+            "短期：20 日 +26.4%，交易拥挤，回撤风险大于基本面风险",
+            "中期：天然气与炼化板块毛利受价格管制"
+          ]
+        },
+        "thesis": "买的是全产业链一体化对油价波动的平滑，以及 3.7% 股息提供的类债券底仓",
+        "catalysts": [
+          "冬季天然气保供与价格上调",
+          "炼化价差修复",
+          "年报分红"
+        ],
+        "tracking": [
+          "布伦特油价与炼油价差",
+          "天然气销量与实现价格",
+          "经营现金流/净利"
+        ],
+        "source_note": "2026 三季报（上交所，报告期 2026-09-30）+ 腾讯行情估值（2026-10-30）+ 一致预期（L3，需核实原文）",
+        "composite_basis": "0.3*industry_composite(高景气) + 0.4*growth + 0.3*certainty",
+        "valuation_in_composite": false,
+        "industry_beta_double_count": true,
+        "known_issue": "个股分中 0.3 权重直接引用 P3 行业 composite，行业 β 与 P3 排序信息重复计入；且估值结论未进入综合分，判定「偏高」不影响排序。计划在 v1.2 修正。"
+      },
+      {
+        "code": "600036",
+        "name": "招商银行",
+        "industry": "银行",
+        "three_high": {
+          "prosperity": 66,
+          "growth": 58,
+          "certainty": 88
+        },
+        "composite": 69,
+        "valuation": {
+          "pe_ttm": 7.24,
+          "pb": 0.96,
+          "pe_percentile_3y": null,
+          "peg": null,
+          "method": "PB+股息率（银行）",
+          "verdict": "合理偏低",
+          "priced_in": "PB 0.96x、股息率 4.63%，隐含市场预期 ROE 由 11.1% 缓慢降至 9%；零售信贷需求修复尚未定价"
+        },
+        "risk_control": {
+          "stop_loss": "-8%（40.1 元，按现价回撤 8% 计）",
+          "max_position": "8%",
+          "risk_level": "低",
+          "warnings": [
+            "短期：防御交易拥挤，5 日 +4.3%，市场反弹时资金回流成长",
+            "中期：净息差继续收窄（5Y LPR 3.5%）压制营收"
+          ]
+        },
+        "thesis": "买的是 4.6% 股息与 0.96 倍 PB 下，零售银行 11% ROE 的均值回归，而不是规模扩张",
+        "catalysts": [
+          "信贷开门红",
+          "中期分红",
+          "零售不良率企稳"
+        ],
+        "tracking": [
+          "净息差与生息资产收益率",
+          "零售不良率/关注率",
+          "股息率与 10Y 国债利差"
+        ],
+        "source_note": "2026 三季报（上交所，报告期 2026-09-30）+ 腾讯行情估值（2026-10-30）+ 一致预期（L3，需核实原文）",
+        "composite_basis": "0.3*industry_composite(高景气) + 0.4*growth + 0.3*certainty",
+        "valuation_in_composite": false,
+        "industry_beta_double_count": true,
+        "known_issue": "个股分中 0.3 权重直接引用 P3 行业 composite，行业 β 与 P3 排序信息重复计入；且估值结论未进入综合分，判定「偏高」不影响排序。计划在 v1.2 修正。"
+      },
+      {
+        "code": "601398",
+        "name": "工商银行",
+        "industry": "银行",
+        "three_high": {
+          "prosperity": 66,
+          "growth": 52,
+          "certainty": 92
+        },
+        "composite": 68,
+        "valuation": {
+          "pe_ttm": 8.34,
+          "pb": 0.8,
+          "pe_percentile_3y": null,
+          "peg": null,
+          "method": "PB+股息率（系统重要性银行）",
+          "verdict": "合理偏低",
+          "priced_in": "PB 0.80x、股息率 3.66%，隐含资产质量不恶化、净利维持 3%-4% 增长的稳态假设"
+        },
+        "risk_control": {
+          "stop_loss": "-7%（8.1 元，按现价回撤 7% 计）",
+          "max_position": "6%",
+          "risk_level": "低",
+          "warnings": [
+            "短期：红利内部轮动，单日 -0.34% 弱于中小行",
+            "中期：让利实体与净息差压力"
+          ]
+        },
+        "thesis": "买的是系统重要性银行 0.8 倍 PB 的类永续债属性，收益来自股息而非增长",
+        "catalysts": [
+          "中期分红",
+          "存款成本下行",
+          "不良生成率维持低位"
+        ],
+        "tracking": [
+          "净息差",
+          "拨备覆盖率",
+          "股息率"
+        ],
+        "source_note": "2026 三季报（上交所，报告期 2026-09-30）+ 腾讯行情估值（2026-10-30）+ 一致预期（L3，需核实原文）",
+        "composite_basis": "0.3*industry_composite(高景气) + 0.4*growth + 0.3*certainty",
+        "valuation_in_composite": false,
+        "industry_beta_double_count": true,
+        "known_issue": "个股分中 0.3 权重直接引用 P3 行业 composite，行业 β 与 P3 排序信息重复计入；且估值结论未进入综合分，判定「偏高」不影响排序。计划在 v1.2 修正。"
+      },
+      {
+        "code": "600377",
+        "name": "宁沪高速",
+        "industry": "交通运输",
+        "three_high": {
+          "prosperity": 64,
+          "growth": 55,
+          "certainty": 86
+        },
+        "composite": 67,
+        "valuation": {
+          "pe_ttm": 15.11,
+          "pb": 1.58,
+          "pe_percentile_3y": null,
+          "peg": null,
+          "method": "股息率+PE（类债券）",
+          "verdict": "偏高",
+          "priced_in": "股息率 3.54% 对 10Y 国债 1.65% 的利差 189bp，已定价「资产荒」下的类债溢价；2026-2028 一致预期净利增速仅 2%-4%"
+        },
+        "risk_control": {
+          "stop_loss": "-8%（12.7 元，按现价回撤 8% 计）",
+          "max_position": "6%",
+          "risk_level": "中",
+          "warnings": [
+            "短期：60 日 +11.6%，防御资产已充分定价，利率反弹则估值承压",
+            "中期：收费公路年限与改扩建资本开支"
+          ]
+        },
+        "thesis": "买的是长三角路产现金流对 1.65% 国债利率的 190bp 利差，本质是长久期类债券",
+        "catalysts": [
+          "通行费收入恢复",
+          "分红率稳定",
+          "利率进一步下行"
+        ],
+        "tracking": [
+          "日均车流量与通行费收入",
+          "股息率与国债利差",
+          "改扩建资本开支"
+        ],
+        "source_note": "2026 三季报（上交所，报告期 2026-09-30）+ 腾讯行情估值（2026-10-30）+ 一致预期（L3，需核实原文）",
+        "composite_basis": "0.3*industry_composite(高景气) + 0.4*growth + 0.3*certainty",
+        "valuation_in_composite": false,
+        "industry_beta_double_count": true,
+        "known_issue": "个股分中 0.3 权重直接引用 P3 行业 composite，行业 β 与 P3 排序信息重复计入；且估值结论未进入综合分，判定「偏高」不影响排序。计划在 v1.2 修正。"
+      }
+    ]
+  },
+  "conclusion": {
+    "summary": "滞胀格局叠加普遍转弱：权益降至 30%-40%，以高股息防御为底仓但不追高。石油石化、银行、交运综合分居前，逻辑是股息与低估值而非增长；电子、通信动量崩塌且估值仍高，规避。等上证站稳 20 日线、广度修复后再加仓。数据完整性 0.875，置信度下调至 0.72。",
+    "actions": [
+      {
+        "step": 1,
+        "action": "权益仓位压至 30%-40%，不加仓",
+        "condition": "温度 20-60、抱团度 >60 期间维持",
+        "priority": "高"
+      },
+      {
+        "step": 2,
+        "action": "底仓配石油石化、银行、交运高股息龙头，单票不超 8%",
+        "condition": "回踩 20 日线分批，不追涨",
+        "priority": "高"
+      },
+      {
+        "step": 3,
+        "action": "电子、通信、建材、钢铁不参与抢反弹",
+        "condition": "20 日相对收益未转正、成交未放大前",
+        "priority": "高"
+      },
+      {
+        "step": 4,
+        "action": "加仓触发：上证站上 3736 且行业上涨占比 >50%、成交额 >1.8 万亿 → 提至 45%",
+        "condition": "三项同时满足",
+        "priority": "中"
+      },
+      {
+        "step": 5,
+        "action": "减仓触发：上证跌破 3574 且 3 日未收复 → 降至 25%-30%",
+        "condition": "收盘价确认",
+        "priority": "高"
+      }
+    ],
+    "invalidation": [
+      "上证跌破 3574 且 3 个交易日未收复（趋势判断失效）",
+      "社融存量同比回升至 7.5% 以上（信用收缩判断失效）",
+      "PPI 同比回落至 3% 以下（上游再通胀逻辑失效）",
+      "电子板块 20 日相对收益转正且成交额放大 30%（成长出清结束）"
+    ],
+    "next_review": "2026-11-09",
+    "disclaimer": "以上内容基于公开数据和量化分析，仅供参考，不构成投资建议。市场有风险，投资需谨慎。任何投资决策应结合个人风险承受能力、资金状况和投资目标独立判断，必要时咨询持牌专业机构。过往表现不预示未来收益。"
+  }
+}
