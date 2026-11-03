@@ -34,18 +34,23 @@ def load(path: str | Path | None = None) -> dict:
 
 
 def _merge_sources(tpl_sources: list[dict], dyn_sources: list[dict]) -> list[dict]:
-    """动态侧只写 as_of / note 时，按位置补上 name/category/fields/reliability。"""
-    if len(dyn_sources) != len(tpl_sources):
+    """动态侧只写 as_of / note 时，按位置补上 name/category/fields/reliability。
+
+    模板外的**追加源**（如两融、央行公告）必须由动态侧整条给出，位置对齐到模板末尾之后。
+    早期这里是「数量必须相等」，新增数据源就得同时改模板——但模板回答不了「本期取没取到」，
+    强行对齐只会让新增源无处安放。现在放宽为「不少于模板条数」，多出来的按原样保留。
+    """
+    if len(dyn_sources) < len(tpl_sources):
         raise ValueError(
-            f"data_quality.sources 数量 {len(dyn_sources)} 与模板 {len(tpl_sources)} 不等；"
-            "若新增数据源须同时更新 templates/static.json"
+            f"data_quality.sources 数量 {len(dyn_sources)} 少于模板 {len(tpl_sources)} 条；"
+            "要么补齐到模板条数，要么在 templates/static.json 里删掉不再使用的源"
         )
     out = []
-    for tpl, dyn in zip(tpl_sources, dyn_sources):
-        if "name" in dyn:
+    for i, dyn in enumerate(dyn_sources):
+        if "name" in dyn or i >= len(tpl_sources):
             out.append(dyn)
         else:
-            out.append({**tpl, **dyn})
+            out.append({**tpl_sources[i], **dyn})
     return out
 
 
@@ -87,8 +92,11 @@ def strip(full: dict, *, static: dict | None = None) -> dict:
     srcs = dyn.get("data_quality", {}).get("sources")
     if srcs:
         kept = []
-        for s in srcs:
-            kept.append({k: s[k] for k in ("as_of", "note") if k in s})
+        for i, s in enumerate(srcs):
+            if i >= len(tpl["source_meta"]):
+                kept.append(s)                     # 模板外的追加源，动态侧必须整条带回来
+            else:
+                kept.append({k: s[k] for k in ("as_of", "note") if k in s})
         dyn["data_quality"]["sources"] = kept
     return dyn
 
@@ -141,6 +149,8 @@ def assert_consistent(report: dict) -> list[str]:
         if gate != rp:
             warn.append(f"{name}: 由 metrics 重算闸门 {gate} 条，与声明的 {rp} 条不符")
 
+    warn.extend(_check_leverage(report))
+
     probs = [s.get("probability") for s in report.get("scenarios", [])]
     if probs and abs(sum(probs) - 1.0) > 0.001:
         warn.append(f"情景概率合计 {sum(probs):.3f} != 1.0")
@@ -152,6 +162,79 @@ def assert_consistent(report: dict) -> list[str]:
     if v.get("dominant_mainline_id") and v["dominant_mainline_id"] not in ids:
         warn.append(f"verdict.dominant_mainline_id {v['dominant_mainline_id']} 不在 mainlines 中")
 
+    return warn
+
+
+TREND_DOWN = -0.03
+TREND_UP = 0.03
+LEVERAGE_WORDS = ("两融", "融资余额", "融资盘", "融券余额")
+
+
+def _check_leverage(report: dict) -> list[str]:
+    """杠杆块的四条硬约束。
+
+    两融的坑不是「有没有数」，而是「数有一天滞后却当成今天用」。所以这里不检查数值大小，
+    只检查四件事：滞后与 as_of 自洽、趋势与 20 日变动自洽、有无数据与 missing 自洽、
+    没数据时叙事有没有偷偷引用它。
+    """
+    warn: list[str] = []
+    regime = report.get("market_regime") or {}
+    lev = regime.get("leverage")
+    dq = report.get("data_quality") or {}
+    hit_missing = [m for m in (dq.get("missing") or []) if "两融" in (m.get("field") or "")]
+    hit_source = [s for s in (dq.get("sources") or []) if "两融" in (s.get("name") or "")]
+
+    if not isinstance(lev, dict):
+        if not hit_missing:
+            warn.append("market_regime.leverage 缺失且 data_quality.missing 未记录两融")
+        return warn
+
+    has_value = lev.get("balance_yi") is not None
+    rep_as_of = (report.get("meta") or {}).get("as_of")
+
+    if has_value:
+        if not hit_source:
+            warn.append("leverage 有数值但 data_quality.sources 无两融来源条目")
+        lag = lev.get("lag_trading_days")
+        lev_as_of = lev.get("as_of")
+        if lag is None:
+            warn.append("leverage 有数值但 lag_trading_days 为 null（无法判断这份数有多旧）")
+        else:
+            if lag < 0:
+                warn.append(f"leverage.lag_trading_days={lag} 为负：数据日晚于报告基准日")
+            elif lag > 3:
+                warn.append(f"leverage.lag_trading_days={lag} > 3，按 §5 时滞规则应整块写 null")
+            if lag == 0 and rep_as_of and lev_as_of != rep_as_of:
+                warn.append(f"leverage lag=0 但 as_of {lev_as_of} != 报告 as_of {rep_as_of}")
+            if lag >= 1 and rep_as_of and lev_as_of == rep_as_of:
+                warn.append(f"leverage lag={lag} 但 as_of 与报告同为 {rep_as_of}")
+            if lag >= 1 and not hit_missing:
+                warn.append("leverage 存在交易日滞后，但 missing 未写明滞后原因与口径")
+
+        c20 = lev.get("chg_20d")
+        if c20 is not None and lev.get("trend"):
+            want = ("deleveraging" if c20 <= TREND_DOWN
+                    else "releveraging" if c20 >= TREND_UP else "stable")
+            if lev["trend"] != want:
+                warn.append(f"leverage.trend={lev['trend']} 与 chg_20d={c20} 的机械映射（{want}）不符")
+        if c20 is not None and lev.get("trend_label") is None:
+            warn.append("leverage.trend 有值但 trend_label 为 null")
+    else:
+        if not hit_missing:
+            warn.append("leverage 无数据但 data_quality.missing 未记录两融")
+        texts = []
+        v = report.get("verdict") or {}
+        texts += [v.get("headline") or "", v.get("core_thesis") or ""]
+        texts += [p.get("detail") or "" for p in (v.get("points") or [])]
+        texts += [r.get("detail") or "" for r in (report.get("risks") or [])]
+        for ml in report.get("mainlines") or []:
+            nar = ml.get("narrative") or {}
+            texts += [nar.get("logic") or "", nar.get("bear_case") or "",
+                      nar.get("sustainability") or ""]
+            texts += [w.get("why") or "" for w in (ml.get("watch") or [])]
+        used = [t for t in LEVERAGE_WORDS if any(t in s for s in texts)]
+        if used:
+            warn.append(f"leverage 为 null，但叙事引用了 {used}——无数据不得谈杠杆")
     return warn
 
 

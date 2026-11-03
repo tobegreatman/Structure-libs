@@ -23,7 +23,7 @@ if hasattr(sys.stdout, "reconfigure"):
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
-from pipeline import http  # noqa: E402
+from pipeline import day, http  # noqa: E402
 
 CACHE = ROOT / "pipeline" / "cache"
 
@@ -132,9 +132,10 @@ def load(as_of: str) -> dict | None:
 
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--as-of", default="2026-10-30")
+    day.add_as_of(ap)
     ap.add_argument("--rps", type=float, default=3.0)
     args = ap.parse_args()
+    args.as_of = day.resolve(args.as_of)
 
     # 8 个请求不值得起并发；2 workers 让快照与日 K 能小范围重叠，仍受全局 2 rps 约束。
     cli = http.make_client(workers=2, max_rps=min(args.rps, 2.0), min_span=0,

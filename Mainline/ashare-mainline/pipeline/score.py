@@ -21,6 +21,8 @@ if hasattr(sys.stdout, "reconfigure"):
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
+from pipeline import day  # noqa: E402
+
 WEIGHTS = {"rs": 25, "persistence": 20, "volume": 20, "breadth": 15, "fundflow": 10, "narrative": 10}
 
 
@@ -38,10 +40,11 @@ def pct_in(values: list[float], v: float | None, *, higher_better: bool = True) 
 
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--as-of", default="2026-10-30")
+    day.add_as_of(ap)
     ap.add_argument("--narrative", default="",
                     help="人工判定的叙事分，格式 BK1277:95,BK0475:75（0/40/60/75/85 + 来源加分）")
     args = ap.parse_args()
+    args.as_of = day.resolve(args.as_of)
     # 先读落盘的叙事分，再用 CLI 覆盖：只靠 CLI 传参时，重跑漏一个参数就让 narrative 静默归零，
     # 白酒总分从 85.0 变 75.5 且不报错（实测踩过）。默认值必须持久化。
     narr = {}

@@ -20,7 +20,7 @@ if hasattr(sys.stdout, "reconfigure"):
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
-from pipeline import panel  # noqa: E402
+from pipeline import day, panel  # noqa: E402
 
 # 指数多周期收益优先读 pipeline/indices.py 真取的结果（cache/indices-<as_of>.json）。
 # 下面这份只是接口不可用时的兜底：常量写死后，下一轮无论行情怎么走它都不会变，
@@ -111,8 +111,9 @@ def weighted_index(panel_data: dict, n: int) -> float | None:
 
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--as-of", default="2026-10-30")
+    day.add_as_of(ap)
     args = ap.parse_args()
+    args.as_of = day.resolve(args.as_of)
     IDX_REF, IDX_LIVE = load_idx_ref(args.as_of)
 
     p = pickle.loads((ROOT / "pipeline" / "cache" / f"panel-{args.as_of}.pkl").read_bytes())

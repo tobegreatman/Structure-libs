@@ -20,7 +20,7 @@ if hasattr(sys.stdout, "reconfigure"):
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
-from pipeline import http  # noqa: E402
+from pipeline import day, http  # noqa: E402
 
 POOL = ("https://push2ex.eastmoney.com/getTopic{kind}Pool"
         "?ut=7eea3edcaed734bea9cbfc24409ed989&dpt=wz.ztzt"
@@ -38,9 +38,12 @@ def fetch_pool(cli: http.Client, kind: str, date: str) -> list[dict]:
 
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--as-of", default="2026-10-30")
-    ap.add_argument("--prev", default=None, help="上一交易日，用于连板高度变化")
+    day.add_as_of(ap)
+    ap.add_argument("--prev", default=None,
+                    help="连板高度基准日；缺省 = as_of 前 5 个交易日")
     args = ap.parse_args()
+    args.as_of = day.resolve(args.as_of)
+    args.prev = args.prev or day.prev_n(args.as_of, 5)
 
     cli = http.make_client(workers=2, max_rps=2.5, min_span=0)
     zt = fetch_pool(cli, "ZT", args.as_of)

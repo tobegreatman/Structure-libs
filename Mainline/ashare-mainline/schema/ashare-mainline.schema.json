@@ -440,6 +440,136 @@
             }
           }
         },
+        "leverage": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": false,
+          "description": "市场级杠杆（两融）。滞后 1 个交易日是常态，按 lag_trading_days 判定可用性，不要因为有 lag 就整块写 null。",
+          "properties": {
+            "as_of": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "description": "两融数据自身截止日（YYYY-MM-DD），通常早于报告 as_of 一个交易日"
+            },
+            "lag_trading_days": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "description": "数据日相对报告 as_of 的交易日滞后；同日记 0"
+            },
+            "scope": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "enum": [
+                "cn_all",
+                "hs",
+                "sse",
+                "szse",
+                null
+              ]
+            },
+            "balance_yi": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "fin_balance_yi": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "lend_balance_yi": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "balance_to_float_pct": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "description": "融资余额 ÷ 流通市值，小数（0.02633 = 2.633%）；跨期可比的杠杆率口径"
+            },
+            "chg_1d": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "chg_5d": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "chg_20d": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "chg_60d": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "net_buy_5d_yi": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "net_buy_20d_yi": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "balance_pct_250": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "description": "最新余额在 250 日样本内的分位（0～1）；样本不足时按实际样本并在 note 写明"
+            },
+            "trend": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "enum": [
+                "deleveraging",
+                "stable",
+                "releveraging",
+                null
+              ],
+              "description": "由 chg_20d 机械映射：≤ −3% 去杠杆 / ≥ +3% 加杠杆 / 其间平稳"
+            },
+            "trend_label": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "note": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          }
+        },
         "narrative": {
           "type": [
             "string",

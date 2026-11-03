@@ -5,7 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>A股市场主线分析 · Mainline Radar</title>
 <style>
-/* Inter 自托管（vendor/fonts，latin 子集，300/400/500）：不依赖 fonts.gstatic.com，file:// 直开也能拿到字形 */
+/* =====================================================================
+   主线雷达 · 视觉系统
+   层级：token → 基础排版 → 容器/分节 → 组件 → 响应式 → 打印
+   ===================================================================== */
+
+/* Inter 自托管（vendor/fonts，latin 子集，300/400/500）：
+   不依赖 fonts.gstatic.com，file:// 直开也能拿到字形 */
 @font-face{
   font-family:'Inter';font-style:normal;font-weight:300;font-display:swap;
   src:url('vendor/fonts/inter-latin-300.woff2') format('woff2');
@@ -18,408 +24,786 @@
   font-family:'Inter';font-style:normal;font-weight:500;font-display:swap;
   src:url('vendor/fonts/inter-latin-500.woff2') format('woff2');
 }
+
 :root{
-  --primary:#533afd; --primary-deep:#4434d4; --primary-press:#2e2b8c; --primary-soft:#665efd;
-  --primary-sub:#b9b9f9; --navy:#1c1e54; --ink:#0d253d; --ink2:#273951; --mute:#64748d;
-  --canvas:#fff; --soft:#f6f9fc; --cream:#f5e9d4; --line:#e3e8ee; --line-in:#a8c3de;
-  --up:#ea2261; --down:#0f9d70; --warn:#9b6829;
-  --sh1:0 1px 3px rgba(0,55,112,.08);
-  --sh2:0 8px 24px rgba(0,55,112,.08),0 2px 6px rgba(0,55,112,.04);
-  --pill:9999px;
+  /* 色板：紫色只做强调，主色面积控制在 5% 以内 */
+  --primary:#533afd; --primary-deep:#3f2bd6; --primary-press:#2c1fa0; --primary-soft:#7c6cff;
+  --primary-sub:#c8c2ff; --primary-wash:#f0eeff;
+  --navy:#12173a; --navy-2:#0a0d24;
+  --ink:#0c2036; --ink2:#2b3e54; --mute:#5b6c80; --faint:#64798e;
+  --canvas:#fff; --paper:#fbfcfe; --soft:#f6f8fb; --soft-2:#eef2f7;
+  --cream:#f8eedb; --warn:#8a5f22;
+  --line:#e6eaf1; --line-2:#eff2f7; --line-in:#c6d2e0;
+  --up:#e11d48; --down:#0d9b6c;
+  --r-xs:6px; --r-sm:10px; --r:14px; --r-lg:20px; --pill:9999px;
+  --sh1:0 1px 2px rgba(10,32,60,.05);
+  --sh2:0 1px 2px rgba(10,32,60,.04),0 14px 34px -22px rgba(10,32,60,.24);
+  --sh3:0 2px 4px rgba(10,32,60,.04),0 30px 60px -30px rgba(10,32,60,.28);
+
+  /* 布局尺度：容器宽度与页面内边距只在这里定义一次。
+     窄屏不改选择器，只覆盖下面这几个变量（见「响应式」段）。 */
+  --w-page:1380px;      /* 正文容器：nav / hero / band 共用同一列 */
+  --w-side:330px;       /* 首屏右侧集中度卡的列宽 */
+  --pad-x:32px;         /* 容器左右内边距 */
+  --pad-x-nav:32px;     /* 导航内边距：窄屏比正文更紧，单独一支 */
+
+  /* 行宽阶梯：同一份文本在 1080/720 下读起来长度一致，靠这组值控制 */
+  --w-title:96%;      /* 结论标题 */
+  --w-lead:90%;       /* 分节导语 */
+  --w-audit:760px;      /* 数据体检说明 */
+  --w-prose:96%;      /* 首屏导语 */
+  --w-copy:520px;       /* CTA 说明 */
+  --w-aside:340px;      /* 页脚简介 */
+
+  --ease:cubic-bezier(.22,.61,.36,1);
+  --mono:ui-monospace,'SF Mono',SFMono-Regular,Menlo,Consolas,'Liberation Mono',monospace;
 }
+
 *{box-sizing:border-box}
-html{scroll-behavior:smooth;scroll-padding-top:72px}
+html{scroll-behavior:smooth;scroll-padding-top:88px;-webkit-text-size-adjust:100%}
 body{
   margin:0;background:var(--canvas);color:var(--ink);
-  font-family:'Inter','SF Pro Display',-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei',system-ui,sans-serif;
-  font-size:15px;font-weight:300;line-height:1.4;letter-spacing:0;
-  font-feature-settings:"ss01";-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;
+  font-family:'Inter','PingFang SC','Hiragino Sans GB','Microsoft YaHei UI','Microsoft YaHei',system-ui,sans-serif;
+  font-size:14.5px;font-weight:400;line-height:1.6;letter-spacing:0;
+  font-feature-settings:"ss01";-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;
+  text-rendering:optimizeLegibility;
 }
-h1,h2,h3,h4{margin:0;font-weight:300}
+h1,h2,h3,h4,h5{margin:0;font-weight:600;letter-spacing:-.01em}
 p{margin:0}
+ul,ol{margin:0;padding:0}
 a{color:var(--primary);text-decoration:none}
 button{font-family:inherit}
-.wrap{max-width:1200px;margin:0 auto;padding:0 24px}
-.num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum";font-feature-settings:"ss01","tnum";letter-spacing:-.42px}
+::selection{background:rgba(83,58,253,.16)}
+:focus-visible{outline:2px solid var(--primary);outline-offset:2px;border-radius:4px}
+
+.wrap{max-width:var(--w-page);margin:0 auto;padding:0 var(--pad-x)}
+.num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum";letter-spacing:-.01em}
 .up{color:var(--up)}
 .down{color:var(--down)}
 .mute{color:var(--mute)}
-/* 小字号的 eyebrow 不再用 opacity 压淡：10px 字叠加透明度会把对比度压到 4.5:1 以下 */
-.eyebrow{font-size:10px;font-weight:400;letter-spacing:.1em;text-transform:uppercase;color:#5a6b82}
+/* 小字号不用 opacity 压淡：10px 叠加透明度会跌破正文对比度 */
+.eyebrow{
+  font-family:var(--mono);
+  font-size:10px;font-weight:500;letter-spacing:.16em;text-transform:uppercase;color:var(--faint);
+}
 
-/* ---------- nav ---------- */
-.nav{position:sticky;top:0;z-index:60;background:rgba(255,255,255,.86);backdrop-filter:saturate(180%) blur(14px);border-bottom:1px solid rgba(227,232,238,.9)}
-.nav-in{max-width:1200px;margin:0 auto;padding:12px 24px;display:flex;align-items:center;gap:14px}
-.brand{display:flex;align-items:center;gap:9px;font-size:13.5px;font-weight:400;letter-spacing:.01em;white-space:nowrap}
-.brand .dot{width:9px;height:9px;border-radius:50%;background:var(--primary);box-shadow:0 0 0 4px rgba(83,58,253,.13)}
-.brand small{font-weight:300;color:var(--mute);font-size:10px;letter-spacing:.12em;margin-left:2px}
-.nav-links{position:relative;display:flex;gap:4px;margin-left:6px}
-.nav-links a{position:relative;font-size:13px;color:var(--mute);padding:7px 11px 10px;border-radius:7px;font-weight:400;letter-spacing:.01em;white-space:nowrap;transition:color .18s,background .18s}
-.nav-links a:hover{color:var(--ink);background:rgba(13,37,61,.045)}
+/* ---------------- nav ---------------- */
+.nav{
+  position:sticky;top:0;z-index:60;
+  background:rgba(255,255,255,.82);
+  backdrop-filter:blur(18px) saturate(160%);
+  -webkit-backdrop-filter:blur(18px) saturate(160%);
+  border-bottom:1px solid rgba(12,32,54,.07);
+  transition:box-shadow .25s var(--ease),background .25s var(--ease);
+}
+.nav.scrolled{box-shadow:0 1px 0 rgba(12,32,54,.04),0 10px 24px -18px rgba(12,32,54,.5);background:rgba(255,255,255,.94)}
+.nav-in{max-width:var(--w-page);margin:0 auto;padding:0 var(--pad-x-nav);height:64px;display:flex;align-items:center;gap:12px}
+.brand{display:flex;align-items:center;gap:10px;font-size:13.5px;font-weight:600;letter-spacing:.01em;white-space:nowrap;color:var(--ink)}
+.brand .dot{
+  width:16px;height:16px;border-radius:5px;flex:0 0 auto;
+  background:conic-gradient(from 210deg,#533afd,#8b7bff 45%,#ea2261 100%);
+  box-shadow:0 2px 6px rgba(83,58,253,.35),inset 0 0 0 1px rgba(255,255,255,.35);
+  position:relative;
+}
+.brand .dot:after{content:"";position:absolute;inset:5px;border-radius:2px;background:#fff;opacity:.9}
+.brand small{font-family:var(--mono);font-weight:400;color:var(--faint);font-size:9px;letter-spacing:.18em;margin-left:2px}
+.nav-links{position:relative;display:flex;gap:2px;margin-left:14px}
+.nav-links a{
+  position:relative;font-size:13px;color:var(--mute);padding:8px 12px 9px;border-radius:8px;
+  font-weight:400;letter-spacing:.01em;white-space:nowrap;
+  transition:color .18s,background .18s;
+}
+.nav-links a:hover{color:var(--ink);background:rgba(12,32,54,.04)}
 .nav-links a.on{color:var(--ink)}
 /* 滑动指示条：宽度与位置由 JS 量出后写入 --ink-x / --ink-w */
-.nav-links .nav-bar{position:absolute;left:0;bottom:3px;height:2px;width:var(--ink-w,0px);border-radius:2px;
-  background:linear-gradient(90deg,var(--primary),var(--primary-soft));
+.nav-links .nav-bar{
+  position:absolute;left:0;bottom:1px;height:2px;width:var(--ink-w,0px);border-radius:2px;
+  background:var(--primary);
   transform:translateX(var(--ink-x,0px));opacity:0;pointer-events:none;
-  transition:transform .4s cubic-bezier(.22,.61,.36,1),width .4s cubic-bezier(.22,.61,.36,1),opacity .26s ease}
-.nav-links.ink-on .nav-bar{opacity:1}
-@media (prefers-reduced-motion:reduce){
-  .nav-links .nav-bar{transition:opacity .2s}
+  transition:transform .38s var(--ease),width .38s var(--ease),opacity .22s ease;
 }
+.nav-links.ink-on .nav-bar{opacity:1}
+@media (prefers-reduced-motion:reduce){ .nav-links .nav-bar{transition:opacity .2s} }
 /* 页签不换行：宽度不足时直接隐藏，避免折成两行把导航撑高 */
-@media (max-width:960px){ .nav-links{display:none} }
+@media (max-width:1040px){ .nav-links{display:none} }
 .spacer{flex:1}
-.btn{display:inline-flex;align-items:center;gap:6px;font-size:13.5px;font-weight:400;line-height:1;border-radius:var(--pill);padding:9px 16px;border:1px solid transparent;cursor:pointer;transition:background .16s,border-color .16s,color .16s;white-space:nowrap;text-decoration:none;flex:0 0 auto}
-.btn-primary{background:var(--primary);color:#fff}
-.btn-primary:hover{background:var(--primary-deep)}
-.btn-primary:active{background:var(--primary-press)}
-.btn-ghost{background:#fff;color:var(--primary);border-color:var(--primary)}
-.btn-ghost:hover{background:rgba(83,58,253,.06)}
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  font-size:13px;font-weight:500;line-height:1;border-radius:var(--pill);
+  padding:10px 17px;border:1px solid transparent;cursor:pointer;
+  transition:background .16s,border-color .16s,color .16s,box-shadow .16s,transform .16s;
+  white-space:nowrap;text-decoration:none;flex:0 0 auto;
+}
+.btn-primary{background:var(--primary);color:#fff;box-shadow:0 1px 2px rgba(44,31,160,.28),inset 0 1px 0 rgba(255,255,255,.18)}
+.btn-primary:hover{background:var(--primary-deep);box-shadow:0 4px 14px -4px rgba(83,58,253,.55),inset 0 1px 0 rgba(255,255,255,.18)}
+.btn-primary:active{background:var(--primary-press);transform:translateY(.5px)}
+.btn-ghost{background:#fff;color:var(--primary);border-color:rgba(83,58,253,.42)}
+.btn-ghost:hover{background:var(--primary-wash);border-color:var(--primary)}
 .btn-quiet{background:#fff;color:var(--ink2);border-color:var(--line)}
-.btn-quiet:hover{border-color:var(--line-in);color:var(--ink)}
-.btn-sm{padding:7px 12px;font-size:12.5px}
-.badge{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:400;padding:4px 9px;border-radius:var(--pill);background:var(--cream);color:var(--warn);letter-spacing:.02em}
+.btn-quiet:hover{border-color:var(--line-in);color:var(--ink);background:#fff}
+.btn-sm{padding:8px 13px;font-size:12.5px;font-weight:400}
+.badge{
+  display:inline-flex;align-items:center;gap:6px;font-size:10.5px;font-weight:500;
+  padding:5px 10px;border-radius:var(--pill);background:var(--cream);color:var(--warn);
+  letter-spacing:.04em;border:1px solid #eee0c6;
+}
+.badge:before{content:"";width:4px;height:4px;border-radius:50%;background:currentColor;opacity:.7}
 
-/* ---------- hero ---------- */
-.hero{position:relative;overflow:hidden;padding:76px 0 0}
-.mesh{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
-.mesh-fade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,255,255,.2) 0%,rgba(255,255,255,0) 16%,rgba(255,255,255,0) 54%,rgba(255,255,255,.78) 86%,#fff 100%);pointer-events:none}
-.hero-in{position:relative;max-width:1200px;margin:0 auto;padding:0 24px}
-h1.display{font-size:56px;font-weight:300;line-height:1.04;letter-spacing:-1.1px;margin:16px 0 0;color:var(--ink)}
-.sub-lead{font-size:16px;font-weight:300;line-height:1.55;color:var(--ink2);max-width:760px;margin-top:16px}
-.stat-row{display:flex;flex-wrap:wrap;gap:0;margin-top:36px;border-top:1px solid rgba(13,37,61,.1);padding-top:18px;max-width:760px}
-.stat{flex:1 1 120px;padding-right:24px}
-.stat .k{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#5a6b82;font-weight:400}
-.stat .v{font-size:20px;font-weight:300;letter-spacing:-.2px;margin-top:3px}
-.stat .v small{font-size:12px;color:var(--mute);margin-left:3px;letter-spacing:0}
+/* ---------------- hero ---------------- */
+.hero{position:relative;overflow:hidden;padding:84px 0 0;background:#fff;isolation:isolate}
+.hero-bg{position:absolute;inset:0;z-index:-2;pointer-events:none;
+  background:
+    radial-gradient(820px 380px at 84% -12%,rgba(83,58,253,.11),transparent 68%),
+    radial-gradient(720px 340px at 62% -22%,rgba(234,34,97,.07),transparent 70%),
+    radial-gradient(560px 300px at 6% -18%,rgba(240,196,138,.20),transparent 72%);
+}
+.hero-grid{
+  position:absolute;inset:0 0 auto;height:520px;z-index:-1;pointer-events:none;
+  background-image:linear-gradient(rgba(12,32,54,.055) 1px,transparent 1px),
+                   linear-gradient(90deg,rgba(12,32,54,.055) 1px,transparent 1px);
+  background-size:64px 64px;
+  -webkit-mask-image:radial-gradient(120% 78% at 50% 0%,#000 0%,rgba(0,0,0,.55) 45%,transparent 78%);
+  mask-image:radial-gradient(120% 78% at 50% 0%,#000 0%,rgba(0,0,0,.55) 45%,transparent 78%);
+  opacity:.75;
+}
+.hero-fade{position:absolute;left:0;right:0;bottom:0;height:180px;z-index:-1;
+  background:linear-gradient(180deg,rgba(255,255,255,0),#fff 78%);pointer-events:none}
+.hero-in{
+  position:relative;max-width:var(--w-page);margin:0 auto;padding:0 var(--pad-x);
+  display:grid;grid-template-columns:minmax(0,1fr) var(--w-side);gap:64px;align-items:start;
+}
+.hero-main{min-width:0}
+/* 首屏入场：只做一次轻微上浮，不干扰阅读；减少动效偏好下直接呈现 */
+@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.hero-main > *{animation:rise .62s var(--ease) both}
+.hero-main > *:nth-child(2){animation-delay:.06s}
+.hero-main > *:nth-child(3){animation-delay:.12s}
+.hero-main > *:nth-child(4){animation-delay:.18s}
+.hero-side{animation:rise .7s .16s var(--ease) both}
+@media (prefers-reduced-motion:reduce){.hero-main > *,.hero-side{animation:none}}
+h1.display{
+  font-size:clamp(38px,4.6vw,60px);font-weight:600;line-height:1.06;letter-spacing:-.035em;
+  margin:18px 0 0;color:var(--ink);
+}
+h1.display em{font-style:normal;color:var(--primary);position:relative}
+.sub-lead{font-size:15.5px;font-weight:400;line-height:1.78;color:var(--ink2);max-width:var(--w-prose);margin-top:20px}
+.stat-row{
+  display:grid;grid-template-columns:1.32fr 1fr 1fr 1fr 1fr;
+  margin-top:40px;border-top:1px solid rgba(12,32,54,.1);padding-top:20px;
+}
+.stat{padding-right:18px}
+.stat + .stat{border-left:1px solid rgba(12,32,54,.09);padding-left:20px}
+.stat .k{font-family:var(--mono);font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);font-weight:400}
+.stat .v{font-size:21px;font-weight:500;letter-spacing:-.035em;margin-top:4px;line-height:1.2;white-space:nowrap}
+.stat .v small{font-size:12px;color:var(--mute);margin-left:3px;letter-spacing:0;font-weight:400}
 
 /* hero side card */
-.hero-side{position:absolute;right:24px;top:132px;width:306px;z-index:3}
-.hs-card{background:rgba(255,255,255,.86);border:1px solid rgba(255,255,255,.9);border-radius:12px;padding:18px 20px;box-shadow:var(--sh2);backdrop-filter:blur(12px)}
-.hs-big{font-size:36px;font-weight:300;letter-spacing:-.9px;line-height:1.1;margin-top:6px}
-.hs-big small{font-size:14px;color:var(--mute);margin-left:2px;letter-spacing:0}
-.hs-sub{font-size:10.5px;color:var(--mute);margin-top:2px}
-.hs-rows{margin-top:16px;display:flex;flex-direction:column;gap:9px}
-.hs-row{display:grid;grid-template-columns:1fr 54px 40px;gap:8px;align-items:center}
-.hs-n{font-size:11.5px;color:var(--ink2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.hs-b{height:3px;background:rgba(13,37,61,.1);border-radius:2px;overflow:hidden}
-.hs-b i{display:block;height:100%;background:var(--primary);border-radius:2px}
-.hs-v{font-size:11px;text-align:right;color:var(--ink);font-variant-numeric:tabular-nums}
-@media (max-width:1180px){.hero-side{display:none}}
+.hero-side{position:relative;margin-top:8px}
+.hs-card{
+  position:relative;background:rgba(255,255,255,.78);border:1px solid rgba(255,255,255,.9);
+  border-radius:var(--r-lg);padding:24px 24px 20px;box-shadow:var(--sh3);
+  backdrop-filter:blur(18px) saturate(140%);-webkit-backdrop-filter:blur(18px) saturate(140%);
+  overflow:hidden;
+}
+.hs-card:before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+  box-shadow:inset 0 0 0 1px rgba(12,32,54,.05)}
+.hs-big{font-size:44px;font-weight:500;letter-spacing:-.04em;line-height:1;margin-top:12px;display:flex;align-items:baseline;gap:2px}
+.hs-big small{font-size:16px;color:var(--mute);letter-spacing:0;font-weight:400}
+.hs-sub{font-size:11px;color:var(--mute);margin-top:8px;line-height:1.5}
+.hs-bar{display:flex;gap:2px;height:6px;margin:18px 0 4px;border-radius:3px;overflow:hidden;background:var(--soft-2)}
+.hs-bar i{display:block;height:100%;background:var(--primary)}
+.hs-bar i:nth-child(2){background:var(--primary-soft);opacity:.75}
+.hs-bar i:nth-child(3){background:var(--primary-sub)}
+.hs-rows{margin-top:14px;display:flex;flex-direction:column;gap:10px}
+.hs-row{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center}
+.hs-n{font-size:12px;color:var(--ink2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:flex;align-items:center;gap:7px}
+.hs-n:before{content:"";width:5px;height:5px;border-radius:1px;background:var(--primary);flex:0 0 auto;opacity:.85}
+.hs-row:nth-child(2) .hs-n:before{opacity:.6}
+.hs-row:nth-child(3) .hs-n:before{opacity:.35}
+.hs-v{font-size:11.5px;text-align:right;color:var(--ink);font-variant-numeric:tabular-nums;font-weight:500}
+@media (max-width:1080px){
+  .hero-in{grid-template-columns:1fr;gap:36px}
+  .hero-side{max-width:420px}
+}
 
-/* ---------- verdict board ---------- */
-.board{position:relative;margin-top:44px;background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:var(--sh2);overflow:hidden}
-.board-top{padding:32px 32px 0}
+/* ---------------- verdict board ---------------- */
+.board{
+  position:relative;margin-top:40px;background:#fff;border:1px solid var(--line);
+  border-radius:var(--r-lg);box-shadow:var(--sh2);overflow:hidden;
+}
+.board-top{padding:40px 40px 32px}
 .board-meta{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-.board h2{font-size:26px;line-height:1.16;letter-spacing:-.64px;font-weight:300;margin:14px 0 0;max-width:980px}
-.board-grid{display:grid;grid-template-columns:1.05fr 1fr;gap:0;margin-top:24px;border-top:1px solid var(--line)}
-.thesis{background:var(--navy);color:#fff;padding:32px;display:flex;flex-direction:column}
-.thesis .eyebrow{color:rgba(255,255,255,.6);opacity:1}
-.thesis p{font-size:15px;line-height:1.62;font-weight:300;color:rgba(255,255,255,.9);margin-top:12px}
-.thesis-foot{margin-top:auto;padding-top:24px;border-top:1px solid rgba(255,255,255,.14);display:flex;gap:24px;flex-wrap:wrap}
-.thesis-foot .k{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.5)}
-.thesis-foot .v{font-size:13px;margin-top:3px;color:rgba(255,255,255,.92);line-height:1.45}
-.points{padding:28px 32px;margin:0;list-style:none;display:flex;flex-direction:column;gap:18px;justify-content:center}
-.points li{display:grid;grid-template-columns:20px 1fr;gap:12px}
-.points .idx{font-size:11px;font-weight:400;color:var(--primary);letter-spacing:.04em;padding-top:2px}
-.points .t{font-size:14px;font-weight:400;color:var(--ink)}
-.points .d{font-size:13px;line-height:1.55;color:var(--mute);margin-top:3px}
+.board h2{font-size:29px;line-height:1.28;letter-spacing:-.03em;font-weight:600;margin:16px 0 0;max-width:var(--w-title);text-wrap:balance}
+.board-grid{display:grid;grid-template-columns:1fr 1.06fr;gap:0;border-top:1px solid var(--line)}
+.thesis{
+  position:relative;color:#fff;padding:36px 40px;display:flex;flex-direction:column;
+  background:linear-gradient(158deg,#1a1f52 0%,#121740 46%,#0b0e2a 100%);
+  overflow:hidden;
+}
+.thesis:before{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(420px 220px at 12% -10%,rgba(124,108,255,.30),transparent 70%);
+}
+.thesis:after{
+  content:"";position:absolute;inset:0;pointer-events:none;opacity:.5;
+  background-image:linear-gradient(rgba(255,255,255,.05) 1px,transparent 1px),
+                   linear-gradient(90deg,rgba(255,255,255,.05) 1px,transparent 1px);
+  background-size:40px 40px;
+  -webkit-mask-image:linear-gradient(180deg,#000,transparent 70%);
+  mask-image:linear-gradient(180deg,#000,transparent 70%);
+}
+.thesis > *{position:relative}
+.thesis .eyebrow{color:rgba(255,255,255,.55)}
+.thesis p{font-size:14.5px;line-height:1.82;font-weight:400;color:rgba(255,255,255,.9);margin-top:14px;letter-spacing:.005em}
+.thesis-foot{margin-top:auto;padding-top:24px;border-top:1px solid rgba(255,255,255,.13);display:flex;gap:28px;flex-wrap:wrap}
+.thesis-foot .k{font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.45)}
+.thesis-foot .v{font-size:13px;margin-top:5px;color:rgba(255,255,255,.94);line-height:1.55}
+.points{padding:12px 40px;list-style:none;display:flex;flex-direction:column;justify-content:center}
+.points li{display:grid;grid-template-columns:26px 1fr;gap:14px;padding:16px 0;border-bottom:1px solid var(--line-2)}
+.points li:last-child{border-bottom:none}
+.points .idx{font-family:var(--mono);font-size:10.5px;font-weight:500;color:var(--primary);letter-spacing:.06em;padding-top:3px}
+.points .t{font-size:14px;font-weight:500;color:var(--ink);line-height:1.5}
+.points .d{font-size:12.5px;line-height:1.72;color:var(--mute);margin-top:5px}
 
-/* ---------- sections ---------- */
-.band{padding:64px 0}
-.band.soft{background:var(--soft);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
-.sec-head{max-width:96%;margin-bottom:32px}
-.sec-head h2{font-size:30px;font-weight:300;letter-spacing:-.64px;line-height:1.1;margin-top:10px}
-.sec-head p{font-size:13px;line-height:1.6;color:var(--mute);margin-top:12px}
-.card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:24px}
-.card-h{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:16px}
-.card-h h3{font-size:16px;font-weight:400;letter-spacing:-.1px}
-.grid-4{display:grid;grid-template-columns:repeat(auto-fit,minmax(168px,1fr));gap:10px}
-.grid-3{display:grid;grid-template-columns:1fr 1fr 2.2fr;gap:10px}
-.grid-2{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px}
+/* ---------------- sections ---------------- */
+.band{padding:92px 0;position:relative}
+.band.soft{background:var(--paper);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.band-tight{padding:64px 0}
+.sec-head{max-width:var(--w-lead);margin-bottom:38px}
+.sec-head .eyebrow{display:flex;align-items:center;gap:10px}
+.sec-head .eyebrow:before{content:"";width:22px;height:1px;background:var(--line-in);flex:0 0 auto}
+.sec-head h2{font-size:31px;font-weight:600;letter-spacing:-.03em;line-height:1.22;margin-top:12px;text-wrap:balance}
+.sec-head p{font-size:13.5px;line-height:1.78;color:var(--mute);margin-top:14px}
+.card{
+  background:#fff;border:1px solid var(--line);border-radius:var(--r);
+  padding:26px;box-shadow:var(--sh1);
+}
+.card-h{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:20px;padding-bottom:14px;border-bottom:1px solid var(--line-2)}
+.card-h h3{font-size:14.5px;font-weight:600;letter-spacing:-.005em}
+.card-fill{display:flex;flex-direction:column}
+.card-fill .card-h{flex:0 0 auto}
+.card-h .mute{font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase}
+.grid-4{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 2fr;gap:12px}
+.grid-2{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:18px}
 
 /* index cards */
-.idx-card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:15px;transition:box-shadow .18s}
-.idx-card:hover{box-shadow:var(--sh1)}
-.idx-card .nm{font-size:13px;color:var(--ink2);display:flex;justify-content:space-between;align-items:center}
-.idx-card .code{font-size:10px;color:var(--mute);letter-spacing:.04em}
-.idx-card .px{font-size:20px;font-weight:300;letter-spacing:-.26px;margin-top:8px}
-.idx-card .chg{display:flex;gap:14px;margin-top:8px;font-size:12px}
-.idx-card .chg span{color:var(--mute)}
-.idx-card .chg b{font-weight:400;margin-left:4px}
+.idx-card{
+  position:relative;background:#fff;border:1px solid var(--line);border-radius:var(--r);
+  padding:18px 18px 16px;transition:box-shadow .22s var(--ease),border-color .22s var(--ease),transform .22s var(--ease);
+  overflow:hidden;
+}
+.idx-card:hover{box-shadow:var(--sh2);border-color:#dbe3ee;transform:translateY(-1px)}
+.idx-card .nm{font-size:12.5px;color:var(--ink2);display:flex;justify-content:space-between;align-items:center;gap:8px}
+.idx-card .code{font-family:var(--mono);font-size:9.5px;color:var(--faint);letter-spacing:.06em}
+.idx-card .px{font-size:26px;font-weight:500;letter-spacing:-.04em;margin-top:10px;line-height:1.1}
+.idx-card .chg{display:flex;gap:16px;margin-top:12px;font-size:11.5px;color:var(--faint);font-variant-numeric:tabular-nums}
+.idx-card .chg span{display:inline-flex;align-items:center;gap:5px}
+.idx-card .chg b{font-weight:500}
 
 /* chips */
-.chips{display:flex;flex-wrap:wrap;gap:2px}
-.chip{display:inline-flex;align-items:center;gap:6px;background:#fff;border:1px solid var(--line);border-radius:var(--pill);padding:6px 12px;font-size:12px;color:var(--ink2)}
-.chip b{font-weight:400;color:var(--ink);font-variant-numeric:tabular-nums}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{
+  display:inline-flex;align-items:center;gap:7px;background:#fff;border:1px solid var(--line);
+  border-radius:var(--pill);padding:6px 11px;font-size:11.5px;color:var(--mute);
+  letter-spacing:.01em;
+}
+.chip b{font-weight:500;color:var(--ink);font-variant-numeric:tabular-nums}
 
 /* table */
-.tbl{width:100%;border-collapse:collapse;font-size:13px}
-.tbl th{text-align:right;font-weight:400;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--mute);padding:0 12px 10px;border-bottom:1px solid var(--line);white-space:nowrap;cursor:pointer;user-select:none}
+.tbl{width:100%;border-collapse:collapse;font-size:12.5px}
+.tbl th{
+  text-align:right;font-weight:400;font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--faint);padding:0 12px 11px;border-bottom:1px solid var(--line);
+  white-space:nowrap;cursor:pointer;user-select:none;transition:color .16s;
+}
 .tbl th:first-child{text-align:left}
+.tbl th:hover{color:var(--ink2)}
 .tbl th.sorted{color:var(--primary)}
-.tbl td{padding:8px 12px;border-bottom:1px solid var(--line);text-align:right;font-variant-numeric:tabular-nums;letter-spacing:-.42px;vertical-align:middle}
-.tbl td:first-child{text-align:left}
-.tbl tbody tr{cursor:pointer;transition:background .14s}
-.tbl tbody tr:hover{background:var(--soft)}
-.tbl tbody tr.active{background:rgba(83,58,253,.05)}
-.tbl .nm-cell{display:flex;align-items:center;gap:10px}
-.rank{width:22px;height:22px;border-radius:6px;background:var(--soft);color:var(--mute);font-size:11px;display:grid;place-items:center;font-weight:400;flex:0 0 auto}
-.rank.top{background:var(--navy);color:#fff}
-.ml-name{font-size:13.5px;font-weight:400;color:var(--ink);letter-spacing:0}
+.tbl th.c,.tbl td.c{text-align:center}
+.tbl th.sorted:after{content:"↓";font-size:10px;margin-left:4px;opacity:.8}
+.tbl td{
+  padding:8px;border-bottom:1px solid var(--line-2);text-align:right;
+  font-variant-numeric:tabular-nums;letter-spacing:-.005em;vertical-align:middle;
+}
+.tbl td:first-child{text-align:left;padding-left:14px}
+.tbl tbody tr{cursor:pointer;transition:background .16s}
+.tbl tbody tr:hover{background:#f8fafd}
+.tbl tbody tr.active{background:rgba(83,58,253,.045);box-shadow:inset 3px 0 0 var(--primary)}
+.tbl tbody tr:last-child td{border-bottom:none}
+.tbl .nm-cell{display:flex;align-items:center;gap:13px}
+.rank{
+  width:24px;height:24px;border-radius:7px;background:var(--soft);color:var(--faint);
+  font-size:11px;display:grid;place-items:center;font-weight:500;flex:0 0 auto;
+  border:1px solid var(--line);
+}
+.rank.top{background:linear-gradient(150deg,#1c2455,#0e1334);color:#fff;border-color:transparent;box-shadow:0 2px 6px -2px rgba(12,32,54,.5)}
+.ml-name{font-size:13.5px;font-weight:500;color:var(--ink);letter-spacing:0;display:flex;align-items:center;gap:5px;white-space:nowrap}
 /* 排名变化：紧贴主线名，不用 emoji，靠符号与颜色表达方向 */
-.rc{font-size:9.5px;font-weight:400;margin-left:5px;letter-spacing:0;font-variant-numeric:tabular-nums;cursor:help}
+.rc{font-size:9px;font-weight:500;letter-spacing:0;font-variant-numeric:tabular-nums;cursor:help}
 .rc.up{color:var(--up)}
 .rc.down{color:var(--down)}
-.ml-alias{font-size:11px;color:var(--mute);margin-top:2px;font-weight:300}
-.bar{position:relative;height:4px;width:60px;border-radius:2px;background:var(--line);overflow:hidden;display:inline-block;vertical-align:middle;margin-left:8px}
+.ml-alias{font-size:11px;color:var(--faint);margin-top:3px;font-weight:400}
+.bar{
+  position:relative;height:4px;width:56px;border-radius:2px;background:var(--soft-2);
+  overflow:hidden;display:inline-block;vertical-align:middle;margin-left:9px;
+}
 .bar i{position:absolute;left:0;top:0;bottom:0;border-radius:2px;background:var(--primary)}
-.pill-stage{display:inline-flex;align-items:center;font-size:10.5px;padding:3px 9px;border-radius:var(--pill);letter-spacing:.02em;white-space:nowrap}
-.st-ignition{background:#fdf1e4;color:#96601f}
-.st-expansion{background:#eceaff;color:#4434d4}
-.st-acceleration{background:#fde8ee;color:#c11a4f}
-.st-divergence{background:#f8f2e2;color:#8a6416}
-.st-fade{background:#eef1f5;color:#5b6b81}
-.st-none{background:#eef1f5;color:#5b6b81}
+.pill-stage{
+  display:inline-flex;align-items:center;gap:5px;font-size:10.5px;padding:4px 9px;
+  border-radius:var(--pill);letter-spacing:.03em;white-space:nowrap;font-weight:500;
+}
+.pill-stage:before{content:"";width:4px;height:4px;border-radius:50%;background:currentColor;opacity:.85}
+.st-ignition{background:#fdf2e6;color:#9a6320}
+.st-expansion{background:#eeebff;color:#3f2bd6}
+.st-acceleration{background:#fde9ef;color:#c01a4c}
+.st-divergence{background:#f8f2e3;color:#8a6416}
+.st-fade{background:#eff2f6;color:#5e6f85}
+.st-none{background:#eff2f6;color:#5e6f85}
 
-/* detail */
-.detail-top{display:grid;grid-template-columns:220px 1fr;gap:32px;align-items:start}
+/* ---------------- detail ---------------- */
+.detail-top{display:grid;grid-template-columns:236px 1fr;gap:40px;align-items:start}
 .ring-wrap{text-align:center}
-.ring{width:180px;height:180px}
-.ring-num{font-size:30px;font-weight:300;fill:var(--ink);letter-spacing:-.6px;font-variant-numeric:tabular-nums}
-.ring-lb{font-size:9px;fill:var(--mute);letter-spacing:.14em;text-transform:uppercase}
-.factor-row{display:grid;grid-template-columns:96px 1fr 52px;gap:12px;align-items:center;padding:7px 0}
-.factor-row .lb{font-size:12px;color:var(--ink2)}
-.factor-row .tr{height:6px;background:var(--line);border-radius:3px;overflow:hidden}
-.factor-row .tr i{display:block;height:100%;border-radius:3px;background:var(--primary)}
-.factor-row .vl{font-size:11.5px;text-align:right;color:var(--mute);font-variant-numeric:tabular-nums}
-.narr-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-.narr{background:var(--soft);border-radius:8px;padding:16px 18px}
-.narr .k{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--mute);font-weight:400}
-.narr .v{font-size:12px;line-height:1.62;color:var(--ink2);margin-top:8px}
-.narr.bear{background:#fdf3f5;border:1px solid #f6dde3}
+.ring{width:196px;height:196px;overflow:visible}
+.ring-num{font-size:31px;font-weight:500;fill:var(--ink);letter-spacing:-.04em;font-variant-numeric:tabular-nums}
+.ring-lb{font-family:var(--mono);font-size:8px;fill:var(--faint);letter-spacing:.2em}
+.ring-ticks{stroke:#c9d5e4;stroke-width:1.4;fill:none;stroke-dasharray:1 5.07;opacity:.9}
+.factor-row{display:grid;grid-template-columns:104px 1fr 54px;gap:14px;align-items:center;padding:9px 0}
+.factor-row .lb{font-size:12px;color:var(--ink2);display:flex;align-items:center;justify-content:space-between;gap:6px}
+.factor-row .tr{height:6px;background:var(--soft-2);border-radius:3px;overflow:hidden}
+.factor-row .tr i{
+  display:block;height:100%;border-radius:3px;
+  background:linear-gradient(90deg,rgba(83,58,253,.55),var(--primary));
+  transition:width .5s var(--ease);
+}
+.factor-row .vl{font-size:11.5px;text-align:right;color:var(--ink2);font-variant-numeric:tabular-nums;font-weight:500}
+.narr-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.narr{background:#fbfcfe;border:1px solid var(--line-2);border-radius:var(--r-sm);padding:18px 20px}
+.narr .k{font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);font-weight:500}
+.narr .v{font-size:12.5px;line-height:1.8;color:var(--ink2);margin-top:9px}
+.narr.bear{background:#fdf5f7;border-color:#f6dfe5}
 .narr.bear .k{color:#b13a5c}
 .narr.bear .v{color:#7d2a44}
-.driver{display:grid;grid-template-columns:74px 1fr;gap:14px;padding:12px 0;border-bottom:1px dashed var(--line)}
-.driver:last-child{border-bottom:none}
-.driver .dt{font-size:11px;color:var(--mute);font-variant-numeric:tabular-nums;padding-top:2px}
-.driver .tt{font-size:13.5px;font-weight:400;color:var(--ink);display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.tag{font-size:9.5px;padding:2px 7px;border-radius:4px;background:var(--soft);color:var(--mute);letter-spacing:.04em;border:1px solid var(--line)}
-.tag.policy{background:#eceaff;color:#4434d4;border-color:#dcd8ff}
-.tag.industry{background:#e8f6f1;color:#0d7a58;border-color:#cdede2}
-.tag.earnings{background:#fdf1e4;color:#96601f;border-color:#f5e2c9}
-.tag.event{background:#fde8ee;color:#c11a4f;border-color:#f9d3dd}
-.driver .dd{font-size:12.5px;line-height:1.55;color:var(--mute);margin-top:5px}
-.driver .src{font-size:10.5px;color:var(--mute);margin-top:5px}
-.m-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(104px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:8px;overflow:hidden}
-.m-cell{background:#fff;padding:11px 12px}
-.m-cell .k{font-size:10px;color:var(--mute);letter-spacing:.02em}
-.m-cell .v{font-size:15px;margin-top:3px;font-variant-numeric:tabular-nums;letter-spacing:-.3px}
-.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:20px}
-.tab{font-size:12.5px;padding:7px 14px;border-radius:var(--pill);border:1px solid var(--line);background:#fff;color:var(--ink2);cursor:pointer;transition:.15s}
-.tab:hover{border-color:var(--line-in)}
-.tab.on{background:var(--navy);border-color:var(--navy);color:#fff}
-.inval{display:flex;flex-wrap:wrap;gap:5px 10px;padding:10px 0;border-bottom:1px dashed var(--line);font-size:12.5px;line-height:1.55}
-.inval:last-child{border-bottom:none}
+.driver{display:grid;grid-template-columns:78px 1fr;gap:18px;padding:12px 0;border-bottom:1px solid var(--line-2)}
+.driver:first-of-type{padding-top:4px}
+.driver:last-child{border-bottom:none;padding-bottom:0}
+.driver .dt{font-family:var(--mono);font-size:10.5px;color:var(--faint);padding-top:3px;letter-spacing:0}
+.driver .tt{font-size:13.5px;font-weight:500;color:var(--ink);display:flex;align-items:center;gap:8px;flex-wrap:wrap;line-height:1.5}
+.tag{
+  font-size:9.5px;padding:2px 7px;border-radius:4px;background:var(--soft);color:var(--mute);
+  letter-spacing:.04em;border:1px solid var(--line);font-weight:400;white-space:nowrap;
+}
+.tag.policy{background:#eeebff;color:#3f2bd6;border-color:#ded9ff}
+.tag.industry{background:#e9f7f1;color:#0c7353;border-color:#cdeee1}
+.tag.earnings{background:#fdf2e6;color:#9a6320;border-color:#f6e3ca}
+.tag.event{background:#fde9ef;color:#c01a4c;border-color:#fad4de}
+.driver .dd{font-size:12.5px;line-height:1.7;color:var(--mute);margin-top:6px}
+.driver .src{font-family:var(--mono);font-size:10px;color:var(--faint);margin-top:7px;letter-spacing:.02em}
+.m-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(104px,1fr));gap:8px}
+.m-cell{
+  background:#fbfcfe;border:1px solid var(--line-2);border-radius:9px;padding:11px 13px;
+  transition:border-color .18s var(--ease),background .18s var(--ease);
+}
+.m-cell:hover{border-color:#dbe3ee;background:#fff}
+.m-cell .k{font-size:10px;color:var(--faint);letter-spacing:.02em}
+.m-cell .v{font-size:15px;margin-top:4px;font-variant-numeric:tabular-nums;letter-spacing:-.02em;font-weight:500}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:22px}
+.tab{
+  font-size:12.5px;padding:8px 15px;border-radius:var(--pill);border:1px solid var(--line);
+  background:#fff;color:var(--ink2);cursor:pointer;transition:.16s;font-weight:400;
+}
+.tab:hover{border-color:var(--line-in);color:var(--ink)}
+.tab.on{background:var(--ink);border-color:var(--ink);color:#fff;box-shadow:0 2px 8px -3px rgba(12,32,54,.55)}
+.inval{display:flex;flex-wrap:wrap;gap:6px 10px;padding:10px 0;border-bottom:1px solid var(--line-2);font-size:12.5px;line-height:1.6}
+.inval:first-of-type{padding-top:2px}
+.inval:last-child{border-bottom:none;padding-bottom:2px}
 /* 默认：条件独占一行，阈值整行铺在下方——避免长短文本互相挤压 */
-.inval .cond{color:var(--ink2);flex:1 1 100%;min-width:0;overflow-wrap:anywhere}
-.inval .thr{color:var(--mute);font-variant-numeric:tabular-nums;white-space:normal;overflow-wrap:anywhere;font-size:11.5px;background:var(--soft);padding:3px 8px;border-radius:4px;flex:1 1 100%;min-width:0;height:fit-content}
+.inval .cond{color:var(--ink);font-weight:500;flex:1 1 100%;min-width:0;overflow-wrap:anywhere}
+.inval .cond .mute{font-weight:400}
+.inval .thr{
+  color:#463280;font-variant-numeric:tabular-nums;white-space:normal;overflow-wrap:anywhere;
+  font-size:11px;background:var(--primary-wash);padding:4px 9px;border-radius:5px;
+  flex:0 1 auto;max-width:100%;min-width:0;height:fit-content;font-weight:500;letter-spacing:.01em;
+}
 /* 阶段判定规则：标签与规则同行，标签收窄，规则列自适应 */
-.inval.stage-rule{flex-wrap:nowrap;align-items:flex-start}
+.inval.stage-rule{flex-wrap:nowrap;align-items:flex-start;gap:14px}
 .inval.stage-rule .cond{flex:0 0 auto}
-.inval.stage-rule .thr{flex:1 1 auto;background:transparent;padding:0;text-align:left;font-size:12px;color:var(--mute)}
+.inval.stage-rule .thr{flex:1 1 auto;background:transparent;padding:1px 0 0;border:0;text-align:left;font-size:12px;color:var(--mute)}
+/* 观察清单：左条目 / 右说明，两列对齐，不再让短句飘到中间 */
+.watch-row{display:grid;grid-template-columns:minmax(180px,.85fr) 1.15fr;gap:8px 28px;padding:10px 0;border-bottom:1px solid var(--line-2);align-items:baseline}
+.watch-row:first-of-type{padding-top:2px}
+.watch-row:last-child{border-bottom:none;padding-bottom:2px}
+.watch-row .it{font-size:13px;color:var(--ink);font-weight:500;line-height:1.55}
+.watch-row .why{font-size:12px;color:var(--mute);line-height:1.7}
 .dots{display:flex;gap:6px;align-items:center}
 .dots i{width:6px;height:6px;border-radius:50%;background:var(--line);display:block}
 .dots i.on{background:var(--primary)}
 
 /* stage track */
-.track{display:flex;gap:4px;margin-top:26px}
+.track{display:flex;gap:5px;margin-top:26px}
 .track .seg{flex:1;text-align:center}
-.track .bar2{height:4px;border-radius:2px;background:var(--line);margin-bottom:8px;position:relative;overflow:hidden}
-.track .bar2 i{position:absolute;inset:0;background:var(--primary);transform-origin:left;transform:scaleX(0);transition:transform .5s cubic-bezier(.2,.7,.3,1)}
-.track .seg.done .bar2 i{transform:scaleX(1);opacity:.32}
-.track .seg.now .bar2 i{transform:scaleX(1)}
-.track .lb{font-size:11px;color:var(--mute)}
-.track .seg.now .lb{color:var(--ink);font-weight:400}
+.track .bar2{height:4px;border-radius:2px;background:var(--soft-2);margin-bottom:9px;position:relative;overflow:hidden}
+.track .bar2 i{position:absolute;inset:0;background:var(--primary);transform-origin:left;transform:scaleX(0);transition:transform .5s var(--ease)}
+.track .seg.done .bar2 i{transform:scaleX(1);opacity:.28}
+.track .seg.now .bar2 i{transform:scaleX(1);box-shadow:0 0 0 1px rgba(83,58,253,.2)}
+.track .lb{font-size:10.5px;color:var(--faint);letter-spacing:.02em}
+.track .seg.now .lb{color:var(--ink);font-weight:500}
 .track .seg.done .lb{color:var(--ink2)}
 
 /* window visual */
-.win-strip{display:flex;gap:3px;margin-top:18px;height:56px}
-.win{position:relative;border-radius:6px;padding:10px 12px;display:flex;flex-direction:column;justify-content:space-between;overflow:hidden}
-.win .d{font-size:11px;font-weight:400;letter-spacing:.02em}
-.win .r{font-size:10px;opacity:.72;line-height:1.3}
-.win .w{position:absolute;right:8px;top:8px;font-size:9px;opacity:.6;letter-spacing:.04em}
-.w-0{background:#f0f2f6;color:#4a5a70}
-.w-1{background:#e9e7ff;color:#4434d4}
-.w-2{background:var(--primary);color:#fff}
-.w-3{background:#cfcaff;color:#2e2b8c}
-.w-4{background:#f5e9d4;color:#8a6416}
+.win-strip{display:flex;gap:4px;margin-top:4px;height:68px}
+.win{
+  position:relative;border-radius:var(--r-xs);padding:12px 13px;
+  display:flex;flex-direction:column;justify-content:space-between;overflow:hidden;
+  transition:transform .2s var(--ease);
+}
+.win:hover{transform:translateY(-2px)}
+.win .d{font-size:12px;font-weight:500;letter-spacing:0;line-height:1.25}
+.win .r{font-size:10px;opacity:.78;line-height:1.35;letter-spacing:.01em}
+.win .w{position:absolute;right:10px;top:10px;font-family:var(--mono);font-size:9px;opacity:.7;letter-spacing:.04em}
+.w-0{background:#f1f4f8;color:#4a5a70}
+.w-1{background:#ece9ff;color:#3f2bd6}
+.w-2{background:linear-gradient(160deg,#5b43ff,#4326e0);color:#fff;box-shadow:0 8px 20px -12px rgba(83,58,253,.9)}
+.w-3{background:#d6d0ff;color:#2c1fa0}
+.w-4{background:var(--cream);color:#8a6416}
 
 /* rotation */
-.rot-col h4{font-size:12px;font-weight:400;color:var(--mute);letter-spacing:.06em;text-transform:uppercase;margin-bottom:12px}
-.rot-item{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--line);font-size:13px}
-.rot-item:last-child{border-bottom:none}
+.rot-col h4{font-family:var(--mono);font-size:9.5px;font-weight:500;color:var(--faint);letter-spacing:.14em;text-transform:uppercase;margin-bottom:6px}
+.rot-item{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--line-2);font-size:12.5px}
+.rot-item:last-child{border-bottom:none;padding-bottom:0}
 .rot-item .n{color:var(--ink2)}
-.rot-item .v{font-variant-numeric:tabular-nums;font-size:12.5px}
-.tl{position:relative;padding-left:20px}
-.tl:before{content:"";position:absolute;left:4px;top:6px;bottom:6px;width:1px;background:var(--line)}
-.tl-item{position:relative;padding:0 0 18px 0}
-.tl-item:last-child{padding-bottom:0}
-.tl-item:before{content:"";position:absolute;left:-19px;top:5px;width:7px;height:7px;border-radius:50%;background:#fff;border:1.5px solid var(--primary-sub)}
-.tl-item.positive:before{background:var(--up);border-color:var(--up)}
-.tl-item.negative:before{background:var(--down);border-color:var(--down)}
-.tl-d{font-size:10.5px;color:var(--mute);font-variant-numeric:tabular-nums;letter-spacing:.03em}
-.tl-t{font-size:13px;color:var(--ink2);margin-top:3px;line-height:1.45}
+.rot-item .v{font-variant-numeric:tabular-nums;font-size:12.5px;font-weight:500}
+.tl-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 40px}
+.tl-item{position:relative;padding:6px 0 6px 20px;border-bottom:1px solid var(--line-2)}
+.tl-item:before{
+  content:"";position:absolute;left:0;top:20px;width:6px;height:6px;border-radius:50%;
+  background:#fff;border:1.5px solid var(--primary-sub);
+}
+.tl-item.positive:before{background:var(--up);border-color:var(--up);box-shadow:0 0 0 3px rgba(225,29,72,.1)}
+.tl-item.negative:before{background:var(--down);border-color:var(--down);box-shadow:0 0 0 3px rgba(13,155,108,.1)}
+.tl-d{font-family:var(--mono);font-size:10px;color:var(--faint);letter-spacing:.04em}
+.tl-t{font-size:12.5px;color:var(--ink2);margin-top:5px;line-height:1.6}
 
 /* risks / scenarios */
-.risk{border:1px solid var(--line);border-radius:10px;padding:18px 20px;background:#fff}
-.risk-h{display:flex;align-items:center;gap:10px}
+.risk{
+  position:relative;border:1px solid var(--line);border-radius:var(--r);padding:20px 22px 20px 26px;
+  background:#fff;box-shadow:var(--sh1);overflow:hidden;
+  transition:box-shadow .2s var(--ease);
+}
+.risk:hover{box-shadow:var(--sh2)}
+.risk:before{content:"";position:absolute;left:0;top:16px;bottom:16px;width:3px;border-radius:0 3px 3px 0;background:var(--line-in)}
+.risk:has(.lv.high):before{background:var(--up)}
+.risk:has(.lv.medium):before{background:#d79a2b}
+.risk:has(.lv.low):before{background:#9aa8ba}
+.risk-h{display:flex;align-items:center;gap:9px}
 .lv{width:6px;height:6px;border-radius:50%;flex:0 0 auto}
-.lv.high{background:var(--up)}
-.lv.medium{background:#d79a2b}
-.lv.low{background:#8d9bb0}
-.risk h4{font-size:14px;font-weight:400}
-.risk .d{font-size:12px;line-height:1.6;color:var(--mute);margin-top:10px}
-.risk .kv{display:flex;gap:8px;margin-top:10px;font-size:11.5px;line-height:1.5}
-.risk .kv b{font-weight:400;color:var(--ink2);flex:0 0 auto}
+.lv.high{background:var(--up);box-shadow:0 0 0 3px rgba(225,29,72,.12)}
+.lv.medium{background:#d79a2b;box-shadow:0 0 0 3px rgba(215,154,43,.14)}
+.lv.low{background:#9aa8ba;box-shadow:0 0 0 3px rgba(154,168,186,.16)}
+.tag.lvtag{font-size:9.5px;letter-spacing:.06em}
+.tag.lvtag.high{background:#fdeef2;color:#b3194a;border-color:#f8d6e0}
+.tag.lvtag.medium{background:#fdf4e6;color:#9a6320;border-color:#f6e6cd}
+.tag.lvtag.low{background:#f0f3f7;color:#5e6f85;border-color:#e4e9f0}
+.risk h4{font-size:13.5px;font-weight:600;line-height:1.5}
+.risk .d{font-size:12.5px;line-height:1.75;color:var(--mute);margin-top:10px}
+.risk .kv{display:flex;gap:10px;margin-top:9px;font-size:11.5px;line-height:1.65}
+.risk .kv b{
+  font-weight:500;color:var(--ink2);flex:0 0 auto;font-size:10px;letter-spacing:.08em;
+  background:var(--soft);border:1px solid var(--line-2);border-radius:4px;padding:1px 6px;height:fit-content;margin-top:2px;
+}
 .risk .kv span{color:var(--mute)}
-.scn{background:#fff;border:1px solid var(--line);border-radius:12px;padding:22px;display:flex;flex-direction:column}
-.scn .p{font-size:30px;font-weight:300;letter-spacing:-.5px;font-variant-numeric:tabular-nums}
-.scn .nm{font-size:13px;color:var(--ink2);margin-top:4px}
-.scn .pb{height:3px;background:var(--line);border-radius:2px;margin:14px 0;overflow:hidden}
-.scn .pb i{display:block;height:100%;background:var(--primary)}
-.scn .a{font-size:12px;line-height:1.6;color:var(--mute);margin-top:6px}
-.scn .a b{font-weight:400;color:var(--ink2)}
+.scn{
+  background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:22px 24px;
+  display:flex;flex-direction:column;box-shadow:var(--sh1);position:relative;overflow:hidden;
+}
+.scn-head{display:flex;align-items:baseline;gap:12px}
+.scn .p{font-size:34px;font-weight:500;letter-spacing:-.045em;font-variant-numeric:tabular-nums;line-height:1}
+.scn .nm{font-size:12.5px;color:var(--mute);margin-top:0;letter-spacing:.01em}
+.scn .pb{height:3px;background:#e7ecf3;border-radius:2px;margin:16px 0 14px;overflow:hidden}
+.scn .pb i{display:block;height:100%;background:linear-gradient(90deg,rgba(83,58,253,.5),var(--primary));border-radius:2px}
+.scn .a{font-size:12px;line-height:1.75;color:var(--mute);margin-top:7px;display:flex;gap:10px}
+.scn .a b{font-weight:500;color:var(--ink2);flex:0 0 auto;width:26px;font-size:10.5px;letter-spacing:.04em;padding-top:2px}
+.scn .a span{flex:1;min-width:0}
 
 /* playbook dark */
-.dark-panel{background:var(--navy);color:#fff;border-radius:16px;padding:36px;position:relative;overflow:hidden}
-.dark-panel .eyebrow{color:rgba(255,255,255,.55);opacity:1}
-.dark-panel h2{font-size:26px;font-weight:300;letter-spacing:-.4px;margin-top:10px;color:#fff}
-.rule{display:grid;grid-template-columns:1fr 1fr;gap:18px;padding:14px 0;border-bottom:1px solid rgba(255,255,255,.12);font-size:13px;line-height:1.55}
-.rule:last-child{border-bottom:none}
-.rule .if{color:rgba(255,255,255,.62)}
+.dark-panel{
+  position:relative;color:#fff;border-radius:22px;padding:44px 44px 40px;overflow:hidden;
+  background:linear-gradient(155deg,#171c4c 0%,#111540 42%,#090c24 100%);
+  box-shadow:0 40px 80px -48px rgba(9,12,36,.85);
+}
+.dark-panel:before{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(620px 300px at 8% -18%,rgba(124,108,255,.34),transparent 68%),
+             radial-gradient(460px 260px at 92% 108%,rgba(234,34,97,.18),transparent 70%);
+}
+.dark-panel:after{
+  content:"";position:absolute;inset:0;pointer-events:none;opacity:.55;
+  background-image:linear-gradient(rgba(255,255,255,.045) 1px,transparent 1px),
+                   linear-gradient(90deg,rgba(255,255,255,.045) 1px,transparent 1px);
+  background-size:48px 48px;
+  -webkit-mask-image:linear-gradient(180deg,#000,transparent 82%);
+  mask-image:linear-gradient(180deg,#000,transparent 82%);
+}
+.dark-panel > *{position:relative}
+.dark-panel .eyebrow{color:rgba(255,255,255,.5)}
+.dark-panel h2{font-size:28px;font-weight:600;letter-spacing:-.03em;margin-top:12px;color:#fff;line-height:1.25}
+.rule{display:grid;grid-template-columns:1fr 1fr;gap:28px;padding:15px 0;border-bottom:1px solid rgba(255,255,255,.1);font-size:12.5px;line-height:1.65}
+.rule:first-child{padding-top:0}
+.rule:last-child{border-bottom:none;padding-bottom:0}
+.rule .if{color:rgba(255,255,255,.6)}
 .rule .then{color:#fff}
-.rule .if:before{content:"IF";display:block;font-size:9px;letter-spacing:.14em;color:rgba(255,255,255,.4);margin-bottom:3px}
-.rule .then:before{content:"THEN";display:block;font-size:9px;letter-spacing:.14em;color:var(--primary-sub);margin-bottom:3px}
-.dark-panel .check{display:flex;gap:10px;font-size:12.5px;color:rgba(255,255,255,.8);padding:6px 0;line-height:1.5}
-.dark-panel .check span{color:var(--primary-sub);flex:0 0 auto}
+.rule .if:before,.rule .then:before{
+  display:block;font-family:var(--mono);font-size:8.5px;letter-spacing:.18em;margin-bottom:4px;font-weight:500;
+}
+.rule .if:before{content:"IF";color:rgba(255,255,255,.34)}
+.rule .then:before{content:"THEN";color:#a99cff}
+.dark-panel .pb-grid > div:last-child{border-left:1px solid rgba(255,255,255,.09);padding-left:34px}
+.dark-panel .check{display:flex;gap:10px;font-size:12.5px;color:rgba(255,255,255,.82);padding:8px 0;line-height:1.6;border-bottom:1px solid rgba(255,255,255,.07)}
+.dark-panel .check:last-of-type{border-bottom:none}
+.dark-panel .check span:first-child{color:#a99cff;flex:0 0 auto;font-size:12px}
 
 /* sources table */
-.src-tbl{width:100%;border-collapse:collapse;font-size:12.5px}
-.src-tbl th{text-align:left;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--mute);font-weight:400;padding:0 10px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
-.src-tbl td{padding:11px 10px;border-bottom:1px solid var(--line);vertical-align:top;color:var(--ink2)}
+.src-tbl{width:100%;border-collapse:collapse;font-size:12px}
+.src-tbl th{
+  text-align:left;font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--faint);font-weight:400;padding:0 10px 10px;border-bottom:1px solid var(--line);white-space:nowrap;
+}
+.src-tbl td{padding:12px 10px;border-bottom:1px solid var(--line-2);vertical-align:top;color:var(--ink2);line-height:1.55}
+.src-tbl tr:last-child td{border-bottom:none}
 .src-tbl th:first-child,.src-tbl td:first-child{padding-left:0}
 /* 类别/可靠性两列按自身内容收窄，剩余宽度全部给来源列，避免列头被压成竖排 */
 .src-tbl th:nth-child(2),.src-tbl td:nth-child(2){width:1%;white-space:nowrap}
 .src-tbl th:last-child,.src-tbl td:last-child{width:1%;white-space:nowrap;text-align:right;padding-right:0}
 .src-tbl td.mono{font-variant-numeric:tabular-nums;color:var(--mute);white-space:nowrap;font-size:11.5px}
-.rel{display:inline-block;font-size:10px;padding:2px 7px;border-radius:4px}
-.rel.high{background:#e8f6f1;color:#0d7a58}
-.rel.medium{background:#fdf1e4;color:#96601f}
-.rel.low{background:#eef1f5;color:#5b6b81}
-.rel.unknown{background:#eef1f5;color:#5b6b81}
+.rel{display:inline-block;font-size:9.5px;padding:2px 7px;border-radius:4px;letter-spacing:.04em}
+.rel.high{background:#e9f7f1;color:#0c7353}
+.rel.medium{background:#fdf2e6;color:#9a6320}
+.rel.low{background:#eff2f6;color:#5e6f85}
+.rel.unknown{background:#eff2f6;color:#5e6f85}
 
 /* drawer */
-.overlay{position:fixed;inset:0;background:rgba(13,37,61,.34);backdrop-filter:blur(2px);z-index:90;display:flex;justify-content:flex-end}
-.drawer{width:min(860px,94vw);height:100%;background:#fff;box-shadow:-12px 0 40px rgba(0,55,112,.14);display:flex;flex-direction:column;animation:slidein .26s cubic-bezier(.2,.7,.3,1)}
-@keyframes slidein{from{transform:translateX(24px);opacity:.6}to{transform:none;opacity:1}}
-.drawer-h{padding:20px 24px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px}
-.drawer-h h3{font-size:16px;font-weight:400}
-.drawer-b{flex:1;overflow:auto;padding:20px 24px}
-.drawer-f{padding:14px 24px;border-top:1px solid var(--line);display:flex;gap:10px;justify-content:flex-end;background:var(--soft)}
-pre.code{background:var(--soft);border:1px solid var(--line);border-radius:8px;padding:16px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:11.5px;line-height:1.65;color:var(--ink2);white-space:pre-wrap;word-break:break-word;max-height:calc(100vh - 260px);overflow:auto;margin:0;letter-spacing:0;font-weight:400;tab-size:2}
-textarea.code{width:100%;min-height:260px;background:var(--soft);border:1px solid var(--line);border-radius:8px;padding:14px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11.5px;line-height:1.6;color:var(--ink2);resize:vertical;outline:none}
-textarea.code:focus{border-color:var(--primary)}
-.diag{margin-top:10px;border-radius:8px;padding:10px 12px;font-size:11.5px;line-height:1.65;letter-spacing:0;border:1px solid var(--line);background:var(--soft);color:var(--ink2);white-space:pre-wrap;word-break:break-word}
-.diag.ok{border-color:rgba(15,157,112,.32);background:rgba(15,157,112,.06);color:#0a6b4d}
-.diag.err{border-color:rgba(234,34,97,.28);background:rgba(234,34,97,.05);color:#a3123f}
-.diag.warn{border-color:rgba(155,104,41,.32);background:rgba(155,104,41,.07);color:#7a5310}
+.overlay{position:fixed;inset:0;background:rgba(9,20,36,.42);backdrop-filter:blur(4px);z-index:90;display:flex;justify-content:flex-end}
+.drawer{
+  width:min(880px,94vw);height:100%;background:#fff;box-shadow:-24px 0 60px rgba(9,20,36,.24);
+  display:flex;flex-direction:column;animation:slidein .28s var(--ease);
+}
+@keyframes slidein{from{transform:translateX(28px);opacity:.5}to{transform:none;opacity:1}}
+.drawer-h{padding:20px 26px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px}
+.drawer-h h3{font-size:15px;font-weight:600}
+.drawer-b{flex:1;overflow:auto;padding:22px 26px}
+.drawer-f{padding:14px 26px;border-top:1px solid var(--line);display:flex;gap:10px;justify-content:flex-end;background:var(--soft)}
+pre.code{
+  background:var(--soft);border:1px solid var(--line);border-radius:var(--r-sm);padding:18px;
+  font-family:var(--mono);font-size:11.5px;line-height:1.7;color:var(--ink2);
+  white-space:pre-wrap;word-break:break-word;max-height:calc(100vh - 260px);overflow:auto;
+  margin:0;letter-spacing:0;font-weight:400;tab-size:2;
+}
+textarea.code{
+  width:100%;min-height:260px;background:var(--soft);border:1px solid var(--line);border-radius:var(--r-sm);
+  padding:14px;font-family:var(--mono);font-size:11.5px;line-height:1.65;color:var(--ink2);resize:vertical;outline:none;
+}
+textarea.code:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(83,58,253,.1)}
+.diag{
+  margin-top:10px;border-radius:var(--r-sm);padding:11px 13px;font-size:11.5px;line-height:1.7;
+  letter-spacing:0;border:1px solid var(--line);background:var(--soft);color:var(--ink2);
+  white-space:pre-wrap;word-break:break-word;
+}
+.diag.ok{border-color:rgba(13,155,108,.28);background:rgba(13,155,108,.06);color:#0a6b4d}
+.diag.err{border-color:rgba(225,29,72,.24);background:rgba(225,29,72,.05);color:#a3123f}
+.diag.warn{border-color:rgba(138,95,34,.28);background:rgba(138,95,34,.06);color:#7a5310}
 /* 复算分与记录分不一致时的提示，只用颜色+问号，不加感叹号噪音 */
-.audit-warn{color:#b13a5c;font-weight:400;margin-left:4px;cursor:help;border-bottom:1px dotted currentColor}
+.audit-warn{color:#b13a5c;font-weight:500;margin-left:4px;cursor:help;border-bottom:1px dotted currentColor}
 /* 契约体检：把「报告说」和「算出来」的差异摊在明面上 */
-.fresh{margin-top:18px;padding:10px 14px;border:1px solid #efd6b8;background:#fdf7ee;color:#8a5a1e;font-size:12px;line-height:1.65;border-radius:8px;max-width:820px}
-.fresh b{font-weight:500;color:#7a4a10;margin-right:6px}
-.audit-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:11px 15px;border-radius:10px;font-size:12px;line-height:1.55;margin:0 0 18px}
-.audit-bar.ok{background:#eef7f2;border:1px solid #cfe8da;color:#1c6b46}
-.audit-bar.bad{background:#fdf3f5;border:1px solid #f2d5dd;color:#9d2a4a}
-.audit-bar .a{font-weight:500}
-.audit-bar .lnk{color:inherit;text-decoration:underline;text-underline-offset:2px;cursor:pointer;background:none;border:0;font:inherit;padding:0}
-.audit-list{display:flex;flex-direction:column;gap:8px}
-.audit-item{display:flex;align-items:flex-start;gap:10px;font-size:12.5px;line-height:1.6;padding:8px 12px;border-radius:8px;background:#f6f8fb}
+.fresh{
+  margin-top:22px;padding:12px 16px;border:1px solid #efd9bd;background:#fdf8f0;color:#8a5a1e;
+  font-size:12px;line-height:1.7;border-radius:var(--r-sm);max-width:var(--w-audit);
+}
+.fresh b{font-weight:600;color:#7a4a10;margin-right:6px}
+.audit-bar{
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:11px 16px;border-radius:var(--r-sm);
+  font-size:11.5px;line-height:1.6;margin:0 0 20px;letter-spacing:.005em;
+}
+.audit-bar.ok{background:rgba(13,155,108,.055);border:1px solid rgba(13,155,108,.18);color:#186a47}
+.audit-bar.bad{background:rgba(225,29,72,.045);border:1px solid rgba(225,29,72,.17);color:#9d2a4a}
+.audit-bar .a{font-weight:600;letter-spacing:.01em}
+.audit-bar .lnk{
+  color:inherit;text-decoration:underline;text-underline-offset:2px;cursor:pointer;
+  background:none;border:0;font:inherit;padding:0;opacity:.85;
+}
+.audit-bar .lnk:hover{opacity:1}
+.audit-list{display:flex;flex-direction:column;gap:6px}
+.audit-item{display:flex;align-items:flex-start;gap:10px;font-size:12px;line-height:1.65;padding:9px 12px;border-radius:var(--r-xs);background:#f7f9fc}
 .audit-item.err{background:#fdf3f5}
 .audit-item.warn{background:#fdf8f0}
-.audit-item .lv{flex:none;font-size:11px;padding:0 7px;border-radius:999px;height:18px;line-height:16px;border:1px solid;margin-top:1px}
-.audit-item.err .lv{color:#a72b4d;border-color:#f0cbd6;background:#fff}
+.audit-item .lv{
+  flex:none;font-size:10px;padding:0 7px;border-radius:var(--pill);height:18px;line-height:16px;
+  border:1px solid;margin-top:1px;width:auto;
+}
+.audit-item.err .lv{color:#a72b4d;border-color:#f2d3dd;background:#fff}
 .audit-item.warn .lv{color:#8a5a1e;border-color:#f0dcc0;background:#fff}
-.audit-item.info .lv{color:#4a5a72;border-color:#dbe3ec;background:#fff}
+.audit-item.info .lv{color:#4a5a72;border-color:#dce4ee;background:#fff}
 .audit-item .sc{flex:none;font-weight:500;color:var(--ink);max-width:150px}
 .audit-item .tx{flex:1;color:var(--mute)}
-.flag-dot{display:inline-block;margin-left:5px;font-size:10px;color:#b13a5c;cursor:help;border-bottom:1px dotted currentColor;line-height:1.2}
+.flag-dot{
+  display:inline-block;font-size:9px;color:#b13a5c;cursor:help;border-bottom:1px dotted currentColor;
+  line-height:1.3;font-weight:500;
+}
 
 /* toast */
-.toast{position:fixed;left:50%;bottom:32px;transform:translateX(-50%) translateY(8px);background:var(--navy);color:#fff;font-size:12.5px;padding:11px 20px;border-radius:var(--pill);z-index:120;opacity:0;transition:.24s;pointer-events:none;box-shadow:var(--sh2)}
+.toast{
+  position:fixed;left:50%;bottom:34px;transform:translateX(-50%) translateY(10px);
+  background:var(--ink);color:#fff;font-size:12.5px;padding:11px 20px;border-radius:var(--pill);
+  z-index:120;opacity:0;transition:.26s var(--ease);pointer-events:none;box-shadow:var(--sh3);
+}
 .toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
 
+/* cta */
+.cta{
+  display:grid;grid-template-columns:1.25fr 1fr;gap:44px;align-items:center;padding:38px 40px;
+  background:radial-gradient(640px 260px at 0% -10%,rgba(83,58,253,.07),transparent 70%),#fff;
+}
+.cta h2{font-size:26px;letter-spacing:-.028em;margin-top:12px;line-height:1.35}
+.cta p{font-size:13px;line-height:1.78;color:var(--mute);margin-top:14px;max-width:var(--w-copy)}
+.cta-actions{display:flex;gap:10px;margin-top:22px;flex-wrap:wrap}
+.cta-steps{background:var(--paper);border:1px solid var(--line);border-radius:var(--r);padding:20px 22px}
+.cta-steps .eyebrow{margin-bottom:12px}
+.step{display:flex;align-items:flex-start;gap:12px;padding:8px 0;border-bottom:1px solid var(--line-2)}
+.step:last-child{border-bottom:none;padding-bottom:0}
+.step-n{
+  font-size:10px;font-weight:500;color:var(--primary);background:#fff;border:1px solid rgba(83,58,253,.22);
+  border-radius:5px;padding:2px 5px;line-height:1.3;flex:0 0 auto;margin-top:1px;letter-spacing:.02em;
+}
+.step-t{font-size:12.5px;color:var(--ink2);line-height:1.6}
+
 /* footer */
-footer{border-top:1px solid var(--line);padding:48px 0;background:#fff}
-.foot-grid{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:32px}
-.foot-grid h5{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--mute);font-weight:400;margin:0 0 10px}
-.foot-grid p,.foot-grid li{font-size:12px;line-height:1.7;color:var(--mute)}
+footer{border-top:1px solid var(--line);padding:64px 0 40px;background:#fff}
+.foot-grid{display:grid;grid-template-columns:1.6fr 1fr 1fr;gap:40px}
+.foot-grid h5{font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);font-weight:500;margin:0 0 14px}
+.foot-grid p,.foot-grid li{font-size:12px;line-height:1.85;color:var(--mute)}
+.foot-grid p{max-width:var(--w-aside);margin-top:14px}
 .foot-grid ul{list-style:none;padding:0;margin:0}
-.legal{margin-top:36px;padding-top:20px;border-top:1px solid var(--line);font-size:11px;color:var(--mute);line-height:1.7}
-.link-btn{background:none;border:0;padding:0 0 0 8px;color:var(--primary);font:inherit;cursor:pointer;text-decoration:underline;text-underline-offset:2px}
+.legal{margin-top:44px;padding-top:22px;border-top:1px solid var(--line-2);font-size:11px;color:var(--faint);line-height:1.85}
+.link-btn{
+  background:none;border:0;padding:0 0 0 8px;color:var(--primary);font:inherit;cursor:pointer;
+  text-decoration:underline;text-underline-offset:2px;
+}
 .link-btn:hover{color:var(--primary-deep)}
 
+/* ---------------- 响应式 ----------------
+   断点阶梯（必须写字面量：@media 里出现 var() 会被整条丢弃，已实测）
+     1080  hero 双列转单列，侧卡限宽 420
+     1040  导航页签收起（导航比正文更早需要空间）
+     1020  集中度卡转横条
+      980  正文容器内边距 32→24，双列大面积转单列
+      760  紧凑态：内边距 18 / 导航 16
+      640  集中度卡退回纯文字块
+   跨度值只在 :root 的 --pad-x / --pad-x-nav 上覆盖，不再逐条改选择器。 */
+@media (max-width:1020px){
+  .hero-in{grid-template-columns:1fr;gap:34px}
+  .hero-side{max-width:none;margin-top:0}
+  .hs-card{
+    display:grid;grid-template-columns:minmax(0,230px) 1fr;column-gap:44px;align-items:start;
+    padding:22px 26px;
+  }
+  .hs-card > .eyebrow{grid-column:1;grid-row:1}
+  .hs-big{grid-column:1;grid-row:2;margin-top:8px;font-size:38px}
+  .hs-sub{grid-column:1;grid-row:3;margin-top:6px}
+  .hs-bar{grid-column:2;grid-row:2;margin:0 0 12px;align-self:end}
+  .hs-rows{grid-column:2;grid-row:3;margin-top:0;align-self:start}
+}
+@media (max-width:980px){
+  :root{--pad-x:24px;--pad-x-nav:24px}
+  .band{padding:64px 0}
+  h1.display{font-size:40px;letter-spacing:-.028em}
+  .sec-head h2{font-size:26px}
+  .board-top{padding:28px 24px 24px}
+  .board h2{font-size:23px}
+  .board-grid{grid-template-columns:1fr}
+  .thesis{padding:28px 24px}
+  .points{padding:8px 24px}
+  .detail-top{grid-template-columns:1fr;gap:32px}
+  .narr-grid{grid-template-columns:1fr}
+  .grid-3{grid-template-columns:1fr 1fr}
+  .grid-3 > .card:last-child{grid-column:1 / -1}
+  .foot-grid{grid-template-columns:1fr 1fr}
+  .cta{grid-template-columns:1fr;gap:28px;padding:28px 24px}
+  .tl-grid{grid-template-columns:1fr}
+  .dark-panel{padding:30px 24px}
+  .dark-panel h2{font-size:23px}
+  .rule{grid-template-columns:1fr;gap:8px}
+  .dark-panel .pb-grid{grid-template-columns:1fr!important;gap:28px!important}
+  .dark-panel .pb-grid > div:last-child{border-left:0;padding-left:0}
+  .win-strip{height:auto;flex-direction:column}
+  .win{min-height:64px}
+}
 @media (max-width:760px){
-  .nav-in{gap:8px;padding:10px 16px}
+  :root{--pad-x:18px;--pad-x-nav:16px}
+  .nav-in{gap:8px;height:58px}
   .nav .badge{display:none}
   .brand small{display:none}
   .brand{font-size:13px}
-  .btn-sm{padding:7px 11px;font-size:12px}
+  .hero{padding-top:52px}
+  .btn-sm{padding:8px 11px;font-size:12px}
   .hide-sm{display:none!important}
-  .stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:14px 8px;padding-top:14px;margin-top:28px}
-  .stat{flex:none;padding-right:0}
-  .stat .v{font-size:16px;white-space:nowrap}
-  .stat .k{font-size:9px;letter-spacing:.06em}
+  .stat-row{grid-template-columns:1fr 1fr;gap:16px 12px;padding-top:18px;margin-top:30px}
+  .stat{padding-right:0}
+  .stat + .stat{border-left:0;padding-left:0}
+  .stat:nth-child(even){border-left:1px solid rgba(12,32,54,.09);padding-left:14px}
+  .stat .v{font-size:17px}
+  .stat .k{font-size:9px;letter-spacing:.08em}
+  h1.display{font-size:33px}
+  .sub-lead{font-size:14px}
   .nav-in .lbl-long{display:none}
   .nav-in .lbl-short{display:inline}
+  .m-grid{grid-template-columns:repeat(auto-fit,minmax(96px,1fr))}
+  .grid-4{grid-template-columns:1fr 1fr;gap:10px}
+  .idx-card{padding:15px 14px}
+  .idx-card .px{font-size:21px}
+  /* 8 列表格在窄屏会压成「一字一行」，改为最小宽度 + 横向滚动，并隐藏次要列 */
+  .tbl-main{min-width:520px}
+  .tbl-main th:nth-child(5),.tbl-main td:nth-child(5),
+  .tbl-main th:nth-child(7),.tbl-main td:nth-child(7){display:none}
+  .watch-row{grid-template-columns:1fr;gap:4px}
+  .card{padding:18px}
+  .board-top{padding:24px 18px 20px}
+  .thesis,.points{padding:22px 18px}
+  .board h2{font-size:21px}
+  .scn{padding:18px 20px}
+  .foot-grid{grid-template-columns:1fr}
+  .idx-card .px{font-size:22px}
+}
+/* 640 收尾：集中度卡从「横条」退回纯文字块，写在 760 之后才生效 */
+@media (max-width:640px){
+  .hs-card{display:block;padding:20px 20px 18px}
+  .hs-big{font-size:38px;margin-top:10px}
+  .hs-bar{margin:16px 0 4px}
+  .hs-rows{margin-top:12px}
 }
 .lbl-short{display:none}
-@media (max-width:920px){
-  h1.display{font-size:38px;letter-spacing:-.7px}
-  .board h2{font-size:24px;letter-spacing:-.4px}
-  .board-grid{grid-template-columns:1fr}
-  .detail-top{grid-template-columns:1fr}
-  .narr-grid{grid-template-columns:1fr}
-  .foot-grid{grid-template-columns:1fr}
-  .nav-links{display:none}
-  .band{padding:44px 0}
-  .sec-head h2{font-size:26px}
-  .rule{grid-template-columns:1fr;gap:6px}
-  .win-strip{height:auto;flex-direction:column}
-  .win{height:auto}
-  .pb-grid{grid-template-columns:1fr!important;gap:24px!important}
-  .dark-panel{padding:24px}
-  .board-top{padding:24px 20px 0}
-  .thesis,.points{padding:22px 20px}
-  .detail-top{gap:24px}
-}
+
 @page{margin:14mm 12mm}
 @media print{
+  .hero-main > *,.hero-side{animation:none!important;opacity:1!important;transform:none!important}
   /* 默认不打印背景色，深色面板会变成白底白字 —— 必须显式要求保留颜色 */
   html{-webkit-print-color-adjust:exact;print-color-adjust:exact}
-  .nav,.no-print,.toast,.overlay,.mesh,.mesh-fade,.tabs{display:none!important}
+  .nav,.no-print,.toast,.overlay,.hero-grid,.hero-fade,.tabs{display:none!important}
   body{font-size:11px;background:#fff}
-  .wrap{max-width:none;padding:0}
+  .wrap{max-width:none;padding:0 4mm}
+  /* 打印时把窄屏隐藏的两列放回来：纸面上不能丢数据 */
+  .tbl-main{min-width:0}
+  .tbl-main th:nth-child(5),.tbl-main td:nth-child(5),
+  .tbl-main th:nth-child(7),.tbl-main td:nth-child(7){display:table-cell}
   .band{padding:18px 0;break-inside:auto}
-  .card,.board,.dark-panel,.risk,.scn,.idx-card,.driver,.inval{break-inside:avoid;box-shadow:none}
-  .dark-panel{background:#1c1e54!important;color:#fff!important}
-  h1.display{font-size:34px;letter-spacing:-.6px}
+  .card,.board,.dark-panel,.risk,.scn,.idx-card,.driver{break-inside:avoid;box-shadow:none}
+  .dark-panel,.thesis{background:#131840!important;color:#fff!important}
+  h1.display{font-size:32px;letter-spacing:-.02em}
   .hero{padding-top:6mm}
+  .hero-bg{display:none}
   .audit-bar,.audit-item,.fresh{box-shadow:none;break-inside:avoid}
   .audit-bar .lnk,.flag-dot{display:none!important}
   a{color:inherit;text-decoration:none}
 }
+
 </style>
 </head>
 <body>
@@ -557,9 +941,28 @@ const EMBEDDED = {
           "as_of": "2026-10-30",
           "reliability": "high",
           "note": ""
+        },
+        {
+          "name": "东财两融市场汇总（RPTA_RZRQ_LSHJ）",
+          "category": "杠杆",
+          "fields": [
+            "融资余额",
+            "融券余额",
+            "两融余额",
+            "融资净买入",
+            "占流通市值比"
+          ],
+          "as_of": "2026-10-29",
+          "reliability": "high",
+          "note": "单请求覆盖 260 交易日；相对报告日滞后 1 个交易日，滞后原因与可用边界见 missing"
         }
       ],
       "missing": [
+        {
+          "field": "两融余额",
+          "reason": "交易所 T+1 入库，market_regime.leverage 的数据日为 2026-10-29，相对报告日滞后 1 个交易日",
+          "fallback": "按「可带滞后」档使用：水平值与 5/20/60 日变化可用，但不做 T 日归因、不与 T 日分母做比率"
+        },
         {
           "field": "northbound_net_inflow",
           "reason": "沪深港通自 2024-08 起不再披露日度净买入与实时额度余额",
@@ -634,6 +1037,25 @@ const EMBEDDED = {
         "advance_decline_ratio": 1.42,
         "new_high": 214,
         "new_low": 63
+      },
+      "leverage": {
+        "as_of": "2026-10-29",
+        "lag_trading_days": 1,
+        "scope": "cn_all",
+        "balance_yi": 23849.6,
+        "fin_balance_yi": 23567.4,
+        "lend_balance_yi": 282.2,
+        "balance_to_float_pct": 0.02631,
+        "chg_1d": -0.0112,
+        "chg_5d": -0.0288,
+        "chg_20d": -0.1017,
+        "chg_60d": -0.0978,
+        "net_buy_5d_yi": -701.8,
+        "net_buy_20d_yi": -2685.7,
+        "balance_pct_250": 0.004,
+        "trend": "deleveraging",
+        "trend_label": "去杠杆",
+        "note": "东财市场汇总（RPTA_RZRQ_LSHJ）；融资余额 23567.4 亿 + 融券余额 282.2 亿，含沪深北口径，与交易所分市合计差约 0.3%，不与其他源混算；相对报告日滞后 1 个交易日，分位基于 250 个交易日"
       },
       "narrative": "指数层面波澜不惊，20 日振幅收敛至 6% 以内，但结构分化达到近半年极值：资金未离场，只是从宽基向少数具备产业催化的方向高度集中。上涨家数占比 58%、涨跌比 1.42，说明赚钱效应存在但并不普惠，属于典型的「指数搭台、主线唱戏」。创业板与科创 50 相对强势，风格偏向成长。"
     },
@@ -2373,6 +2795,136 @@ const EMBEDDED = {
               }
             }
           },
+          "leverage": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "additionalProperties": false,
+            "description": "市场级杠杆（两融）。滞后 1 个交易日是常态，按 lag_trading_days 判定可用性，不要因为有 lag 就整块写 null。",
+            "properties": {
+              "as_of": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "两融数据自身截止日（YYYY-MM-DD），通常早于报告 as_of 一个交易日"
+              },
+              "lag_trading_days": {
+                "type": [
+                  "integer",
+                  "null"
+                ],
+                "description": "数据日相对报告 as_of 的交易日滞后；同日记 0"
+              },
+              "scope": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "enum": [
+                  "cn_all",
+                  "hs",
+                  "sse",
+                  "szse",
+                  null
+                ]
+              },
+              "balance_yi": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "fin_balance_yi": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "lend_balance_yi": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "balance_to_float_pct": {
+                "type": [
+                  "number",
+                  "null"
+                ],
+                "description": "融资余额 ÷ 流通市值，小数（0.02633 = 2.633%）；跨期可比的杠杆率口径"
+              },
+              "chg_1d": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "chg_5d": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "chg_20d": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "chg_60d": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "net_buy_5d_yi": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "net_buy_20d_yi": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "balance_pct_250": {
+                "type": [
+                  "number",
+                  "null"
+                ],
+                "description": "最新余额在 250 日样本内的分位（0～1）；样本不足时按实际样本并在 note 写明"
+              },
+              "trend": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "enum": [
+                  "deleveraging",
+                  "stable",
+                  "releveraging",
+                  null
+                ],
+                "description": "由 chg_20d 机械映射：≤ −3% 去杠杆 / ≥ +3% 加杠杆 / 其间平稳"
+              },
+              "trend_label": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "note": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            }
+          },
           "narrative": {
             "type": [
               "string",
@@ -3523,6 +4075,25 @@ const EMBEDDED = {
         "new_high": 0,
         "new_low": 0
       },
+      "leverage": {
+        "as_of": null,
+        "lag_trading_days": null,
+        "scope": null,
+        "balance_yi": null,
+        "fin_balance_yi": null,
+        "lend_balance_yi": null,
+        "balance_to_float_pct": null,
+        "chg_1d": null,
+        "chg_5d": null,
+        "chg_20d": null,
+        "chg_60d": null,
+        "net_buy_5d_yi": null,
+        "net_buy_20d_yi": null,
+        "balance_pct_250": null,
+        "trend": null,
+        "trend_label": null,
+        "note": null
+      },
       "narrative": ""
     },
     "verdict": {
@@ -3831,7 +4402,7 @@ const EMBEDDED = {
       "changelog": []
     }
   },
-  prompt: "# A股市场主线分析 · 提示词模板 v1.6\n\n> 用途：驱动任意具备联网/取数能力的 LLM 或 Agent，产出**可直接粘贴渲染**的结构化主线分析 JSON。\n> 配套：`schema/ashare-mainline.schema.json`（输出契约）· `samples/sample-report.json`（填好的参考样例）\n\n\n---\n\n## 0 · 角色\n\n你是一名 A 股市场结构研究员（sell-side strategy desk 视角）。你的专业不是预测指数点位，而是**识别资金与叙事正在哪里形成合力**，并给出可被证伪的观察条件。\n\n## 1 · 任务\n\n给定基准交易日 `{{AS_OF}}`，在全 A 股票池中识别当前市场**主线**——即同时满足「价格相对强度持续领先 + 成交额份额持续聚集 + 板块内扩散充分 + 有可验证的产业/政策/业绩叙事」的板块集群，并判断其所处**生命周期阶段**。\n\n输出：**一个 JSON 对象**，结构严格按 §9 骨架，规则严格按 §10 协议，不附加任何解释性文字。\n\n### 输入变量\n\n| 变量 | 含义 | 默认值 |\n|---|---|---|\n| `{{AS_OF}}` | 基准交易日（YYYY-MM-DD，须为交易日） | 最近一个已收盘交易日 |\n| `{{UNIVERSE}}` | 股票池 | 全 A，剔除 ST、退市整理、上市不足 60 日 |\n| `{{TOP_N}}` | 输出主线数量目标（闸门合格数不足时如实少写，最少 1 条） | 3～5 |\n| `{{RISK_PROFILE}}` | 使用者风险偏好 | 中性 |\n| `{{DATA_SOURCES}}` | 可用数据源（若为空则按 §5 自选） | §5 P0 层 |\n| `{{OUTPUT_WRAP}}` | 是否包代码围栏：`plain`（纯文本直出）/ `fence`（包一层 ```json，需复制按钮时） | `plain` |\n\n---\n\n## 2 · 时间粒度：多周期共振（硬约束）\n\n**单一窗口必然失真**：太短会被单日脉冲欺骗，太长会把已经走完的行情当成进行中的主线，而更长的窗口又面临数据不可得。因此采用**四窗嵌套 + 一个长窗做分位**。\n\n| 窗口 | 交易日 | 角色 | 判断权重 | 为什么是这个长度 |\n|---|---|---|---|---|\n| T 日 | 1 | 仅作**确认/修正**，不单独构成判定 | 0%（只做修正，不计权重） | 单日涨停潮可能来自消息脉冲、指数调仓、期指交割，不具持续性含义 |\n| 短窗 | 5 | 趋势确认 + **脉冲过滤** | 20% | ≈1 个自然周，足以让消息驱动的资金露出真伪 |\n| 主窗 | 20 | **主判定窗口** | 45% | A 股题材情绪周期通常 15～40 个交易日；20 日 ≈ 一个完整发酵周期，可覆盖「启动—发酵—分歧」 |\n| 中窗 | 60 | 中期属性判定（真主线 vs 短炒） | 20% | ≈1 个季度，跨过一次财报或一次政策窗口 |\n| 长窗 | 250 | 历史分位（拥挤度、估值、波动） | 15%（用于 P3 闸门与惩罚） | ≈1 年，提供横截面分位的统计基础；再长则样本内制度变化过多 |\n\n合计 100%。\n\n> `turnover_share_pct_250` 同时用于 §3 P3 准入与 §6 R1/R2 惩罚：入榜门槛与扣分是两件事，不重复计分。\n\n> **判断权重 ≠ 打分权重**：上表仅表示证据分量，不进入 §6 `score`；`score` 只由六因子 `normalized × weight` 决定。\n\n**窗口落地规则**\n\n1. `effective_range` 必须写明起止日，并显式避开节假日（如国庆/春节休市）。\n2. 主窗 20 日按**交易日**回溯，不是自然日。\n3. T 日数据只允许出现在 `chg_1d`、`limit_up_count` 等**描述字段**中；**禁止**用 T 日排名变化直接改变 `stage`。\n4. 若 `{{AS_OF}}` 为节后首日，主窗顺延至节前收盘，避免跳空被误计为趋势。\n5. `chg_N` 统一定义为「截至 `{{AS_OF}}` 的 N 个**有数据**交易日复合收益」。窗口内缺行时向前顺延，`effective_range.start` 写**实际**首日，并在 `window.rules` 或 `notes` 写明缺失天数；禁止同一指标出现两个值（如 60 日 +1.77% 与 −2.45%）却不说明差异来源。\n6. `excluded` 只写面板中**确实无行**的连续日期。写前先核对缺行，不得照抄节假日日历：10-08 有行情时，休市只能写 `2026-10-01~2026-10-07`。\n\n---\n\n## 3 · 反脉冲三原则（必须执行并写入 `persistence`）\n\n任何候选板块，在进入排名前先做三道体检，结果写入 `persistence.pulse_check`：\n\n| 编号 | 检验 | 量化阈值 | 用哪些字段验算 |\n|---|---|---|---|\n| **P1 持续性** | 20 日内进入涨幅前 10 名的天数 | ≥ 6 天（30%），且最近连续 ≥ 2 天 | `persistence.days_top10_20 ≥ 6` **且** `persistence.consecutive_top10 ≥ 2` |\n| **P2 广度** | 板块内上涨家数占比 与 创 20 日新高家数占比 | 上涨占比 ≥ 55% 且新高占比 ≥ 8% | `metrics.breadth_up_ratio ≥ 0.55` **且** `metrics.new_high_ratio ≥ 0.08` |\n| **P3 量能** | 成交额占全 A 比重 的 5 日变化 与 250 日分位 | Δ ≥ +0.5pct 且 分位 ≥ 60 | `metrics.turnover_share_chg_5 ≥ 0.005` **且** `metrics.turnover_share_pct_250 ≥ 0.60` |\n\n**判定（只管准入，不管阶段）**：三条中 **≥2 条成立** → 可进 `mainlines`（`stage` 仍须由 §4 赋值）；**仅 1 条成立** → 可进榜，但 `stage_confidence ≤ 0.5`，且不得标 `acceleration`（若 §4 判出 `acceleration`，降记为 `expansion` 并在 `score_breakdown` 之外的说明里写明「仅 1 条闸门成立」）；**0 条成立** → 不得进入 `mainlines`，只能进入 `rotation.emerging`。\n\n> **阶段只由 §4 判定**，本节不另设阶段规则，只压 `stage_confidence` 上限。\n\n`rules_passed` 必须是上表算出来的条数，`passed` 必须是 `rules_passed ≥ 2`——**这两个字段不允许写与 `metrics` 对不上的值**。`pulse_check.detail` 要逐条写出取值与判定（例：`P1 11/20 天但连续 0 天 ✗；P2 上涨 48% ✗；P3 份额 Δ5 −0.6pct ✗ → 0 条通过`），**detail 里的 ✗ 数量必须与 `rules_passed` 自洽**。\n\n**判据字段为 `null` 时**：该条记「无法判定」，不计入分子也不计入分母；若三条中可判定的不足 2 条，视为未通过闸门（不得进榜，豁免除外），并在 `detail` 写明哪几项缺数据。\n\n**闸门口径（同一报告内不得混用三套数）**\n\n1. **单一真源**：同一份报告的 `metrics` / `persistence` 必须取自**同一面板、同一板块粒度、同一横截面**。默认粒度 = 行业板块单板块；不得把「白酒+休闲」等集群口径的份额、拥挤度、新高占比填进单板块主线。确需集群口径，只在 `rotation` 定性描述中使用，并在 `notes` 写明哪几个数来自集群、与单板块差多少。\n2. **P1 横截面**：按参与排名的**全部板块**取绝对前 10 名（通常 100～160 个），并在 `window.rules` 写明本期板块数与剔除数；横截面只纳入 20 日窗口完整可算的板块，历史不足的剔除。不得一边用 128 个板块排名、一边用 9 个板块做百分位却不标注样本数。\n3. **P2 定义**：`new_high_ratio` = 当日收盘价高于**前 20 个交易日（不含当日）最高收盘价**的成分股数 ÷ 该板块**有 ≥21 日 K 线**的成分股数。成分股覆盖率 <80% 或样本 <10 只时 P2 记「无法判定」，并在 `missing` 写明缺哪个板块的 K 线。\n4. **原始精度比较**：`turnover_share_chg_5` 等阈值按 4 位小数比较（0.4974 < 0.005 判负），**不得先四舍五入到 0.50 再判过**。任一指标距阈值相对幅度 <5% 时，在 `notes` 标注「边界值」并同时写出另一口径的结果。\n5. **穷举与措辞**：写「唯一 / 只有 / 仅 / 全部」之前，必须对同一口径的**全部板块**算完 P1/P2/P3；只要有一个板块的 P2 未计算，只能写「在已完整计算 P2 的 N 个板块中」。不得用「只有 A 过两道闸门」概括「A 过 P2+P3、B 过 P1+P2」这种并列事实。\n6. **过闸门但阶段不可判定**：通过 ≥2 条闸门、但 §4 因判据不足无法赋值 `stage` 的板块，**不得进入 `mainlines`**（schema 的 `stage` 不允许 null），改列 `rotation.emerging`，`signal` 写「P1/P2 通过，阶段判据不足 2 项」。\n7. **闸门矩阵**：`data_quality.notes` 必须有一条 `板块 | P1 | P2 | P3 | 闸门命中 | 阶段命中 | stage` 摘要，覆盖所有通过 ≥1 条闸门的板块；`headline`、`core_thesis`、`points`、`risks` 与它不得互相矛盾。\n\n**存量豁免（只对 `fade` 生效，且优先于上面的准入判定）**：闸门每期重算，而退潮中的板块 P3 必然为负（份额在缩），若严格执行就会让 `fade` 永远无法出现在榜上——但读者恰恰需要看到「谁在退」。因此：\n\n1. 已在上一期 `mainlines` 中的主线，若本期只通过 ≤1 条，**允许保留 1 期**，但必须**同时**满足：`stage` 标 `fade`（且该 `stage` 是按 §4 判出来的，不是硬贴的）、`stage_confidence ≤ 0.6`、并在 `rotation.outflow` 中列出同名条目。\n2. **豁免只放宽准入，不放宽阶段**：若 §4 判出的阶段不是 `fade`，说明它并没有在退潮，应当移出榜单，而不是豁免。\n3. 新候选板块不享受豁免，0 条成立一律进 `rotation.emerging`。\n4. 豁免只能延续一期；下一期仍在榜且仍不过闸门，必须移出并在 `rotation.outflow` 说明去向。\n\n\n## 4 · 主线生命周期五阶段\n\n| 阶段 | 枚举值 | 盘面特征 | 量化阈值（满足 2 项以上） | 验算字段 |\n|---|---|---|---|---|\n| 启动 | `ignition` | 首次放量、龙头初现、广度快速抬升 | 份额 Δ5 ≥ +0.5pct；**近期才进前十**（`days_top10_20 ≤ 8`）；涨停 2～5 家 | `turnover_share_chg_5 ≥ 0.005`；`persistence.days_top10_20 ≤ 8`；`limit_up_count` ∈ [2,5] |\n| 发酵 | `expansion` | 梯队完整、扩散加速、轮动补涨 | 份额分位 60～85；涨停 ≥5 家；连板高度 3～4；上涨占比 ≥60% | `turnover_share_pct_250` ∈ [0.60,0.85]；`limit_up_count ≥ 5`；`max_streak` ∈ [3,4]；`breadth_up_ratio ≥ 0.60` |\n| 加速 | `acceleration` | 龙头加速、情绪高潮、成交占比飙升 | 20 日涨幅 >25%；拥挤分位 >85；封板率 >75% | `chg_20d > 0.25`；`crowding_pct > 0.85`；`seal_rate > 0.75` |\n| 分歧 | `divergence` | 高位放量滞涨、梯队断层、断板率升 | 5 日涨幅 < 20 日涨幅/4；份额分位 >90；连板高度回落 ≥2 级 | `chg_5d < chg_20d / 4`；`turnover_share_pct_250 > 0.90`；`max_streak_prev - max_streak ≥ 2` |\n| 退潮 | `fade` | 缩量下跌、龙头破位、资金撤离 | 份额 Δ20 < −0.5pct；龙头 5 日跌幅 >8%；上涨家数占比 <45% | `turnover_share_chg_20 < -0.005`；`leader_chg_5d < -0.08`；`breadth_up_ratio < 0.45` |\n\n**阶段冲突的裁决顺序（重要）**：一条主线可能同时满足多个阶段的条件（例如 `crowding_pct 0.92` 同时命中 `acceleration` 的「拥挤 >85」和 `divergence` 的「分位 >90」）。此时按 **`fade` → `divergence` → `acceleration` → `expansion` → `ignition`** 的顺序取第一个满足 ≥2 项的阶段——**越靠后的阶段优先级越高**，因为它描述的是更晚发生的状态。不允许「挑一个看起来最像的」，必须按顺序判。\n\n**判据缺失时**：某项判据所需字段为 `null`，该判据记为「无法判定」，不计入分子也不计入分母。若可判定的项不足 2 项，说明该板块**阶段不可判定**：不得进入 `mainlines`（schema 的 `stage` 不允许 null），改列 `rotation.emerging`，并在 `signal` 写明缺哪几项判据。**不要猜一个阶段填空，也不要为了进榜硬凑判据。**\n\n**阶段 ≠ 买卖建议。** `acceleration` 是风险最高的位置，`ignition` 是胜率最低但赔率最高的位置，二者都必须在 `narrative.bear_case` 中写明反向逻辑。\n\n---\n\n## 5 · 数据源分层与降级策略\n\n### P0 · 必需（免费、公开、稳定）\n\n| 数据 | 推荐来源 | 关键字段 |\n|---|---|---|\n| 板块/指数日线（含成交额） | 交易所官网；东方财富板块行情；中证/国证指数官网 | 开高低收、成交量额、换手 |\n| 概念板块成分与涨跌 | 东方财富概念板块；同花顺概念指数 | 成分股、板块涨跌幅 |\n| 涨停/跌停/连板池 | 东方财富涨停板行情（收盘后可得） | 涨停家数、连板数、封板资金、封板率 |\n| 个股资金流（**测算值**） | 东方财富个股/板块资金流 | 主力净额（超大单+大单） |\n| 两融余额 | 交易所融资融券数据（T+1 发布） | 融资余额、融券余额 |\n| 指数估值 | 中证指数官网、交易所 | PE/PB 及历史分位 |\n\n### 最小可算数据集（4 张表，指标都能算出来）\n\n`metrics` 的 23 个字段**不必逐个去取**。只要下面 4 张表到手，全部指标（含 `persistence` 三项、五阶段判据、R1/R2/R3 惩罚）都能算出来：\n\n| # | 表 | 必需字段 | 覆盖期 | 主要支撑 |\n|---|---|---|---|---|\n| 1 | 板块日线 | 日期、板块代码、收盘、成交额 | 260 交易日 | `chg_1d/5d/20d/60d`、`rs_5/20/60`、`turnover_share*`、`turnover_share_pct_250`、`volatility_20` |\n| 2 | 全 A 日线 | 日期、全 A 成交额、全 A 涨跌幅 | 260 交易日 | 份额的分母、`rs_*` 的分母 |\n| 3 | 板块成分股日线 | 日期、板块代码、代码、收盘、涨跌幅、是否涨停、连板数 | ≥25 交易日；分位类需 260 | `breadth_up_ratio`、`new_high_ratio`、`limit_up_count/ratio`、`max_streak`、`seal_rate`、`leader_chg_5d` |\n| 4 | 涨停池明细 | 日期、代码、所属板块、连板数、封板资金、开板次数 | ≥25 交易日 | `max_streak_prev`、`seal_rate`，也是 `days_top10_20` / `consecutive_top10` 的必要输入 |\n\n> **`seal_rate` 的口径**：`seal_rate = 1 − 开板家数 ÷ 涨停家数`（按板块成分股口径）。有涨停池明细就必须算，确实取不到开板次数才写 `null` 并记入 `missing`；缺它会少一项 `acceleration` 判据，**不得用其他指标替代**。\n\n> **`crowding_pct` 的口径**：若无现成数据，按「板块成交额占全 A 比重的 250 日分位 × 0.5 ＋ 板块 20 日涨幅的 250 日分位 × 0.5」自建，并在 `data_quality.notes` 写明这个算式。它是 R2 与 `acceleration` 的触发变量，**不能既不留空也不说明来源**。\n\n### P1 · 建议（免费或低成本）\n\n- 龙虎榜（T 日晚间）、大宗交易、股东增减持\n- 业绩预告/快报（巨潮资讯、交易所公告）\n- 政策原文（发改委、工信部、国务院、部委官网）\n- 行业高频数据（产量、价格、开工率）\n\n### P2 · 可选（通常需付费/授权）\n\n- Wind / Choice / iFinD 一致预期与机构持仓\n- Level-2 逐笔、席位明细\n\n### 不可得数据的处理（重要）\n\n1. **禁止编造**。取不到就写 `null`，并在 `data_quality.missing` 中写明 `{field, reason, fallback}`。\n2. **禁止 0 填充**——0 与 null 在金融数据里含义完全不同。\n3. 降级顺序：精确值 → 代理指标 → 该因子记 0 并放大其余权重（**保留 6 行，不删字段**，具体做法见 §6「因子缺失时的权重处理」，并在 `data_quality.notes` 注明）。\n4. **已停止披露的指标不得使用**：沪深港通自 2024-08 起不再披露日度净买入/实时额度余额，仅有收盘后成交总额与港交所持股变动。**禁止**在日度因子里使用「北向净流入」；如需外资维度，改用「陆股通持股变动（周度）」并标注低频。\n5. 资金流为**算法测算值**（按单笔金额分档推断），必须在 `data_quality.notes` 标注口径，权重不得超过 10%，其来源 `reliability` 不得标 `high`（最高 `medium`）。\n6. **计数须与面板一致**：写进 `sources[].note` 或 `notes` 的任何计数（如「3 个板块成分完整」）必须与面板实测一致，并同时给出分母（例：`19 个名单中 9 个完整可取、7 个覆盖 ≥80%`）。\n7. **样本不足要写明**：`turnover_share_pct_250`、`crowding_pct`、`pe_pct_250` 的实际样本 <250 日时，`notes` 写明「分位基于 N 个交易日」；不得在正文声称「250 日分位」而不加限定。\n\n### 取数预算与限流（硬约束）\n\n1. **增量缓存**：260 日历史只回补一次，按 `(数据集, 代码, 日期)` 落本地缓存（SQLite/Parquet）；每日只追加 1 根新 bar，已有日期不得重复请求；命中情况写入 `data_quality.sources[].note`。\n2. **批量与限流**：当日全板块快照用一次列表请求取全，历史 K 线才逐板块请求；间隔 1.5～2 秒、≤30 次/分钟并加抖动；17:30 后取数，盘中不轮询。\n3. **退避与预算**：429/403/5xx 按 2s→4s→8s 退避，最多 3 次，仍失败写 `null` 记入 `missing`；单份报告硬上限 60 次，超限停止并如实记录；禁止逐只扫描全市场个股，官方源优先。\n4. **覆盖率口径（必须写算式）**：`coverage` = Σ(因子权重 × 数据状态系数) / 100；状态系数：真实取数 = 1.0，代理/自建估算 = 0.5，`null` = 0。非打分字段缺失不计入 `coverage`，但必须写入 `missing`。`notes` 必须给出可复算的算式，例：`coverage = (25+20+20+15)×1.0 + 10×0.5 = 85 → 0.85`。不得凭印象写 0.83 这类无法复算的数。\n\n---\n\n## 6 · 打分卡\n\n```\nscore = Σ ( normalized_i × weight_i ) − penalty\n```\n\n| 因子 key | 含义 | 权重 | 归一化方法 |\n|---|---|---|---|\n| `rs` | 相对强度：`(1+板块 N 日收益) ÷ (1+基准 N 日收益)` 的净值比（1.0 = 同步，负收益下方向仍正确） | 25 | 该比值在全 A 板块中的横截面百分位 0～100 |\n| `persistence` | 趋势持续性：前 10 天数、连续天数、60 日方向一致性 | 20 | 三子项均值百分位 |\n| `volume` | 量能聚集：成交额份额 及其 5 日变化 | 20 | 分位 × 0.6 + Δ 分位 × 0.4 |\n| `breadth` | 扩散度：上涨占比、新高占比、涨停家数 | 15 | 三项横截面百分位按 0.4 / 0.35 / 0.25 加权 |\n| `fundflow` | 资金流：5 日 / 20 日主力净额（测算） | 10 | `flow_ratio = N 日净额 ÷ 同期成交额` 的百分位（流通市值不可得时用此口径） |\n| `narrative` | 叙事与催化：政策/产业/业绩的可验证证据强度 | 10 | 见下方分档表 |\n\n`normalized` 是 0～100 的百分位，`contribution = normalized × weight / 100`，六项 `weight` 合计 100。\n\n**`rs` 基准与算法**：基准固定为中证全指 `000985.CSI`；取不到时用沪指代理并在 `notes` 写明，`rs_5/20/60` 必须同基准。**禁止**把「板块涨幅 ÷ 基准涨幅」的字面除法当算法——负收益时它会翻转符号。\n\n**`fundflow` 口径**：`flow_ratio` 与 `net_inflow_5_yi/20_yi` 必须同窗口；`score_breakdown.fundflow.raw` 填百分比数值（`3.537` 表示 +3.54%，保留 3 位），`note` 写出分子分母。若改用流通市值口径，须在 `notes` 说明，且同一报告内所有主线保持一致。\n\n**`turnover_share` 分母**：优先用全市场（沪+深）成交额；只能用板块合计代理时，在 `notes` 写明代理与误差（例：128 板块合计 16877 亿 vs 全市场 16745 亿，+0.8%）。\n\n**`rs` 的 `raw` 填什么**：填 `metrics.rs_20` 本身（比值，如 `1.213`），不填超额收益百分点。`raw` 与 `metrics.rs_20` **必须是同一个数**，页面会拿它们对照。\n\n**`narrative` 的归一化（可执行分档，不要再写「凭经验给分」）**\n\n1. 基础分（按 `drivers` 里**可验证**的条数，`verified !== true` 的不计）：0 条 → 0；1 条 → 40；2 条 → 60；3 条 → 75；≥4 条 → 85。\n2. 来源加分（只取**最高**等级的一条，不叠加）：官方原文 +15；公司公告 +10；主流财经媒体 +5；卖方研报 +0；社媒传闻 −10。\n3. `normalized = min(100, max(0, 基础分 + 来源加分))`，并在 `note` 写成 `3 条可验证证据(75) + 官方原文(+15) = 90`。\n\n**因子缺失时的权重处理（固定 6 项，不删行）**\n\n某项因子的底层数据取不到时：\n\n1. `score_breakdown` **仍然保留 6 行**，缺失那行 `normalized = 0`、**`weight = 0`**、`contribution = 0`，`note` 写「数据缺失，已从权重中剔除」。\n2. 其余五项 `weight` 按原比例放大，使 `Σ weight = 100`（例如缺 `fundflow`：25/20/20/15/10 → 27.8/22.2/22.2/16.7/11.1，保留 1 位小数并保证合计 100）。\n3. `appendix.weights` 同步用调整后的权重，并在 `data_quality.notes` 记一条。\n4. **不要**因为缺因子就把这一行删掉——删了会让 `Σ contribution` 与 `score` 对不上，也让读者看不出哪一项是空的。\n\n**闸门 vs 持续性因子**：`pulse_check` 是准入布尔值，`persistence` 是强度连续值；同源不同用途，`pulse_check` 条数**不得**折算进 `score`。\n\n**拥挤度惩罚 `penalty`（只减分；多项命中取最大值，不叠加）**\n\n| 编号 | 触发条件（需全部满足） | 扣分 |\n|---|---|---|\n| `R1` | `turnover_share_pct_250` > 0.95 且 `max_streak` ≥ 5 | 12 |\n| `R2` | `turnover_share_pct_250` > 0.90 且 `crowding_pct` > 0.90 | 6 |\n| `R3` | `chg_60d` > 0.60 且 `net_inflow_5_yi` < 0 | 8 |\n| 无触发 | — | 0 |\n\n1. **多个条件同时命中取最大值**，不累加，`penalty` 上限 12。\n2. 每个条件都必须能用 `metrics` 里已有的字段当场验算，**不得引入 `metrics` 之外的口径**（例如「波动率分位」这种没有对应字段的说法）。\n3. `penalty_reason` 必须写成可复算的一句话：编号 + 实际取值 + 算式。例：`R1 触发：份额分位 0.96 > 0.95 且 连板 5 ≥ 5 → −12`。\n4. 未触发时 `penalty = 0`、`penalty_reason = \"无触发\"`。**不要写 0.4、3.15 这类对不上上表的数。**\n\n`score_breakdown` 必须逐项列出 `raw / normalized / weight / contribution`，且 `Σ contribution − penalty` 与 `score` 的偏差 ≤ 0.5（自检项）。\n\n---\n\n## 7 · 执行流程\n\n| Step | 动作 | 产出字段 |\n|---|---|---|\n| **S1** | 取数、复权、剔除异常（停牌、ST、上市 <60 日、单日换手 >40% 的异动股） | `data_quality` |\n| **S2** | 横截面排名：1/5/20/60 日板块涨幅，成交额份额及其变化 | `metrics` |\n| **S3** | **反脉冲三原则校验 → 先过闸门，不合格的剔出候选池** | `persistence` |\n| **S4** | 因子归一化 → 加权 → 扣惩罚 → 排序取 Top N（只在 S3 的候选池里排） | `score`, `score_breakdown` |\n| **S5** | 阶段判定（§4） | `stage`, `stage_confidence` |\n| **S6** | 建立证据链：每条主线 ≥2 条驱动，含日期与来源；识别龙头/中军/补涨梯队 | `drivers`, `leaders`, `ladder` |\n| **S7** | 写证伪条件与情景推演：必须给出**可观测阈值** | `invalidation`, `scenarios` |\n\n**S3 必须在 S4 之前**：闸门是排序前剔除，不是排完再解释。`mainlines` 允许 **1～5 条**（schema minItems = 1）；S3 后合格候选不足 3 条时**如实少写**，并在 `notes` 写明「闸门后仅 N 条」，不得放宽阈值凑数，也不得把阶段不可判定的板块拉进榜。若全样本 0 条通过 ≥2 条闸门，只输出 1 条**观察位**（闸门命中最多且 stage 可赋值者，`stage_confidence ≤ 0.5`），并在 `core_thesis` 写明「本期无板块达到 2 条闸门，榜首仅作观察」。\n\n**S6 证据标准**：来源优先级 = 官方原文 > 公司公告 > 主流财经媒体 > 卖方研报 > 社媒传闻。**社媒传闻不可单独作为驱动**；若无更高等级来源，须在 `detail` 中标注「未证实」。\n\n---\n\n## 8 · 语言规范\n\n- 用**概率化、条件化**表述：「若 X 跌破 Y，则主线成立概率下降」，不用「必涨/稳赚/满仓」。\n- 每条结论后跟可验证的观察项，而不是形容词。\n- 中文为主，专有名词保留英文（如 HBM、CoWoS）。\n- 数字：比率保留 4 位小数（0.0521），分数保留 1 位（87.6），金额统一「亿元」且字段名带 `_yi`。\n- 百分比一律用**小数**表示（5.21% → 0.0521），字段不携带 `%`。\n- 「唯一 / 只有 / 首次 / 全部」等绝对表述，必须有全样本穷举或明确范围限定（「在已完整计算 P2 的 N 个板块中」），否则不得使用。\n- 不得引用 `sources` 中不存在的数据做因果结论：没有两融数据就不写「杠杆退潮 / 融资盘撤离」，没有北向数据就不写「外资流入」。\n- 同一事实在 `headline`、`core_thesis`、`points`、`risks`、`notes` 中必须同一口径；「A 过 P2+P3、B 过 P1+P2」不能压缩成「只有 A 过两道闸门」。\n- 驱动按事实归属分类：价格与成交确认写 `liquidity`，业绩数据写 `earnings`；「放量上涨」不得标为 `earnings`。\n- 不得把单一「成交额放大」直接解释为「存量换手 / 资金未离场」，至少要有换手率、资金净额、涨跌分布中的第二项证据。\n- 「首次 / 创新高 / 历史极值」必须给出日期与对比区间；给不出就写「近期」，不得用「首次」定性。\n\n---\n\n## 9 · 输出骨架（键名照抄，不得增删改名）\n\n### 9.1 完整骨架\n\n实测体积：骨架约 **6K 字符**，3 条主线约 **20K**，5 条约 **32K**，硬上限 **40000**；装不下必然截断，故 §10-D 的排版与压缩规则是硬要求。\n\n下面这份骨架就是**唯一合法结构**。规则：\n\n- 所有键都必须出现。确实无数据时：字符串写 `null`、数组写 `[]`、对象按骨架给空值。\n- 数组元素结构必须与骨架中该数组的第 1 个元素完全一致。\n- 骨架里的示例值只用于示意**格式与单位**，不要照抄内容。\n- `metrics.rs_5 / rs_20 / rs_60` 是相对强度**净值比** `(1+板块收益)/(1+基准收益)`（1.0 = 与大盘同步），不是超额收益的百分点。\n- `metrics.max_streak_prev` 是**5 个交易日前**的连板高度（不是\"上一个周期\"），`max_streak_prev - max_streak` 才是「连板回落级数」。\n- `metrics.leader_chg_5d` 是板块内**龙头个股**的 5 日涨跌幅，不是板块的 5 日涨幅（后者是 `chg_5d`）。\n- `metrics.turnover_share_chg_20` 是份额相对 **20 个交易日**前的变化，与 `turnover_share_chg_5` 不是同一个窗口。\n- `rotation.inflow/outflow[].delta_pct` 是 5 日成交额份额变化，单位**百分点**（`4.2` 表示 +4.2pct），负数为流出。\n- `rotation.emerging[].score` 必须按 §6 六因子实算（无验证证据则 `narrative = 0`，触发 R1/R2/R3 照扣并在 `signal` 写明），覆盖全部「仅通过 1 条闸门」的板块并按分数降序，不得手填；超过 5 条时保留前 5 条，并在 `rotation.narrative` 列出其余板块名称与分数。\n- 数组长度：`mainlines` = `{{TOP_N}}` 为目标（1～5，闸门合格数不足时如实少写）；`score_breakdown` = 6（六个因子各一项）；`drivers` 2～4；`leaders` 3～5；`invalidation` 2～4；`watch` 2～3；`risks` 3～5；`scenarios` 恰好 3；`points` 3～4；`rotation` 各 3～5；`timeline` 4～6；`appendix.weights` = 6。\n\n```json\n{\n  \"schema_version\": \"1.0.0\",\n  \"meta\": {\n    \"report_id\": \"aml-20261030\",\n    \"as_of\": \"2026-10-30\",\n    \"generated_at\": \"2026-10-31T09:00:00+08:00\",\n    \"title\": \"A股市场主线分析 · 2026-10-30\",\n    \"data_mode\": \"live\",\n    \"confidence\": 0.72,\n    \"analyst\": { \"model\": \"模型名\", \"prompt_version\": \"1.6.0\", \"operator\": \"使用者\" },\n    \"tags\": [\"算力\", \"机器人\"]\n  },\n  \"window\": {\n    \"as_of\": \"2026-10-30\",\n    \"primary_days\": 20,\n    \"confirm_days\": 5,\n    \"context_days\": 60,\n    \"quantile_days\": 250,\n    \"effective_range\": { \"start\": \"2026-09-24\", \"end\": \"2026-10-30\" },\n    \"rules\": [\"主窗按交易日回溯 20 日，非自然日\", \"T 日仅用于描述字段，不参与阶段判定\"],\n    \"excluded\": [{ \"date_range\": \"2026-10-01~2026-10-07\", \"reason\": \"国庆休市（10-08 为交易日）\" }]\n  },\n  \"data_quality\": {\n    \"status\": \"ok\",\n    \"coverage\": 0.92,\n    \"sources\": [{\n      \"name\": \"东方财富板块行情\",\n      \"category\": \"行情\",\n      \"fields\": [\"收盘\", \"成交额\", \"涨跌幅\"],\n      \"as_of\": \"2026-10-30\",\n      \"reliability\": \"high\",\n      \"note\": \"收盘后取数\"\n    }],\n    \"missing\": [{ \"field\": \"两融余额\", \"reason\": \"T+1 尚未发布\", \"fallback\": \"用 5 日均值代理并在 notes 标注\" }],\n    \"notes\": [\"资金流为算法测算值，与真实成交存在偏差\"]\n  },\n  \"market_regime\": {\n    \"label\": \"结构性进攻\",\n    \"phase\": \"risk_on\",\n    \"phase_label\": \"风险偏好上行\",\n    \"risk_appetite\": 68,\n    \"liquidity\": 74,\n    \"breadth_score\": 61,\n    \"indices\": [{\n      \"code\": \"000001.SH\",\n      \"name\": \"上证指数\",\n      \"close\": 3521.4,\n      \"chg_1d\": 0.0042,\n      \"chg_5d\": 0.0135,\n      \"chg_20d\": 0.0621,\n      \"turnover_yi\": 8120.5,\n      \"pe_pct_250\": 0.63\n    }],\n    \"breadth\": {\n      \"up_ratio\": 0.58,\n      \"limit_up\": 62,\n      \"limit_down\": 5,\n      \"broken_board_rate\": 0.18,\n      \"advance_decline_ratio\": 1.35,\n      \"new_high\": 143,\n      \"new_low\": 21\n    },\n    \"narrative\": \"指数震荡上行，赚钱效应集中于少数板块\"\n  },\n  \"verdict\": {\n    \"headline\": \"一句话结论\",\n    \"core_thesis\": \"三到五句核心逻辑，说清资金去哪、为什么、还能走多久\",\n    \"stance\": \"offensive\",\n    \"stance_label\": \"结构性进攻\",\n    \"dominant_mainline_id\": \"ml-ai-compute\",\n    \"mainline_count\": 4,\n    \"confidence\": 0.72,\n    \"points\": [{ \"title\": \"要点标题\", \"detail\": \"要点正文\" }],\n    \"horizon\": { \"valid_until\": \"2026-11-20\", \"review_trigger\": \"触发重新评估的具体条件\" }\n  },\n  \"mainlines\": [{\n    \"id\": \"ml-ai-compute\",\n    \"rank\": 1,\n    \"rank_change\": 0,\n    \"name\": \"主线名称\",\n    \"aliases\": [\"别名一\", \"别名二\"],\n    \"sector_codes\": [\"BK0447\"],\n    \"theme_type\": \"industry\",\n    \"stage\": \"expansion\",\n    \"stage_label\": \"发酵期\",\n    \"stage_confidence\": 0.78,\n    \"score\": 87.6,\n    \"score_breakdown\": [{\n      \"key\": \"rs\",\n      \"label\": \"相对强度\",\n      \"raw\": 1.213,\n      \"normalized\": 92,\n      \"weight\": 25,\n      \"contribution\": 23.0,\n      \"note\": \"归一化依据，一句话\"\n    }],\n    \"penalty\": 12,\n    \"penalty_reason\": \"R1 触发：份额分位 0.96 > 0.95 且 连板 5 ≥ 5 → −12\",\n    \"metrics\": {\n      \"chg_1d\": 0.0121,\n      \"chg_5d\": 0.0412,\n      \"chg_20d\": 0.1832,\n      \"chg_60d\": 0.3421,\n      \"rs_5\": 1.048,\n      \"rs_20\": 1.213,\n      \"rs_60\": 1.186,\n      \"turnover_share\": 0.152,\n      \"turnover_share_chg_5\": 0.021,\n      \"turnover_share_chg_20\": 0.012,\n      \"turnover_share_pct_250\": 0.88,\n      \"breadth_up_ratio\": 0.67,\n      \"new_high_ratio\": 0.12,\n      \"limit_up_count\": 9,\n      \"limit_up_ratio\": 0.11,\n      \"max_streak\": 4,\n      \"max_streak_prev\": 5,\n      \"seal_rate\": 0.78,\n      \"leader_chg_5d\": 0.036,\n      \"net_inflow_5_yi\": 84.3,\n      \"net_inflow_20_yi\": 212.6,\n      \"crowding_pct\": 0.88,\n      \"volatility_20\": 0.028\n    },\n    \"persistence\": {\n      \"days_top10_20\": 9,\n      \"days_top5_20\": 6,\n      \"consecutive_top10\": 3,\n      \"pulse_check\": { \"passed\": true, \"rules_passed\": 3, \"detail\": \"P1/P2/P3 均成立，逐条写清依据\" }\n    },\n    \"drivers\": [{\n      \"type\": \"policy\",\n      \"title\": \"驱动标题\",\n      \"detail\": \"驱动说明，含具体数字与时间\",\n      \"date\": \"2026-10-12\",\n      \"source\": \"工信部官网\",\n      \"verified\": true\n    }],\n    \"narrative\": { \"logic\": \"产业逻辑\", \"catalyst\": \"近期催化\", \"sustainability\": \"持续性判断\", \"bear_case\": \"反向逻辑与最可能的证伪路径\" },\n    \"leaders\": [{\n      \"code\": \"300308.SZ\",\n      \"name\": \"个股名称\",\n      \"role\": \"leader\",\n      \"chg_20d\": 0.32,\n      \"turnover_yi\": 88.5,\n      \"note\": \"地位说明\"\n    }],\n    \"ladder\": { \"has_leader\": true, \"tiers\": 3, \"note\": \"梯队完整度说明\" },\n    \"invalidation\": [{ \"condition\": \"证伪条件\", \"threshold\": \"可观测阈值，如份额跌破 12% 或龙头破 20 日线\", \"note\": \"备注\" }],\n    \"watch\": [{ \"item\": \"观察项\", \"why\": \"为什么重要\" }],\n    \"related\": [\"ml-robot\"]\n  }],\n  \"rotation\": {\n    \"narrative\": \"资金是单向集中还是高低切换\",\n    \"inflow\": [{ \"name\": \"流入方向\", \"delta_pct\": 4.2, \"note\": \"备注\" }],\n    \"outflow\": [{ \"name\": \"流出方向\", \"delta_pct\": -1.4, \"note\": \"备注\" }],\n    \"emerging\": [{ \"name\": \"萌芽方向\", \"score\": 52.4, \"signal\": \"未通过哪条检验\" }],\n    \"timeline\": [{ \"date\": \"2026-09-25\", \"event\": \"事件\", \"impact\": \"positive\", \"mainline_id\": \"ml-ai-compute\" }]\n  },\n  \"risks\": [{\n    \"id\": \"r1\",\n    \"level\": \"high\",\n    \"title\": \"风险标题\",\n    \"detail\": \"风险说明\",\n    \"trigger\": \"触发条件\",\n    \"mitigation\": \"应对方式\",\n    \"affected\": [\"ml-ai-compute\"]\n  }],\n  \"scenarios\": [{\n    \"id\": \"s1\",\n    \"name\": \"乐观：扩散延续\",\n    \"probability\": 0.35,\n    \"assumption\": \"假设条件\",\n    \"impact\": \"对主线的影响\",\n    \"action\": \"对应动作\"\n  }],\n  \"playbook\": {\n    \"stance\": \"结构性进攻，但拒绝追高\",\n    \"position_range\": \"五至七成\",\n    \"rules\": [{ \"if\": \"条件\", \"then\": \"动作\" }],\n    \"checklist\": [\"盘前检查项一\", \"盘前检查项二\"],\n    \"disclaimer\": \"本报告为市场结构研究，不构成投资建议。\"\n  },\n  \"appendix\": {\n    \"method_summary\": \"一段话说明方法论\",\n    \"weights\": [{ \"key\": \"rs\", \"label\": \"相对强度\", \"weight\": 25, \"desc\": \"口径说明\" }],\n    \"stage_rules\": [{ \"stage\": \"ignition\", \"label\": \"启动期\", \"rule\": \"判定规则\" }],\n    \"glossary\": [{ \"term\": \"RS\", \"def\": \"释义\" }],\n    \"changelog\": [{ \"version\": \"1.6.0\", \"date\": \"2026-10-31\", \"note\": \"首次按 v1.6 生成\" }]\n  }\n}\n```\n\n### 9.2 枚举取值（只允许下列值，不得自造）\n\n| 字段 | 允许值 |\n|---|---|\n| `meta.data_mode` | `live` / `delayed` / `demo` |\n| `market_regime.phase` | `risk_on` / `risk_off` / `structural` / `choppy` |\n| `verdict.stance` | `offensive` / `balanced` / `defensive` |\n| `mainlines[].stage` | `ignition` / `expansion` / `acceleration` / `divergence` / `fade` |\n| `mainlines[].theme_type` | `industry` / `concept` / `style`（行业型 / 概念型 / 风格型；描述主线**本身**的类别，与 `drivers[].type` 的驱动来源不是一回事） |\n| `drivers[].type` | `policy` / `industry` / `earnings` / `event` / `liquidity` |\n| `leaders[].role` | `leader` / `core` / `follower` |\n| `risks[].level` | `high` / `medium` / `low` |\n| `rotation.timeline[].impact` | `positive` / `negative` / `neutral` |\n| `data_quality.status` | `ok` / `partial` / `degraded` |\n| `data_quality.sources[].reliability` | `high` / `medium` / `low` |\n\n---\n\n## 10 · 输出协议（硬规则，违反即视为本次输出失败）\n\n**A. 只输出 JSON**\n\n1. 回复主体只有 JSON。`plain` 模式下**第一个字符是 `{`**、最后一个字符是 `}`；`fence` 模式下**第一行是 ` ```json `、最后一行是 ` ``` `**，两行之间只有一个完整的 JSON。围栏之外不得有任何文字。\n2. 前后不得有任何其他字符——不要「以下是分析结果：」，不要「希望对你有帮助」，不要结尾的总结段。\n3. 不要输出 HTML、不要用表格描述结果、不要把 JSON 拆成几段分别解释。\n\n**B. 代码围栏（由 `{{OUTPUT_WRAP}}` 决定）**\n\n4. `{{OUTPUT_WRAP}} = plain`：不加任何代码围栏，纯文本直出（默认，用于 API / Agent）。\n5. `{{OUTPUT_WRAP}} = fence`：只包**一层** ` ```json … ``` `，用于显示复制按钮；围栏内不得再出现第二组围栏。\n\n**C. 禁止的一切「省略」写法**\n\n6. 严禁出现：`...`、`…`、`// 省略`、`/* 其余同上 */`、`（略）`、`N 条`、`<此处省略>`、`[\"同上\"]`、`{}` 空占位。每一条主线、每一条驱动都要**逐字写全**。\n7. 严禁注释：JSON 不支持 `//` 与 `/* */`。\n8. 严禁尾逗号：数组或对象的最后一项后面不得有 `,`。\n9. 严禁中文标点做结构符号：`：` `，` `“ ”` `｛ ｝` 一律改用半角 `: , \" { }`。\n10. 字符串内不要出现裸换行；确需换行写 `\\n`；引号写 `\\\"`。\n\n**D. 排版、体积与截断**\n\n11. **排版照骨架**：一个顶层键一行，对象内部写成一行内联。**不要每个字段单独占一行**——同样的内容，逐字段缩进会把体积膨胀约 40%，这是触发截断的首要原因。\n12. 体积预算：≤ 40000 字符。超了先压文字，再不行按 `score` 从低到高减少主线数量（最少 1 条），**不得删字段**。\n13. 单条 `detail` ≤ 120 字，`note` ≤ 40 字，`narrative` 各字段 ≤ 150 字。**先保证结构完整，再考虑文字丰满。**\n14. 接近输出上限时，按此顺序压缩：`detail` → `note` → `narrative` → 主线数量降低。**任何情况下不得删字段、不得中途停止、不得让 JSON 处于未闭合状态。**\n\n**E. 数值与空值**\n\n15. 缺失值写 `null`，不写 `0`、不写 `\"\"`、不写 `\"N/A\"`、不写 `-`。\n16. 数字必须是 **JSON 数值类型**（不加引号，`\"87.6\"` 是错的，`87.6` 才是对的）；不带千分位、不带 `%`、不带单位；金额放在 `_yi` 字段里。\n17. 日期 `YYYY-MM-DD`；时间戳 ISO 8601 带时区（`+08:00`）。\n18. `scenarios` 的 `probability` 之和 = 1.0（±0.01 舍入）；`mainlines` 按 `score` 降序，`rank` 从 1 连续编号。\n\n**F. 取不到数据时**\n\n19. 不要因为取不到数据就改成输出一段文字说明。仍要输出完整 JSON：把无法获取的指标写 `null`，在 `data_quality.missing` 写明原因与替代方案，把 `meta.data_mode` 设为 `delayed` 或 `demo`，`data_quality.status` 设为 `partial` 或 `degraded`，并在 `verdict.core_thesis` 里说明数据局限。\n20. 同一 `as_of` 发布修订版时，`appendix.changelog` 必须写清上一版哪项数据或口径错误、修正前后的关键数值（例：「早间版 P1 11/20 系口径错误，复算为 5/20」），不得只写「主线数由 3 改为 1」。\n\n---\n\n## 11 · 输出前自检（在内部完成，不要输出检查过程）\n\n- [ ] `plain` 模式首字符是 `{`、末字符是 `}`；`fence` 模式首行是 ` ```json `、末行是 ` ``` `，中间只有一个 JSON（按 `{{OUTPUT_WRAP}}` 二选一，不要两种都做）\n- [ ] `{` 与 `}`、`[` 与 `]` 数量相等，无尾逗号、无注释、无 `...`\n- [ ] `score_breakdown` 恰好 6 项，`contribution = normalized × weight / 100`，`Σ contribution − penalty` 与 `score` 差 ≤ 0.5\n- [ ] `score_breakdown[].raw`（`rs` 那一行）与 `metrics.rs_20` 是同一个数\n- [ ] `penalty` 只能取 0 / 6 / 8 / 12，`penalty_reason` 写明 R1/R2/R3 编号与实算\n- [ ] 每条主线通过 ≥2 条反脉冲检验，`pulse_check.detail` 写明依据；**`rules_passed` 是按 P1/P2/P3 阈值实算出来的条数，`passed === (rules_passed >= 2)`**，且 detail 里 ✗ 的个数与 `rules_passed` 自洽\n- [ ] 只过 1 条闸门的主线，`stage_confidence` ≤ 0.5 且没有标 `acceleration`；阶段不可判定的主线不在榜上；只过 0 条的主线也不在榜上，除非它是 `fade` 存量豁免\n- [ ] 走了存量豁免的主线，三条同时成立：`stage` 是按 §4 判出的 `fade`、`stage_confidence` ≤ 0.6、`rotation.outflow` 里有同名条目\n- [ ] `stage` 是按 §4 的裁决顺序取到的第一个满足 ≥2 项的阶段，不是挑「最像的」；判据不足 2 项时不进榜，而不是猜一个阶段\n- [ ] `verdict.mainline_count` 与 `mainlines` 实际条数一致；`rank` 从 1 连续编号、按 `score` 降序\n- [ ] 每条 `drivers` 有 `date` 与 `source`；每条 `invalidation` 有可观测 `threshold`\n- [ ] 若某因子数据缺失，`score_breakdown` 仍是 6 行（缺失行 `normalized=0`），其余权重按比例放大且合计 100\n- [ ] 缺失字段是 `null` 且已在 `data_quality.missing` 说明\n- [ ] 同一报告内所有 `metrics` / `persistence` 来自同一面板与同一板块粒度；集群口径只在 `rotation` 出现且已注明\n- [ ] `appendix.weights[].desc` 与 `appendix.glossary` 的口径与 §6 一致（RS = 净值比，fundflow = 净额 ÷ 同期成交额）\n- [ ] P2 成分股覆盖率 ≥80%；未达标的板块 P2 记「无法判定」，且未据此下「唯一」结论\n- [ ] 阈值按原始精度比较；距阈值 <5% 的边界值已在 `notes` 标出并给出双口径结果\n- [ ] 通过 ≥2 条闸门但 `stage` 无法判定的板块不在 `mainlines`，且 `notes` 有闸门矩阵摘要\n- [ ] `rotation.emerging` 覆盖所有仅过 1 条闸门的板块，`score` 按六因子实算并按分数降序\n- [ ] `excluded` 与面板缺行一致，`effective_range.start` 是实际使用的首日\n- [ ] `coverage` 有可复算算式，`sources[].note` 与 `notes` 中的计数与面板实测一致\n- [ ] 所有「唯一 / 只有 / 首次 / 全部」都有全样本穷举或范围限定\n- [ ] 结论未引用 `sources` 中不存在的数据（两融、北向等）\n- [ ] 未使用已停止披露的指标（北向日度净买入等）\n- [ ] 通篇无投资建议式表述\n- [ ] 把整段输出复制到任何 JSON 校验器里能直接解析\n\n---\n\n## 12 · 长报告：两段式输出\n\n若判断一次回复装不下：**先只输出 JSON**（压缩文字，保留全部字段），完成后立刻停下，不要在同一条消息里追加解读。需要文字解读时，等 JSON 完整输出后另起一条消息，并明确写「以下为解读，不属于 JSON」。\n\n**禁止**把一条 JSON 拆成「上半部分 / 下半部分」分段发送。\n\n---\n\n## 13 · 输出失败后的重试指令（给使用者）\n\n如果模型仍然给出带围栏、带省略、或解析失败的输出，把下面这句原样回给它：\n\n```\n上一条输出无法被 JSON.parse 解析。请重写：只输出一个 JSON 对象，不要任何前言后语；\n不得出现 ... 、注释、尾逗号、以及「其余同上」类占位；所有键按骨架逐个写全，缺失值写 null。\n排版按骨架：一个顶层键一行，对象内联，不要每个字段一行。不要解释，直接输出。\n\n（如果是写到一半被截断的，不要续写，改用这句）\n上一条被截断了。请重发：mainlines 只保留闸门合格的条目（最多 3 条，不得为凑数加入不合格板块），\ndetail 压到 40 字，其余字段一个不少，整段一次写完；仍然只输出一个 JSON 对象。\n```\n\n---\n\n## 14 · 合规声明\n\n本输出为市场结构研究，不构成投资建议、不承诺收益。所有资金流为算法测算值，与真实成交存在偏差。使用者应自行核验数据并承担决策责任。\n"
+  prompt: "# A股市场主线分析 · 提示词模板 v1.6\n\n> 用途：驱动任意具备联网/取数能力的 LLM 或 Agent，产出**可直接粘贴渲染**的结构化主线分析 JSON。\n> 配套：`schema/ashare-mainline.schema.json`（输出契约）· `samples/sample-report.json`（填好的参考样例）\n\n\n---\n\n## 0 · 角色\n\n你是一名 A 股市场结构研究员（sell-side strategy desk 视角）。你的专业不是预测指数点位，而是**识别资金与叙事正在哪里形成合力**，并给出可被证伪的观察条件。\n\n## 1 · 任务\n\n给定基准交易日 `{{AS_OF}}`，在全 A 股票池中识别当前市场**主线**——即同时满足「价格相对强度持续领先 + 成交额份额持续聚集 + 板块内扩散充分 + 有可验证的产业/政策/业绩叙事」的板块集群，并判断其所处**生命周期阶段**。\n\n输出：**一个 JSON 对象**，结构严格按 §9 骨架，规则严格按 §10 协议，不附加任何解释性文字。\n\n### 输入变量\n\n| 变量 | 含义 | 默认值 |\n|---|---|---|\n| `{{AS_OF}}` | 基准交易日（YYYY-MM-DD，须为交易日） | 最近一个已收盘交易日 |\n| `{{UNIVERSE}}` | 股票池 | 全 A，剔除 ST、退市整理、上市不足 60 日 |\n| `{{TOP_N}}` | 输出主线数量目标（闸门合格数不足时如实少写，最少 1 条） | 3～5 |\n| `{{RISK_PROFILE}}` | 使用者风险偏好 | 中性 |\n| `{{DATA_SOURCES}}` | 可用数据源（若为空则按 §5 自选） | §5 P0 层 |\n| `{{OUTPUT_WRAP}}` | 是否包代码围栏：`plain`（纯文本直出）/ `fence`（包一层 ```json，需复制按钮时） | `plain` |\n\n---\n\n## 2 · 时间粒度：多周期共振（硬约束）\n\n**单一窗口必然失真**：太短会被单日脉冲欺骗，太长会把已经走完的行情当成进行中的主线，而更长的窗口又面临数据不可得。因此采用**四窗嵌套 + 一个长窗做分位**。\n\n| 窗口 | 交易日 | 角色 | 判断权重 | 为什么是这个长度 |\n|---|---|---|---|---|\n| T 日 | 1 | 仅作**确认/修正**，不单独构成判定 | 0%（只做修正，不计权重） | 单日涨停潮可能来自消息脉冲、指数调仓、期指交割，不具持续性含义 |\n| 短窗 | 5 | 趋势确认 + **脉冲过滤** | 20% | ≈1 个自然周，足以让消息驱动的资金露出真伪 |\n| 主窗 | 20 | **主判定窗口** | 45% | A 股题材情绪周期通常 15～40 个交易日；20 日 ≈ 一个完整发酵周期，可覆盖「启动—发酵—分歧」 |\n| 中窗 | 60 | 中期属性判定（真主线 vs 短炒） | 20% | ≈1 个季度，跨过一次财报或一次政策窗口 |\n| 长窗 | 250 | 历史分位（拥挤度、估值、波动） | 15%（用于 P3 闸门与惩罚） | ≈1 年，提供横截面分位的统计基础；再长则样本内制度变化过多 |\n\n合计 100%。\n\n> `turnover_share_pct_250` 同时用于 §3 P3 准入与 §6 R1/R2 惩罚：入榜门槛与扣分是两件事，不重复计分。\n\n> **判断权重 ≠ 打分权重**：上表仅表示证据分量，不进入 §6 `score`；`score` 只由六因子 `normalized × weight` 决定。\n\n**窗口落地规则**\n\n1. `effective_range` 必须写明起止日，并显式避开节假日（如国庆/春节休市）。\n2. 主窗 20 日按**交易日**回溯，不是自然日。\n3. T 日数据只允许出现在 `chg_1d`、`limit_up_count` 等**描述字段**中；**禁止**用 T 日排名变化直接改变 `stage`。\n4. 若 `{{AS_OF}}` 为节后首日，主窗顺延至节前收盘，避免跳空被误计为趋势。\n5. `chg_N` 统一定义为「截至 `{{AS_OF}}` 的 N 个**有数据**交易日复合收益」。窗口内缺行时向前顺延，`effective_range.start` 写**实际**首日，并在 `window.rules` 或 `notes` 写明缺失天数；禁止同一指标出现两个值（如 60 日 +1.77% 与 −2.45%）却不说明差异来源。\n6. `excluded` 只写面板中**确实无行**的连续日期。写前先核对缺行，不得照抄节假日日历：10-08 有行情时，休市只能写 `2026-10-01~2026-10-07`。\n\n---\n\n## 3 · 反脉冲三原则（必须执行并写入 `persistence`）\n\n任何候选板块，在进入排名前先做三道体检，结果写入 `persistence.pulse_check`：\n\n| 编号 | 检验 | 量化阈值 | 用哪些字段验算 |\n|---|---|---|---|\n| **P1 持续性** | 20 日内进入涨幅前 10 名的天数 | ≥ 6 天（30%），且最近连续 ≥ 2 天 | `persistence.days_top10_20 ≥ 6` **且** `persistence.consecutive_top10 ≥ 2` |\n| **P2 广度** | 板块内上涨家数占比 与 创 20 日新高家数占比 | 上涨占比 ≥ 55% 且新高占比 ≥ 8% | `metrics.breadth_up_ratio ≥ 0.55` **且** `metrics.new_high_ratio ≥ 0.08` |\n| **P3 量能** | 成交额占全 A 比重 的 5 日变化 与 250 日分位 | Δ ≥ +0.5pct 且 分位 ≥ 60 | `metrics.turnover_share_chg_5 ≥ 0.005` **且** `metrics.turnover_share_pct_250 ≥ 0.60` |\n\n**判定（只管准入，不管阶段）**：三条中 **≥2 条成立** → 可进 `mainlines`（`stage` 仍须由 §4 赋值）；**仅 1 条成立** → 可进榜，但 `stage_confidence ≤ 0.5`，且不得标 `acceleration`（若 §4 判出 `acceleration`，降记为 `expansion` 并在 `score_breakdown` 之外的说明里写明「仅 1 条闸门成立」）；**0 条成立** → 不得进入 `mainlines`，只能进入 `rotation.emerging`。\n\n> **阶段只由 §4 判定**，本节不另设阶段规则，只压 `stage_confidence` 上限。\n\n`rules_passed` 必须是上表算出来的条数，`passed` 必须是 `rules_passed ≥ 2`——**这两个字段不允许写与 `metrics` 对不上的值**。`pulse_check.detail` 要逐条写出取值与判定（例：`P1 11/20 天但连续 0 天 ✗；P2 上涨 48% ✗；P3 份额 Δ5 −0.6pct ✗ → 0 条通过`），**detail 里的 ✗ 数量必须与 `rules_passed` 自洽**。\n\n**判据字段为 `null` 时**：该条记「无法判定」，不计入分子也不计入分母；若三条中可判定的不足 2 条，视为未通过闸门（不得进榜，豁免除外），并在 `detail` 写明哪几项缺数据。\n\n**闸门口径（同一报告内不得混用三套数）**\n\n1. **单一真源**：同一份报告的 `metrics` / `persistence` 必须取自**同一面板、同一板块粒度、同一横截面**。默认粒度 = 行业板块单板块；不得把「白酒+休闲」等集群口径的份额、拥挤度、新高占比填进单板块主线。确需集群口径，只在 `rotation` 定性描述中使用，并在 `notes` 写明哪几个数来自集群、与单板块差多少。\n2. **P1 横截面**：按参与排名的**全部板块**取绝对前 10 名（通常 100～160 个），并在 `window.rules` 写明本期板块数与剔除数；横截面只纳入 20 日窗口完整可算的板块，历史不足的剔除。不得一边用 128 个板块排名、一边用 9 个板块做百分位却不标注样本数。\n3. **P2 定义**：`new_high_ratio` = 当日收盘价高于**前 20 个交易日（不含当日）最高收盘价**的成分股数 ÷ 该板块**有 ≥21 日 K 线**的成分股数。成分股覆盖率 <80% 或样本 <10 只时 P2 记「无法判定」，并在 `missing` 写明缺哪个板块的 K 线。\n4. **原始精度比较**：`turnover_share_chg_5` 等阈值按 4 位小数比较（0.4974 < 0.005 判负），**不得先四舍五入到 0.50 再判过**。任一指标距阈值相对幅度 <5% 时，在 `notes` 标注「边界值」并同时写出另一口径的结果。\n5. **穷举与措辞**：写「唯一 / 只有 / 仅 / 全部」之前，必须对同一口径的**全部板块**算完 P1/P2/P3；只要有一个板块的 P2 未计算，只能写「在已完整计算 P2 的 N 个板块中」。不得用「只有 A 过两道闸门」概括「A 过 P2+P3、B 过 P1+P2」这种并列事实。\n6. **过闸门但阶段不可判定**：通过 ≥2 条闸门、但 §4 因判据不足无法赋值 `stage` 的板块，**不得进入 `mainlines`**（schema 的 `stage` 不允许 null），改列 `rotation.emerging`，`signal` 写「P1/P2 通过，阶段判据不足 2 项」。\n7. **闸门矩阵**：`data_quality.notes` 必须有一条 `板块 | P1 | P2 | P3 | 闸门命中 | 阶段命中 | stage` 摘要，覆盖所有通过 ≥1 条闸门的板块；`headline`、`core_thesis`、`points`、`risks` 与它不得互相矛盾。\n\n**存量豁免（只对 `fade` 生效，且优先于上面的准入判定）**：闸门每期重算，而退潮中的板块 P3 必然为负（份额在缩），若严格执行就会让 `fade` 永远无法出现在榜上——但读者恰恰需要看到「谁在退」。因此：\n\n1. 已在上一期 `mainlines` 中的主线，若本期只通过 ≤1 条，**允许保留 1 期**，但必须**同时**满足：`stage` 标 `fade`（且该 `stage` 是按 §4 判出来的，不是硬贴的）、`stage_confidence ≤ 0.6`、并在 `rotation.outflow` 中列出同名条目。\n2. **豁免只放宽准入，不放宽阶段**：若 §4 判出的阶段不是 `fade`，说明它并没有在退潮，应当移出榜单，而不是豁免。\n3. 新候选板块不享受豁免，0 条成立一律进 `rotation.emerging`。\n4. 豁免只能延续一期；下一期仍在榜且仍不过闸门，必须移出并在 `rotation.outflow` 说明去向。\n\n\n## 4 · 主线生命周期五阶段\n\n| 阶段 | 枚举值 | 盘面特征 | 量化阈值（满足 2 项以上） | 验算字段 |\n|---|---|---|---|---|\n| 启动 | `ignition` | 首次放量、龙头初现、广度快速抬升 | 份额 Δ5 ≥ +0.5pct；**近期才进前十**（`days_top10_20 ≤ 8`）；涨停 2～5 家 | `turnover_share_chg_5 ≥ 0.005`；`persistence.days_top10_20 ≤ 8`；`limit_up_count` ∈ [2,5] |\n| 发酵 | `expansion` | 梯队完整、扩散加速、轮动补涨 | 份额分位 60～85；涨停 ≥5 家；连板高度 3～4；上涨占比 ≥60% | `turnover_share_pct_250` ∈ [0.60,0.85]；`limit_up_count ≥ 5`；`max_streak` ∈ [3,4]；`breadth_up_ratio ≥ 0.60` |\n| 加速 | `acceleration` | 龙头加速、情绪高潮、成交占比飙升 | 20 日涨幅 >25%；拥挤分位 >85；封板率 >75% | `chg_20d > 0.25`；`crowding_pct > 0.85`；`seal_rate > 0.75` |\n| 分歧 | `divergence` | 高位放量滞涨、梯队断层、断板率升 | 5 日涨幅 < 20 日涨幅/4；份额分位 >90；连板高度回落 ≥2 级 | `chg_5d < chg_20d / 4`；`turnover_share_pct_250 > 0.90`；`max_streak_prev - max_streak ≥ 2` |\n| 退潮 | `fade` | 缩量下跌、龙头破位、资金撤离 | 份额 Δ20 < −0.5pct；龙头 5 日跌幅 >8%；上涨家数占比 <45% | `turnover_share_chg_20 < -0.005`；`leader_chg_5d < -0.08`；`breadth_up_ratio < 0.45` |\n\n**阶段冲突的裁决顺序（重要）**：一条主线可能同时满足多个阶段的条件（例如 `crowding_pct 0.92` 同时命中 `acceleration` 的「拥挤 >85」和 `divergence` 的「分位 >90」）。此时按 **`fade` → `divergence` → `acceleration` → `expansion` → `ignition`** 的顺序取第一个满足 ≥2 项的阶段——**越靠后的阶段优先级越高**，因为它描述的是更晚发生的状态。不允许「挑一个看起来最像的」，必须按顺序判。\n\n**判据缺失时**：某项判据所需字段为 `null`，该判据记为「无法判定」，不计入分子也不计入分母。若可判定的项不足 2 项，说明该板块**阶段不可判定**：不得进入 `mainlines`（schema 的 `stage` 不允许 null），改列 `rotation.emerging`，并在 `signal` 写明缺哪几项判据。**不要猜一个阶段填空，也不要为了进榜硬凑判据。**\n\n**阶段 ≠ 买卖建议。** `acceleration` 是风险最高的位置，`ignition` 是胜率最低但赔率最高的位置，二者都必须在 `narrative.bear_case` 中写明反向逻辑。\n\n---\n\n## 5 · 数据源分层与降级策略\n\n### P0 · 必需（免费、公开、稳定）\n\n| 数据 | 推荐来源 | 关键字段 |\n|---|---|---|\n| 板块/指数日线（含成交额） | 交易所官网；东方财富板块行情；中证/国证指数官网 | 开高低收、成交量额、换手 |\n| 概念板块成分与涨跌 | 东方财富概念板块；同花顺概念指数 | 成分股、板块涨跌幅 |\n| 涨停/跌停/连板池 | 东方财富涨停板行情（收盘后可得） | 涨停家数、连板数、封板资金、封板率 |\n| 个股资金流（**测算值**） | 东方财富个股/板块资金流 | 主力净额（超大单+大单） |\n| 两融余额（市场级杠杆） | 东方财富数据中心 `RPTA_RZRQ_LSHJ`（市场汇总，1 次请求覆盖 260 交易日） | 融资余额、融券余额、两融余额、融资净买入、融资余额占流通市值比 |\n| 指数估值 | 中证指数官网、交易所 | PE/PB 及历史分位 |\n\n> **两融不要用交易所分市接口拼。** 实测沪市、深市披露节奏不同（同一早间沪市已到 T−1、深市只到 T−2），两市相加减等于造出一个不存在的日期。用市场汇总单源：同日、口径统一、一次取满。代价是相对 `{{AS_OF}}` 滞后 1 个交易日，按下面的时滞规则处理，**不因此写 null**。\n\n### 最小可算数据集（4 张表，指标都能算出来）\n\n`metrics` 的 23 个字段**不必逐个去取**。只要下面 4 张表到手，全部指标（含 `persistence` 三项、五阶段判据、R1/R2/R3 惩罚）都能算出来：\n\n| # | 表 | 必需字段 | 覆盖期 | 主要支撑 |\n|---|---|---|---|---|\n| 1 | 板块日线 | 日期、板块代码、收盘、成交额 | 260 交易日 | `chg_1d/5d/20d/60d`、`rs_5/20/60`、`turnover_share*`、`turnover_share_pct_250`、`volatility_20` |\n| 2 | 全 A 日线 | 日期、全 A 成交额、全 A 涨跌幅 | 260 交易日 | 份额的分母、`rs_*` 的分母 |\n| 3 | 板块成分股日线 | 日期、板块代码、代码、收盘、涨跌幅、是否涨停、连板数 | ≥25 交易日；分位类需 260 | `breadth_up_ratio`、`new_high_ratio`、`limit_up_count/ratio`、`max_streak`、`seal_rate`、`leader_chg_5d` |\n| 4 | 涨停池明细 | 日期、代码、所属板块、连板数、封板资金、开板次数 | ≥25 交易日 | `max_streak_prev`、`seal_rate`，也是 `days_top10_20` / `consecutive_top10` 的必要输入 |\n\n> **`seal_rate` 的口径**：`seal_rate = 1 − 开板家数 ÷ 涨停家数`（按板块成分股口径）。有涨停池明细就必须算，确实取不到开板次数才写 `null` 并记入 `missing`；缺它会少一项 `acceleration` 判据，**不得用其他指标替代**。\n\n> **`crowding_pct` 的口径**：若无现成数据，按「板块成交额占全 A 比重的 250 日分位 × 0.5 ＋ 板块 20 日涨幅的 250 日分位 × 0.5」自建，并在 `data_quality.notes` 写明这个算式。它是 R2 与 `acceleration` 的触发变量，**不能既不留空也不说明来源**。\n\n### P1 · 建议（免费或低成本）\n\n- 龙虎榜（T 日晚间）、大宗交易、股东增减持\n- 业绩预告/快报（巨潮资讯、交易所公告）\n- 政策原文（发改委、工信部、国务院、部委官网）\n- 行业高频数据（产量、价格、开工率）\n\n### P2 · 可选（通常需付费/授权）\n\n- Wind / Choice / iFinD 一致预期与机构持仓\n- Level-2 逐笔、席位明细\n\n### 时滞绑定规则（lag 分级，适用于一切非实时数据）\n\n「有滞后」既不等于「不能用」，也不等于「可以直接用」。统一按 `lag_trading_days` 分档——它的定义是**数据日相对 `{{AS_OF}}` 的交易日差**，同日为 0，**以报告基准日为基准，不以生成时间为基准**（`as_of=11-02`、数据 `10-30` → `lag=1`，不是 2，也不是 0）：\n\n| 档位 | 条件 | 允许用途 | 禁止用途 |\n|---|---|---|---|\n| 当期 | `lag = 0` | 全部 | — |\n| 可带滞后 | `1 ≤ lag ≤ 2` | 水平值、5/20/60 日变化、分位、同期比率 | T 日归因；与 T 日分母做比率；当日风控触发 |\n| 过期 | `lag ≥ 3`，或跨长假 | 只作「节前水平」定性描述，必须写 `as_of` | 任何定量结论；「最新 / 当前」措辞；趋势类指标整块写 `null` |\n\n三条硬约束：\n\n1. **成对出现**：引用带滞后指标的结论，必须同时给出 `as_of` 与 `lag_trading_days`。只写数值不写截止日 = 口径不明。\n2. **绝对表述禁用**：`lag ≥ 1` 时不得写「今日两融」「当前杠杆」，只能写「截至 M-D」。\n3. **不跨期做比值**：`A/B` 的分子分母必须同期。拿 T−1 的两融余额除 T 日成交额，得到的是一个不存在的比率。\n\n> **存量/趋势型**（余额、持仓、估值分位）对 1～2 日滞后不敏感，可带滞后使用；**流量/事件型**（当日净流入、当日涨停家数、当日成交额）滞后即失效，只能写 `null`。\n\n### 不可得数据的处理（重要）\n\n1. **禁止编造**。取不到就写 `null`，并在 `data_quality.missing` 中写明 `{field, reason, fallback}`。\n2. **禁止 0 填充**——0 与 null 在金融数据里含义完全不同。\n3. 降级顺序：精确值 → 代理指标 → 该因子记 0 并放大其余权重（**保留 6 行，不删字段**，具体做法见 §6「因子缺失时的权重处理」，并在 `data_quality.notes` 注明）。\n4. **已停止披露的指标不得使用**：沪深港通自 2024-08 起不再披露日度净买入/实时额度余额，仅有收盘后成交总额与港交所持股变动。**禁止**在日度因子里使用「北向净流入」；如需外资维度，改用「陆股通持股变动（周度）」并标注低频。\n5. 资金流为**算法测算值**（按单笔金额分档推断），必须在 `data_quality.notes` 标注口径，权重不得超过 10%，其来源 `reliability` 不得标 `high`（最高 `medium`）。\n6. **计数须与面板一致**：写进 `sources[].note` 或 `notes` 的任何计数（如「3 个板块成分完整」）必须与面板实测一致，并同时给出分母（例：`19 个名单中 9 个完整可取、7 个覆盖 ≥80%`）。\n7. **样本不足要写明**：`turnover_share_pct_250`、`crowding_pct`、`pe_pct_250` 的实际样本 <250 日时，`notes` 写明「分位基于 N 个交易日」；不得在正文声称「250 日分位」而不加限定。\n\n### 取数预算与限流（硬约束）\n\n1. **增量缓存**：260 日历史只回补一次，按 `(数据集, 代码, 日期)` 落本地缓存（SQLite/Parquet）；每日只追加 1 根新 bar，已有日期不得重复请求；命中情况写入 `data_quality.sources[].note`。\n2. **批量与限流**：当日全板块快照用一次列表请求取全，历史 K 线才逐板块请求；间隔 1.5～2 秒、≤30 次/分钟并加抖动；17:30 后取数，盘中不轮询。\n3. **退避与预算**：429/403/5xx 按 2s→4s→8s 退避，最多 3 次，仍失败写 `null` 记入 `missing`；单份报告硬上限 60 次，超限停止并如实记录；禁止逐只扫描全市场个股，官方源优先。\n4. **覆盖率口径（必须写算式）**：`coverage` = Σ(因子权重 × 数据状态系数) / 100；状态系数：真实取数 = 1.0，代理/自建估算 = 0.5，`null` = 0。非打分字段缺失不计入 `coverage`，但必须写入 `missing`。`notes` 必须给出可复算的算式，例：`coverage = (25+20+20+15)×1.0 + 10×0.5 = 85 → 0.85`。不得凭印象写 0.83 这类无法复算的数。\n\n---\n\n## 6 · 打分卡\n\n```\nscore = Σ ( normalized_i × weight_i ) − penalty\n```\n\n| 因子 key | 含义 | 权重 | 归一化方法 |\n|---|---|---|---|\n| `rs` | 相对强度：`(1+板块 N 日收益) ÷ (1+基准 N 日收益)` 的净值比（1.0 = 同步，负收益下方向仍正确） | 25 | 该比值在全 A 板块中的横截面百分位 0～100 |\n| `persistence` | 趋势持续性：前 10 天数、连续天数、60 日方向一致性 | 20 | 三子项均值百分位 |\n| `volume` | 量能聚集：成交额份额 及其 5 日变化 | 20 | 分位 × 0.6 + Δ 分位 × 0.4 |\n| `breadth` | 扩散度：上涨占比、新高占比、涨停家数 | 15 | 三项横截面百分位按 0.4 / 0.35 / 0.25 加权 |\n| `fundflow` | 资金流：5 日 / 20 日主力净额（测算） | 10 | `flow_ratio = N 日净额 ÷ 同期成交额` 的百分位（流通市值不可得时用此口径） |\n| `narrative` | 叙事与催化：政策/产业/业绩的可验证证据强度 | 10 | 见下方分档表 |\n\n`normalized` 是 0～100 的百分位，`contribution = normalized × weight / 100`，六项 `weight` 合计 100。\n\n**`rs` 基准与算法**：基准固定为中证全指 `000985.CSI`；取不到时用沪指代理并在 `notes` 写明，`rs_5/20/60` 必须同基准。**禁止**把「板块涨幅 ÷ 基准涨幅」的字面除法当算法——负收益时它会翻转符号。\n\n**`fundflow` 口径**：`flow_ratio` 与 `net_inflow_5_yi/20_yi` 必须同窗口；`score_breakdown.fundflow.raw` 填百分比数值（`3.537` 表示 +3.54%，保留 3 位），`note` 写出分子分母。若改用流通市值口径，须在 `notes` 说明，且同一报告内所有主线保持一致。\n\n**`turnover_share` 分母**：优先用全市场（沪+深）成交额；只能用板块合计代理时，在 `notes` 写明代理与误差（例：128 板块合计 16877 亿 vs 全市场 16745 亿，+0.8%）。\n\n**`rs` 的 `raw` 填什么**：填 `metrics.rs_20` 本身（比值，如 `1.213`），不填超额收益百分点。`raw` 与 `metrics.rs_20` **必须是同一个数**，页面会拿它们对照。\n\n**`narrative` 的归一化（可执行分档，不要再写「凭经验给分」）**\n\n1. 基础分（按 `drivers` 里**可验证**的条数，`verified !== true` 的不计）：0 条 → 0；1 条 → 40；2 条 → 60；3 条 → 75；≥4 条 → 85。\n2. 来源加分（只取**最高**等级的一条，不叠加）：官方原文 +15；公司公告 +10；主流财经媒体 +5；卖方研报 +0；社媒传闻 −10。\n3. `normalized = min(100, max(0, 基础分 + 来源加分))`，并在 `note` 写成 `3 条可验证证据(75) + 官方原文(+15) = 90`。\n\n**因子缺失时的权重处理（固定 6 项，不删行）**\n\n某项因子的底层数据取不到时：\n\n1. `score_breakdown` **仍然保留 6 行**，缺失那行 `normalized = 0`、**`weight = 0`**、`contribution = 0`，`note` 写「数据缺失，已从权重中剔除」。\n2. 其余五项 `weight` 按原比例放大，使 `Σ weight = 100`（例如缺 `fundflow`：25/20/20/15/10 → 27.8/22.2/22.2/16.7/11.1，保留 1 位小数并保证合计 100）。\n3. `appendix.weights` 同步用调整后的权重，并在 `data_quality.notes` 记一条。\n4. **不要**因为缺因子就把这一行删掉——删了会让 `Σ contribution` 与 `score` 对不上，也让读者看不出哪一项是空的。\n\n**闸门 vs 持续性因子**：`pulse_check` 是准入布尔值，`persistence` 是强度连续值；同源不同用途，`pulse_check` 条数**不得**折算进 `score`。\n\n**拥挤度惩罚 `penalty`（只减分；多项命中取最大值，不叠加）**\n\n| 编号 | 触发条件（需全部满足） | 扣分 |\n|---|---|---|\n| `R1` | `turnover_share_pct_250` > 0.95 且 `max_streak` ≥ 5 | 12 |\n| `R2` | `turnover_share_pct_250` > 0.90 且 `crowding_pct` > 0.90 | 6 |\n| `R3` | `chg_60d` > 0.60 且 `net_inflow_5_yi` < 0 | 8 |\n| 无触发 | — | 0 |\n\n1. **多个条件同时命中取最大值**，不累加，`penalty` 上限 12。\n2. 每个条件都必须能用 `metrics` 里已有的字段当场验算，**不得引入 `metrics` 之外的口径**（例如「波动率分位」这种没有对应字段的说法）。\n3. `penalty_reason` 必须写成可复算的一句话：编号 + 实际取值 + 算式。例：`R1 触发：份额分位 0.96 > 0.95 且 连板 5 ≥ 5 → −12`。\n4. 未触发时 `penalty = 0`、`penalty_reason = \"无触发\"`。**不要写 0.4、3.15 这类对不上上表的数。**\n\n`score_breakdown` 必须逐项列出 `raw / normalized / weight / contribution`，且 `Σ contribution − penalty` 与 `score` 的偏差 ≤ 0.5（自检项）。\n\n---\n\n## 7 · 执行流程\n\n| Step | 动作 | 产出字段 |\n|---|---|---|\n| **S1** | 取数、复权、剔除异常（停牌、ST、上市 <60 日、单日换手 >40% 的异动股） | `data_quality` |\n| **S2** | 横截面排名：1/5/20/60 日板块涨幅，成交额份额及其变化 | `metrics` |\n| **S3** | **反脉冲三原则校验 → 先过闸门，不合格的剔出候选池** | `persistence` |\n| **S4** | 因子归一化 → 加权 → 扣惩罚 → 排序取 Top N（只在 S3 的候选池里排） | `score`, `score_breakdown` |\n| **S5** | 阶段判定（§4） | `stage`, `stage_confidence` |\n| **S6** | 建立证据链：每条主线 ≥2 条驱动，含日期与来源；识别龙头/中军/补涨梯队 | `drivers`, `leaders`, `ladder` |\n| **S7** | 写证伪条件与情景推演：必须给出**可观测阈值** | `invalidation`, `scenarios` |\n\n**S3 必须在 S4 之前**：闸门是排序前剔除，不是排完再解释。`mainlines` 允许 **1～5 条**（schema minItems = 1）；S3 后合格候选不足 3 条时**如实少写**，并在 `notes` 写明「闸门后仅 N 条」，不得放宽阈值凑数，也不得把阶段不可判定的板块拉进榜。若全样本 0 条通过 ≥2 条闸门，只输出 1 条**观察位**（闸门命中最多且 stage 可赋值者，`stage_confidence ≤ 0.5`），并在 `core_thesis` 写明「本期无板块达到 2 条闸门，榜首仅作观察」。\n\n**S6 证据标准**：来源优先级 = 官方原文 > 公司公告 > 主流财经媒体 > 卖方研报 > 社媒传闻。**社媒传闻不可单独作为驱动**；若无更高等级来源，须在 `detail` 中标注「未证实」。\n\n---\n\n## 8 · 语言规范\n\n- 用**概率化、条件化**表述：「若 X 跌破 Y，则主线成立概率下降」，不用「必涨/稳赚/满仓」。\n- 每条结论后跟可验证的观察项，而不是形容词。\n- 中文为主，专有名词保留英文（如 HBM、CoWoS）。\n- 数字：比率保留 4 位小数（0.0521），分数保留 1 位（87.6），金额统一「亿元」且字段名带 `_yi`。\n- 百分比一律用**小数**表示（5.21% → 0.0521），字段不携带 `%`。\n- 「唯一 / 只有 / 首次 / 全部」等绝对表述，必须有全样本穷举或明确范围限定（「在已完整计算 P2 的 N 个板块中」），否则不得使用。\n- 不得引用 `sources` 中不存在的数据做因果结论：没有两融数据就不写「杠杆退潮 / 融资盘撤离」，没有北向数据就不写「外资流入」。两融可用时必须同时写出 `as_of` 与 `lag_trading_days`，且**不得用于 T 日归因**——用 T−1 的余额解释 T 日行情是因果倒置。\n- 同一事实在 `headline`、`core_thesis`、`points`、`risks`、`notes` 中必须同一口径；「A 过 P2+P3、B 过 P1+P2」不能压缩成「只有 A 过两道闸门」。\n- 驱动按事实归属分类：价格与成交确认写 `liquidity`，业绩数据写 `earnings`；「放量上涨」不得标为 `earnings`。\n- 不得把单一「成交额放大」直接解释为「存量换手 / 资金未离场」，至少要有换手率、资金净额、涨跌分布中的第二项证据。\n- 「首次 / 创新高 / 历史极值」必须给出日期与对比区间；给不出就写「近期」，不得用「首次」定性。\n\n---\n\n## 9 · 输出骨架（键名照抄，不得增删改名）\n\n### 9.1 完整骨架\n\n实测体积：骨架约 **6K 字符**，3 条主线约 **20K**，5 条约 **32K**，硬上限 **40000**；装不下必然截断，故 §10-D 的排版与压缩规则是硬要求。\n\n下面这份骨架就是**唯一合法结构**。规则：\n\n- 所有键都必须出现。确实无数据时：字符串写 `null`、数组写 `[]`、对象按骨架给空值。\n- 数组元素结构必须与骨架中该数组的第 1 个元素完全一致。\n- 骨架里的示例值只用于示意**格式与单位**，不要照抄内容。\n- `metrics.rs_5 / rs_20 / rs_60` 是相对强度**净值比** `(1+板块收益)/(1+基准收益)`（1.0 = 与大盘同步），不是超额收益的百分点。\n- `metrics.max_streak_prev` 是**5 个交易日前**的连板高度（不是\"上一个周期\"），`max_streak_prev - max_streak` 才是「连板回落级数」。\n- `metrics.leader_chg_5d` 是板块内**龙头个股**的 5 日涨跌幅，不是板块的 5 日涨幅（后者是 `chg_5d`）。\n- `metrics.turnover_share_chg_20` 是份额相对 **20 个交易日**前的变化，与 `turnover_share_chg_5` 不是同一个窗口。\n- `rotation.inflow/outflow[].delta_pct` 是 5 日成交额份额变化，单位**百分点**（`4.2` 表示 +4.2pct），负数为流出。\n- `rotation.emerging[].score` 必须按 §6 六因子实算（无验证证据则 `narrative = 0`，触发 R1/R2/R3 照扣并在 `signal` 写明），覆盖全部「仅通过 1 条闸门」的板块并按分数降序，不得手填；超过 5 条时保留前 5 条，并在 `rotation.narrative` 列出其余板块名称与分数。\n- 数组长度：`mainlines` = `{{TOP_N}}` 为目标（1～5，闸门合格数不足时如实少写）；`score_breakdown` = 6（六个因子各一项）；`drivers` 2～4；`leaders` 3～5；`invalidation` 2～4；`watch` 2～3；`risks` 3～5；`scenarios` 恰好 3；`points` 3～4；`rotation` 各 3～5；`timeline` 4～6；`appendix.weights` = 6。\n\n```json\n{\n  \"schema_version\": \"1.0.0\",\n  \"meta\": {\n    \"report_id\": \"aml-20261030\",\n    \"as_of\": \"2026-10-30\",\n    \"generated_at\": \"2026-10-31T09:00:00+08:00\",\n    \"title\": \"A股市场主线分析 · 2026-10-30\",\n    \"data_mode\": \"live\",\n    \"confidence\": 0.72,\n    \"analyst\": { \"model\": \"模型名\", \"prompt_version\": \"1.6.0\", \"operator\": \"使用者\" },\n    \"tags\": [\"算力\", \"机器人\"]\n  },\n  \"window\": {\n    \"as_of\": \"2026-10-30\",\n    \"primary_days\": 20,\n    \"confirm_days\": 5,\n    \"context_days\": 60,\n    \"quantile_days\": 250,\n    \"effective_range\": { \"start\": \"2026-09-24\", \"end\": \"2026-10-30\" },\n    \"rules\": [\"主窗按交易日回溯 20 日，非自然日\", \"T 日仅用于描述字段，不参与阶段判定\"],\n    \"excluded\": [{ \"date_range\": \"2026-10-01~2026-10-07\", \"reason\": \"国庆休市（10-08 为交易日）\" }]\n  },\n  \"data_quality\": {\n    \"status\": \"ok\",\n    \"coverage\": 0.92,\n    \"sources\": [{\n      \"name\": \"东方财富板块行情\",\n      \"category\": \"行情\",\n      \"fields\": [\"收盘\", \"成交额\", \"涨跌幅\"],\n      \"as_of\": \"2026-10-30\",\n      \"reliability\": \"high\",\n      \"note\": \"收盘后取数\"\n    }],\n    \"missing\": [\n      { \"field\": \"两融余额\", \"reason\": \"源未更新，数据日滞后 4 个交易日（>2）\", \"fallback\": \"market_regime.leverage 整块写 null；叙事不使用杠杆维度\" },\n      { \"field\": \"板块 PE 250 日分位\", \"reason\": \"官网未提供历史分位\", \"fallback\": \"indices.pe_pct_250 全部写 null\" }\n    ],\n    \"notes\": [\"资金流为算法测算值，与真实成交存在偏差\"]\n  },\n  \"market_regime\": {\n    \"label\": \"结构性进攻\",\n    \"phase\": \"risk_on\",\n    \"phase_label\": \"风险偏好上行\",\n    \"risk_appetite\": 68,\n    \"liquidity\": 74,\n    \"breadth_score\": 61,\n    \"indices\": [{\n      \"code\": \"000001.SH\",\n      \"name\": \"上证指数\",\n      \"close\": 3521.4,\n      \"chg_1d\": 0.0042,\n      \"chg_5d\": 0.0135,\n      \"chg_20d\": 0.0621,\n      \"turnover_yi\": 8120.5,\n      \"pe_pct_250\": 0.63\n    }],\n    \"breadth\": {\n      \"up_ratio\": 0.58,\n      \"limit_up\": 62,\n      \"limit_down\": 5,\n      \"broken_board_rate\": 0.18,\n      \"advance_decline_ratio\": 1.35,\n      \"new_high\": 143,\n      \"new_low\": 21\n    },\n    \"leverage\": {\n      \"as_of\": \"2026-10-29\",\n      \"lag_trading_days\": 1,\n      \"scope\": \"cn_all\",\n      \"balance_yi\": 23849.6,\n      \"fin_balance_yi\": 23567.4,\n      \"lend_balance_yi\": 282.2,\n      \"balance_to_float_pct\": 0.02631,\n      \"chg_1d\": -0.0112,\n      \"chg_5d\": -0.0288,\n      \"chg_20d\": -0.1017,\n      \"chg_60d\": -0.0978,\n      \"net_buy_5d_yi\": -701.8,\n      \"net_buy_20d_yi\": -2685.7,\n      \"balance_pct_250\": 0.004,\n      \"trend\": \"deleveraging\",\n      \"trend_label\": \"去杠杆\",\n      \"note\": \"东财市场汇总；含沪深北，与交易所分市合计差约 0.3%，不与其他源混算；滞后 1 个交易日，分位基于 250 个交易日\"\n    },\n    \"narrative\": \"指数震荡上行，赚钱效应集中于少数板块\"\n  },\n  \"verdict\": {\n    \"headline\": \"一句话结论\",\n    \"core_thesis\": \"三到五句核心逻辑，说清资金去哪、为什么、还能走多久\",\n    \"stance\": \"offensive\",\n    \"stance_label\": \"结构性进攻\",\n    \"dominant_mainline_id\": \"ml-ai-compute\",\n    \"mainline_count\": 4,\n    \"confidence\": 0.72,\n    \"points\": [{ \"title\": \"要点标题\", \"detail\": \"要点正文\" }],\n    \"horizon\": { \"valid_until\": \"2026-11-20\", \"review_trigger\": \"触发重新评估的具体条件\" }\n  },\n  \"mainlines\": [{\n    \"id\": \"ml-ai-compute\",\n    \"rank\": 1,\n    \"rank_change\": 0,\n    \"name\": \"主线名称\",\n    \"aliases\": [\"别名一\", \"别名二\"],\n    \"sector_codes\": [\"BK0447\"],\n    \"theme_type\": \"industry\",\n    \"stage\": \"expansion\",\n    \"stage_label\": \"发酵期\",\n    \"stage_confidence\": 0.78,\n    \"score\": 87.6,\n    \"score_breakdown\": [{\n      \"key\": \"rs\",\n      \"label\": \"相对强度\",\n      \"raw\": 1.213,\n      \"normalized\": 92,\n      \"weight\": 25,\n      \"contribution\": 23.0,\n      \"note\": \"归一化依据，一句话\"\n    }],\n    \"penalty\": 12,\n    \"penalty_reason\": \"R1 触发：份额分位 0.96 > 0.95 且 连板 5 ≥ 5 → −12\",\n    \"metrics\": {\n      \"chg_1d\": 0.0121,\n      \"chg_5d\": 0.0412,\n      \"chg_20d\": 0.1832,\n      \"chg_60d\": 0.3421,\n      \"rs_5\": 1.048,\n      \"rs_20\": 1.213,\n      \"rs_60\": 1.186,\n      \"turnover_share\": 0.152,\n      \"turnover_share_chg_5\": 0.021,\n      \"turnover_share_chg_20\": 0.012,\n      \"turnover_share_pct_250\": 0.88,\n      \"breadth_up_ratio\": 0.67,\n      \"new_high_ratio\": 0.12,\n      \"limit_up_count\": 9,\n      \"limit_up_ratio\": 0.11,\n      \"max_streak\": 4,\n      \"max_streak_prev\": 5,\n      \"seal_rate\": 0.78,\n      \"leader_chg_5d\": 0.036,\n      \"net_inflow_5_yi\": 84.3,\n      \"net_inflow_20_yi\": 212.6,\n      \"crowding_pct\": 0.88,\n      \"volatility_20\": 0.028\n    },\n    \"persistence\": {\n      \"days_top10_20\": 9,\n      \"days_top5_20\": 6,\n      \"consecutive_top10\": 3,\n      \"pulse_check\": { \"passed\": true, \"rules_passed\": 3, \"detail\": \"P1/P2/P3 均成立，逐条写清依据\" }\n    },\n    \"drivers\": [{\n      \"type\": \"policy\",\n      \"title\": \"驱动标题\",\n      \"detail\": \"驱动说明，含具体数字与时间\",\n      \"date\": \"2026-10-12\",\n      \"source\": \"工信部官网\",\n      \"verified\": true\n    }],\n    \"narrative\": { \"logic\": \"产业逻辑\", \"catalyst\": \"近期催化\", \"sustainability\": \"持续性判断\", \"bear_case\": \"反向逻辑与最可能的证伪路径\" },\n    \"leaders\": [{\n      \"code\": \"300308.SZ\",\n      \"name\": \"个股名称\",\n      \"role\": \"leader\",\n      \"chg_20d\": 0.32,\n      \"turnover_yi\": 88.5,\n      \"note\": \"地位说明\"\n    }],\n    \"ladder\": { \"has_leader\": true, \"tiers\": 3, \"note\": \"梯队完整度说明\" },\n    \"invalidation\": [{ \"condition\": \"证伪条件\", \"threshold\": \"可观测阈值，如份额跌破 12% 或龙头破 20 日线\", \"note\": \"备注\" }],\n    \"watch\": [{ \"item\": \"观察项\", \"why\": \"为什么重要\" }],\n    \"related\": [\"ml-robot\"]\n  }],\n  \"rotation\": {\n    \"narrative\": \"资金是单向集中还是高低切换\",\n    \"inflow\": [{ \"name\": \"流入方向\", \"delta_pct\": 4.2, \"note\": \"备注\" }],\n    \"outflow\": [{ \"name\": \"流出方向\", \"delta_pct\": -1.4, \"note\": \"备注\" }],\n    \"emerging\": [{ \"name\": \"萌芽方向\", \"score\": 52.4, \"signal\": \"未通过哪条检验\" }],\n    \"timeline\": [{ \"date\": \"2026-09-25\", \"event\": \"事件\", \"impact\": \"positive\", \"mainline_id\": \"ml-ai-compute\" }]\n  },\n  \"risks\": [{\n    \"id\": \"r1\",\n    \"level\": \"high\",\n    \"title\": \"风险标题\",\n    \"detail\": \"风险说明\",\n    \"trigger\": \"触发条件\",\n    \"mitigation\": \"应对方式\",\n    \"affected\": [\"ml-ai-compute\"]\n  }],\n  \"scenarios\": [{\n    \"id\": \"s1\",\n    \"name\": \"乐观：扩散延续\",\n    \"probability\": 0.35,\n    \"assumption\": \"假设条件\",\n    \"impact\": \"对主线的影响\",\n    \"action\": \"对应动作\"\n  }],\n  \"playbook\": {\n    \"stance\": \"结构性进攻，但拒绝追高\",\n    \"position_range\": \"五至七成\",\n    \"rules\": [{ \"if\": \"条件\", \"then\": \"动作\" }],\n    \"checklist\": [\"盘前检查项一\", \"盘前检查项二\"],\n    \"disclaimer\": \"本报告为市场结构研究，不构成投资建议。\"\n  },\n  \"appendix\": {\n    \"method_summary\": \"一段话说明方法论\",\n    \"weights\": [{ \"key\": \"rs\", \"label\": \"相对强度\", \"weight\": 25, \"desc\": \"口径说明\" }],\n    \"stage_rules\": [{ \"stage\": \"ignition\", \"label\": \"启动期\", \"rule\": \"判定规则\" }],\n    \"glossary\": [{ \"term\": \"RS\", \"def\": \"释义\" }],\n    \"changelog\": [{ \"version\": \"1.6.0\", \"date\": \"2026-10-31\", \"note\": \"首次按 v1.6 生成\" }]\n  }\n}\n```\n\n### 9.2 枚举取值（只允许下列值，不得自造）\n\n| 字段 | 允许值 |\n|---|---|\n| `meta.data_mode` | `live` / `delayed` / `demo` |\n| `market_regime.phase` | `risk_on` / `risk_off` / `structural` / `choppy` |\n| `market_regime.leverage.scope` | `cn_all` / `hs` / `sse` / `szse` |\n| `market_regime.leverage.trend` | `deleveraging` / `stable` / `releveraging`（由 `chg_20d` 机械映射：≤ −3% / 其间 / ≥ +3%） |\n| `verdict.stance` | `offensive` / `balanced` / `defensive` |\n| `mainlines[].stage` | `ignition` / `expansion` / `acceleration` / `divergence` / `fade` |\n| `mainlines[].theme_type` | `industry` / `concept` / `style`（行业型 / 概念型 / 风格型；描述主线**本身**的类别，与 `drivers[].type` 的驱动来源不是一回事） |\n| `drivers[].type` | `policy` / `industry` / `earnings` / `event` / `liquidity` |\n| `leaders[].role` | `leader` / `core` / `follower` |\n| `risks[].level` | `high` / `medium` / `low` |\n| `rotation.timeline[].impact` | `positive` / `negative` / `neutral` |\n| `data_quality.status` | `ok` / `partial` / `degraded` |\n| `data_quality.sources[].reliability` | `high` / `medium` / `low` |\n\n---\n\n## 10 · 输出协议（硬规则，违反即视为本次输出失败）\n\n**A. 只输出 JSON**\n\n1. 回复主体只有 JSON。`plain` 模式下**第一个字符是 `{`**、最后一个字符是 `}`；`fence` 模式下**第一行是 ` ```json `、最后一行是 ` ``` `**，两行之间只有一个完整的 JSON。围栏之外不得有任何文字。\n2. 前后不得有任何其他字符——不要「以下是分析结果：」，不要「希望对你有帮助」，不要结尾的总结段。\n3. 不要输出 HTML、不要用表格描述结果、不要把 JSON 拆成几段分别解释。\n\n**B. 代码围栏（由 `{{OUTPUT_WRAP}}` 决定）**\n\n4. `{{OUTPUT_WRAP}} = plain`：不加任何代码围栏，纯文本直出（默认，用于 API / Agent）。\n5. `{{OUTPUT_WRAP}} = fence`：只包**一层** ` ```json … ``` `，用于显示复制按钮；围栏内不得再出现第二组围栏。\n\n**C. 禁止的一切「省略」写法**\n\n6. 严禁出现：`...`、`…`、`// 省略`、`/* 其余同上 */`、`（略）`、`N 条`、`<此处省略>`、`[\"同上\"]`、`{}` 空占位。每一条主线、每一条驱动都要**逐字写全**。\n7. 严禁注释：JSON 不支持 `//` 与 `/* */`。\n8. 严禁尾逗号：数组或对象的最后一项后面不得有 `,`。\n9. 严禁中文标点做结构符号：`：` `，` `“ ”` `｛ ｝` 一律改用半角 `: , \" { }`。\n10. 字符串内不要出现裸换行；确需换行写 `\\n`；引号写 `\\\"`。\n\n**D. 排版、体积与截断**\n\n11. **排版照骨架**：一个顶层键一行，对象内部写成一行内联。**不要每个字段单独占一行**——同样的内容，逐字段缩进会把体积膨胀约 40%，这是触发截断的首要原因。\n12. 体积预算：≤ 40000 字符。超了先压文字，再不行按 `score` 从低到高减少主线数量（最少 1 条），**不得删字段**。\n13. 单条 `detail` ≤ 120 字，`note` ≤ 40 字，`narrative` 各字段 ≤ 150 字。**先保证结构完整，再考虑文字丰满。**\n14. 接近输出上限时，按此顺序压缩：`detail` → `note` → `narrative` → 主线数量降低。**任何情况下不得删字段、不得中途停止、不得让 JSON 处于未闭合状态。**\n\n**E. 数值与空值**\n\n15. 缺失值写 `null`，不写 `0`、不写 `\"\"`、不写 `\"N/A\"`、不写 `-`。\n16. 数字必须是 **JSON 数值类型**（不加引号，`\"87.6\"` 是错的，`87.6` 才是对的）；不带千分位、不带 `%`、不带单位；金额放在 `_yi` 字段里。\n17. 日期 `YYYY-MM-DD`；时间戳 ISO 8601 带时区（`+08:00`）。\n18. `scenarios` 的 `probability` 之和 = 1.0（±0.01 舍入）；`mainlines` 按 `score` 降序，`rank` 从 1 连续编号。\n\n**F. 取不到数据时**\n\n19. 不要因为取不到数据就改成输出一段文字说明。仍要输出完整 JSON：把无法获取的指标写 `null`，在 `data_quality.missing` 写明原因与替代方案，把 `meta.data_mode` 设为 `delayed` 或 `demo`，`data_quality.status` 设为 `partial` 或 `degraded`，并在 `verdict.core_thesis` 里说明数据局限。\n20. 同一 `as_of` 发布修订版时，`appendix.changelog` 必须写清上一版哪项数据或口径错误、修正前后的关键数值（例：「早间版 P1 11/20 系口径错误，复算为 5/20」），不得只写「主线数由 3 改为 1」。\n\n---\n\n## 11 · 输出前自检（在内部完成，不要输出检查过程）\n\n- [ ] `plain` 模式首字符是 `{`、末字符是 `}`；`fence` 模式首行是 ` ```json `、末行是 ` ``` `，中间只有一个 JSON（按 `{{OUTPUT_WRAP}}` 二选一，不要两种都做）\n- [ ] `{` 与 `}`、`[` 与 `]` 数量相等，无尾逗号、无注释、无 `...`\n- [ ] `score_breakdown` 恰好 6 项，`contribution = normalized × weight / 100`，`Σ contribution − penalty` 与 `score` 差 ≤ 0.5\n- [ ] `score_breakdown[].raw`（`rs` 那一行）与 `metrics.rs_20` 是同一个数\n- [ ] `penalty` 只能取 0 / 6 / 8 / 12，`penalty_reason` 写明 R1/R2/R3 编号与实算\n- [ ] 每条主线通过 ≥2 条反脉冲检验，`pulse_check.detail` 写明依据；**`rules_passed` 是按 P1/P2/P3 阈值实算出来的条数，`passed === (rules_passed >= 2)`**，且 detail 里 ✗ 的个数与 `rules_passed` 自洽\n- [ ] 只过 1 条闸门的主线，`stage_confidence` ≤ 0.5 且没有标 `acceleration`；阶段不可判定的主线不在榜上；只过 0 条的主线也不在榜上，除非它是 `fade` 存量豁免\n- [ ] 走了存量豁免的主线，三条同时成立：`stage` 是按 §4 判出的 `fade`、`stage_confidence` ≤ 0.6、`rotation.outflow` 里有同名条目\n- [ ] `stage` 是按 §4 的裁决顺序取到的第一个满足 ≥2 项的阶段，不是挑「最像的」；判据不足 2 项时不进榜，而不是猜一个阶段\n- [ ] `verdict.mainline_count` 与 `mainlines` 实际条数一致；`rank` 从 1 连续编号、按 `score` 降序\n- [ ] 每条 `drivers` 有 `date` 与 `source`；每条 `invalidation` 有可观测 `threshold`\n- [ ] 若某因子数据缺失，`score_breakdown` 仍是 6 行（缺失行 `normalized=0`），其余权重按比例放大且合计 100\n- [ ] 缺失字段是 `null` 且已在 `data_quality.missing` 说明\n- [ ] 同一报告内所有 `metrics` / `persistence` 来自同一面板与同一板块粒度；集群口径只在 `rotation` 出现且已注明\n- [ ] `appendix.weights[].desc` 与 `appendix.glossary` 的口径与 §6 一致（RS = 净值比，fundflow = 净额 ÷ 同期成交额）\n- [ ] P2 成分股覆盖率 ≥80%；未达标的板块 P2 记「无法判定」，且未据此下「唯一」结论\n- [ ] 阈值按原始精度比较；距阈值 <5% 的边界值已在 `notes` 标出并给出双口径结果\n- [ ] 通过 ≥2 条闸门但 `stage` 无法判定的板块不在 `mainlines`，且 `notes` 有闸门矩阵摘要\n- [ ] `rotation.emerging` 覆盖所有仅过 1 条闸门的板块，`score` 按六因子实算并按分数降序\n- [ ] `excluded` 与面板缺行一致，`effective_range.start` 是实际使用的首日\n- [ ] `coverage` 有可复算算式，`sources[].note` 与 `notes` 中的计数与面板实测一致\n- [ ] 所有「唯一 / 只有 / 首次 / 全部」都有全样本穷举或范围限定\n- [ ] 结论未引用 `sources` 中不存在的数据（两融、北向等）\n- [ ] `market_regime.leverage` 的 `as_of` + `lag_trading_days` 与报告 `as_of` 自洽；`lag ≥ 1` 时已在 `missing` 写明原因；`trend` 与 `chg_20d` 的 ±3% 映射一致；`leverage` 为 `null` 时全文没有「两融 / 融资余额」字样\n- [ ] 未使用已停止披露的指标（北向日度净买入等）\n- [ ] 通篇无投资建议式表述\n- [ ] 把整段输出复制到任何 JSON 校验器里能直接解析\n\n---\n\n## 12 · 长报告：两段式输出\n\n若判断一次回复装不下：**先只输出 JSON**（压缩文字，保留全部字段），完成后立刻停下，不要在同一条消息里追加解读。需要文字解读时，等 JSON 完整输出后另起一条消息，并明确写「以下为解读，不属于 JSON」。\n\n**禁止**把一条 JSON 拆成「上半部分 / 下半部分」分段发送。\n\n---\n\n## 13 · 输出失败后的重试指令（给使用者）\n\n如果模型仍然给出带围栏、带省略、或解析失败的输出，把下面这句原样回给它：\n\n```\n上一条输出无法被 JSON.parse 解析。请重写：只输出一个 JSON 对象，不要任何前言后语；\n不得出现 ... 、注释、尾逗号、以及「其余同上」类占位；所有键按骨架逐个写全，缺失值写 null。\n排版按骨架：一个顶层键一行，对象内联，不要每个字段一行。不要解释，直接输出。\n\n（如果是写到一半被截断的，不要续写，改用这句）\n上一条被截断了。请重发：mainlines 只保留闸门合格的条目（最多 3 条，不得为凑数加入不合格板块），\ndetail 压到 40 字，其余字段一个不少，整段一次写完；仍然只输出一个 JSON 对象。\n```\n\n---\n\n## 14 · 合规声明\n\n本输出为市场结构研究，不构成投资建议、不承诺收益。所有资金流为算法测算值，与真实成交存在偏差。使用者应自行核验数据并承担决策责任。\n"
 };
 </script>
 <script>
@@ -4240,6 +4811,31 @@ function normalize(raw){
     new_high: intAt(br.new_high, 'market_regime.breadth.new_high', 0, 1e6),
     new_low: intAt(br.new_low, 'market_regime.breadth.new_low', 0, 1e6)
   };
+
+  /* 市场级杠杆：滞后是常态，不因 lag 丢弃；lag 与 as_of 必须一起展示，避免被读成「今日」 */
+  const lv = obj(r.market_regime.leverage);
+  r.market_regime.leverage = {
+    as_of: str(lv.as_of) || null,
+    lag_trading_days: intAt(lv.lag_trading_days, 'market_regime.leverage.lag_trading_days', 0, 60),
+    scope: ['cn_all','hs','sse','szse'].indexOf(lv.scope) >= 0 ? lv.scope : null,
+    balance_yi: numAt(lv.balance_yi, 'market_regime.leverage.balance_yi'),
+    fin_balance_yi: numAt(lv.fin_balance_yi, 'market_regime.leverage.fin_balance_yi'),
+    lend_balance_yi: numAt(lv.lend_balance_yi, 'market_regime.leverage.lend_balance_yi'),
+    balance_to_float_pct: numAt(lv.balance_to_float_pct, 'market_regime.leverage.balance_to_float_pct', { ratio:1, lo:0, hi:0.2 }),
+    chg_1d: numAt(lv.chg_1d, 'market_regime.leverage.chg_1d', { ratio:1 }),
+    chg_5d: numAt(lv.chg_5d, 'market_regime.leverage.chg_5d', { ratio:1 }),
+    chg_20d: numAt(lv.chg_20d, 'market_regime.leverage.chg_20d', { ratio:1 }),
+    chg_60d: numAt(lv.chg_60d, 'market_regime.leverage.chg_60d', { ratio:1 }),
+    net_buy_5d_yi: numAt(lv.net_buy_5d_yi, 'market_regime.leverage.net_buy_5d_yi'),
+    net_buy_20d_yi: numAt(lv.net_buy_20d_yi, 'market_regime.leverage.net_buy_20d_yi'),
+    balance_pct_250: numAt(lv.balance_pct_250, 'market_regime.leverage.balance_pct_250', { ratio:1, lo:0, hi:1 }),
+    trend: ['deleveraging','stable','releveraging'].indexOf(lv.trend) >= 0 ? lv.trend : null,
+    trend_label: str(lv.trend_label),
+    note: str(lv.note)
+  };
+  if(!r.market_regime.leverage.trend_label && r.market_regime.leverage.trend){
+    r.market_regime.leverage.trend_label = { deleveraging:'去杠杆', stable:'杠杆平稳', releveraging:'加杠杆' }[r.market_regime.leverage.trend];
+  }
 
   r.verdict = Object.assign({ headline:'—', core_thesis:'', stance:null, stance_label:'', dominant_mainline_id:'', mainline_count:null, confidence:null, points:[], horizon:{} }, obj(r.verdict));
   const rawStance = r.verdict.stance;
@@ -4799,7 +5395,12 @@ createApp({
     /* 60ms 尾随节流：不用 rAF，避免标签页后台/不可见时回调不触发把标志位卡死 */
     function onNavScroll(){
       if(navPending) return;
-      navPending = setTimeout(() => { navPending = 0; syncNav(); moveInk(); }, 60);
+      navPending = setTimeout(() => {
+        navPending = 0; syncNav(); moveInk();
+        /* 滚动后给导航加一道浅投影，视觉上与内容分层 */
+        const bar = document.querySelector('.nav');
+        if(bar) bar.classList.toggle('scrolled', window.scrollY > 8);
+      }, 60);
     }
     function jumpTo(s){
       navId.value = s.id;
@@ -5149,63 +5750,53 @@ createApp({
 
   <!-- ===== HERO ===== -->
   <header class="hero">
-    <svg class="mesh" viewBox="0 0 1440 640" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
-      <defs>
-        <filter id="b80" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="88"/></filter>
-        <filter id="b50" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="56"/></filter>
-      </defs>
-      <g filter="url(#b80)">
-        <ellipse cx="90"  cy="150" rx="380" ry="230" fill="#f5e9d4"/>
-        <ellipse cx="360" cy="60"  rx="300" ry="190" fill="#f0c9a2" opacity=".95"/>
-        <ellipse cx="700" cy="150" rx="340" ry="220" fill="#b9b9f9" opacity=".9"/>
-        <ellipse cx="1010" cy="60" rx="300" ry="200" fill="#665efd" opacity=".55"/>
-        <ellipse cx="1330" cy="200" rx="300" ry="240" fill="#ea2261" opacity=".42"/>
-      </g>
-      <g filter="url(#b50)">
-        <ellipse cx="860" cy="330" rx="380" ry="150" fill="#f96bee" opacity=".2"/>
-        <ellipse cx="240" cy="330" rx="320" ry="130" fill="#ffffff" opacity=".55"/>
-      </g>
-    </svg>
-    <div class="mesh-fade"></div>
+    <div class="hero-bg" aria-hidden="true"></div>
+    <div class="hero-grid" aria-hidden="true"></div>
     <div class="hero-in">
-      <div class="eyebrow">A-Share Theme Intelligence · 结构研究</div>
-      <h1 class="display">市场主线分析</h1>
-      <p class="sub-lead">
-        以 20 个交易日为主判定窗口、5 日确认、60 日定性、250 日取分位，识别资金与叙事正在哪里形成合力，
-        并用反脉冲三原则过滤掉那些只活了一天的行情。
-      </p>
-      <div class="stat-row">
-        <div class="stat" v-for="s in windowStats" :key="s.k">
-          <div class="k">{{ s.k }}</div>
-          <div class="v num">{{ s.v }}<small v-if="s.s">{{ s.s }}</small></div>
+      <div class="hero-main">
+        <div class="eyebrow">A-Share Theme Intelligence · 结构研究</div>
+        <h1 class="display">市场主线分析</h1>
+        <p class="sub-lead">
+          以 20 个交易日为主判定窗口、5 日确认、60 日定性、250 日取分位，识别资金与叙事正在哪里形成合力，
+          并用反脉冲三原则过滤掉那些只活了一天的行情。
+        </p>
+        <div class="stat-row">
+          <div class="stat" v-for="s in windowStats" :key="s.k">
+            <div class="k">{{ s.k }}</div>
+            <div class="v num">{{ s.v }}<small v-if="s.s">{{ s.s }}</small></div>
+          </div>
+        </div>
+        <div class="fresh" v-if="freshness && (freshness.stale || freshness.expired)">
+          <b>{{ freshness.expired ? '结论已过期' : '数据陈旧' }}</b>
+          基准交易日 {{ freshness.asOf }}（距今 {{ freshness.age }} 天）<template v-if="freshness.expired">，有效期至 {{ freshness.validUntil }}</template>——按当前日期阅读时，请先确认是否需要重新取数。
         </div>
       </div>
-      <div class="fresh" v-if="freshness && (freshness.stale || freshness.expired)">
-        <b>{{ freshness.expired ? '结论已过期' : '数据陈旧' }}</b>
-        基准交易日 {{ freshness.asOf }}（距今 {{ freshness.age }} 天）<template v-if="freshness.expired">，有效期至 {{ freshness.validUntil }}</template>——按当前日期阅读时，请先确认是否需要重新取数。
-      </div>
-    </div>
-    <div class="hero-side" v-if="concentration.total !== null || concentration.partial !== null">
-      <div class="hs-card">
-        <div class="eyebrow">主线集中度</div>
-        <div class="hs-big num" v-if="concentration.total !== null">{{ fixed(concentration.total*100,1) }}<small>%</small></div>
-        <div class="hs-big num" v-else>{{ fixed(concentration.partial*100,1) }}<small>%</small></div>
-        <div class="hs-sub">
-          {{ concentration.total !== null ? '前三名主线占全 A 成交额' : '已取到 ' + concentration.got + '/' + concentration.of + ' 条的合计' }}
-        </div>
-        <div class="hs-rows">
-          <div class="hs-row" v-for="m in concentration.items" :key="m.id">
-            <span class="hs-n">{{ m.name }}</span>
-            <span class="hs-b"><i :style="{width: Math.max(3, ((m.metrics.turnover_share || 0)/concentration.max)*100) + '%'}"></i></span>
-            <span class="hs-v">{{ pct(m.metrics.turnover_share,1) }}</span>
+      <div class="hero-side" v-if="concentration.total !== null || concentration.partial !== null">
+        <div class="hs-card">
+          <div class="eyebrow">主线集中度</div>
+          <div class="hs-big num" v-if="concentration.total !== null">{{ fixed(concentration.total*100,1) }}<small>%</small></div>
+          <div class="hs-big num" v-else>{{ fixed(concentration.partial*100,1) }}<small>%</small></div>
+          <div class="hs-sub">
+            {{ concentration.total !== null ? '前三名主线占全 A 成交额' : '已取到 ' + concentration.got + '/' + concentration.of + ' 条的合计' }}
+          </div>
+          <div class="hs-bar" aria-hidden="true">
+            <i v-for="m in concentration.items" :key="m.id"
+               :style="{width: Math.max(0, (m.metrics.turnover_share || 0) * 100) + '%'}"></i>
+          </div>
+          <div class="hs-rows">
+            <div class="hs-row" v-for="m in concentration.items" :key="m.id">
+              <span class="hs-n">{{ m.name }}</span>
+              <span class="hs-v">{{ pct(m.metrics.turnover_share,1) }}</span>
+            </div>
           </div>
         </div>
       </div>
     </div>
+    <div class="hero-fade" aria-hidden="true"></div>
   </header>
 
   <!-- ===== VERDICT ===== -->
-  <section id="verdict" style="padding-bottom:8px">
+  <section id="verdict" style="padding:34px 0 8px">
     <div class="wrap">
       <div class="audit-bar" :class="audit.total ? 'bad' : 'ok'">
         <span class="a">{{ audit.total ? '⚠ 契约体检：' + audit.total + ' 处待核' : '✓ 契约体检通过' }}</span>
@@ -5344,6 +5935,62 @@ createApp({
           </div>
         </div>
       </div>
+
+      <div class="card" style="margin-top:16px"
+           v-if="report.market_regime.leverage && report.market_regime.leverage.balance_yi !== null">
+        <div class="card-h">
+          <h3>市场杠杆 · 两融</h3>
+          <span class="mute num" style="font-size:11px">
+            截至 {{ report.market_regime.leverage.as_of }}<template v-if="report.market_regime.leverage.lag_trading_days !== null"> · 滞后 {{ report.market_regime.leverage.lag_trading_days }} 个交易日</template>
+          </span>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:20px">
+          <div>
+            <div class="mute" style="font-size:11px">两融余额</div>
+            <div class="num" style="font-size:24px;font-weight:300;line-height:1.25">
+              {{ num(report.market_regime.leverage.balance_yi,0) }}<span style="font-size:12px"> 亿</span>
+            </div>
+            <div class="mute num" style="font-size:11px">
+              融资 {{ num(report.market_regime.leverage.fin_balance_yi,0) }} / 融券 {{ num(report.market_regime.leverage.lend_balance_yi,0) }}
+            </div>
+          </div>
+          <div>
+            <div class="mute" style="font-size:11px">占流通市值</div>
+            <div class="num" style="font-size:24px;font-weight:300;line-height:1.25">
+              {{ pct(report.market_regime.leverage.balance_to_float_pct,2) }}
+            </div>
+            <div class="mute num" style="font-size:11px">杠杆率口径，跨期可比</div>
+          </div>
+          <div>
+            <div class="mute" style="font-size:11px">20 日变动</div>
+            <div class="num" style="font-size:24px;font-weight:300;line-height:1.25"
+                 :class="tone(report.market_regime.leverage.chg_20d)">
+              {{ pctS(report.market_regime.leverage.chg_20d) }}
+            </div>
+            <div class="mute num" style="font-size:11px">
+              5日 {{ pctS(report.market_regime.leverage.chg_5d) }} · 60日 {{ pctS(report.market_regime.leverage.chg_60d) }}
+            </div>
+          </div>
+          <div>
+            <div class="mute" style="font-size:11px">融资净买入（20日）</div>
+            <div class="num" style="font-size:24px;font-weight:300;line-height:1.25"
+                 :class="tone(report.market_regime.leverage.net_buy_20d_yi)">
+              {{ report.market_regime.leverage.net_buy_20d_yi > 0 ? '+' : '' }}{{ num(report.market_regime.leverage.net_buy_20d_yi,0) }}<span style="font-size:12px"> 亿</span>
+            </div>
+            <div class="mute num" style="font-size:11px">
+              5日 {{ report.market_regime.leverage.net_buy_5d_yi > 0 ? '+' : '' }}{{ num(report.market_regime.leverage.net_buy_5d_yi,0) }} 亿
+            </div>
+          </div>
+        </div>
+        <div class="chips" style="margin-top:18px">
+          <span class="chip">{{ report.market_regime.leverage.trend_label || '—' }}</span>
+          <span class="chip">余额 250 日分位 <b class="num">{{ pct(report.market_regime.leverage.balance_pct_250,1) }}</b></span>
+          <span class="chip">口径 <b class="num">{{ report.market_regime.leverage.scope === 'cn_all' ? '沪深北' : (report.market_regime.leverage.scope || '—') }}</b></span>
+        </div>
+        <div v-if="report.market_regime.leverage.note" class="mute" style="font-size:11px;line-height:1.6;margin-top:14px">
+          {{ report.market_regime.leverage.note }}
+        </div>
+      </div>
     </div>
   </section>
 
@@ -5357,11 +6004,16 @@ createApp({
       </div>
       <div class="card" style="padding:24px 8px 8px">
         <div style="overflow-x:auto">
-          <table class="tbl">
+          <table class="tbl tbl-main">
+            <colgroup>
+              <col style="width:27%"><col style="width:11%"><col style="width:15%">
+              <col style="width:9.5%"><col style="width:9%"><col style="width:9%">
+              <col style="width:9.5%"><col style="width:10%">
+            </colgroup>
             <thead>
               <tr>
-                <th @click="toggleSort('name')" :class="{sorted: sortKey==='name'}" style="width:32%">主线</th>
-                <th>阶段</th>
+                <th @click="toggleSort('name')" :class="{sorted: sortKey==='name'}">主线</th>
+                <th class="c">阶段</th>
                 <th @click="toggleSort('score')" :class="{sorted: sortKey==='score'}">综合分</th>
                 <th @click="toggleSort('chg_20d')" :class="{sorted: sortKey==='chg_20d'}">20日</th>
                 <th @click="toggleSort('chg_5d')" :class="{sorted: sortKey==='chg_5d'}">5日</th>
@@ -5391,7 +6043,7 @@ createApp({
                     </div>
                   </div>
                 </td>
-                <td><span class="pill-stage" :class="stageClass(m.stage)">{{ m.stage_label }}</span></td>
+                <td class="c"><span class="pill-stage" :class="stageClass(m.stage)">{{ m.stage_label }}</span></td>
                 <td>
                   <b class="num" :style="{color: scoreTone(m.score)}">{{ fixed(m.score,1) }}</b>
                   <span class="bar"><i :style="{width: scoreBar(m.score) + '%', background: scoreTone(m.score)}"></i></span>
@@ -5447,7 +6099,8 @@ createApp({
           <div>
             <div class="ring-wrap">
               <svg class="ring" viewBox="0 0 120 120">
-                <circle cx="60" cy="60" r="52" fill="none" stroke="#e3e8ee" stroke-width="7"/>
+                <circle cx="60" cy="60" r="52" fill="none" stroke="#e9edf3" stroke-width="7"/>
+                <circle cx="60" cy="60" r="58" class="ring-ticks"/>
                 <circle cx="60" cy="60" r="52" fill="none" :stroke="ringColor" stroke-width="7"
                         :stroke-dasharray="ringDash" stroke-linecap="round"
                         transform="rotate(-90 60 60)"
@@ -5501,7 +6154,7 @@ createApp({
         </div>
       </div>
 
-      <div class="grid-2" style="margin-top:16px;align-items:start">
+      <div class="grid-2" style="margin-top:16px">
         <div class="card">
           <div class="card-h"><h3>关键指标</h3><span class="mute" style="font-size:11px">{{ report.window.primary_days }} 日主窗</span></div>
           <div class="m-grid">
@@ -5511,25 +6164,25 @@ createApp({
             </div>
           </div>
         </div>
-        <div class="card">
+        <div class="card card-fill">
           <div class="card-h"><h3>龙头梯队</h3>
             <span class="mute" style="font-size:11px">{{ active.ladder.has_leader === true ? '龙头明确' : active.ladder.has_leader === false ? '无明确龙头' : '龙头未判定' }}</span>
           </div>
           <table class="tbl" style="font-size:12.5px">
             <thead>
-              <tr><th style="width:46%">个股</th><th>角色</th><th>20日</th><th>成交额</th></tr>
+              <tr><th style="width:46%">个股</th><th class="c">角色</th><th>20日</th><th>成交额</th></tr>
             </thead>
             <tbody>
               <tr v-for="(l, i) in active.leaders" :key="i" style="cursor:default">
                 <td><div class="ml-name" style="font-size:13px">{{ l.name }}</div>
                     <div class="ml-alias num">{{ l.code }}</div></td>
-                <td style="text-align:right"><span class="tag">{{ ROLE[l.role] || '未标注' }}</span></td>
+                <td class="c"><span class="tag">{{ ROLE[l.role] || '未标注' }}</span></td>
                 <td :class="tone(l.chg_20d)">{{ pctS(l.chg_20d) }}</td>
                 <td>{{ isN(l.turnover_yi) ? '—' : fixed(l.turnover_yi,1) + '亿' }}</td>
               </tr>
             </tbody>
           </table>
-          <p class="mute" style="font-size:11.5px;line-height:1.55;margin-top:12px">{{ active.ladder.note }}</p>
+          <p class="mute" style="font-size:11.5px;line-height:1.6;margin-top:auto;padding-top:14px">{{ active.ladder.note }}</p>
         </div>
       </div>
 
@@ -5581,9 +6234,9 @@ createApp({
 
       <div class="card" style="margin-top:16px" v-if="active.watch.length">
         <div class="card-h"><h3>观察清单</h3><span class="mute" style="font-size:11px">下一步需要验证什么</span></div>
-        <div class="inval" v-for="(w, i) in active.watch" :key="i">
-          <span class="cond"><b style="font-weight:400;color:var(--ink)">{{ w.item }}</b></span>
-          <span class="thr" style="background:transparent;color:var(--mute);white-space:normal;text-align:right;max-width:55%">{{ w.why }}</span>
+        <div class="watch-row" v-for="(w, i) in active.watch" :key="i">
+          <span class="it">{{ w.item }}</span>
+          <span class="why">{{ w.why }}</span>
         </div>
       </div>
     </div>
@@ -5628,7 +6281,7 @@ createApp({
       </div>
       <div class="card">
         <div class="card-h"><h3>关键节点</h3><span class="mute" style="font-size:11px">主窗内的事件与价格响应</span></div>
-        <div class="tl">
+        <div class="tl-grid">
           <div class="tl-item" v-for="(t, i) in report.rotation.timeline" :key="i" :class="t.impact">
             <div class="tl-d">{{ t.date }}</div>
             <div class="tl-t">{{ t.event }}</div>
@@ -5653,7 +6306,7 @@ createApp({
               <span class="lv" :class="r.level"></span>
               <h4>{{ r.title }}</h4>
               <span class="spacer"></span>
-              <span class="tag">{{ LEVEL[r.level] }}</span>
+              <span class="tag lvtag" :class="r.level">{{ LEVEL[r.level] }}</span>
             </div>
             <div class="d">{{ r.detail }}</div>
             <div class="kv" v-if="r.trigger"><b>触发</b><span>{{ r.trigger }}</span></div>
@@ -5662,12 +6315,14 @@ createApp({
         </div>
         <div style="display:flex;flex-direction:column;gap:12px">
           <div class="scn" v-for="s in report.scenarios" :key="s.id">
-            <div class="p num">{{ pct(s.probability,0) }}</div>
-            <div class="nm">{{ s.name }}</div>
+            <div class="scn-head">
+              <div class="p num">{{ pct(s.probability,0) }}</div>
+              <div class="nm">{{ s.name }}</div>
+            </div>
             <div class="pb"><i :style="{width: scoreBar((s.probability || 0)*100) + '%'}"></i></div>
-            <div class="a"><b>假设 · </b>{{ s.assumption }}</div>
-            <div class="a"><b>影响 · </b>{{ s.impact }}</div>
-            <div class="a"><b>应对 · </b>{{ s.action }}</div>
+            <div class="a"><b>假设</b><span>{{ s.assumption }}</span></div>
+            <div class="a"><b>影响</b><span>{{ s.impact }}</span></div>
+            <div class="a"><b>应对</b><span>{{ s.action }}</span></div>
           </div>
         </div>
       </div>
@@ -5831,26 +6486,25 @@ createApp({
   </section>
 
   <!-- ===== TEMPLATE CTA ===== -->
-  <section class="band">
+  <section class="band band-tight">
     <div class="wrap">
-      <div class="card" style="display:grid;grid-template-columns:1.3fr 1fr;gap:32px;align-items:center;padding:32px">
+      <div class="card cta">
         <div>
           <div class="eyebrow">08 — 提示词模板</div>
-          <h2 style="font-size:26px;font-weight:300;letter-spacing:-.4px;margin-top:10px">把任何模型变成主线研究员</h2>
+          <h2>把任何模型变成主线研究员</h2>
           <p style="font-size:13.5px;line-height:1.65;color:var(--mute);margin-top:12px">
             完整版包含时间粒度设计、反脉冲三原则、六因子打分卡、五阶段判定与自检清单，配合 JSON Schema 可直接用于结构化输出约束。
           </p>
-          <div style="display:flex;gap:10px;margin-top:20px;flex-wrap:wrap">
+          <div class="cta-actions">
             <button class="btn btn-primary" @click="openDrawer('template')">查看 / 复制模板</button>
             <button class="btn btn-ghost" @click="copyText(EMBEDDED.prompt, '完整提示词')">一键复制完整版</button>
           </div>
         </div>
-        <div style="background:var(--soft);border:1px solid var(--line);border-radius:10px;padding:18px">
-          <div class="eyebrow" style="margin-bottom:8px">使用流程</div>
-          <div v-for="(step, i) in ['复制提示词 → 填入基准交易日','交由模型取数并推理','获得严格 JSON 输出','导入本页渲染报告']" :key="i"
-               style="display:flex;gap:10px;padding:7px 0;font-size:12.5px;color:var(--ink2)">
-            <span class="num" style="color:var(--primary);font-size:11px;padding-top:2px">0{{ i+1 }}</span>
-            <span>{{ step }}</span>
+        <div class="cta-steps">
+          <div class="eyebrow">使用流程</div>
+          <div v-for="(step, i) in ['复制提示词 → 填入基准交易日','交由模型取数并推理','获得严格 JSON 输出','导入本页渲染报告']" :key="i" class="step">
+            <span class="step-n num">0{{ i+1 }}</span>
+            <span class="step-t">{{ step }}</span>
           </div>
         </div>
       </div>

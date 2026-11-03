@@ -122,8 +122,10 @@
 | 概念板块成分与涨跌 | 东方财富概念板块；同花顺概念指数 | 成分股、板块涨跌幅 |
 | 涨停/跌停/连板池 | 东方财富涨停板行情（收盘后可得） | 涨停家数、连板数、封板资金、封板率 |
 | 个股资金流（**测算值**） | 东方财富个股/板块资金流 | 主力净额（超大单+大单） |
-| 两融余额 | 交易所融资融券数据（T+1 发布） | 融资余额、融券余额 |
+| 两融余额（市场级杠杆） | 东方财富数据中心 `RPTA_RZRQ_LSHJ`（市场汇总，1 次请求覆盖 260 交易日） | 融资余额、融券余额、两融余额、融资净买入、融资余额占流通市值比 |
 | 指数估值 | 中证指数官网、交易所 | PE/PB 及历史分位 |
+
+> **两融不要用交易所分市接口拼。** 实测沪市、深市披露节奏不同（同一早间沪市已到 T−1、深市只到 T−2），两市相加减等于造出一个不存在的日期。用市场汇总单源：同日、口径统一、一次取满。代价是相对 `{{AS_OF}}` 滞后 1 个交易日，按下面的时滞规则处理，**不因此写 null**。
 
 ### 最小可算数据集（4 张表，指标都能算出来）
 
@@ -151,6 +153,24 @@
 
 - Wind / Choice / iFinD 一致预期与机构持仓
 - Level-2 逐笔、席位明细
+
+### 时滞绑定规则（lag 分级，适用于一切非实时数据）
+
+「有滞后」既不等于「不能用」，也不等于「可以直接用」。统一按 `lag_trading_days` 分档——它的定义是**数据日相对 `{{AS_OF}}` 的交易日差**，同日为 0，**以报告基准日为基准，不以生成时间为基准**（`as_of=11-02`、数据 `10-30` → `lag=1`，不是 2，也不是 0）：
+
+| 档位 | 条件 | 允许用途 | 禁止用途 |
+|---|---|---|---|
+| 当期 | `lag = 0` | 全部 | — |
+| 可带滞后 | `1 ≤ lag ≤ 2` | 水平值、5/20/60 日变化、分位、同期比率 | T 日归因；与 T 日分母做比率；当日风控触发 |
+| 过期 | `lag ≥ 3`，或跨长假 | 只作「节前水平」定性描述，必须写 `as_of` | 任何定量结论；「最新 / 当前」措辞；趋势类指标整块写 `null` |
+
+三条硬约束：
+
+1. **成对出现**：引用带滞后指标的结论，必须同时给出 `as_of` 与 `lag_trading_days`。只写数值不写截止日 = 口径不明。
+2. **绝对表述禁用**：`lag ≥ 1` 时不得写「今日两融」「当前杠杆」，只能写「截至 M-D」。
+3. **不跨期做比值**：`A/B` 的分子分母必须同期。拿 T−1 的两融余额除 T 日成交额，得到的是一个不存在的比率。
+
+> **存量/趋势型**（余额、持仓、估值分位）对 1～2 日滞后不敏感，可带滞后使用；**流量/事件型**（当日净流入、当日涨停家数、当日成交额）滞后即失效，只能写 `null`。
 
 ### 不可得数据的处理（重要）
 
@@ -257,7 +277,7 @@ score = Σ ( normalized_i × weight_i ) − penalty
 - 数字：比率保留 4 位小数（0.0521），分数保留 1 位（87.6），金额统一「亿元」且字段名带 `_yi`。
 - 百分比一律用**小数**表示（5.21% → 0.0521），字段不携带 `%`。
 - 「唯一 / 只有 / 首次 / 全部」等绝对表述，必须有全样本穷举或明确范围限定（「在已完整计算 P2 的 N 个板块中」），否则不得使用。
-- 不得引用 `sources` 中不存在的数据做因果结论：没有两融数据就不写「杠杆退潮 / 融资盘撤离」，没有北向数据就不写「外资流入」。
+- 不得引用 `sources` 中不存在的数据做因果结论：没有两融数据就不写「杠杆退潮 / 融资盘撤离」，没有北向数据就不写「外资流入」。两融可用时必须同时写出 `as_of` 与 `lag_trading_days`，且**不得用于 T 日归因**——用 T−1 的余额解释 T 日行情是因果倒置。
 - 同一事实在 `headline`、`core_thesis`、`points`、`risks`、`notes` 中必须同一口径；「A 过 P2+P3、B 过 P1+P2」不能压缩成「只有 A 过两道闸门」。
 - 驱动按事实归属分类：价格与成交确认写 `liquidity`，业绩数据写 `earnings`；「放量上涨」不得标为 `earnings`。
 - 不得把单一「成交额放大」直接解释为「存量换手 / 资金未离场」，至少要有换手率、资金净额、涨跌分布中的第二项证据。
@@ -318,7 +338,10 @@ score = Σ ( normalized_i × weight_i ) − penalty
       "reliability": "high",
       "note": "收盘后取数"
     }],
-    "missing": [{ "field": "两融余额", "reason": "T+1 尚未发布", "fallback": "用 5 日均值代理并在 notes 标注" }],
+    "missing": [
+      { "field": "两融余额", "reason": "源未更新，数据日滞后 4 个交易日（>2）", "fallback": "market_regime.leverage 整块写 null；叙事不使用杠杆维度" },
+      { "field": "板块 PE 250 日分位", "reason": "官网未提供历史分位", "fallback": "indices.pe_pct_250 全部写 null" }
+    ],
     "notes": ["资金流为算法测算值，与真实成交存在偏差"]
   },
   "market_regime": {
@@ -346,6 +369,25 @@ score = Σ ( normalized_i × weight_i ) − penalty
       "advance_decline_ratio": 1.35,
       "new_high": 143,
       "new_low": 21
+    },
+    "leverage": {
+      "as_of": "2026-10-29",
+      "lag_trading_days": 1,
+      "scope": "cn_all",
+      "balance_yi": 23849.6,
+      "fin_balance_yi": 23567.4,
+      "lend_balance_yi": 282.2,
+      "balance_to_float_pct": 0.02631,
+      "chg_1d": -0.0112,
+      "chg_5d": -0.0288,
+      "chg_20d": -0.1017,
+      "chg_60d": -0.0978,
+      "net_buy_5d_yi": -701.8,
+      "net_buy_20d_yi": -2685.7,
+      "balance_pct_250": 0.004,
+      "trend": "deleveraging",
+      "trend_label": "去杠杆",
+      "note": "东财市场汇总；含沪深北，与交易所分市合计差约 0.3%，不与其他源混算；滞后 1 个交易日，分位基于 250 个交易日"
     },
     "narrative": "指数震荡上行，赚钱效应集中于少数板块"
   },
@@ -483,6 +525,8 @@ score = Σ ( normalized_i × weight_i ) − penalty
 |---|---|
 | `meta.data_mode` | `live` / `delayed` / `demo` |
 | `market_regime.phase` | `risk_on` / `risk_off` / `structural` / `choppy` |
+| `market_regime.leverage.scope` | `cn_all` / `hs` / `sse` / `szse` |
+| `market_regime.leverage.trend` | `deleveraging` / `stable` / `releveraging`（由 `chg_20d` 机械映射：≤ −3% / 其间 / ≥ +3%） |
 | `verdict.stance` | `offensive` / `balanced` / `defensive` |
 | `mainlines[].stage` | `ignition` / `expansion` / `acceleration` / `divergence` / `fade` |
 | `mainlines[].theme_type` | `industry` / `concept` / `style`（行业型 / 概念型 / 风格型；描述主线**本身**的类别，与 `drivers[].type` 的驱动来源不是一回事） |
@@ -562,6 +606,7 @@ score = Σ ( normalized_i × weight_i ) − penalty
 - [ ] `coverage` 有可复算算式，`sources[].note` 与 `notes` 中的计数与面板实测一致
 - [ ] 所有「唯一 / 只有 / 首次 / 全部」都有全样本穷举或范围限定
 - [ ] 结论未引用 `sources` 中不存在的数据（两融、北向等）
+- [ ] `market_regime.leverage` 的 `as_of` + `lag_trading_days` 与报告 `as_of` 自洽；`lag ≥ 1` 时已在 `missing` 写明原因；`trend` 与 `chg_20d` 的 ±3% 映射一致；`leverage` 为 `null` 时全文没有「两融 / 融资余额」字样
 - [ ] 未使用已停止披露的指标（北向日度净买入等）
 - [ ] 通篇无投资建议式表述
 - [ ] 把整段输出复制到任何 JSON 校验器里能直接解析

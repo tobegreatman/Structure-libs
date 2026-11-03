@@ -20,7 +20,7 @@ if hasattr(sys.stdout, "reconfigure"):
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
-from pipeline import contract, http, kline, panel, quotes  # noqa: E402
+from pipeline import contract, day, http, kline, panel, quotes  # noqa: E402
 
 SINCE = "2025-09-15"
 P1_DAYS, P1_STREAK = 6, 2
@@ -80,7 +80,7 @@ def p3_metrics(panel_data: dict, code: str) -> dict:
 
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--as-of", default="2026-10-30")
+    day.add_as_of(ap)
     ap.add_argument("--since", default=SINCE)
     ap.add_argument("--workers", type=int, default=http.load_policy().workers)
     ap.add_argument("--rps", type=float, default=http.load_policy().max_rps)
@@ -93,6 +93,7 @@ def main() -> int:
                     help="逐请求 journal 落盘路径，默认 cache/http-<as_of>.jsonl")
     ap.add_argument("--no-journal", action="store_true")
     args = ap.parse_args()
+    args.as_of = day.resolve(args.as_of)
 
     tm = Timer()
     jpath = (None if args.no_journal

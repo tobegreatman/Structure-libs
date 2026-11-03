@@ -79,6 +79,25 @@
       "new_high": 0,
       "new_low": 0
     },
+    "leverage": {
+      "as_of": null,
+      "lag_trading_days": null,
+      "scope": null,
+      "balance_yi": null,
+      "fin_balance_yi": null,
+      "lend_balance_yi": null,
+      "balance_to_float_pct": null,
+      "chg_1d": null,
+      "chg_5d": null,
+      "chg_20d": null,
+      "chg_60d": null,
+      "net_buy_5d_yi": null,
+      "net_buy_20d_yi": null,
+      "balance_pct_250": null,
+      "trend": null,
+      "trend_label": null,
+      "note": null
+    },
     "narrative": ""
   },
   "verdict": {

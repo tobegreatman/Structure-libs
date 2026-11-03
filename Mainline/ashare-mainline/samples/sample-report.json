@@ -120,9 +120,28 @@
         "as_of": "2026-10-30",
         "reliability": "high",
         "note": ""
+      },
+      {
+        "name": "东财两融市场汇总（RPTA_RZRQ_LSHJ）",
+        "category": "杠杆",
+        "fields": [
+          "融资余额",
+          "融券余额",
+          "两融余额",
+          "融资净买入",
+          "占流通市值比"
+        ],
+        "as_of": "2026-10-29",
+        "reliability": "high",
+        "note": "单请求覆盖 260 交易日；相对报告日滞后 1 个交易日，滞后原因与可用边界见 missing"
       }
     ],
     "missing": [
+      {
+        "field": "两融余额",
+        "reason": "交易所 T+1 入库，market_regime.leverage 的数据日为 2026-10-29，相对报告日滞后 1 个交易日",
+        "fallback": "按「可带滞后」档使用：水平值与 5/20/60 日变化可用，但不做 T 日归因、不与 T 日分母做比率"
+      },
       {
         "field": "northbound_net_inflow",
         "reason": "沪深港通自 2024-08 起不再披露日度净买入与实时额度余额",
@@ -197,6 +216,25 @@
       "advance_decline_ratio": 1.42,
       "new_high": 214,
       "new_low": 63
+    },
+    "leverage": {
+      "as_of": "2026-10-29",
+      "lag_trading_days": 1,
+      "scope": "cn_all",
+      "balance_yi": 23849.6,
+      "fin_balance_yi": 23567.4,
+      "lend_balance_yi": 282.2,
+      "balance_to_float_pct": 0.02631,
+      "chg_1d": -0.0112,
+      "chg_5d": -0.0288,
+      "chg_20d": -0.1017,
+      "chg_60d": -0.0978,
+      "net_buy_5d_yi": -701.8,
+      "net_buy_20d_yi": -2685.7,
+      "balance_pct_250": 0.004,
+      "trend": "deleveraging",
+      "trend_label": "去杠杆",
+      "note": "东财市场汇总（RPTA_RZRQ_LSHJ）；融资余额 23567.4 亿 + 融券余额 282.2 亿，含沪深北口径，与交易所分市合计差约 0.3%，不与其他源混算；相对报告日滞后 1 个交易日，分位基于 250 个交易日"
     },
     "narrative": "指数层面波澜不惊，20 日振幅收敛至 6% 以内，但结构分化达到近半年极值：资金未离场，只是从宽基向少数具备产业催化的方向高度集中。上涨家数占比 58%、涨跌比 1.42，说明赚钱效应存在但并不普惠，属于典型的「指数搭台、主线唱戏」。创业板与科创 50 相对强势，风格偏向成长。"
   },

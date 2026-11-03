@@ -96,11 +96,38 @@ def _kline_check() -> _CHECK:
     return check
 
 
+def _margin_check(as_of: str) -> _CHECK:
+    """两融市场汇总：只验「字段齐 + 日期不越界 + 能算日变动」，滞后交给 margin.compute 判。
+
+    滞后是常态（T 日数据 T+1 早间入库），不能当契约失败；越界（返回了 as_of 之后的行）
+    才是真问题——那说明 DIM_DATE 过滤没生效，会把未来数据混进本期。
+    """
+    def check(j: Any) -> None:
+        _need(isinstance(j, dict), "返回不是 dict")
+        _need(j.get("code") in (0, "0"), f"code={j.get('code')} message={j.get('message')}",
+              "reportName RPTA_RZRQ_LSHJ 可能改名，或 DIM_DATE 过滤语法变了")
+        rows = ((j.get("result") or {}).get("data")) or []
+        _need(len(rows) >= 2, "不足 2 行，连日变动都算不出")
+        for k in ("DIM_DATE", "RZRQYE", "RZYE", "RQYE"):
+            _need(k in rows[0] and rows[0][k] is not None, f"缺字段 {k}")
+        dates = [str(r.get("DIM_DATE") or "")[:10] for r in rows]
+        _need(dates[0] <= as_of, f"最新行 {dates[0]} 晚于基准日 {as_of}，DIM_DATE 过滤未生效",
+              "把 filter 下限改成 as_of 之前的日期，且不要按 pageNumber 倒序盲取")
+        _need(dates == sorted(dates, reverse=True), f"日期非降序：{dates[:5]}")
+        _need(float(rows[0]["RZRQYE"]) > 0, "两融余额非正数")
+    return check
+
+
 FUNDFLOW_URL = (
     "https://datacenter-web.eastmoney.com/api/data/v1/get?reportName=RPT_INDUSTRY_FUNDFLOW"
     "&columns=BOARD_CODE,BOARD_NAME,TRADE_DATE,CHANGE_RATE,NET_INFLOW,NET_INFLOW_RATIO"
     "&pageNumber=1&pageSize=200&sortColumns=TRADE_DATE&sortTypes=-1"
     "&filter=(BOARD_CODE%3D%22{board}%22)(TRADE_DATE%3E%3D%27{since}%27)"
+)
+MARGIN_URL = (
+    "https://datacenter-web.eastmoney.com/api/data/v1/get?reportName=RPTA_RZRQ_LSHJ"
+    "&columns=DIM_DATE,RZYE,RQYE,RZRQYE,RZYEZB&pageNumber=1&pageSize=5"
+    "&sortColumns=DIM_DATE&sortTypes=-1"
 )
 CONSTITUENT_URL = (
     "https://datacenter-web.eastmoney.com/api/data/v1/get?reportName=RPT_BOARD_CONSTITUENT"
@@ -140,6 +167,14 @@ def builtin(as_of: str, since: str) -> list[Contract]:
             hint="换备用域名或缩短窗口",
             required=False,
             fallback="本地 K 线库已有数据的股票不受影响，只有首次建库会缺",
+        ),
+        Contract(
+            name="东财两融市场汇总 RPTA_RZRQ_LSHJ",
+            url=MARGIN_URL,
+            check=_margin_check(as_of),
+            hint="确认 reportName 未改名；滞后 1 个交易日属正常，不要据此判失败",
+            required=False,
+            fallback="market_regime.leverage 整块写 null 并记入 missing，叙事不使用杠杆维度",
         ),
     ]
 
